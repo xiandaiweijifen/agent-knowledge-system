@@ -1,0 +1,370 @@
+{
+  "filename": "test_chunk.txt",
+  "suffix": ".txt",
+  "embedding_model": "mock-embedding-v1",
+  "vector_dim": 8,
+  "chunk_count": 19,
+  "embeddings": [
+    {
+      "embedding_id": "test_chunk.txt::chunk_0::embedding",
+      "chunk_id": "test_chunk.txt::chunk_0",
+      "chunk_index": 0,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "以下是工作经历和项目的中文翻译：\n\n工作经历\nAmazon Web Services (AWS) — 软件开发工程师实习生\n西雅图, WA | 2021年5月 – 2021年8月\n与敏捷开发团队合作，开发用于自动化私有合同入驻流程的网络控制台。\n使用 React 和 Redux 搭配 TypeScript 完成入驻向导和合同列表页面的前端开发。\n设计 JSON 数据结构以实现合同详情在前端与后端之间的传输。\n将私有合同入驻时间缩短了25%，并有效避免了人为错误。\n某初创公司 — 网页开发实习生\n布鲁克林, NY | 2021年2月 – 2021年4月\n使用 React、Redux、Node.js 和 Firebase 构建了新的响应式官方网站。\n利用 Mapbox API 和 Google Geocoding API 开发交互式地图，实现地址选择功能。\n集成 Stripe API，处理用户的信用卡支付和收款。\n通过 Shopify API 管理订单和库存，将网站流量提升了25%，跳出率降低了15%。\n\n精选项目\n基于 React 的反馈收集应用 — 全栈网页开发\n202",
+      "vector": [
+        0.854902,
+        0.376471,
+        0.07451,
+        0.552941,
+        0.729412,
+        0.619608,
+        0.215686,
+        0.54902
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_1::embedding",
+      "chunk_id": "test_chunk.txt::chunk_1",
+      "chunk_index": 1,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "PI，处理用户的信用卡支付和收款。\n通过 Shopify API 管理订单和库存，将网站流量提升了25%，跳出率降低了15%。\n\n精选项目\n基于 React 的反馈收集应用 — 全栈网页开发\n2020年5月 – 2020年8月\n使用 MERN 栈（MongoDB、Express、React、Node.js）开发了一个在线反馈收集服务的全栈应用程序。\n使用 React 和 Redux 开发基于 AJAX 的前端，完成中间件和 reducer 的实现。\n通过 Passport.js 集成 Google OAuth，优化用户身份验证流程。\n使用 SendGrid API 管理群发邮件和点击跟踪。\n基于 React 的视频直播网站 — 网页开发\n2020年3月 – 2020年4月\n使用 React、Redux Thunk 和 React Router Dom 开发了前端，实现了流畅的导航。\n设计并集成了 RESTful API 以在前后端之间进行数据传输。\n实现了流媒体视频的 CRUD 操作，并通过 Google OAuth 完成用户身份验证。\n使用 Redux Form 构",
+      "vector": [
+        0.14902,
+        0.058824,
+        0.486275,
+        0.180392,
+        0.592157,
+        0.301961,
+        0.305882,
+        0.254902
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_2::embedding",
+      "chunk_id": "test_chunk.txt::chunk_2",
+      "chunk_index": 2,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "航。\n设计并集成了 RESTful API 以在前后端之间进行数据传输。\n实现了流媒体视频的 CRUD 操作，并通过 Google OAuth 完成用户身份验证。\n使用 Redux Form 构建了可复用的用户输入组件。\n基于 Django 的研究生跟踪系统 — 网络应用开发\n2019年10月 – 2019年12月\n与一个由五人组成的敏捷团队合作，使用 Django 在 AWS 上开发了一个供系主任追踪学生文档和学位要求的网络服务。\n使用 HTML/CSS/JavaScript 设计前端，并用 Python 和 Django 3.0 开发 MVC 后端。\n创建了 Django 视图来处理 HTTP 请求并返回相应的网页响应。\n通过支持批量下载，将信息检索效率提高了40%。\n全栈开发工程师\n2022年12月 – 至今\n设计了架构与功能，为国家资源保护服务工程工具套件（NETS）提供支持，该套件用于水资源保护和工程项目的规划与设计，配备了建模、计算和设计工具，包括可视化与仿真功能。\n主导开发与实施了创新功能，帮助用户在环境 GIS 模型中设计并测试拟建的水道和水利基础设施",
+      "vector": [
+        0.235294,
+        0.258824,
+        0.478431,
+        0.109804,
+        0.243137,
+        0.898039,
+        0.309804,
+        0.431373
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_3::embedding",
+      "chunk_id": "test_chunk.txt::chunk_3",
+      "chunk_index": 3,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "）提供支持，该套件用于水资源保护和工程项目的规划与设计，配备了建模、计算和设计工具，包括可视化与仿真功能。\n主导开发与实施了创新功能，帮助用户在环境 GIS 模型中设计并测试拟建的水道和水利基础设施项目，用户参与度提升了40%。\n开发了可扩展的后端基础架构，使用 Java 和 Spring 技术栈，日均处理超过 1000 万次请求，并确保符合 HIPAA 合规性标准，系统效率提高了30%。\n与跨职能团队合作，将第三方 API 集成到服务器端应用中，数据处理效率提升了20%，并增强了整体数据安全性。\n与 UI/UX 设计团队合作，使用 React、TypeScript、Bootstrap 和 Redux 开发用户界面，使用户的手动数据输入量减少了40%，用户满意度提升了50%。\n进行了全面的前后端测试与调试，使用 Jest 和 Spring Test 覆盖了80%的代码库，系统错误减少了50%。\n有效指导了两名实习生，促进他们的专业成长并融入团队，同时对他们的代码提交提供建设性反馈，确保代码质量和遵循最佳实践。\n工作经历\n阿里巴巴 — 软件工程师实习生\n2021年4月 – 2",
+      "vector": [
+        0.407843,
+        0.070588,
+        0.996078,
+        0.847059,
+        0.623529,
+        0.513725,
+        0.360784,
+        0.352941
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_4::embedding",
+      "chunk_id": "test_chunk.txt::chunk_4",
+      "chunk_index": 4,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "减少了50%。\n有效指导了两名实习生，促进他们的专业成长并融入团队，同时对他们的代码提交提供建设性反馈，确保代码质量和遵循最佳实践。\n工作经历\n阿里巴巴 — 软件工程师实习生\n2021年4月 – 2021年7月\n启动了一个高影响力项目——历史监控数据回放，服务于500多个应用程序和年度攻防演练活动。\n设计工作流程，与10多名来自不同团队的工程师沟通与合作，推动项目进展。\n实现了易于使用的数据回放功能，与之前的数据注入版本相比，效率提升了300%。\n设计并构建了高可用且可扩展的数据回放系统，涵盖记录匹配与报告生成，使用 AntMQ 作为消息代理触发定时任务，并通过 Spring Boot 开发了 RPC 服务 和接口。\nXXX（二线公司） — 软件工程师实习生\n2020年10月 – 2020年12月\n为模型评估平台开发了新功能——竞品分析。\n实现了用于大样本数据调用的异步接口，调用多个竞品接口；利用 Redis 作为消息队列，提高了客户端 API 调用效率。\n设计了深度学习算法生成音频的坏案例检测管道，通过提前过滤**20%**的坏案例，提高了生产效率。\n\n项目经历\n问卷",
+      "vector": [
+        0.662745,
+        0.611765,
+        0.454902,
+        0.772549,
+        0.290196,
+        0.972549,
+        0.670588,
+        0.529412
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_5::embedding",
+      "chunk_id": "test_chunk.txt::chunk_5",
+      "chunk_index": 5,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "调用多个竞品接口；利用 Redis 作为消息队列，提高了客户端 API 调用效率。\n设计了深度学习算法生成音频的坏案例检测管道，通过提前过滤**20%**的坏案例，提高了生产效率。\n\n项目经历\n问卷平台开发\n重构了面向100多家机构的问卷与评估系统的网页应用程序。\n使用 Django 框架设计了 RESTful API，定义不同用户角色在注册、登录和问卷设计或填写方面的权限。\n重新设计了 MySQL 数据库架构，使工作效率提升了20%。\n全栈网页开发\n开发了一个供猫咪爱好者发布猫咪照片、评论互动的论坛。\n使用 HTML/CSS、JavaScript 和 Bootstrap 设计了响应式布局网页，完成了点赞、评论、展示热门猫咪等功能。\n通过 Node.js 和 Express 在服务器端构建了 RESTful API 实现用户认证，使用 MongoDB 存储用户、帖子及相关信息数据。\nTiny Linux Shell 和动态内存分配器\n开发了一个支持内置命令、基本作业进程控制和 I/O 重定向的 Tiny Linux Shell。\n使用 C 语言构建了一个动态内存分配器",
+      "vector": [
+        0.627451,
+        0.835294,
+        0.215686,
+        0.772549,
+        0.431373,
+        0.447059,
+        0.635294,
+        0.262745
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_6::embedding",
+      "chunk_id": "test_chunk.txt::chunk_6",
+      "chunk_index": 6,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "数据。\nTiny Linux Shell 和动态内存分配器\n开发了一个支持内置命令、基本作业进程控制和 I/O 重定向的 Tiny Linux Shell。\n使用 C 语言构建了一个动态内存分配器，包含 malloc、free、realloc 和 calloc 函数，与基线相比，提高了**200%**的内存利用率和吞吐量。\n工作经历\n研发软件开发实习生，[公司名称隐去] — 全职\n2024年6月 – 2024年9月\n使用 Scikit-learn 和 PyTorch 训练了多种机器学习模型和神经网络，用于检测和分类电机偏心，静态场景下分类准确率达到了 95%。\n开发了一款基于 .Net 的应用程序，具备数据库访问控制功能，能够安全地管理和组织物料清单 (BOM)，实现了基于角色的数据可视化访问，并使查询速度提升了 70%。\n制作了一种基于 Raspberry Pi 的电机气隙监测系统，集成了 RS485 通信，实现了实时传感器数据处理，配备 OLED 显示屏用户界面、结果分析功能，并额外开发了基于 Tkinter 的 Windows 界面。\n使用 Microsoft Pow",
+      "vector": [
+        0.423529,
+        0.176471,
+        0.772549,
+        0.45098,
+        0.647059,
+        0.498039,
+        0.796078,
+        0.968627
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_7::embedding",
+      "chunk_id": "test_chunk.txt::chunk_7",
+      "chunk_index": 7,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "系统，集成了 RS485 通信，实现了实时传感器数据处理，配备 OLED 显示屏用户界面、结果分析功能，并额外开发了基于 Tkinter 的 Windows 界面。\n使用 Microsoft PowerApps 和 SharePoint 开发了员工档案流程报告应用，将输入效率提高了 50%。\n\n项目\n志愿者管理网站 | React, MySQL, Django\n2022年6月\n设计并开发了一个基于网页的平台，用于简化志愿者注册、日程安排和沟通流程。\n实现了用户身份验证、活动创建和日历集成等关键功能。\n前端使用 React，后端使用 Django，数据库使用 MySQL，构建了一个响应迅速且用户友好的界面。\n为 200 多名志愿者实现了无缝协作，通过自动提醒和实时更新提升了用户参与度和满意度。\n基于卷积神经网络 (CNN) 的 CT 图像分类 | PyTorch\n2023年11月\n使用 ResNet34 架构实现了基于 卷积神经网络 (CNN) 的器官 CT 图像分类，分类准确率达到了 95%。\n对预训练的 ResNet34 模型进行微调，在自定义数据集上优化性能，并应用了",
+      "vector": [
+        0.45098,
+        0.690196,
+        0.070588,
+        0.290196,
+        0.8,
+        0.247059,
+        0.105882,
+        0.168627
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_8::embedding",
+      "chunk_id": "test_chunk.txt::chunk_8",
+      "chunk_index": 8,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "使用 ResNet34 架构实现了基于 卷积神经网络 (CNN) 的器官 CT 图像分类，分类准确率达到了 95%。\n对预训练的 ResNet34 模型进行微调，在自定义数据集上优化性能，并应用了迁移学习技术。\n进行了全面的数据预处理和增强，以提高模型的鲁棒性并提升分类准确率。\n\n[公司名称隐去] — 全栈软件开发实习生\nTypeScript, React, React Native, Firebase\n2024年1月 – 2024年4月\n使用 React 和 React Native 领导开发了一个跨平台应用，为超过 10 万名用户提供了社区安全和意识提升的功能。\n设计了基于 Redux 的状态管理，并集成了 Firestore Database，实现实时数据同步和流畅的后端交互，为用户提供一致且吸引人的跨平台体验。\n集成了 AI 驱动的内容审核，自动检测有害内容，减少人工干预达 30%，促进了更安全的用户环境。\n通过实现 OAuth 协议，改进了系统安全性，确保用户安全认证，并采用高级加密技术保护敏感信息，防止未经授权访问。\n[公司名称隐去] — 数据分析工程师\nNo",
+      "vector": [
+        0.231373,
+        0.576471,
+        0.188235,
+        0.556863,
+        0.309804,
+        0.019608,
+        0.062745,
+        0.501961
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_9::embedding",
+      "chunk_id": "test_chunk.txt::chunk_9",
+      "chunk_index": 9,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "预达 30%，促进了更安全的用户环境。\n通过实现 OAuth 协议，改进了系统安全性，确保用户安全认证，并采用高级加密技术保护敏感信息，防止未经授权访问。\n[公司名称隐去] — 数据分析工程师\nNode.js, MySQL, MongoDB\n2020年8月 – 2022年3月\n使用 Node.js 构建了强大的服务器端逻辑，实现了数据库复制的多数仲裁算法，确保了 99.9% 数据一致性，并在高峰注册期间实现了跨 5+ 分布式服务器的高可用性。\n通过开发基于角色的访问控制系统提升了安全性，支持 200 多对导师与学员关系，包括考试评分和作业审核功能。\n通过优化复杂 SQL 查询提升了系统性能 40%，在高流量注册期间减少了服务器负载，并将响应时间缩短了 50%。\n构建了 MySQL 和 MongoDB 之间的实时数据集成，同步流水线设计提高了跨数据集的准确性 98%，并减少了数据检索时间达 60%。\n\n项目\n[项目名称隐去] | TypeScript, Node.js, MySQL, GCP\n2024年8月 – 至今\n使用 TypeScript 开发了具有用户友好界面的注册和",
+      "vector": [
+        0.27451,
+        0.580392,
+        0.447059,
+        0.815686,
+        0.945098,
+        0.533333,
+        0.803922,
+        0.690196
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_10::embedding",
+      "chunk_id": "test_chunk.txt::chunk_10",
+      "chunk_index": 10,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "索时间达 60%。\n\n项目\n[项目名称隐去] | TypeScript, Node.js, MySQL, GCP\n2024年8月 – 至今\n使用 TypeScript 开发了具有用户友好界面的注册和搜索界面，配合 Node.js 后端高效处理 API 请求，提升了系统性能和可扩展性。\n开发了科研项目管理系统，优化了 RESTful API 用于数据交换，利用 Redis 缓存常用数据，并采用 Elasticsearch 提升全文搜索速度 40%。\n部署到 GCP，结合 Docker 进行负载均衡、自动扩展和自动备份，确保 99.9% 的正常运行时间，同时支持可扩展的科研项目操作。\n[项目名称隐去] | JavaScript, Node.js, Express.js, MongoDB\n2024年5月 – 2024年8月\n使用 JavaScript 开发了前端，结合 DOM 操作和事件处理实现了动态内容更新的交互功能，提供了流畅的用户界面。\n为 Kanban 用户界面设计了课程管理系统，利用 React.js 和 Redux 优化状态管理和组件结构，将前端页面加载时间缩短了 35",
+      "vector": [
+        0.74902,
+        0.968627,
+        0.462745,
+        0.713725,
+        0.007843,
+        0.2,
+        0.615686,
+        0.14902
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_11::embedding",
+      "chunk_id": "test_chunk.txt::chunk_11",
+      "chunk_index": 11,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "处理实现了动态内容更新的交互功能，提供了流畅的用户界面。\n为 Kanban 用户界面设计了课程管理系统，利用 React.js 和 Redux 优化状态管理和组件结构，将前端页面加载时间缩短了 35%。\n优化 RESTful API 缓存并集成了 MongoDB 以实现快速数据检索，通过周期性更新显著减少了数据库查询。\n通过实现异步处理 AJAX，并优化 Node.js 和 Express.js 中间件，减少了 API 响应时间 40%。\n[项目名称隐去] | Swift, Firebase\n2023年9月 – 2023年12月\n使用 Swift 开发了原生 iOS 应用，允许用户分享和发现独特的旅行体验，促进了实时内容分享的探索者社区。\n利用 Firestore Database 进行高效数据存储和用户生成内容的实时同步，开发了文本和照片共享的私人聊天功能以增强旅行帖子内的互动性。\n集成 Firebase Authentication，实现了安全的用户登录和账户管理，确保数据保护和平台间无缝用户体验，同时保护敏感用户信息免受未经授权的访问。\n实习与研究经历\n青藤公司\n人工",
+      "vector": [
+        0.745098,
+        0.435294,
+        0.909804,
+        0.921569,
+        0.462745,
+        0.172549,
+        0.317647,
+        0.74902
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_12::embedding",
+      "chunk_id": "test_chunk.txt::chunk_12",
+      "chunk_index": 12,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "性。\n集成 Firebase Authentication，实现了安全的用户登录和账户管理，确保数据保护和平台间无缝用户体验，同时保护敏感用户信息免受未经授权的访问。\n实习与研究经历\n青藤公司\n人工智能算法工程师，产品研发后端组\n中国北京 | 2024年3月 – 2024年7月\n领导由 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。\n构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。\n设计并开发了核心问答功能，同时实现了 BGE-M3 混合稀疏-密集检索、先进的嵌入技术以及重新排序算法，使相关内容准确率提高了 24.3%。\n数据挖掘与安全实验室\n研究员 & 第一作者\n中国北京 | 2022年9月 – 2024年7月\n研究方向包括 联邦学习 和 多视图多标签机器学习。\n精通 Python、PyTorch、Matlab 和 LaTex，并在优化和测试方法方面积累了专业知识。\n提出了 FMVML 方法，一种联邦框架，实现了跨视图特征融合和多标签语义表示，实验结果表明其",
+      "vector": [
+        0.380392,
+        0.631373,
+        0.607843,
+        0.172549,
+        0.062745,
+        0.607843,
+        0.258824,
+        0.160784
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_13::embedding",
+      "chunk_id": "test_chunk.txt::chunk_13",
+      "chunk_index": 13,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "精通 Python、PyTorch、Matlab 和 LaTex，并在优化和测试方法方面积累了专业知识。\n提出了 FMVML 方法，一种联邦框架，实现了跨视图特征融合和多标签语义表示，实验结果表明其性能显著优于所有现有的前沿方法。论文已被 IEEE 接收为第一作者。\n\n项目经验\n检索增强生成系统 (RAG)\n研究员 & 全栈工程师\n美国纽约 | 2024年9月 – 2024年12月\n独立设计并实现了混合检索框架，使用 Milvus 管理向量，结合 BGE-M3 实现统一嵌入，重点扩展 LLM 驱动的查询扩展和嵌入可视化。\n开发了基于 BGE 的重新排序模块以优化检索精度，在 MS MARCO 数据集上实现了前沿性能。\n构建了交互式 Flask-React 界面，为实时用户查询提供无缝可用性。\nDeepFake 检测网站\n研究员 & 全栈工程师\n美国纽约 | 2024年9月 – 2024年12月\n使用 OpenCV 从 FaceForensics DeepFake Detection 数据集提取图像，定制数据集并微调 Vision Transformer 模型用于图像检测，同时",
+      "vector": [
+        0.678431,
+        0.909804,
+        0.423529,
+        0.215686,
+        0.741176,
+        0.556863,
+        0.501961,
+        0.356863
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_14::embedding",
+      "chunk_id": "test_chunk.txt::chunk_14",
+      "chunk_index": 14,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "24年12月\n使用 OpenCV 从 FaceForensics DeepFake Detection 数据集提取图像，定制数据集并微调 Vision Transformer 模型用于图像检测，同时训练 VGG16 模型进行音频检测。\n基于 Django 开发了包含用户注册、邮箱验证和端到端检测功能的网站，并部署到 AWS EC2，实现高扩展性和可靠性，通过 Selenium 和 Postman 测试性能与功能。\n在敏捷开发环境中，使用 Jira 进行冲刺规划，并通过 Scrum 管理 5 人团队的工作流。\n基于百度地图 API 的旅行商算法实现\n网页设计师 & 全栈工程师\n中国北京 | 2022年9月 – 2022年12月\n开发了一款基于 百度地图 API 的智能地图应用，结合旅行商算法推荐多点导航的最优路线。\n使用 TypeScript 构建了全栈系统，集成了路径优化和位置标记功能，与标准地图解决方案相比节省了 31.7% 的时间，并提升了 22.3% 的性能。\n工作经历\nFluo AI（创业公司） | 洛杉矶, 加州\n联合创始人/软件工程师\n2023年12月 – 至今\n",
+      "vector": [
+        0.392157,
+        0.098039,
+        0.341176,
+        0.364706,
+        0.298039,
+        0.831373,
+        0.145098,
+        0.831373
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_15::embedding",
+      "chunk_id": "test_chunk.txt::chunk_15",
+      "chunk_index": 15,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "记功能，与标准地图解决方案相比节省了 31.7% 的时间，并提升了 22.3% 的性能。\n工作经历\nFluo AI（创业公司） | 洛杉矶, 加州\n联合创始人/软件工程师\n2023年12月 – 至今\n通过构建基于 AWS 的系统领导端到端 MVP 开发和站点部署，将开发周期时间减少了 30%，并通过数据驱动的迭代优化了资源使用。\n使用 AWS EC2 构建视频处理流水线，处理 8 个并发 Kinesis 视频流，并通过运动触发分析选择性路由到 TensorDock，将带宽成本减少了 80%。\n使用 AWS S3 高效管理数据，实现检测关键帧的快速存储和检索，并结合 DynamoDB、Amplify 和 Cognito 提供灵活的高性能事件记录和用户数据存储，支持响应式前端显示和复杂查询，响应时间低于 50 毫秒。\n构建基于 Multitech X-Dot 的车辆检测系统，利用红外传感器通过 Node-RED 调制解调器和 LoRa 通信连接到 AWS IoT Core，处理超过 5,000 次检测，将停车数据准确性提高了 35%。\n部署视频分析系统，使用视觉模型（YOLOv8",
+      "vector": [
+        0.776471,
+        0.968627,
+        0.815686,
+        0.913725,
+        0.109804,
+        0.321569,
+        0.352941,
+        0.101961
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_16::embedding",
+      "chunk_id": "test_chunk.txt::chunk_16",
+      "chunk_index": 16,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": "感器通过 Node-RED 调制解调器和 LoRa 通信连接到 AWS IoT Core，处理超过 5,000 次检测，将停车数据准确性提高了 35%。\n部署视频分析系统，使用视觉模型（YOLOv8、PaddleOCR、DeepFace）和 OpenAI CLIP 在 TensorDock 上运行，处理超过 5,000 条记录，实现 90%+ 准确率，并增强了用户体验的智能搜索功能。\n与 20 多个公寓综合体合作开展市场研究，识别安全问题和低效点，最终开发了一种由 AI 驱动的视频平台，可解决未经授权的访问问题并降低运营成本。\n与 3 名潜在客户和 1 个测试站点建立并维持关系，基于实际反馈提供及时支持和产品改进，实现了 100% 客户留存率并改进了产品市场匹配度。\n雪城大学网络物理系统实验室 | 雪城, 纽约\n软件开发员/研究助理\n2021年2月 – 2022年6月\n使用 C++ 收集了 500+ MB 的无人机电力数据，并利用 Pandas 和 Scikit-learn 实现了数据处理流水线，包括清洗、规范化和特征提取，将深度学习模型准确率提高了 15%。\n构建了 ROS",
+      "vector": [
+        0.886275,
+        0.639216,
+        0.188235,
+        0.043137,
+        0.74902,
+        0.062745,
+        0.066667,
+        0.956863
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_17::embedding",
+      "chunk_id": "test_chunk.txt::chunk_17",
+      "chunk_index": 17,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 500,
+      "content": " 收集了 500+ MB 的无人机电力数据，并利用 Pandas 和 Scikit-learn 实现了数据处理流水线，包括清洗、规范化和特征提取，将深度学习模型准确率提高了 15%。\n构建了 ROS-Ardupilot 的数据传输 Python 流水线，将延迟降低了 40%，提升了无人机操作效率。\n为 10+ 名研究生提供技术讲座，涉及 Ardupilot 系统、自动驾驶趋势和 PID 算法，推动了知识共享，并协助了 2 名新研究助理的入职培训。\n\n项目\n快速可靠的文件传输系统 | UDP/IP, TCP/IP, 多线程, AWS, FTP/SCP\n2023年9月 – 2023年10月\n开发了一种高吞吐量的 FTP 解决方案，结合多线程和基于 UDP/IP 的新分段方法，在 100 Mbps 网络上实现了 45+ MBps 的吞吐量和 1GB+ 文件传输，在 200 毫秒 RTT 和 20%+ 丢包率下运行。\n设计了具有位图分段和 TCP 风格累积 ACK 的可靠协议，管理了超过 83,000 个数据包的处理，降低了开销，并通过 MD5 校验和验证数据完整性。\n在 AWS 测",
+      "vector": [
+        0.019608,
+        0.792157,
+        0.403922,
+        0.058824,
+        0.686275,
+        0.866667,
+        0.462745,
+        0.556863
+      ]
+    },
+    {
+      "embedding_id": "test_chunk.txt::chunk_18::embedding",
+      "chunk_id": "test_chunk.txt::chunk_18",
+      "chunk_index": 18,
+      "source_filename": "test_chunk.txt",
+      "source_suffix": ".txt",
+      "char_count": 465,
+      "content": " 20%+ 丢包率下运行。\n设计了具有位图分段和 TCP 风格累积 ACK 的可靠协议，管理了超过 83,000 个数据包的处理，降低了开销，并通过 MD5 校验和验证数据完整性。\n在 AWS 测试环境中部署了 EC2 Ubuntu 实例和虚拟私有云 (VPC) 路由器，通过 tc 命令对 20 多种场景的性能指标（如 MTU、丢包率和 RTT）进行评估。\n安全分布式校园信息系统 | C++, Socket, UDP/TCP, 代理服务器\n2022年11月 – 2022年12月\n使用 C++ 和 TCP 套接字设计了代理服务器，支持分布式系统中客户端和部门服务器的间接通信，将直接服务器负载降低了 30%，并增强了系统安全性。\n通过 C++ 多线程和套接字编程优化中央服务器性能，支持来自多个客户端和服务器的并发请求处理，与单线程设计相比系统吞吐量提升了 35%。\n使用 C++ 和 UDP 套接字开发了分布式凭证验证系统，包含 1 个中央服务器和 3 个部门服务器，在多部门间学生信息处理的准确率达到了 99%。",
+      "vector": [
+        0.07451,
+        0.745098,
+        0.239216,
+        0.113725,
+        0.286275,
+        0.431373,
+        0.419608,
+        0.956863
+      ]
+    }
+  ]
+}

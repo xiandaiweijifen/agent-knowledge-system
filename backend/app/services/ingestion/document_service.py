@@ -9,20 +9,30 @@ RAW_DATA_DIR = Path("../data/raw")
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 CHUNK_DATA_DIR = Path("../data/chunks")
 CHUNK_DATA_DIR.mkdir(parents=True, exist_ok=True)
+LISTABLE_DOCUMENT_SUFFIXES = {".txt", ".md", ".pdf", ".docx"}
+
 
 def list_documents() -> list[dict]:
     """Return basic metadata for all uploaded documents."""
     documents = []
 
     for file_path in RAW_DATA_DIR.iterdir():
-        if file_path.is_file() and not file_path.name.startswith("."):
-            documents.append(
-                {
-                    "filename": file_path.name,
-                    "size_bytes": file_path.stat().st_size,
-                    "suffix": file_path.suffix,
-                }
-            )
+        if not file_path.is_file():
+            continue
+
+        if file_path.name.startswith("."):
+            continue
+
+        if file_path.suffix.lower() not in LISTABLE_DOCUMENT_SUFFIXES:
+            continue
+
+        documents.append(
+            {
+                "filename": file_path.name,
+                "size_bytes": file_path.stat().st_size,
+                "suffix": file_path.suffix,
+            }
+        )
 
     documents.sort(key=lambda item: item["filename"])
     return documents
@@ -94,6 +104,7 @@ def read_text_document(filename: str) -> dict:
         "content": content,
     }
 
+
 def chunk_document(filename: str, chunk_size: int = 500, chunk_overlap: int = 100) -> dict:
     """Load a text document and split it into retrievable chunks."""
     document = read_text_document(filename)
@@ -112,6 +123,7 @@ def chunk_document(filename: str, chunk_size: int = 500, chunk_overlap: int = 10
         "chunk_count": len(chunks),
         "chunks": chunks,
     }
+
 
 def get_chunk_output_path(filename: str) -> Path:
     """Build the output path for persisted chunk data."""
@@ -153,6 +165,7 @@ def persist_document_chunks(
         "chunk_count": chunked_document["chunk_count"],
         "output_path": str(output_path),
     }
+
 
 def load_persisted_chunks(filename: str) -> dict:
     """Load persisted chunk data for a document."""

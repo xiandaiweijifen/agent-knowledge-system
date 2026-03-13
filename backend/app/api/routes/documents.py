@@ -8,8 +8,31 @@ from app.services.ingestion.document_service import (
     read_text_document,
     save_uploaded_document,
 )
+from app.services.indexing.embedding_service import (
+    load_persisted_embeddings,
+    persist_document_embeddings,
+)
 
 router = APIRouter(tags=["documents"])
+
+
+def raise_document_value_error(exc: ValueError) -> None:
+    """Map document service validation errors to HTTP responses."""
+    error_code = str(exc)
+
+    if error_code == "unsupported_file_type":
+        raise HTTPException(
+            status_code=400,
+            detail="Only .txt and .md files are supported for preview right now",
+        )
+
+    if error_code == "text_decode_error":
+        raise HTTPException(
+            status_code=400,
+            detail="Document must be UTF-8 encoded for text preview right now",
+        )
+
+    raise HTTPException(status_code=400, detail=error_code)
 
 
 @router.get("/documents")
@@ -27,11 +50,8 @@ def get_document_content(filename: str):
         return read_text_document(filename)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Document not found")
-    except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="Only .txt and .md files are supported for preview right now",
-        )
+    except ValueError as exc:
+        raise_document_value_error(exc)
 
 
 @router.post("/documents/upload")
@@ -49,6 +69,7 @@ async def upload_document(file: UploadFile = File(...)):
         "message": "File uploaded successfully",
     }
 
+
 @router.get("/documents/{filename}/chunks")
 def get_document_chunks(
     filename: str,
@@ -64,13 +85,9 @@ def get_document_chunks(
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Document not found")
     except ValueError as exc:
-        if str(exc) == "unsupported_file_type":
-            raise HTTPException(
-                status_code=400,
-                detail="Only .txt and .md files are supported for preview right now",
-            )
-        raise HTTPException(status_code=400, detail=str(exc))
-    
+        raise_document_value_error(exc)
+
+
 @router.post("/documents/{filename}/chunks/persist")
 def persist_chunks(
     filename: str,
@@ -86,16 +103,33 @@ def persist_chunks(
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Document not found")
     except ValueError as exc:
-        if str(exc) == "unsupported_file_type":
-            raise HTTPException(
-                status_code=400,
-                detail="Only .txt and .md files are supported for preview right now",
-            )
-        raise HTTPException(status_code=400, detail=str(exc))
-    
+        raise_document_value_error(exc)
+
+
 @router.get("/documents/{filename}/chunks/persisted")
 def get_persisted_chunks(filename: str):
     try:
         return load_persisted_chunks(filename)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Persisted chunk file not found")
+
+
+@router.post("/documents/{filename}/embeddings/persist")
+def persist_embeddings(filename: str):
+    try:
+        return persist_document_embeddings(filename)
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Persisted chunk file not found. Generate chunks first",
+        )
+    except ValueError as exc:
+        raise_document_value_error(exc)
+
+
+@router.get("/documents/{filename}/embeddings/persisted")
+def get_persisted_embeddings(filename: str):
+    try:
+        return load_persisted_embeddings(filename)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Persisted embedding file not found")
