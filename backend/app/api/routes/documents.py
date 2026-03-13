@@ -1,31 +1,17 @@
-from pathlib import Path
-
 from fastapi import APIRouter, File, HTTPException, UploadFile
+
+from app.services.ingestion.document_service import (
+    list_documents,
+    read_text_document,
+    save_uploaded_document,
+)
 
 router = APIRouter(tags=["documents"])
 
-RAW_DATA_DIR = Path("../data/raw")
-RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-TEXT_FILE_SUFFIXES = {".txt", ".md"}
-
 
 @router.get("/documents")
-def list_documents():
-    documents = []
-
-    for file_path in RAW_DATA_DIR.iterdir():
-        if file_path.is_file():
-            documents.append(
-                {
-                    "filename": file_path.name,
-                    "size_bytes": file_path.stat().st_size,
-                    "suffix": file_path.suffix,
-                }
-            )
-
-    documents.sort(key=lambda item: item["filename"])
-
+def get_documents():
+    documents = list_documents()
     return {
         "count": len(documents),
         "documents": documents,
@@ -33,39 +19,29 @@ def list_documents():
 
 
 @router.get("/documents/{filename}")
-def read_document(filename: str):
-    file_path = RAW_DATA_DIR / filename
-
-    if not file_path.exists() or not file_path.is_file():
+def get_document_content(filename: str):
+    try:
+        return read_text_document(filename)
+    except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Document not found")
-
-    if file_path.suffix not in TEXT_FILE_SUFFIXES:
+    except ValueError:
         raise HTTPException(
             status_code=400,
             detail="Only .txt and .md files are supported for preview right now",
         )
 
-    content = file_path.read_text(encoding="utf-8")
-
-    return {
-        "filename": file_path.name,
-        "suffix": file_path.suffix,
-        "size_bytes": file_path.stat().st_size,
-        "content": content,
-    }
-
 
 @router.post("/documents/upload")
 async def upload_document(file: UploadFile = File(...)):
-    file_path = RAW_DATA_DIR / file.filename
-
+    # Read request payload once before persisting it.
     content = await file.read()
-    file_path.write_bytes(content)
+
+    saved_document = save_uploaded_document(file.filename, content)
 
     return {
-        "filename": file.filename,
+        "filename": saved_document["filename"],
         "content_type": file.content_type,
-        "size_bytes": len(content),
-        "saved_path": str(file_path),
+        "size_bytes": saved_document["size_bytes"],
+        "saved_path": saved_document["saved_path"],
         "message": "File uploaded successfully",
     }
