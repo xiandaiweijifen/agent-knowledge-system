@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.services.ingestion.document_service import (
+    chunk_document,
     list_documents,
     read_text_document,
     save_uploaded_document,
@@ -45,3 +46,25 @@ async def upload_document(file: UploadFile = File(...)):
         "saved_path": saved_document["saved_path"],
         "message": "File uploaded successfully",
     }
+
+@router.get("/documents/{filename}/chunks")
+def get_document_chunks(
+    filename: str,
+    chunk_size: int = 500,
+    chunk_overlap: int = 100,
+):
+    try:
+        return chunk_document(
+            filename=filename,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Document not found")
+    except ValueError as exc:
+        if str(exc) == "unsupported_file_type":
+            raise HTTPException(
+                status_code=400,
+                detail="Only .txt and .md files are supported for preview right now",
+            )
+        raise HTTPException(status_code=400, detail=str(exc))

@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 
 from app.services.ingestion.text_extractor import extract_text_from_file
-
+from app.services.ingestion.chunker import chunk_text
 
 RAW_DATA_DIR = Path("../data/raw")
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -90,4 +90,21 @@ def read_text_document(filename: str) -> dict:
         "suffix": file_path.suffix,
         "size_bytes": file_path.stat().st_size,
         "content": content,
+    }
+
+def chunk_document(filename: str, chunk_size: int = 500, chunk_overlap: int = 100) -> dict:
+    """Load a text document and split it into retrievable chunks."""
+    document = read_text_document(filename)
+    chunks = chunk_text(
+        text=document["content"],
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+
+    return {
+        "filename": document["filename"],
+        "suffix": document["suffix"],
+        "size_bytes": document["size_bytes"],
+        "chunk_count": len(chunks),
+        "chunks": chunks,
     }
