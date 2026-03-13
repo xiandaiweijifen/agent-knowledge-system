@@ -99,6 +99,8 @@ def chunk_document(filename: str, chunk_size: int = 500, chunk_overlap: int = 10
         text=document["content"],
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
+        source_filename=document["filename"],
+        source_suffix=document["suffix"],
     )
 
     return {

@@ -1,4 +1,10 @@
-def chunk_text(text: str, chunk_size: int = 500, chunk_overlap: int = 100) -> list[dict]:
+def chunk_text(
+    text: str,
+    chunk_size: int = 500,
+    chunk_overlap: int = 100,
+    source_filename: str | None = None,
+    source_suffix: str | None = None,
+) -> list[dict]:
     """Split text into overlapping character-based chunks."""
     if chunk_size <= 0:
         raise ValueError("chunk_size_must_be_positive")
@@ -24,9 +30,13 @@ def chunk_text(text: str, chunk_size: int = 500, chunk_overlap: int = 100) -> li
 
         chunks.append(
             {
+                "chunk_id": f"{source_filename or 'document'}::chunk_{chunk_index}",
                 "chunk_index": chunk_index,
+                "source_filename": source_filename,
+                "source_suffix": source_suffix,
                 "start_char": start,
                 "end_char": end,
+                "char_count": len(chunk_content),
                 "content": chunk_content,
             }
         )
