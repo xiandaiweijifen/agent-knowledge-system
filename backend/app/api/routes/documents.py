@@ -3,6 +3,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from app.services.ingestion.document_service import (
     chunk_document,
     list_documents,
+    load_persisted_chunks,
     persist_document_chunks,
     read_text_document,
     save_uploaded_document,
@@ -91,3 +92,10 @@ def persist_chunks(
                 detail="Only .txt and .md files are supported for preview right now",
             )
         raise HTTPException(status_code=400, detail=str(exc))
+    
+@router.get("/documents/{filename}/chunks/persisted")
+def get_persisted_chunks(filename: str):
+    try:
+        return load_persisted_chunks(filename)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Persisted chunk file not found")

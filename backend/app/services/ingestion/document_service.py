@@ -153,3 +153,12 @@ def persist_document_chunks(
         "chunk_count": chunked_document["chunk_count"],
         "output_path": str(output_path),
     }
+
+def load_persisted_chunks(filename: str) -> dict:
+    """Load persisted chunk data for a document."""
+    chunk_file_path = get_chunk_output_path(filename)
+
+    if not chunk_file_path.exists() or not chunk_file_path.is_file():
+        raise FileNotFoundError(filename)
+
+    return json.loads(chunk_file_path.read_text(encoding="utf-8"))
