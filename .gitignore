@@ -24,6 +24,8 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/chunks/*
+!data/chunks/.gitkeep
 
 # Python test / cache
 .pytest_cache/
@@ -32,3 +34,4 @@ data/processed/*
 # Build
 build/
 coverage/
+

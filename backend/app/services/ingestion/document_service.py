@@ -1,19 +1,21 @@
 from pathlib import Path
 import re
+import json
 
 from app.services.ingestion.text_extractor import extract_text_from_file
 from app.services.ingestion.chunker import chunk_text
 
 RAW_DATA_DIR = Path("../data/raw")
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
+CHUNK_DATA_DIR = Path("../data/chunks")
+CHUNK_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 def list_documents() -> list[dict]:
     """Return basic metadata for all uploaded documents."""
     documents = []
 
     for file_path in RAW_DATA_DIR.iterdir():
-        if file_path.is_file():
+        if file_path.is_file() and not file_path.name.startswith("."):
             documents.append(
                 {
                     "filename": file_path.name,
@@ -109,4 +111,45 @@ def chunk_document(filename: str, chunk_size: int = 500, chunk_overlap: int = 10
         "size_bytes": document["size_bytes"],
         "chunk_count": len(chunks),
         "chunks": chunks,
+    }
+
+def get_chunk_output_path(filename: str) -> Path:
+    """Build the output path for persisted chunk data."""
+    document_name = Path(filename).stem
+    return CHUNK_DATA_DIR / f"{document_name}.chunks.json"
+
+
+def persist_document_chunks(
+    filename: str,
+    chunk_size: int = 500,
+    chunk_overlap: int = 100,
+) -> dict:
+    """Generate chunks for a document and persist them as JSON."""
+    chunked_document = chunk_document(
+        filename=filename,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+
+    output_path = get_chunk_output_path(filename)
+
+    output_payload = {
+        "filename": chunked_document["filename"],
+        "suffix": chunked_document["suffix"],
+        "size_bytes": chunked_document["size_bytes"],
+        "chunk_count": chunked_document["chunk_count"],
+        "chunk_size": chunk_size,
+        "chunk_overlap": chunk_overlap,
+        "chunks": chunked_document["chunks"],
+    }
+
+    output_path.write_text(
+        json.dumps(output_payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+    return {
+        "filename": chunked_document["filename"],
+        "chunk_count": chunked_document["chunk_count"],
+        "output_path": str(output_path),
     }
