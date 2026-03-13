@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.services.retrieval.retrieval_service import retrieve_relevant_chunks
+from app.services.agent.query_service import run_query
 
 router = APIRouter(tags=["query"])
 
@@ -15,9 +15,9 @@ class QueryRequest(BaseModel):
 @router.post("/query")
 def query_knowledge(request: QueryRequest):
     try:
-        retrieval_result = retrieve_relevant_chunks(
+        return run_query(
             filename=request.filename,
-            query_text=request.question,
+            question=request.question,
             top_k=request.top_k,
         )
     except FileNotFoundError:
@@ -27,10 +27,3 @@ def query_knowledge(request: QueryRequest):
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-
-    return {
-        "filename": retrieval_result["filename"],
-        "question": retrieval_result["question"],
-        "answer": "Retrieval completed. LLM answer generation is not implemented yet",
-        "retrieval": retrieval_result,
-    }
