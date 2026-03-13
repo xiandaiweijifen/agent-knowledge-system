@@ -1,11 +1,11 @@
 from pathlib import Path
 import re
 
+from app.services.ingestion.text_extractor import extract_text_from_file
+
 
 RAW_DATA_DIR = Path("../data/raw")
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-TEXT_FILE_SUFFIXES = {".txt", ".md"}
 
 
 def list_documents() -> list[dict]:
@@ -83,10 +83,7 @@ def read_text_document(filename: str) -> dict:
     if not file_path.exists() or not file_path.is_file():
         raise FileNotFoundError(filename)
 
-    if file_path.suffix not in TEXT_FILE_SUFFIXES:
-        raise ValueError("unsupported_file_type")
-
-    content = file_path.read_text(encoding="utf-8")
+    content = extract_text_from_file(file_path)
 
     return {
         "filename": file_path.name,
