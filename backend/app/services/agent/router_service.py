@@ -4,7 +4,7 @@ from app.schemas.query import RouteDecision
 
 
 TOOL_ACTION_PATTERN = re.compile(
-    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete)\b",
+    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup)\b",
     re.IGNORECASE,
 )
 AMBIGUOUS_ACTION_PATTERN = re.compile(
@@ -12,7 +12,7 @@ AMBIGUOUS_ACTION_PATTERN = re.compile(
     re.IGNORECASE,
 )
 TOOL_TARGET_PATTERN = re.compile(
-    r"\b(ticket|incident|deployment|service|database|api|job|workflow|pipeline|record)\b",
+    r"\b(ticket|incident|deployment|service|database|api|job|workflow|pipeline|record|status|health|config|document|doc|docs)\b",
     re.IGNORECASE,
 )
 AMBIGUOUS_REFERENCE_PATTERN = re.compile(

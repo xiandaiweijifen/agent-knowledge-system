@@ -32,11 +32,19 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     },
 }
 ACTION_PATTERN = re.compile(
-    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete)\b",
+    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup)\b",
     re.IGNORECASE,
 )
 ENVIRONMENT_SEGMENT_PATTERN = re.compile(
     r"\s+\b(in|for)\s+(production|staging)\b",
+    re.IGNORECASE,
+)
+SEARCH_PREFIX_PATTERN = re.compile(
+    r"^(search|find|lookup|look up|show|inspect|query)\s+(docs?|documents?)\s+(for\s+)?",
+    re.IGNORECASE,
+)
+STATUS_PREFIX_PATTERN = re.compile(
+    r"^(check|show|inspect|query)\s+",
     re.IGNORECASE,
 )
 
@@ -216,19 +224,30 @@ def infer_tool_request(question: str) -> InferredToolRequest:
 
     lowered = normalized_question.lower()
     action_match = ACTION_PATTERN.search(lowered)
-    action = action_match.group(1).lower() if action_match else "execute"
+    action = action_match.group(1).lower() if action_match else "query"
 
     if "ticket" in lowered or "incident" in lowered:
         tool_name = "ticketing"
-    elif "status" in lowered:
+    elif any(token in lowered for token in ["status", "health", "config", "configuration"]):
         tool_name = "system_status"
+        action = "query"
     else:
         tool_name = "document_search"
+        action = "query"
 
-    if " for " in lowered:
-        target = normalized_question.split(" for ", maxsplit=1)[1].strip()
+    if tool_name == "ticketing":
+        if " for " in lowered:
+            target = normalized_question.split(" for ", maxsplit=1)[1].strip()
+        else:
+            target = normalized_question
+    elif tool_name == "system_status":
+        target = STATUS_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
+        if not target:
+            target = "agent-knowledge-system"
     else:
-        target = normalized_question
+        target = SEARCH_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
+        if not target:
+            target = normalized_question.strip(" ?.!") or "documents"
 
     return InferredToolRequest(
         tool_name=tool_name,

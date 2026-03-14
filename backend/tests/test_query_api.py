@@ -228,6 +228,12 @@ def test_route_request_classifies_tool_execution():
     assert decision.route_type == "tool_execution"
 
 
+def test_route_request_classifies_document_search_as_tool_execution():
+    decision = route_request("Search docs for RAG")
+
+    assert decision.route_type == "tool_execution"
+
+
 def test_route_request_classifies_clarification_needed():
     decision = route_request("Please do that for production")
 
@@ -381,6 +387,22 @@ def test_plan_tool_request_returns_structured_plan():
     assert response.target == "payment-service"
     assert response.arguments["severity"] == "high"
     assert response.arguments["environment"] == "production"
+
+
+def test_plan_tool_request_maps_search_queries_to_document_search():
+    response = plan_tool_request("Search docs for RAG architecture")
+
+    assert response.tool_name == "document_search"
+    assert response.action == "query"
+    assert response.target == "RAG architecture"
+
+
+def test_plan_tool_request_maps_status_queries_to_system_status():
+    response = plan_tool_request("Check system status")
+
+    assert response.tool_name == "system_status"
+    assert response.action == "query"
+    assert response.target == "system status"
 
 
 def test_query_tool_plan_endpoint_returns_plan():
