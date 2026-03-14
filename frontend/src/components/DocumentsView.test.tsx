@@ -8,6 +8,7 @@ describe("DocumentsView", () => {
   it("renders artifact readiness and triggers chunk persistence", async () => {
     const user = userEvent.setup();
     const onPersistChunks = vi.fn();
+    const onUploadFile = vi.fn();
 
     render(
       <DocumentsView
@@ -39,13 +40,16 @@ describe("DocumentsView", () => {
         embeddingArtifact={null}
         documentsBusy={false}
         artifactBusy={false}
+        uploadBusy={false}
         documentsError=""
         artifactMessage=""
+        uploadMessage=""
         onRefreshDocuments={vi.fn()}
         onSelectDocument={vi.fn()}
         onRefreshArtifacts={vi.fn()}
         onPersistChunks={onPersistChunks}
         onPersistEmbeddings={vi.fn()}
+        onUploadFile={onUploadFile}
       />,
     );
 
@@ -56,5 +60,11 @@ describe("DocumentsView", () => {
 
     await user.click(screen.getByRole("button", { name: "Persist Chunks" }));
     expect(onPersistChunks).toHaveBeenCalledTimes(1);
+
+    await user.upload(
+      screen.getByLabelText("Upload Document"),
+      new File(["hello"], "notes.md", { type: "text/markdown" }),
+    );
+    expect(onUploadFile).toHaveBeenCalledTimes(1);
   });
 });

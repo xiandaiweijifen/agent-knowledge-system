@@ -10,6 +10,7 @@ import {
   runDiagnostics as runDiagnosticsRequest,
   runEvaluation as runEvaluationRequest,
   runQuery as runQueryRequest,
+  uploadDocument as uploadDocumentRequest,
 } from "./api";
 import { DocumentsView } from "./components/DocumentsView";
 import { EvaluationView } from "./components/EvaluationView";
@@ -40,6 +41,8 @@ function App() {
   const [documentsBusy, setDocumentsBusy] = useState(false);
   const [artifactBusy, setArtifactBusy] = useState(false);
   const [artifactMessage, setArtifactMessage] = useState("");
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   const [queryFilename, setQueryFilename] = useState("");
   const [question, setQuestion] = useState("What is RAG?");
@@ -113,6 +116,24 @@ function App() {
       setDocumentsError(error instanceof Error ? error.message : "Failed to load documents");
     } finally {
       setDocumentsBusy(false);
+    }
+  }
+
+  async function uploadDocument(file: File) {
+    setUploadBusy(true);
+    setUploadMessage("");
+    setDocumentsError("");
+
+    try {
+      const payload = await uploadDocumentRequest(file);
+      setUploadMessage(`Uploaded ${payload.filename} successfully.`);
+      await loadDocuments();
+      setSelectedFilename(payload.filename);
+      setQueryFilename(payload.filename);
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : "Failed to upload document");
+    } finally {
+      setUploadBusy(false);
     }
   }
 
@@ -298,13 +319,22 @@ function App() {
           embeddingArtifact={embeddingArtifact}
           documentsBusy={documentsBusy}
           artifactBusy={artifactBusy}
+          uploadBusy={uploadBusy}
           documentsError={documentsError}
           artifactMessage={artifactMessage}
+          uploadMessage={uploadMessage}
           onRefreshDocuments={() => void loadDocuments()}
           onSelectDocument={setSelectedFilename}
           onRefreshArtifacts={() => void loadArtifactStatus(selectedFilename)}
           onPersistChunks={() => void persistChunks()}
           onPersistEmbeddings={() => void persistEmbeddings()}
+          onUploadFile={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void uploadDocument(file);
+            }
+            event.target.value = "";
+          }}
         />
       )}
 

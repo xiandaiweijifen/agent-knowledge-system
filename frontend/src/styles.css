@@ -266,6 +266,29 @@ textarea {
   gap: 12px;
 }
 
+.upload-dropzone {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 18px;
+  border: 1px dashed rgba(159, 58, 29, 0.35);
+  border-radius: 18px;
+  background: rgba(255, 248, 240, 0.82);
+  cursor: pointer;
+}
+
+.upload-dropzone strong {
+  font-size: 1rem;
+}
+
+.upload-dropzone small {
+  color: var(--muted);
+}
+
+.upload-dropzone input {
+  margin-top: 6px;
+}
+
 .document-card {
   display: grid;
   gap: 4px;

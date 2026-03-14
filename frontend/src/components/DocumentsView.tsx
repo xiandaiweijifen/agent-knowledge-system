@@ -1,3 +1,5 @@
+import type { ChangeEvent } from "react";
+
 import { formatBytes, formatTimestamp } from "../format";
 import type {
   DocumentItem,
@@ -14,13 +16,16 @@ type DocumentsViewProps = {
   embeddingArtifact: PersistedEmbeddingDocument | null;
   documentsBusy: boolean;
   artifactBusy: boolean;
+  uploadBusy: boolean;
   documentsError: string;
   artifactMessage: string;
+  uploadMessage: string;
   onRefreshDocuments: () => void;
   onSelectDocument: (filename: string) => void;
   onRefreshArtifacts: () => void;
   onPersistChunks: () => void;
   onPersistEmbeddings: () => void;
+  onUploadFile: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
 export function DocumentsView({
@@ -31,13 +36,16 @@ export function DocumentsView({
   embeddingArtifact,
   documentsBusy,
   artifactBusy,
+  uploadBusy,
   documentsError,
   artifactMessage,
+  uploadMessage,
   onRefreshDocuments,
   onSelectDocument,
   onRefreshArtifacts,
   onPersistChunks,
   onPersistEmbeddings,
+  onUploadFile,
 }: DocumentsViewProps) {
   return (
     <section className="panel-grid">
@@ -48,6 +56,20 @@ export function DocumentsView({
             Refresh
           </button>
         </div>
+        <label className="upload-dropzone">
+          <span className="section-label">Upload Document</span>
+          <strong>Add a .txt or .md file</strong>
+          <small>The backend will persist it under the raw document store.</small>
+          <input
+            type="file"
+            accept=".txt,.md,text/plain,text/markdown"
+            aria-label="Upload Document"
+            onChange={onUploadFile}
+            disabled={uploadBusy}
+          />
+        </label>
+        {uploadBusy && <p className="status">Uploading document...</p>}
+        {uploadMessage && <p className="status">{uploadMessage}</p>}
         {documentsBusy && <p className="status">Loading documents...</p>}
         {documentsError && <p className="error">{documentsError}</p>}
         <div className="document-list">

@@ -18,6 +18,14 @@ export type DocumentPreview = {
   content: string;
 };
 
+export type UploadDocumentResponse = {
+  filename: string;
+  content_type: string | null;
+  size_bytes: number;
+  saved_path: string;
+  message: string;
+};
+
 export type PersistedChunkDocument = {
   filename: string;
   suffix: string;
