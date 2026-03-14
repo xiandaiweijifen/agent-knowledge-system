@@ -18,8 +18,13 @@ def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
     embedding_payload = {
         "filename": "sample.txt",
         "suffix": ".txt",
+        "embedding_provider": "mock",
         "embedding_model": "mock-embedding-v1",
         "vector_dim": 8,
+        "source_path": "../data/raw/sample.txt",
+        "source_chunk_path": "../data/chunks/sample.chunks.json",
+        "created_at": "2026-03-14T00:00:00+00:00",
+        "pipeline_version": "indexing-v1",
         "chunk_count": 2,
         "embeddings": [
             {
@@ -66,5 +71,12 @@ def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
     assert payload["answer_source"] == "fallback"
     assert payload["model"] == "local-fallback"
     assert payload["retrieval"]["top_k"] == 1
+    assert payload["retrieval"]["embedding_provider"] == "mock"
+    assert payload["retrieval"]["embedding_model"] == "mock-embedding-v1"
+    assert payload["retrieval"]["vector_dim"] == 8
+    assert payload["retrieval"]["query_embedding_provider"] == "mock"
+    assert payload["retrieval"]["query_embedding_model"] == "mock-embedding-v1"
+    assert payload["retrieval"]["retrieved_at"]
+    assert payload["retrieval"]["retrieval_latency_ms"] >= 0
     assert len(payload["retrieval"]["matches"]) == 1
     assert payload["retrieval"]["matches"][0]["chunk_id"] == "sample.txt::chunk_0"

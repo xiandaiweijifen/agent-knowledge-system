@@ -19,9 +19,15 @@ class RetrievedChunkMatch(BaseModel):
 
 class RetrievalResult(BaseModel):
     filename: str
+    embedding_provider: str
     embedding_model: str
+    vector_dim: int
     question: str
     top_k: int
+    retrieved_at: str
+    retrieval_latency_ms: float
+    query_embedding_provider: str
+    query_embedding_model: str
     matches: list[RetrievedChunkMatch] = Field(default_factory=list)
 
 

@@ -158,34 +158,52 @@ def generate_query_embedding(
     embedding_provider: str,
     embedding_model: str,
     vector_dim: int,
-) -> list[float]:
+) -> tuple[str, str, list[float]]:
     """Generate a query embedding that matches the persisted document provider."""
     normalized_provider = embedding_provider.strip().lower()
 
     if normalized_provider in {"mock", "mock_fallback"}:
-        return build_mock_embedding(question, vector_dim=vector_dim)
+        return "mock", MOCK_EMBEDDING_MODEL, build_mock_embedding(
+            question,
+            vector_dim=vector_dim,
+        )
 
     if normalized_provider == "openai":
         if not settings.openai_api_key:
-            return build_mock_embedding(question, vector_dim=vector_dim)
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embedding(
+                question,
+                vector_dim=vector_dim,
+            )
 
         try:
             _, vectors = build_openai_embeddings([question], model_name=embedding_model)
-            return vectors[0]
+            return "openai", embedding_model, vectors[0]
         except (httpx.HTTPError, KeyError, TypeError, ValueError, IndexError):
-            return build_mock_embedding(question, vector_dim=vector_dim)
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embedding(
+                question,
+                vector_dim=vector_dim,
+            )
 
     if normalized_provider == "gemini":
         if not settings.gemini_api_key:
-            return build_mock_embedding(question, vector_dim=vector_dim)
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embedding(
+                question,
+                vector_dim=vector_dim,
+            )
 
         try:
             _, vectors = build_gemini_embeddings([question], model_name=embedding_model)
-            return vectors[0]
+            return "gemini", embedding_model, vectors[0]
         except (httpx.HTTPError, KeyError, TypeError, ValueError, IndexError):
-            return build_mock_embedding(question, vector_dim=vector_dim)
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embedding(
+                question,
+                vector_dim=vector_dim,
+            )
 
-    return build_mock_embedding(question, vector_dim=vector_dim)
+    return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embedding(
+        question,
+        vector_dim=vector_dim,
+    )
 
 
 def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:
