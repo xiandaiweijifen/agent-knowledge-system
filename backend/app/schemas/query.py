@@ -7,6 +7,13 @@ class QueryRequest(BaseModel):
     top_k: int = 3
 
 
+class QueryDiagnosticsRequest(BaseModel):
+    filename: str
+    question: str
+    top_k: int = 3
+    candidate_count: int = 10
+
+
 class RetrievedChunkMatch(BaseModel):
     chunk_id: str
     chunk_index: int
@@ -42,3 +49,19 @@ class QueryResponse(BaseModel):
     chat_provider: str
     chat_model: str
     retrieval: RetrievalResult
+
+
+class RetrievalDiagnosticsSummary(BaseModel):
+    total_scored_chunks: int
+    returned_candidate_count: int
+    max_score: float
+    min_score: float
+    mean_score: float
+
+
+class QueryDiagnosticsResponse(BaseModel):
+    filename: str
+    question: str
+    retrieval: RetrievalResult
+    diagnostics: RetrievalDiagnosticsSummary
+    candidates: list[RetrievedChunkMatch] = Field(default_factory=list)
