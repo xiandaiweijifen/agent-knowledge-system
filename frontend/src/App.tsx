@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+﻿import { FormEvent, useEffect, useState } from "react";
 import {
   deleteDocument as deleteDocumentRequest,
   fetchDocumentPreview,
@@ -152,6 +152,24 @@ function App() {
     void loadArtifactStatus(selectedFilename);
   }, [selectedFilename]);
 
+  function resetQueryOutputs() {
+    setQueryResult(null);
+    setAgentQueryResult(null);
+    setDiagnosticsResult(null);
+    setQueryError("");
+  }
+
+  function handleSelectDocument(filename: string) {
+    setSelectedFilename(filename);
+    setQueryFilename(filename);
+    resetQueryOutputs();
+  }
+
+  function handleChangeQueryDocument(filename: string) {
+    setQueryFilename(filename);
+    resetQueryOutputs();
+  }
+
   async function loadDocuments() {
     setDocumentsBusy(true);
     setDocumentsError("");
@@ -195,6 +213,7 @@ function App() {
       setPreview(null);
       setChunkArtifact(null);
       setEmbeddingArtifact(null);
+      resetQueryOutputs();
 
       const payload = await fetchDocuments();
       setDocuments(payload.documents);
@@ -514,9 +533,7 @@ function App() {
             <span>Provider Keys</span>
             <strong>
               {systemHealth
-                ? `Gemini ${systemHealth.providers.gemini_configured ? "on" : "off"} · OpenAI ${
-                    systemHealth.providers.openai_configured ? "on" : "off"
-                  }`
+                ? `Gemini ${systemHealth.providers.gemini_configured ? "on" : "off"} | OpenAI ${systemHealth.providers.openai_configured ? "on" : "off"}`
                 : "unavailable"}
             </strong>
           </div>
@@ -524,9 +541,7 @@ function App() {
             <span>Infra</span>
             <strong>
               {systemHealth
-                ? `DB ${systemHealth.storage.database_configured ? "on" : "off"} · Redis ${
-                    systemHealth.storage.redis_configured ? "on" : "off"
-                  }`
+                ? `DB ${systemHealth.storage.database_configured ? "on" : "off"} | Redis ${systemHealth.storage.redis_configured ? "on" : "off"}`
                 : "unavailable"}
             </strong>
           </div>
@@ -570,7 +585,7 @@ function App() {
           artifactMessage={artifactMessage}
           uploadMessage={uploadMessage}
           onRefreshDocuments={() => void loadDocuments()}
-          onSelectDocument={setSelectedFilename}
+          onSelectDocument={handleSelectDocument}
           onRefreshArtifacts={() => void loadArtifactStatus(selectedFilename)}
           onPersistChunks={() => void persistChunks()}
           onPersistEmbeddings={() => void persistEmbeddings()}
@@ -598,7 +613,7 @@ function App() {
           diagnosticsResult={diagnosticsResult}
           queryError={queryError}
           queryBusy={queryBusy}
-          onChangeDocument={setQueryFilename}
+          onChangeDocument={handleChangeQueryDocument}
           onChangeQuestion={setQuestion}
           onChangeTopK={setTopK}
           onClearDiagnostics={() => setDiagnosticsResult(null)}
@@ -638,3 +653,5 @@ function App() {
 }
 
 export default App;
+
+

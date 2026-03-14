@@ -1,4 +1,4 @@
-import type { FormEvent } from "react";
+﻿import type { FormEvent } from "react";
 
 import type {
   AgentEvalDatasetInfo,
@@ -81,6 +81,12 @@ export function EvaluationView({
       : evaluationMode === "agent-route"
         ? "Evaluate whether the router selects the correct workflow path."
         : "Evaluate whether the unified agent workflow ends in the expected state.";
+  const modeTitle =
+    evaluationMode === "retrieval"
+      ? "Benchmark Retrieval Quality"
+      : evaluationMode === "agent-route"
+        ? "Benchmark Routing Accuracy"
+        : "Benchmark Agent Workflow Outcomes";
 
   return (
     <section className="panel-grid">
@@ -88,13 +94,11 @@ export function EvaluationView({
         <div className="view-banner-content">
           <div>
             <span className="section-label">Evaluation Workspace</span>
-            <h2 className="view-banner-title">Benchmark Retrieval Quality</h2>
-            <p className="view-banner-copy">
-              Run curated datasets, inspect summary metrics, and review per-case ranking outcomes.
-            </p>
+            <h2 className="view-banner-title">{modeTitle}</h2>
+            <p className="view-banner-copy">{modeCopy}</p>
           </div>
           <div className="view-banner-meta">
-            <span>{datasets.length} datasets</span>
+            <span>{visibleDatasets.length} datasets</span>
             <span>{evaluationMode}</span>
             <span>{datasetName || "no dataset"}</span>
             <span>top-k {evalTopK}</span>
@@ -385,9 +389,11 @@ export function EvaluationView({
                   </header>
                   <p>{item.question}</p>
                   <div className="meta-row">
-                    <span>route {item.expected_route_type} → {item.actual_route_type}</span>
                     <span>
-                      status {item.expected_workflow_status} → {item.actual_workflow_status}
+                      route {item.expected_route_type} {"->"} {item.actual_route_type}
+                    </span>
+                    <span>
+                      status {item.expected_workflow_status} {"->"} {item.actual_workflow_status}
                     </span>
                     {item.filename ? <span>file {item.filename}</span> : null}
                   </div>
@@ -409,3 +415,5 @@ export function EvaluationView({
     </section>
   );
 }
+
+

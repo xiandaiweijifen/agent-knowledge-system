@@ -46,6 +46,7 @@ export function QueryView({
   onRunAgent,
   onRunDiagnostics,
 }: QueryViewProps) {
+  const hasDocument = documents.length > 0 && Boolean(queryFilename);
   const routeUsesFilename =
     agentQueryResult?.route.route_type === "knowledge_retrieval" && !!agentQueryResult.filename;
   const routeUsesRetrieval = !!agentQueryResult?.retrieval;
@@ -95,7 +96,11 @@ export function QueryView({
         <form className="stack-form" onSubmit={onSubmitQuery}>
           <label>
             Document
-            <select value={queryFilename} onChange={(event) => onChangeDocument(event.target.value)}>
+            <select
+              value={queryFilename}
+              onChange={(event) => onChangeDocument(event.target.value)}
+              disabled={documents.length === 0}
+            >
               {documents.map((item) => (
                 <option key={item.filename} value={item.filename}>
                   {item.filename}
@@ -133,17 +138,30 @@ export function QueryView({
             />
           </label>
           <div className="button-row">
-            <button type="submit" className="primary-button" disabled={queryBusy}>
+            <button type="submit" className="primary-button" disabled={queryBusy || !hasDocument}>
               Run Query
             </button>
-            <button type="button" className="secondary-button" disabled={queryBusy} onClick={onRunDiagnostics}>
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={queryBusy || !hasDocument}
+              onClick={onRunDiagnostics}
+            >
               Run Diagnostics
             </button>
-            <button type="button" className="ghost-button" disabled={queryBusy} onClick={onRunAgent}>
+            <button
+              type="button"
+              className="ghost-button"
+              disabled={queryBusy || !hasDocument}
+              onClick={onRunAgent}
+            >
               Run Agent
             </button>
           </div>
         </form>
+        {!hasDocument && (
+          <p className="muted">Upload or select a document before running retrieval or agent queries.</p>
+        )}
         {queryBusy && <p className="status">Running query workflow...</p>}
         {queryError && <p className="error">{queryError}</p>}
       </article>
@@ -255,27 +273,27 @@ export function QueryView({
                   <p className="subsection-copy">{agentQueryResult.tool_execution.result_summary}</p>
                   {agentQueryResult.tool_execution.tool_name === "ticketing" &&
                     agentQueryResult.tool_execution.action !== "list" && (
-                    <div className="ticketing-highlight">
-                      <div className="trace-grid">
-                        <div>
-                          <span className="trace-label">Ticket Id</span>
-                          <strong>{agentQueryResult.tool_execution.output.ticket_id ?? "n/a"}</strong>
-                        </div>
-                        <div>
-                          <span className="trace-label">Status</span>
-                          <strong>{agentQueryResult.tool_execution.output.status ?? "n/a"}</strong>
-                        </div>
-                        <div>
-                          <span className="trace-label">Severity</span>
-                          <strong>{agentQueryResult.tool_execution.output.severity ?? "n/a"}</strong>
-                        </div>
-                        <div>
-                          <span className="trace-label">Environment</span>
-                          <strong>{agentQueryResult.tool_execution.output.environment ?? "n/a"}</strong>
+                      <div className="ticketing-highlight">
+                        <div className="trace-grid">
+                          <div>
+                            <span className="trace-label">Ticket Id</span>
+                            <strong>{agentQueryResult.tool_execution.output.ticket_id ?? "n/a"}</strong>
+                          </div>
+                          <div>
+                            <span className="trace-label">Status</span>
+                            <strong>{agentQueryResult.tool_execution.output.status ?? "n/a"}</strong>
+                          </div>
+                          <div>
+                            <span className="trace-label">Severity</span>
+                            <strong>{agentQueryResult.tool_execution.output.severity ?? "n/a"}</strong>
+                          </div>
+                          <div>
+                            <span className="trace-label">Environment</span>
+                            <strong>{agentQueryResult.tool_execution.output.environment ?? "n/a"}</strong>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   {agentQueryResult.tool_execution.tool_name === "ticketing" &&
                     agentQueryResult.tool_execution.action === "list" && (
                       <div className="ticketing-highlight">
@@ -300,19 +318,21 @@ export function QueryView({
                         )}
                       </div>
                     )}
-                  {Object.keys(agentQueryResult.tool_execution.output).length > 0 && (
-                    <>
-                      <span className="section-label">Tool Output</span>
-                      <div className="tool-output-grid">
-                        {Object.entries(agentQueryResult.tool_execution.output).map(([key, value]) => (
-                          <article key={key} className="tool-output-card">
-                            <span className="trace-label">{key}</span>
-                            <strong>{value}</strong>
-                          </article>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                  {Object.keys(agentQueryResult.tool_execution.output).length > 0 &&
+                    !(agentQueryResult.tool_execution.tool_name === "ticketing" &&
+                      agentQueryResult.tool_execution.action === "list") && (
+                      <>
+                        <span className="section-label">Tool Output</span>
+                        <div className="tool-output-grid">
+                          {Object.entries(agentQueryResult.tool_execution.output).map(([key, value]) => (
+                            <article key={key} className="tool-output-card">
+                              <span className="trace-label">{key}</span>
+                              <strong>{value}</strong>
+                            </article>
+                          ))}
+                        </div>
+                      </>
+                    )}
                 </article>
               )}
 
