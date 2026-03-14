@@ -5,6 +5,7 @@ import {
   fetchEvaluationDatasets,
   fetchPersistedChunks,
   fetchPersistedEmbeddings,
+  fetchSystemHealth,
   persistChunks as persistChunksRequest,
   persistEmbeddings as persistEmbeddingsRequest,
   runDiagnostics as runDiagnosticsRequest,
@@ -26,6 +27,7 @@ import type {
   PersistedChunkDocument,
   PersistedEmbeddingDocument,
   QueryResponse,
+  SystemHealthResponse,
   ViewKey,
 } from "./types";
 
@@ -43,6 +45,8 @@ function App() {
   const [artifactMessage, setArtifactMessage] = useState("");
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [systemHealth, setSystemHealth] = useState<SystemHealthResponse | null>(null);
+  const [systemHealthError, setSystemHealthError] = useState("");
 
   const [queryFilename, setQueryFilename] = useState("");
   const [question, setQuestion] = useState("What is RAG?");
@@ -80,6 +84,7 @@ function App() {
     }) ?? [];
 
   useEffect(() => {
+    void loadSystemHealth();
     void loadDocuments();
     void loadDatasets();
   }, []);
@@ -116,6 +121,18 @@ function App() {
       setDocumentsError(error instanceof Error ? error.message : "Failed to load documents");
     } finally {
       setDocumentsBusy(false);
+    }
+  }
+
+  async function loadSystemHealth() {
+    setSystemHealthError("");
+
+    try {
+      const payload = await fetchSystemHealth();
+      setSystemHealth(payload);
+    } catch (error) {
+      setSystemHealth(null);
+      setSystemHealthError(error instanceof Error ? error.message : "Failed to load system status");
     }
   }
 
@@ -319,6 +336,52 @@ function App() {
           </div>
         </div>
       </header>
+
+      <section className="status-banner">
+        <div className="status-pill">
+          <span>Backend</span>
+          <strong>{systemHealth?.status ?? "unknown"}</strong>
+        </div>
+        <div className="status-pill">
+          <span>Environment</span>
+          <strong>{systemHealth?.app_env ?? "unavailable"}</strong>
+        </div>
+        <div className="status-pill">
+          <span>Embedding</span>
+          <strong>
+            {systemHealth
+              ? `${systemHealth.embedding_provider} / ${systemHealth.embedding_model}`
+              : "unavailable"}
+          </strong>
+        </div>
+        <div className="status-pill">
+          <span>Chat</span>
+          <strong>
+            {systemHealth ? `${systemHealth.chat_provider} / ${systemHealth.chat_model}` : "unavailable"}
+          </strong>
+        </div>
+        <div className="status-pill">
+          <span>Provider Keys</span>
+          <strong>
+            {systemHealth
+              ? `Gemini ${systemHealth.providers.gemini_configured ? "on" : "off"} · OpenAI ${
+                  systemHealth.providers.openai_configured ? "on" : "off"
+                }`
+              : "unavailable"}
+          </strong>
+        </div>
+        <div className="status-pill">
+          <span>Infra</span>
+          <strong>
+            {systemHealth
+              ? `DB ${systemHealth.storage.database_configured ? "on" : "off"} · Redis ${
+                  systemHealth.storage.redis_configured ? "on" : "off"
+                }`
+              : "unavailable"}
+          </strong>
+        </div>
+      </section>
+      {systemHealthError && <p className="error">{systemHealthError}</p>}
 
       <nav className="tab-row" aria-label="Views">
         {views.map((view) => (

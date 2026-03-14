@@ -144,6 +144,36 @@ textarea {
   overflow-x: auto;
 }
 
+.status-banner {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.status-pill {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: var(--shadow);
+}
+
+.status-pill span {
+  display: block;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+}
+
+.status-pill strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
 .tab-button {
   min-width: 220px;
   padding: 16px 18px;
@@ -547,6 +577,10 @@ textarea {
   .summary-strip {
     grid-template-columns: 1fr;
   }
+
+  .status-banner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -565,5 +599,9 @@ textarea {
 
   .tab-button {
     min-width: 190px;
+  }
+
+  .status-banner {
+    grid-template-columns: 1fr;
   }
 }

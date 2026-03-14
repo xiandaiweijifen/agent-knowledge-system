@@ -7,6 +7,7 @@ import type {
   PersistedChunkDocument,
   PersistedEmbeddingDocument,
   QueryResponse,
+  SystemHealthResponse,
   UploadDocumentResponse,
 } from "./types";
 
@@ -29,6 +30,10 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function fetchDocuments() {
   return apiFetch<DocumentListResponse>("/api/documents");
+}
+
+export function fetchSystemHealth() {
+  return apiFetch<SystemHealthResponse>("/api/health/system");
 }
 
 export async function uploadDocument(file: File) {

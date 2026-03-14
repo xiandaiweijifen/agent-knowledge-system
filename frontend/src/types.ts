@@ -26,6 +26,23 @@ export type UploadDocumentResponse = {
   message: string;
 };
 
+export type SystemHealthResponse = {
+  status: string;
+  app_env: string;
+  embedding_provider: string;
+  embedding_model: string;
+  chat_provider: string;
+  chat_model: string;
+  providers: {
+    gemini_configured: boolean;
+    openai_configured: boolean;
+  };
+  storage: {
+    database_configured: boolean;
+    redis_configured: boolean;
+  };
+};
+
 export type PersistedChunkDocument = {
   filename: string;
   suffix: string;
