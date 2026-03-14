@@ -1,5 +1,6 @@
 import json
 
+from app.core.config import settings
 from app.services.indexing import embedding_service
 from app.services.ingestion import document_service
 
@@ -15,6 +16,7 @@ def test_persist_document_embeddings_creates_embedding_artifact(
 
     monkeypatch.setattr(document_service, "CHUNK_DATA_DIR", chunk_dir)
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
+    monkeypatch.setattr(settings, "embedding_provider", "mock")
 
     chunk_payload = {
         "filename": "sample.txt",

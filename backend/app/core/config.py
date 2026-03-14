@@ -1,17 +1,31 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
     app_env: str = "development"
     app_host: str = "127.0.0.1"
     app_port: int = 8000
+    embedding_provider: str = "mock"
     openai_api_key: str = ""
     openai_chat_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
+    gemini_api_key: str = ""
+    gemini_embedding_model: str = "gemini-embedding-001"
     database_url: str = ""
     redis_url: str = ""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(
+            str(REPO_ROOT / ".env"),
+            str(BACKEND_ROOT / ".env"),
+        ),
+        extra="ignore",
+    )
 
 
 settings = Settings()

@@ -21,6 +21,10 @@ EMBEDDING_DATA_DIR.mkdir(parents=True, exist_ok=True)
 MOCK_EMBEDDING_MODEL = "mock-embedding-v1"
 MOCK_VECTOR_DIM = 8
 OPENAI_EMBEDDINGS_URL = "https://api.openai.com/v1/embeddings"
+GEMINI_EMBEDDINGS_URL_TEMPLATE = (
+    "https://generativelanguage.googleapis.com/v1beta/"
+    "models/{model_name}:batchEmbedContents"
+)
 EMBEDDING_PIPELINE_VERSION = "indexing-v1"
 
 
@@ -48,10 +52,14 @@ def build_mock_embeddings(texts: list[str], vector_dim: int = MOCK_VECTOR_DIM) -
     return [build_mock_embedding(text, vector_dim=vector_dim) for text in texts]
 
 
-def build_openai_embeddings(texts: list[str]) -> tuple[str, list[list[float]]]:
+def build_openai_embeddings(
+    texts: list[str],
+    model_name: str | None = None,
+) -> tuple[str, list[list[float]]]:
     """Generate embeddings from OpenAI for a batch of texts."""
+    resolved_model_name = model_name or settings.openai_embedding_model
     payload = {
-        "model": settings.openai_embedding_model,
+        "model": resolved_model_name,
         "input": texts,
     }
     headers = {
@@ -69,7 +77,47 @@ def build_openai_embeddings(texts: list[str]) -> tuple[str, list[list[float]]]:
     embedding_items = sorted(response_payload["data"], key=lambda item: item["index"])
     vectors = [item["embedding"] for item in embedding_items]
 
-    return settings.openai_embedding_model, vectors
+    return resolved_model_name, vectors
+
+
+def build_gemini_embeddings(
+    texts: list[str],
+    model_name: str | None = None,
+) -> tuple[str, list[list[float]]]:
+    """Generate embeddings from Gemini for a batch of texts."""
+    resolved_model_name = model_name or settings.gemini_embedding_model
+    request_items = []
+
+    for text in texts:
+        request_items.append(
+            {
+                "model": f"models/{resolved_model_name}",
+                "content": {
+                    "parts": [
+                        {
+                            "text": text,
+                        }
+                    ]
+                },
+            }
+        )
+
+    response = httpx.post(
+        GEMINI_EMBEDDINGS_URL_TEMPLATE.format(
+            model_name=resolved_model_name,
+        ),
+        headers={
+            "x-goog-api-key": settings.gemini_api_key,
+            "Content-Type": "application/json",
+        },
+        json={"requests": request_items},
+        timeout=30.0,
+    )
+    response.raise_for_status()
+    response_payload = response.json()
+    vectors = [item["values"] for item in response_payload["embeddings"]]
+
+    return resolved_model_name, vectors
 
 
 def generate_embedding_vectors(texts: list[str]) -> tuple[str, str, list[list[float]]]:
@@ -77,14 +125,67 @@ def generate_embedding_vectors(texts: list[str]) -> tuple[str, str, list[list[fl
     if not texts:
         return "mock", MOCK_EMBEDDING_MODEL, []
 
-    if not settings.openai_api_key:
+    provider = settings.embedding_provider.lower().strip()
+
+    if provider == "mock":
         return "mock", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts)
 
-    try:
-        model_name, vectors = build_openai_embeddings(texts)
-        return "openai", model_name, vectors
-    except (httpx.HTTPError, KeyError, TypeError, ValueError):
-        return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts)
+    if provider == "gemini":
+        if not settings.gemini_api_key:
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts)
+
+        try:
+            model_name, vectors = build_gemini_embeddings(texts)
+            return "gemini", model_name, vectors
+        except (httpx.HTTPError, KeyError, TypeError, ValueError):
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts)
+
+    if provider == "openai":
+        if not settings.openai_api_key:
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts)
+
+        try:
+            model_name, vectors = build_openai_embeddings(texts)
+            return "openai", model_name, vectors
+        except (httpx.HTTPError, KeyError, TypeError, ValueError):
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts)
+
+    raise ValueError("unsupported_embedding_provider")
+
+
+def generate_query_embedding(
+    question: str,
+    embedding_provider: str,
+    embedding_model: str,
+    vector_dim: int,
+) -> list[float]:
+    """Generate a query embedding that matches the persisted document provider."""
+    normalized_provider = embedding_provider.strip().lower()
+
+    if normalized_provider in {"mock", "mock_fallback"}:
+        return build_mock_embedding(question, vector_dim=vector_dim)
+
+    if normalized_provider == "openai":
+        if not settings.openai_api_key:
+            return build_mock_embedding(question, vector_dim=vector_dim)
+
+        try:
+            _, vectors = build_openai_embeddings([question], model_name=embedding_model)
+            return vectors[0]
+        except (httpx.HTTPError, KeyError, TypeError, ValueError, IndexError):
+            return build_mock_embedding(question, vector_dim=vector_dim)
+
+    if normalized_provider == "gemini":
+        if not settings.gemini_api_key:
+            return build_mock_embedding(question, vector_dim=vector_dim)
+
+        try:
+            _, vectors = build_gemini_embeddings([question], model_name=embedding_model)
+            return vectors[0]
+        except (httpx.HTTPError, KeyError, TypeError, ValueError, IndexError):
+            return build_mock_embedding(question, vector_dim=vector_dim)
+
+    return build_mock_embedding(question, vector_dim=vector_dim)
 
 
 def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:

@@ -3,7 +3,7 @@ from math import sqrt
 from app.schemas.indexing import PersistedEmbeddingDocument
 from app.schemas.query import RetrievalResult, RetrievedChunkMatch
 from app.services.indexing.embedding_service import (
-    build_mock_embedding,
+    generate_query_embedding,
     load_persisted_embeddings,
 )
 
@@ -40,8 +40,10 @@ def retrieve_relevant_chunks(
     embedding_payload = PersistedEmbeddingDocument.model_validate(
         load_persisted_embeddings(filename)
     )
-    query_vector = build_mock_embedding(
+    query_vector = generate_query_embedding(
         normalized_query,
+        embedding_provider=embedding_payload.embedding_provider,
+        embedding_model=embedding_payload.embedding_model,
         vector_dim=embedding_payload.vector_dim,
     )
 
