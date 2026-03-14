@@ -1,199 +1,30 @@
 import { FormEvent, useEffect, useState } from "react";
-
-type ViewKey = "documents" | "query" | "evaluation";
-
-type DocumentItem = {
-  filename: string;
-  size_bytes: number;
-  suffix: string;
-};
-
-type DocumentListResponse = {
-  count: number;
-  documents: DocumentItem[];
-};
-
-type DocumentPreview = {
-  filename: string;
-  suffix: string;
-  size_bytes: number;
-  content: string;
-};
-
-type PersistedChunkDocument = {
-  filename: string;
-  suffix: string;
-  source_path: string;
-  created_at: string;
-  pipeline_version: string;
-  chunk_strategy: string;
-  chunk_count: number;
-  chunk_size: number;
-  chunk_overlap: number;
-};
-
-type PersistedEmbeddingDocument = {
-  filename: string;
-  suffix: string;
-  source_path: string;
-  source_chunk_path: string;
-  created_at: string;
-  pipeline_version: string;
-  embedding_provider: string;
-  embedding_model: string;
-  vector_dim: number;
-  chunk_count: number;
-};
-
-type RetrievalMatch = {
-  chunk_id: string;
-  chunk_index: number;
-  source_filename: string;
-  source_suffix: string;
-  char_count: number;
-  content: string;
-  score: number;
-  vector_score?: number;
-  rerank_bonus?: number;
-};
-
-type RetrievalResponse = {
-  filename: string;
-  embedding_provider: string;
-  embedding_model: string;
-  vector_dim: number;
-  question: string;
-  top_k: number;
-  retrieved_at: string;
-  retrieval_latency_ms: number;
-  query_embedding_provider: string;
-  query_embedding_model: string;
-  matches: RetrievalMatch[];
-};
-
-type QueryResponse = {
-  filename: string;
-  question: string;
-  answer: string;
-  answer_source: string;
-  model: string;
-  answered_at: string;
-  answer_latency_ms: number;
-  chat_provider: string;
-  chat_model: string;
-  retrieval: RetrievalResponse;
-};
-
-type DiagnosticsResponse = {
-  filename: string;
-  question: string;
-  retrieval: RetrievalResponse;
-  diagnostics: {
-    total_scored_chunks: number;
-    returned_candidate_count: number;
-    max_score: number;
-    min_score: number;
-    mean_score: number;
-  };
-  candidates: RetrievalMatch[];
-};
-
-type EvalDatasetInfo = {
-  dataset_name: string;
-  case_count: number;
-  filenames: string[];
-};
-
-type EvalDatasetListResponse = {
-  datasets: EvalDatasetInfo[];
-};
-
-type EvalReportResponse = {
-  dataset_name: string;
-  report: {
-    top_k: number;
-    summary: {
-      total_cases: number;
-      hit_rate_at_k: number;
-      mean_reciprocal_rank: number;
-    };
-    cases: Array<{
-      case_id: string;
-      filename: string;
-      question: string;
-      expected_chunk_ids: string[];
-      retrieved_chunk_ids: string[];
-      hit_at_k: boolean;
-      reciprocal_rank: number;
-    }>;
-  };
-};
-
-type EvalCaseFilter = "all" | "hit" | "miss";
-
-const presetQuestions: Record<string, string[]> = {
-  "rag_overview.md": [
-    "What is RAG?",
-    "Why is chunking important in a RAG system?",
-    "What is the role of embeddings?",
-    "Why do production systems use reranking?",
-  ],
-  "agent_workflow.md": [
-    "How does request routing work in an agent workflow?",
-    "When should the agent use the tool execution path?",
-    "Why is clarification necessary in an agent workflow?",
-    "What should engineers log for observability in an agent workflow system?",
-  ],
-};
-
-const views: Array<{ key: ViewKey; label: string; kicker: string }> = [
-  { key: "documents", label: "Documents", kicker: "Ingestion artifacts" },
-  { key: "query", label: "Query Lab", kicker: "Retrieval and answer tracing" },
-  { key: "evaluation", label: "Evaluation", kicker: "Retrieval benchmark sets" },
-];
-
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || `Request failed: ${response.status}`);
-  }
-
-  return response.json() as Promise<T>;
-}
-
-function formatBytes(value: number): string {
-  if (value < 1024) {
-    return `${value} B`;
-  }
-
-  if (value < 1024 * 1024) {
-    return `${(value / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function formatTimestamp(value: string): string {
-  if (!value) {
-    return "Not available";
-  }
-
-  const timestamp = new Date(value);
-
-  if (Number.isNaN(timestamp.getTime())) {
-    return value;
-  }
-
-  return timestamp.toLocaleString();
-}
+import {
+  fetchDocumentPreview,
+  fetchDocuments,
+  fetchEvaluationDatasets,
+  fetchPersistedChunks,
+  fetchPersistedEmbeddings,
+  persistChunks as persistChunksRequest,
+  persistEmbeddings as persistEmbeddingsRequest,
+  runDiagnostics as runDiagnosticsRequest,
+  runEvaluation as runEvaluationRequest,
+  runQuery as runQueryRequest,
+} from "./api";
+import { presetQuestions, views } from "./constants";
+import { formatBytes, formatTimestamp } from "./format";
+import type {
+  DiagnosticsResponse,
+  DocumentItem,
+  DocumentPreview,
+  EvalCaseFilter,
+  EvalDatasetInfo,
+  EvalReportResponse,
+  PersistedChunkDocument,
+  PersistedEmbeddingDocument,
+  QueryResponse,
+  ViewKey,
+} from "./types";
 
 function App() {
   const [activeView, setActiveView] = useState<ViewKey>("documents");
@@ -269,7 +100,7 @@ function App() {
     setDocumentsError("");
 
     try {
-      const payload = await apiFetch<DocumentListResponse>("/api/documents");
+      const payload = await fetchDocuments();
       setDocuments(payload.documents);
 
       if (payload.documents.length > 0) {
@@ -288,9 +119,7 @@ function App() {
     setDocumentsError("");
 
     try {
-      const payload = await apiFetch<DocumentPreview>(
-        `/api/documents/${encodeURIComponent(filename)}`,
-      );
+      const payload = await fetchDocumentPreview(filename);
       setPreview(payload);
     } catch (error) {
       setPreview(null);
@@ -306,12 +135,8 @@ function App() {
 
     try {
       const [chunkResult, embeddingResult] = await Promise.allSettled([
-        apiFetch<PersistedChunkDocument>(
-          `/api/documents/${encodeURIComponent(filename)}/chunks/persisted`,
-        ),
-        apiFetch<PersistedEmbeddingDocument>(
-          `/api/documents/${encodeURIComponent(filename)}/embeddings/persisted`,
-        ),
+        fetchPersistedChunks(filename),
+        fetchPersistedEmbeddings(filename),
       ]);
 
       setChunkArtifact(chunkResult.status === "fulfilled" ? chunkResult.value : null);
@@ -331,12 +156,7 @@ function App() {
     setDocumentsError("");
 
     try {
-      const payload = await apiFetch<PersistedChunkDocument>(
-        `/api/documents/${encodeURIComponent(selectedFilename)}/chunks/persist?chunk_size=500&chunk_overlap=100&chunk_strategy=paragraph`,
-        {
-          method: "POST",
-        },
-      );
+      const payload = await persistChunksRequest(selectedFilename);
       setChunkArtifact(payload);
       setArtifactMessage("Persisted paragraph chunks successfully.");
       setEmbeddingArtifact(null);
@@ -357,12 +177,7 @@ function App() {
     setDocumentsError("");
 
     try {
-      const payload = await apiFetch<PersistedEmbeddingDocument>(
-        `/api/documents/${encodeURIComponent(selectedFilename)}/embeddings/persist`,
-        {
-          method: "POST",
-        },
-      );
+      const payload = await persistEmbeddingsRequest(selectedFilename);
       setEmbeddingArtifact(payload);
       setArtifactMessage("Persisted embeddings successfully.");
     } catch (error) {
@@ -374,7 +189,7 @@ function App() {
 
   async function loadDatasets() {
     try {
-      const payload = await apiFetch<EvalDatasetListResponse>("/api/evaluation/retrieval/datasets");
+      const payload = await fetchEvaluationDatasets();
       setDatasets(payload.datasets);
       if (payload.datasets.length > 0) {
         setDatasetName((current) => current || payload.datasets[0].dataset_name);
@@ -391,14 +206,7 @@ function App() {
     setQueryResult(null);
 
     try {
-      const payload = await apiFetch<QueryResponse>("/api/query", {
-        method: "POST",
-        body: JSON.stringify({
-          filename: queryFilename,
-          question,
-          top_k: topK,
-        }),
-      });
+      const payload = await runQueryRequest(queryFilename, question, topK);
       setQueryResult(payload);
     } catch (error) {
       setQueryError(error instanceof Error ? error.message : "Failed to run query");
@@ -413,15 +221,7 @@ function App() {
     setDiagnosticsResult(null);
 
     try {
-      const payload = await apiFetch<DiagnosticsResponse>("/api/query/diagnostics", {
-        method: "POST",
-        body: JSON.stringify({
-          filename: queryFilename,
-          question,
-          top_k: topK,
-          candidate_count: 10,
-        }),
-      });
+      const payload = await runDiagnosticsRequest(queryFilename, question, topK);
       setDiagnosticsResult(payload);
     } catch (error) {
       setQueryError(error instanceof Error ? error.message : "Failed to run diagnostics");
@@ -437,13 +237,7 @@ function App() {
     setEvalResult(null);
 
     try {
-      const payload = await apiFetch<EvalReportResponse>("/api/evaluation/retrieval", {
-        method: "POST",
-        body: JSON.stringify({
-          dataset_name: datasetName,
-          top_k: evalTopK,
-        }),
-      });
+      const payload = await runEvaluationRequest(datasetName, evalTopK);
       setEvalResult(payload);
     } catch (error) {
       setEvalError(error instanceof Error ? error.message : "Failed to run evaluation");
