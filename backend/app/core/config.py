@@ -11,11 +11,13 @@ class Settings(BaseSettings):
     app_host: str = "127.0.0.1"
     app_port: int = 8000
     embedding_provider: str = "mock"
+    chat_provider: str = "fallback"
     openai_api_key: str = ""
     openai_chat_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
     gemini_api_key: str = ""
     gemini_embedding_model: str = "gemini-embedding-001"
+    gemini_chat_model: str = "gemini-2.5-flash-lite"
     database_url: str = ""
     redis_url: str = ""
 

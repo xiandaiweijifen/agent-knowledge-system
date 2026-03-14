@@ -2,6 +2,7 @@ import json
 
 from fastapi.testclient import TestClient
 
+from app.core.config import settings
 from app.main import app
 from app.services.indexing import embedding_service
 
@@ -14,6 +15,7 @@ def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
     embedding_dir.mkdir()
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
+    monkeypatch.setattr(settings, "chat_provider", "fallback")
 
     embedding_payload = {
         "filename": "sample.txt",
