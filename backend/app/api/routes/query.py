@@ -4,12 +4,26 @@ from app.schemas.query import (
     QueryDiagnosticsRequest,
     QueryDiagnosticsResponse,
     QueryRequest,
+    QueryRouteRequest,
     QueryResponse,
+    RouteDecision,
 )
+from app.services.agent.router_service import route_request
 from app.services.agent.query_service import run_query
 from app.services.retrieval.retrieval_service import retrieve_relevant_chunks_with_diagnostics
 
 router = APIRouter(tags=["query"])
+
+
+@router.post("/query/route", response_model=RouteDecision)
+def route_query_request(request: QueryRouteRequest) -> RouteDecision:
+    try:
+        return route_request(
+            question=request.question,
+            filename=request.filename,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.post("/query", response_model=QueryResponse)

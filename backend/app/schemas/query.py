@@ -7,6 +7,17 @@ class QueryRequest(BaseModel):
     top_k: int = 3
 
 
+class QueryRouteRequest(BaseModel):
+    question: str
+    filename: str | None = None
+
+
+class RouteDecision(BaseModel):
+    route_type: str
+    route_reason: str
+    filename: str | None = None
+
+
 class QueryDiagnosticsRequest(BaseModel):
     filename: str
     question: str

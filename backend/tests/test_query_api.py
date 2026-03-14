@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.core.config import settings
 from app.main import app
+from app.services.agent.router_service import route_request
 from app.services.indexing import embedding_service
 from app.services.retrieval.retrieval_service import compute_rerank_bonus
 
@@ -212,3 +213,33 @@ def test_reranking_query_gets_higher_bonus_for_reranking_chunk():
     )
 
     assert reranking_bonus > generic_bonus
+
+
+def test_route_request_classifies_tool_execution():
+    decision = route_request("Create a ticket for the payment service outage")
+
+    assert decision.route_type == "tool_execution"
+
+
+def test_route_request_classifies_clarification_needed():
+    decision = route_request("Please do that for production")
+
+    assert decision.route_type == "clarification_needed"
+
+
+def test_query_route_endpoint_returns_route_decision():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/route",
+        json={
+            "question": "What is RAG?",
+            "filename": "rag_overview.md",
+        },
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+    assert payload["route_type"] == "knowledge_retrieval"
+    assert payload["filename"] == "rag_overview.md"
+    assert payload["route_reason"]
