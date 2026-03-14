@@ -566,6 +566,25 @@ def test_plan_tool_request_maps_ticket_list_queries_to_ticketing_list():
     assert response.arguments["status"] == "open"
 
 
+def test_plan_tool_request_extracts_ticket_id_for_close_requests():
+    response = plan_tool_request("Close ticket TICKET-0007 for payment-service")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "close"
+    assert response.target == "payment-service"
+    assert response.arguments["ticket_id"] == "TICKET-0007"
+
+
+def test_plan_tool_request_extracts_ticket_id_for_update_requests():
+    response = plan_tool_request("Update ticket TICKET-0009 for checkout-api to high severity")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "update"
+    assert response.target == "checkout-api to high severity"
+    assert response.arguments["ticket_id"] == "TICKET-0009"
+    assert response.arguments["severity"] == "high"
+
+
 def test_query_tool_plan_endpoint_returns_plan():
     client = TestClient(app)
     response = client.post(

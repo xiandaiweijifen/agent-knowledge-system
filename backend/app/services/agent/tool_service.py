@@ -57,6 +57,7 @@ FILENAME_PATTERN = re.compile(
     r"\b([A-Za-z0-9._-]+\.(?:txt|md|pdf|docx))\b",
     re.IGNORECASE,
 )
+TICKET_ID_PATTERN = re.compile(r"\b(TICKET-\d{4})\b", re.IGNORECASE)
 TICKET_DATA_DIR = Path("../data/tool_state")
 TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
@@ -65,6 +66,11 @@ TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
 def _extract_filename_argument(question: str) -> str | None:
     match = FILENAME_PATTERN.search(question)
     return match.group(1) if match else None
+
+
+def _extract_ticket_id_argument(question: str) -> str | None:
+    match = TICKET_ID_PATTERN.search(question)
+    return match.group(1).upper() if match else None
 
 
 def _load_ticket_store() -> list[dict[str, str]]:
@@ -466,6 +472,10 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
     elif "staging" in lowered:
         arguments["environment"] = "staging"
 
+    ticket_id = _extract_ticket_id_argument(question)
+    if ticket_id:
+        arguments["ticket_id"] = ticket_id
+
     if inferred_request.tool_name == "ticketing" and inferred_request.action in {
         "check",
         "show",
@@ -489,6 +499,18 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
             arguments["status"] = "open"
         elif "closed" in lowered:
             arguments["status"] = "closed"
+
+        if inferred_request.action in {"close", "update"} and ticket_id:
+            cleaned_target = TICKET_ID_PATTERN.sub("", inferred_request.target).strip(" .")
+            if cleaned_target:
+                inferred_request = InferredToolRequest(
+                    tool_name=inferred_request.tool_name,
+                    action=inferred_request.action,
+                    target=cleaned_target,
+                )
+        if inferred_request.action == "update":
+            if "unspecified" in lowered:
+                arguments["severity"] = "unspecified"
 
     if inferred_request.tool_name == "document_search":
         filename = _extract_filename_argument(question)
