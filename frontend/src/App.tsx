@@ -436,19 +436,27 @@ function App() {
       </section>
       {systemHealthError && <p className="error">{systemHealthError}</p>}
 
-      <nav className="tab-row" aria-label="Views">
-        {views.map((view) => (
-          <button
-            key={view.key}
-            className={`tab-button${activeView === view.key ? " active" : ""}`}
-            onClick={() => setActiveView(view.key)}
-            type="button"
-          >
-            <span>{view.label}</span>
-            <small>{view.kicker}</small>
-          </button>
-        ))}
-      </nav>
+      <section className="nav-section" aria-label="Console Modules">
+        <div className="nav-section-heading">
+          <span className="section-label">Console Modules</span>
+          <p className="nav-section-copy">
+            Choose the operating surface for ingestion, retrieval diagnostics, or benchmark review.
+          </p>
+        </div>
+        <nav className="tab-row" aria-label="Views">
+          {views.map((view) => (
+            <button
+              key={view.key}
+              className={`tab-button${activeView === view.key ? " active" : ""}`}
+              onClick={() => setActiveView(view.key)}
+              type="button"
+            >
+              <span>{view.label}</span>
+              <small>{view.kicker}</small>
+            </button>
+          ))}
+        </nav>
+      </section>
 
       {activeView === "documents" && (
         <DocumentsView

@@ -140,8 +140,32 @@ textarea {
 .tab-row {
   display: flex;
   gap: 12px;
-  margin: 24px 0;
+  margin: 0;
   overflow-x: auto;
+}
+
+.nav-section {
+  margin: 22px 0 24px;
+  padding: 18px 18px 20px;
+  border: 1px solid rgba(31, 41, 51, 0.08);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 249, 241, 0.78));
+}
+
+.nav-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.nav-section-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.5;
 }
 
 .status-banner-wrap {
@@ -198,14 +222,20 @@ textarea {
 
 .tab-button {
   min-width: 220px;
-  padding: 16px 18px;
+  padding: 20px 20px 18px;
   text-align: left;
   border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.7);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 250, 244, 0.94));
   color: var(--ink);
   cursor: pointer;
-  transition: transform 150ms ease, background 150ms ease, border-color 150ms ease;
+  box-shadow: 0 12px 26px rgba(76, 47, 34, 0.08);
+  transition:
+    transform 150ms ease,
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .tab-button:hover,
@@ -217,20 +247,26 @@ textarea {
 }
 
 .tab-button.active {
-  border-color: rgba(159, 58, 29, 0.4);
-  background: var(--accent-soft);
+  border-color: rgba(159, 58, 29, 0.38);
+  background:
+    linear-gradient(180deg, rgba(247, 227, 217, 0.98), rgba(243, 221, 210, 0.92));
+  box-shadow:
+    inset 0 0 0 1px rgba(159, 58, 29, 0.12),
+    0 16px 30px rgba(159, 58, 29, 0.12);
 }
 
 .tab-button span {
   display: block;
-  font-size: 1.05rem;
+  font-size: 1.08rem;
   font-weight: 700;
 }
 
 .tab-button small {
   display: block;
-  margin-top: 6px;
+  margin-top: 8px;
   color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.45;
 }
 
 .panel-grid {
@@ -743,6 +779,11 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .nav-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .button-row-split {
     justify-content: flex-start;
   }
@@ -767,7 +808,7 @@ textarea {
   }
 
   .tab-button {
-    min-width: 190px;
+    min-width: 220px;
   }
 
   .status-banner {
@@ -777,6 +818,10 @@ textarea {
   .status-banner-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .nav-section {
+    padding: 16px;
   }
 
   .panel {
