@@ -10,6 +10,7 @@ from app.services.agent.tool_service import (
     list_registered_tools,
     plan_tool_request,
 )
+from app.services.ingestion import document_service
 from app.services.indexing import embedding_service
 from app.services.retrieval.retrieval_service import compute_rerank_bonus
 from app.schemas.tools import ToolExecutionRequest
@@ -266,6 +267,54 @@ def test_execute_tool_request_returns_stubbed_result():
     assert response.trace_id
 
 
+def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "development")
+    monkeypatch.setattr(settings, "embedding_provider", "gemini")
+    monkeypatch.setattr(settings, "chat_provider", "fallback")
+    monkeypatch.setattr(settings, "gemini_api_key", "configured")
+    monkeypatch.setattr(settings, "openai_api_key", "")
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="system_status",
+            action="query",
+            target="agent-knowledge-system",
+            arguments={},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.execution_mode == "local_adapter"
+    assert response.output["embedding_provider"] == "gemini"
+    assert response.output["chat_provider"] == "fallback"
+    assert response.output["gemini_configured"] == "true"
+
+
+def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, monkeypatch):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text("RAG systems rely on retrieval and grounding.", encoding="utf-8")
+    (raw_dir / "other.md").write_text("This file talks about deployment workflows.", encoding="utf-8")
+    (raw_dir / "slides.pdf").write_bytes(b"%PDF-1.7")
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="document_search",
+            action="query",
+            target="retrieval",
+            arguments={},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.execution_mode == "local_adapter"
+    assert response.output["matched_count"] == "1"
+    assert "notes.md" in response.output["matched_documents"]
+    assert response.output["skipped_documents"] == "1"
+
+
 def test_query_tool_execute_endpoint_returns_structured_stub():
     client = TestClient(app)
     response = client.post(
@@ -285,6 +334,25 @@ def test_query_tool_execute_endpoint_returns_structured_stub():
     assert payload["execution_status"] == "stubbed"
     assert payload["execution_mode"] == "local_stub"
     assert payload["trace_id"]
+
+
+def test_query_tool_execute_endpoint_returns_live_system_status():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/tools/execute",
+        json={
+            "tool_name": "system_status",
+            "action": "query",
+            "target": "agent-knowledge-system",
+            "arguments": {},
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["execution_status"] == "completed"
+    assert payload["execution_mode"] == "local_adapter"
+    assert "embedding_provider" in payload["output"]
 
 
 def test_list_registered_tools_returns_catalog():
