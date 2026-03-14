@@ -43,6 +43,21 @@
       "expected_route_type": "tool_execution"
     },
     {
+      "case_id": "tool_route_7",
+      "question": "Set ticket TICKET-0003 severity to medium",
+      "expected_route_type": "tool_execution"
+    },
+    {
+      "case_id": "tool_route_8",
+      "question": "Move ticket TICKET-0004 for payment-service to staging",
+      "expected_route_type": "tool_execution"
+    },
+    {
+      "case_id": "tool_route_9",
+      "question": "Update ticket TICKET-0010 for payment-service status to closed",
+      "expected_route_type": "tool_execution"
+    },
+    {
       "case_id": "clarification_route_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed"

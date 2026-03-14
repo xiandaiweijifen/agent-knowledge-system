@@ -89,6 +89,24 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
                     },
                     {
                         "case_id": "case_7",
+                        "question": "Set ticket TICKET-0003 severity to medium",
+                        "expected_route_type": "tool_execution",
+                        "expected_workflow_status": "completed",
+                    },
+                    {
+                        "case_id": "case_8",
+                        "question": "Move ticket TICKET-0004 for payment-service to staging",
+                        "expected_route_type": "tool_execution",
+                        "expected_workflow_status": "completed",
+                    },
+                    {
+                        "case_id": "case_9",
+                        "question": "Update ticket TICKET-0010 for payment-service status to closed",
+                        "expected_route_type": "tool_execution",
+                        "expected_workflow_status": "completed",
+                    },
+                    {
+                        "case_id": "case_10",
                         "question": "Please do that for production",
                         "expected_route_type": "clarification_needed",
                         "expected_workflow_status": "clarification_required",
@@ -101,6 +119,6 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
 
     report = evaluate_agent_workflow_dataset(dataset_path=dataset_path)
 
-    assert report.summary.total_cases == 7
+    assert report.summary.total_cases == 10
     assert report.summary.workflow_accuracy == 1.0
     assert all(case.matched for case in report.cases)
