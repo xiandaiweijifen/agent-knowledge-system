@@ -9,6 +9,7 @@ describe("DocumentsView", () => {
     const user = userEvent.setup();
     const onPersistChunks = vi.fn();
     const onUploadFile = vi.fn();
+    const onGeneratePipeline = vi.fn();
 
     render(
       <DocumentsView
@@ -49,6 +50,7 @@ describe("DocumentsView", () => {
         onRefreshArtifacts={vi.fn()}
         onPersistChunks={onPersistChunks}
         onPersistEmbeddings={vi.fn()}
+        onGeneratePipeline={onGeneratePipeline}
         onUploadFile={onUploadFile}
       />,
     );
@@ -60,6 +62,9 @@ describe("DocumentsView", () => {
 
     await user.click(screen.getByRole("button", { name: "Persist Chunks" }));
     expect(onPersistChunks).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole("button", { name: "Generate Pipeline" }));
+    expect(onGeneratePipeline).toHaveBeenCalledTimes(1);
 
     await user.upload(
       screen.getByLabelText("Upload Document"),

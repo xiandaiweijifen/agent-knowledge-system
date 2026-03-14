@@ -210,6 +210,30 @@ function App() {
     }
   }
 
+  async function generatePipeline() {
+    if (!selectedFilename) {
+      return;
+    }
+
+    setArtifactBusy(true);
+    setArtifactMessage("");
+    setDocumentsError("");
+
+    try {
+      const chunkPayload = await persistChunksRequest(selectedFilename);
+      setChunkArtifact(chunkPayload);
+
+      const embeddingPayload = await persistEmbeddingsRequest(selectedFilename);
+      setEmbeddingArtifact(embeddingPayload);
+
+      setArtifactMessage("Generated chunks and embeddings successfully.");
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : "Failed to generate pipeline");
+    } finally {
+      setArtifactBusy(false);
+    }
+  }
+
   async function loadDatasets() {
     try {
       const payload = await fetchEvaluationDatasets();
@@ -328,6 +352,7 @@ function App() {
           onRefreshArtifacts={() => void loadArtifactStatus(selectedFilename)}
           onPersistChunks={() => void persistChunks()}
           onPersistEmbeddings={() => void persistEmbeddings()}
+          onGeneratePipeline={() => void generatePipeline()}
           onUploadFile={(event) => {
             const file = event.target.files?.[0];
             if (file) {
