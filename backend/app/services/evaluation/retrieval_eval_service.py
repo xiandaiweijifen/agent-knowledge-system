@@ -80,3 +80,21 @@ def evaluate_retrieval_dataset(dataset_path: Path, top_k: int = 3) -> RetrievalE
         summary=summary,
         cases=case_results,
     )
+
+
+def evaluate_named_retrieval_dataset(dataset_name: str, top_k: int = 3) -> RetrievalEvalReport:
+    """Evaluate retrieval performance for a named local dataset."""
+    if top_k <= 0:
+        raise ValueError("top_k_must_be_positive")
+
+    normalized_name = dataset_name.strip()
+
+    if not normalized_name:
+        raise ValueError("dataset_name_must_not_be_empty")
+
+    dataset_path = EVAL_DATA_DIR / normalized_name
+
+    if not dataset_path.exists() or not dataset_path.is_file():
+        raise FileNotFoundError(dataset_name)
+
+    return evaluate_retrieval_dataset(dataset_path=dataset_path, top_k=top_k)
