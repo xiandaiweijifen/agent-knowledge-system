@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import datetime, UTC
 import re
 import json
 
@@ -10,6 +11,7 @@ RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 CHUNK_DATA_DIR = Path("../data/chunks")
 CHUNK_DATA_DIR.mkdir(parents=True, exist_ok=True)
 LISTABLE_DOCUMENT_SUFFIXES = {".txt", ".md", ".pdf", ".docx"}
+CHUNK_PIPELINE_VERSION = "ingestion-v1"
 
 
 def list_documents() -> list[dict]:
@@ -131,6 +133,11 @@ def get_chunk_output_path(filename: str) -> Path:
     return CHUNK_DATA_DIR / f"{document_name}.chunks.json"
 
 
+def build_utc_timestamp() -> str:
+    """Return a UTC timestamp for persisted pipeline artifacts."""
+    return datetime.now(UTC).isoformat()
+
+
 def persist_document_chunks(
     filename: str,
     chunk_size: int = 500,
@@ -149,6 +156,9 @@ def persist_document_chunks(
         "filename": chunked_document["filename"],
         "suffix": chunked_document["suffix"],
         "size_bytes": chunked_document["size_bytes"],
+        "source_path": str(get_document_path(filename)),
+        "created_at": build_utc_timestamp(),
+        "pipeline_version": CHUNK_PIPELINE_VERSION,
         "chunk_count": chunked_document["chunk_count"],
         "chunk_size": chunk_size,
         "chunk_overlap": chunk_overlap,

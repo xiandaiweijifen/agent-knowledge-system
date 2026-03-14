@@ -16,6 +16,9 @@ class PersistedChunkDocument(BaseModel):
     filename: str
     suffix: str
     size_bytes: int
+    source_path: str = ""
+    created_at: str = ""
+    pipeline_version: str = ""
     chunk_count: int
     chunk_size: int
     chunk_overlap: int
@@ -36,6 +39,10 @@ class EmbeddingRecord(BaseModel):
 class PersistedEmbeddingDocument(BaseModel):
     filename: str
     suffix: str
+    source_path: str = ""
+    source_chunk_path: str = ""
+    created_at: str = ""
+    pipeline_version: str = ""
     embedding_model: str
     vector_dim: int
     chunk_count: int

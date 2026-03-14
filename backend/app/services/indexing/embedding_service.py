@@ -7,12 +7,17 @@ from app.schemas.indexing import (
     PersistedChunkDocument,
     PersistedEmbeddingDocument,
 )
-from app.services.ingestion.document_service import load_persisted_chunks
+from app.services.ingestion.document_service import (
+    build_utc_timestamp,
+    get_chunk_output_path,
+    load_persisted_chunks,
+)
 
 EMBEDDING_DATA_DIR = Path("../data/embeddings")
 EMBEDDING_DATA_DIR.mkdir(parents=True, exist_ok=True)
 MOCK_EMBEDDING_MODEL = "mock-embedding-v1"
 MOCK_VECTOR_DIM = 8
+EMBEDDING_PIPELINE_VERSION = "indexing-v1"
 
 
 def build_mock_embedding(text: str, vector_dim: int = MOCK_VECTOR_DIM) -> list[float]:
@@ -56,6 +61,10 @@ def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:
     return PersistedEmbeddingDocument(
         filename=chunk_payload.filename,
         suffix=chunk_payload.suffix,
+        source_path=chunk_payload.source_path,
+        source_chunk_path=str(get_chunk_output_path(filename)),
+        created_at=build_utc_timestamp(),
+        pipeline_version=EMBEDDING_PIPELINE_VERSION,
         embedding_model=MOCK_EMBEDDING_MODEL,
         vector_dim=MOCK_VECTOR_DIM,
         chunk_count=chunk_payload.chunk_count,
@@ -78,6 +87,8 @@ def persist_document_embeddings(filename: str) -> dict:
         "embedding_model": embedding_document.embedding_model,
         "vector_dim": embedding_document.vector_dim,
         "embedding_count": len(embedding_document.embeddings),
+        "created_at": embedding_document.created_at,
+        "pipeline_version": embedding_document.pipeline_version,
         "output_path": str(output_path),
     }
 

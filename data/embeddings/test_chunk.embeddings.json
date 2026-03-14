@@ -1,6 +1,10 @@
 {
   "filename": "test_chunk.txt",
   "suffix": ".txt",
+  "source_path": "..\\data\\raw\\test_chunk.txt",
+  "source_chunk_path": "..\\data\\chunks\\test_chunk.chunks.json",
+  "created_at": "2026-03-14T04:56:03.055448+00:00",
+  "pipeline_version": "indexing-v1",
   "embedding_model": "mock-embedding-v1",
   "vector_dim": 8,
   "chunk_count": 19,
