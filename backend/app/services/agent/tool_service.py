@@ -43,10 +43,23 @@ SEARCH_PREFIX_PATTERN = re.compile(
     r"^(search|find|lookup|look up|show|inspect|query)\s+(docs?|documents?)\s+(for\s+)?",
     re.IGNORECASE,
 )
+GENERIC_SEARCH_PREFIX_PATTERN = re.compile(
+    r"^(search|find|lookup|look up|show|inspect|query)\s+",
+    re.IGNORECASE,
+)
 STATUS_PREFIX_PATTERN = re.compile(
     r"^(check|show|inspect|query)\s+",
     re.IGNORECASE,
 )
+FILENAME_PATTERN = re.compile(
+    r"\b([A-Za-z0-9._-]+\.(?:txt|md|pdf|docx))\b",
+    re.IGNORECASE,
+)
+
+
+def _extract_filename_argument(question: str) -> str | None:
+    match = FILENAME_PATTERN.search(question)
+    return match.group(1) if match else None
 
 
 def _build_system_status_output() -> dict[str, str]:
@@ -246,6 +259,7 @@ def infer_tool_request(question: str) -> InferredToolRequest:
             target = "agent-knowledge-system"
     else:
         target = SEARCH_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
+        target = GENERIC_SEARCH_PREFIX_PATTERN.sub("", target).strip(" ?.!")
         if not target:
             target = normalized_question.strip(" ?.!") or "documents"
 
@@ -274,8 +288,23 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
     elif "staging" in lowered:
         arguments["environment"] = "staging"
 
+    if inferred_request.tool_name == "document_search":
+        filename = _extract_filename_argument(question)
+        if filename:
+            arguments["filename"] = filename
+
     cleaned_target = inferred_request.target
     cleaned_target = ENVIRONMENT_SEGMENT_PATTERN.sub("", cleaned_target).strip(" .")
+    if inferred_request.tool_name == "document_search" and "filename" in arguments:
+        cleaned_target = cleaned_target.replace(arguments["filename"], "").strip(" .")
+        cleaned_target = re.sub(
+            r"\b(for|in|inside|within)\b",
+            "",
+            cleaned_target,
+            flags=re.IGNORECASE,
+        ).strip(" .")
+        if not cleaned_target:
+            cleaned_target = "documents"
 
     return ToolPlanResponse(
         question=question.strip(),

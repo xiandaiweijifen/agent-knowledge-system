@@ -15,6 +15,10 @@ TOOL_TARGET_PATTERN = re.compile(
     r"\b(ticket|incident|deployment|service|database|api|job|workflow|pipeline|record|status|health|config|document|doc|docs)\b",
     re.IGNORECASE,
 )
+SEARCH_STYLE_ACTION_PATTERN = re.compile(
+    r"\b(search|find|lookup|look up|show|inspect|check|query)\b",
+    re.IGNORECASE,
+)
 AMBIGUOUS_REFERENCE_PATTERN = re.compile(
     r"\b(this|that|it|them|those|these)\b",
     re.IGNORECASE,
@@ -41,6 +45,16 @@ def route_request(question: str, filename: str | None = None) -> RouteDecision:
         )
 
     if TOOL_ACTION_PATTERN.search(lowered):
+        if SEARCH_STYLE_ACTION_PATTERN.search(lowered):
+            return RouteDecision(
+                route_type="tool_execution",
+                route_reason=(
+                    "The request asks the system to inspect, search, or check an external "
+                    "resource, so it should be routed toward tool execution."
+                ),
+                filename=filename,
+            )
+
         if AMBIGUOUS_REFERENCE_PATTERN.search(lowered) and not TOOL_TARGET_PATTERN.search(lowered):
             return RouteDecision(
                 route_type="clarification_needed",

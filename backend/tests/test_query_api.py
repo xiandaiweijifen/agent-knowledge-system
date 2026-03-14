@@ -397,6 +397,14 @@ def test_plan_tool_request_maps_search_queries_to_document_search():
     assert response.target == "RAG architecture"
 
 
+def test_plan_tool_request_extracts_filename_for_document_search():
+    response = plan_tool_request("Search rag_overview.md for reranking")
+
+    assert response.tool_name == "document_search"
+    assert response.arguments["filename"] == "rag_overview.md"
+    assert response.target == "reranking"
+
+
 def test_plan_tool_request_maps_status_queries_to_system_status():
     response = plan_tool_request("Check system status")
 
@@ -496,6 +504,23 @@ def test_query_agent_endpoint_returns_tool_workflow_result():
     assert len(payload["workflow_trace"]) >= 3
     assert payload["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_execution"]["execution_status"] == "stubbed"
+
+
+def test_query_agent_endpoint_returns_document_search_workflow_with_filename_hint():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search rag_overview.md for reranking",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert payload["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
+    assert payload["tool_plan"]["target"] == "reranking"
 
 
 def test_query_agent_endpoint_returns_clarification_result():
