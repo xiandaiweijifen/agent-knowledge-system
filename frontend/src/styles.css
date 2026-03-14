@@ -89,6 +89,7 @@ textarea {
 }
 
 .stat-card,
+.summary-card,
 .dataset-card,
 .case-card,
 .match-card,
@@ -103,6 +104,7 @@ textarea {
 }
 
 .stat-card span,
+.summary-card span,
 .trace-label {
   display: block;
   color: var(--muted);
@@ -115,6 +117,24 @@ textarea {
   display: block;
   margin-top: 10px;
   font-size: 1.8rem;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.summary-card {
+  padding: 16px;
+  background: rgba(255, 251, 245, 0.88);
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.55rem;
 }
 
 .tab-row {
@@ -201,6 +221,16 @@ textarea {
 .panel-heading h2 {
   margin: 0;
   font-size: 1.4rem;
+}
+
+.case-toolbar {
+  align-items: center;
+  margin-top: 8px;
+}
+
+.case-toolbar h3 {
+  margin: 0;
+  font-size: 1.05rem;
 }
 
 .ghost-button,
@@ -363,6 +393,27 @@ textarea {
   cursor: pointer;
 }
 
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 8px 12px;
+  border: 1px solid rgba(31, 41, 51, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  border-color: rgba(159, 58, 29, 0.35);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
 .status,
 .muted,
 .error {
@@ -445,6 +496,16 @@ textarea {
   font-weight: 700;
 }
 
+.case-card.success {
+  border-color: rgba(92, 140, 108, 0.28);
+  background: rgba(247, 252, 248, 0.94);
+}
+
+.case-card.danger {
+  border-color: rgba(159, 58, 29, 0.28);
+  background: rgba(255, 247, 242, 0.94);
+}
+
 @media (max-width: 980px) {
   .hero,
   .panel-grid,
@@ -457,6 +518,10 @@ textarea {
   }
 
   .artifact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-strip {
     grid-template-columns: 1fr;
   }
 }

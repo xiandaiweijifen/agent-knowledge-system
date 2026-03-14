@@ -129,6 +129,8 @@ type EvalReportResponse = {
   };
 };
 
+type EvalCaseFilter = "all" | "hit" | "miss";
+
 const presetQuestions: Record<string, string[]> = {
   "rag_overview.md": [
     "What is RAG?",
@@ -220,12 +222,26 @@ function App() {
   const [evalResult, setEvalResult] = useState<EvalReportResponse | null>(null);
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
+  const [evalCaseFilter, setEvalCaseFilter] = useState<EvalCaseFilter>("all");
 
   const activePresetQuestions =
     presetQuestions[queryFilename] ?? [
       "What is the main topic of this document?",
       "What are the most important system behaviors described here?",
     ];
+
+  const filteredEvalCases =
+    evalResult?.report.cases.filter((item) => {
+      if (evalCaseFilter === "hit") {
+        return item.hit_at_k;
+      }
+
+      if (evalCaseFilter === "miss") {
+        return !item.hit_at_k;
+      }
+
+      return true;
+    }) ?? [];
 
   useEffect(() => {
     void loadDocuments();
@@ -833,33 +849,72 @@ function App() {
             </div>
             {evalResult ? (
               <>
-                <div className="trace-grid">
-                  <div>
+                <div className="summary-strip">
+                  <div className="summary-card">
                     <span className="trace-label">Total Cases</span>
                     <strong>{evalResult.report.summary.total_cases}</strong>
                   </div>
-                  <div>
+                  <div className="summary-card">
                     <span className="trace-label">Hit@{evalResult.report.top_k}</span>
                     <strong>{evalResult.report.summary.hit_rate_at_k.toFixed(3)}</strong>
                   </div>
-                  <div>
+                  <div className="summary-card">
                     <span className="trace-label">MRR</span>
                     <strong>{evalResult.report.summary.mean_reciprocal_rank.toFixed(3)}</strong>
                   </div>
                 </div>
+                <div className="panel-heading case-toolbar">
+                  <h3>Case Results</h3>
+                  <div className="filter-row">
+                    <button
+                      type="button"
+                      className={`filter-chip${evalCaseFilter === "all" ? " active" : ""}`}
+                      onClick={() => setEvalCaseFilter("all")}
+                    >
+                      All
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-chip${evalCaseFilter === "hit" ? " active" : ""}`}
+                      onClick={() => setEvalCaseFilter("hit")}
+                    >
+                      Hits
+                    </button>
+                    <button
+                      type="button"
+                      className={`filter-chip${evalCaseFilter === "miss" ? " active" : ""}`}
+                      onClick={() => setEvalCaseFilter("miss")}
+                    >
+                      Misses
+                    </button>
+                  </div>
+                </div>
                 <div className="case-list">
-                  {evalResult.report.cases.map((item) => (
-                    <article key={item.case_id} className="case-card">
+                  {filteredEvalCases.map((item) => (
+                    <article
+                      key={item.case_id}
+                      className={`case-card${item.hit_at_k ? " success" : " danger"}`}
+                    >
                       <header>
                         <strong>{item.case_id}</strong>
                         <span>{item.hit_at_k ? "hit" : "miss"}</span>
                       </header>
                       <p>{item.question}</p>
+                      <div className="meta-row">
+                        <span>RR {item.reciprocal_rank.toFixed(3)}</span>
+                        <span>file {item.filename}</span>
+                      </div>
                       <small>Expected: {item.expected_chunk_ids.join(", ")}</small>
                       <small>Retrieved: {item.retrieved_chunk_ids.join(", ")}</small>
                     </article>
                   ))}
                 </div>
+                {filteredEvalCases.length === 0 && (
+                  <p className="muted">
+                    No cases match the current filter. Switch to another view to inspect all benchmark
+                    cases again.
+                  </p>
+                )}
               </>
             ) : (
               <p className="muted">
