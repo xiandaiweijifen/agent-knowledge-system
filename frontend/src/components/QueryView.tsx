@@ -39,6 +39,25 @@ export function QueryView({
 }: QueryViewProps) {
   return (
     <section className="panel-grid query-layout">
+      <article className="panel panel-span view-banner">
+        <div className="view-banner-content">
+          <div>
+            <span className="section-label">Query Workspace</span>
+            <h2 className="view-banner-title">Answer Tracing And Retrieval Inspection</h2>
+            <p className="view-banner-copy">
+              Run grounded queries, compare answer traces, and inspect vector score versus rerank
+              bonus behavior.
+            </p>
+          </div>
+          <div className="view-banner-meta">
+            <span>{queryFilename || "no document"}</span>
+            <span>top-k {topK}</span>
+            <span>{queryResult ? "answer ready" : "answer idle"}</span>
+            <span>{diagnosticsResult ? "diagnostics ready" : "diagnostics idle"}</span>
+          </div>
+        </div>
+      </article>
+
       <article className="panel">
         <div className="panel-heading">
           <div>

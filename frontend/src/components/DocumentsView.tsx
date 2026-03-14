@@ -53,6 +53,25 @@ export function DocumentsView({
 }: DocumentsViewProps) {
   return (
     <section className="panel-grid">
+      <article className="panel panel-span view-banner">
+        <div className="view-banner-content">
+          <div>
+            <span className="section-label">Documents Workspace</span>
+            <h2 className="view-banner-title">Ingestion And Artifact Control</h2>
+            <p className="view-banner-copy">
+              Upload source files, inspect persisted artifacts, and promote a document into the
+              retrieval pipeline.
+            </p>
+          </div>
+          <div className="view-banner-meta">
+            <span>{documents.length} docs</span>
+            <span>{selectedFilename || "no selection"}</span>
+            <span>{chunkArtifact ? "chunks ready" : "chunks missing"}</span>
+            <span>{embeddingArtifact ? "embeddings ready" : "embeddings missing"}</span>
+          </div>
+        </div>
+      </article>
+
       <article className="panel">
         <div className="panel-heading">
           <div>

@@ -35,6 +35,24 @@ export function EvaluationView({
 }: EvaluationViewProps) {
   return (
     <section className="panel-grid">
+      <article className="panel panel-span view-banner">
+        <div className="view-banner-content">
+          <div>
+            <span className="section-label">Evaluation Workspace</span>
+            <h2 className="view-banner-title">Benchmark Retrieval Quality</h2>
+            <p className="view-banner-copy">
+              Run curated datasets, inspect summary metrics, and review per-case ranking outcomes.
+            </p>
+          </div>
+          <div className="view-banner-meta">
+            <span>{datasets.length} datasets</span>
+            <span>{datasetName || "no dataset"}</span>
+            <span>top-k {evalTopK}</span>
+            <span>{evalResult ? "report ready" : "report idle"}</span>
+          </div>
+        </div>
+      </article>
+
       <article className="panel">
         <div className="panel-heading">
           <div>
