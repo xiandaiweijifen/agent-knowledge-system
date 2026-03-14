@@ -1,5 +1,7 @@
 import re
 import uuid
+import json
+from pathlib import Path
 
 from app.core.config import settings
 from app.schemas.tools import (
@@ -18,7 +20,7 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     "ticketing": {
         "supported_actions": ["create", "update", "close"],
         "description": "Create or update incident and ticket records for operational issues.",
-        "execution_mode": "local_stub",
+        "execution_mode": "local_adapter",
     },
     "system_status": {
         "supported_actions": ["query"],
@@ -55,11 +57,138 @@ FILENAME_PATTERN = re.compile(
     r"\b([A-Za-z0-9._-]+\.(?:txt|md|pdf|docx))\b",
     re.IGNORECASE,
 )
+TICKET_DATA_DIR = Path("../data/tool_state")
+TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
+TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
 
 
 def _extract_filename_argument(question: str) -> str | None:
     match = FILENAME_PATTERN.search(question)
     return match.group(1) if match else None
+
+
+def _load_ticket_store() -> list[dict[str, str]]:
+    if not TICKET_STORE_PATH.exists():
+        return []
+
+    return json.loads(TICKET_STORE_PATH.read_text(encoding="utf-8"))
+
+
+def _save_ticket_store(tickets: list[dict[str, str]]) -> None:
+    TICKET_STORE_PATH.write_text(
+        json.dumps(tickets, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _find_ticket(
+    tickets: list[dict[str, str]],
+    target: str,
+    ticket_id: str,
+) -> dict[str, str] | None:
+    if ticket_id:
+        for ticket in tickets:
+            if ticket["ticket_id"] == ticket_id:
+                return ticket
+
+    for ticket in reversed(tickets):
+        if ticket["target"] == target:
+            return ticket
+
+    return None
+
+
+def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
+    tickets = _load_ticket_store()
+    target = request.target.strip()
+    action = request.action.strip().lower()
+    trace_id = uuid.uuid4().hex
+    now = build_utc_timestamp()
+
+    if action == "create":
+        ticket_id = f"TICKET-{len(tickets) + 1:04d}"
+        ticket = {
+            "ticket_id": ticket_id,
+            "target": target,
+            "status": "open",
+            "severity": request.arguments.get("severity", "unspecified"),
+            "environment": request.arguments.get("environment", "unspecified"),
+            "created_at": now,
+            "updated_at": now,
+        }
+        tickets.append(ticket)
+        _save_ticket_store(tickets)
+
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target,
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=f"Created local ticket {ticket_id} for {target}.",
+            trace_id=trace_id,
+            executed_at=now,
+            output=ticket,
+        )
+
+    ticket = _find_ticket(
+        tickets=tickets,
+        target=target,
+        ticket_id=request.arguments.get("ticket_id", "").strip(),
+    )
+    if ticket is None:
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target,
+            execution_status="not_found",
+            execution_mode="local_adapter",
+            result_summary=f"No local ticket record matched {target}.",
+            trace_id=trace_id,
+            executed_at=now,
+            output={
+                "target": target,
+                "ticket_id": request.arguments.get("ticket_id", "").strip(),
+            },
+        )
+
+    if action == "update":
+        for key, value in request.arguments.items():
+            if key == "ticket_id":
+                continue
+            ticket[key] = value
+        ticket["updated_at"] = now
+        _save_ticket_store(tickets)
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target,
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=f"Updated local ticket {ticket['ticket_id']} for {target}.",
+            trace_id=trace_id,
+            executed_at=now,
+            output=ticket,
+        )
+
+    if action == "close":
+        ticket["status"] = "closed"
+        ticket["updated_at"] = now
+        ticket["closed_at"] = now
+        _save_ticket_store(tickets)
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target,
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=f"Closed local ticket {ticket['ticket_id']} for {target}.",
+            trace_id=trace_id,
+            executed_at=now,
+            output=ticket,
+        )
+
+    raise ValueError("unsupported_ticket_action")
 
 
 def _build_system_status_output() -> dict[str, str]:
@@ -190,6 +319,9 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
 
     if tool_name == "document_search":
         return _run_document_search_tool(request)
+
+    if tool_name == "ticketing":
+        return _run_ticketing_tool(request)
 
     trace_id = uuid.uuid4().hex
 

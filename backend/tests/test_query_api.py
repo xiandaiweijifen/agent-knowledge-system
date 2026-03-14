@@ -258,7 +258,10 @@ def test_query_route_endpoint_returns_route_decision():
     assert payload["route_reason"]
 
 
-def test_execute_tool_request_returns_stubbed_result():
+def test_execute_tool_request_returns_stubbed_result(workspace_tmp_path, monkeypatch):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
     response = execute_tool_request(
         ToolExecutionRequest(
             tool_name="ticketing",
@@ -268,9 +271,48 @@ def test_execute_tool_request_returns_stubbed_result():
         )
     )
 
-    assert response.execution_status == "stubbed"
-    assert response.execution_mode == "local_stub"
+    assert response.execution_status == "completed"
+    assert response.execution_mode == "local_adapter"
     assert response.trace_id
+    assert response.output["ticket_id"].startswith("TICKET-")
+
+
+def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path, monkeypatch):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    created = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="create",
+            target="payment-service",
+            arguments={"severity": "high", "environment": "production"},
+        )
+    )
+    ticket_id = created.output["ticket_id"]
+
+    updated = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="update",
+            target="payment-service",
+            arguments={"ticket_id": ticket_id, "severity": "medium"},
+        )
+    )
+
+    closed = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="close",
+            target="payment-service",
+            arguments={"ticket_id": ticket_id},
+        )
+    )
+
+    assert created.execution_status == "completed"
+    assert created.output["status"] == "open"
+    assert updated.output["severity"] == "medium"
+    assert closed.output["status"] == "closed"
 
 
 def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
@@ -346,7 +388,10 @@ def test_execute_document_search_tool_returns_filename_filter_when_used(
     assert response.output["matched_documents"] == "rag_overview.md"
 
 
-def test_query_tool_execute_endpoint_returns_structured_stub():
+def test_query_tool_execute_endpoint_returns_structured_stub(workspace_tmp_path, monkeypatch):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
     client = TestClient(app)
     response = client.post(
         "/api/query/tools/execute",
@@ -362,9 +407,10 @@ def test_query_tool_execute_endpoint_returns_structured_stub():
 
     payload = response.json()
     assert payload["tool_name"] == "ticketing"
-    assert payload["execution_status"] == "stubbed"
-    assert payload["execution_mode"] == "local_stub"
+    assert payload["execution_status"] == "completed"
+    assert payload["execution_mode"] == "local_adapter"
     assert payload["trace_id"]
+    assert payload["output"]["ticket_id"].startswith("TICKET-")
 
 
 def test_query_tool_execute_endpoint_returns_live_system_status():
@@ -513,7 +559,10 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
     assert payload["answer"]
 
 
-def test_query_agent_endpoint_returns_tool_workflow_result():
+def test_query_agent_endpoint_returns_tool_workflow_result(workspace_tmp_path, monkeypatch):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
     client = TestClient(app)
     response = client.post(
         "/api/query/agent",
@@ -528,7 +577,7 @@ def test_query_agent_endpoint_returns_tool_workflow_result():
     assert payload["route"]["route_type"] == "tool_execution"
     assert len(payload["workflow_trace"]) >= 3
     assert payload["tool_plan"]["tool_name"] == "ticketing"
-    assert payload["tool_execution"]["execution_status"] == "stubbed"
+    assert payload["tool_execution"]["execution_status"] == "completed"
 
 
 def test_query_agent_endpoint_returns_document_search_workflow_with_filename_hint():
