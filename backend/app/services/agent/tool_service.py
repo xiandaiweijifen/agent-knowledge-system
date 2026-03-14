@@ -19,6 +19,10 @@ ACTION_PATTERN = re.compile(
     r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete)\b",
     re.IGNORECASE,
 )
+ENVIRONMENT_SEGMENT_PATTERN = re.compile(
+    r"\s+\b(in|for)\s+(production|staging)\b",
+    re.IGNORECASE,
+)
 
 
 def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse:
@@ -103,16 +107,19 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
     elif "staging" in lowered:
         arguments["environment"] = "staging"
 
+    cleaned_target = inferred_request.target
+    cleaned_target = ENVIRONMENT_SEGMENT_PATTERN.sub("", cleaned_target).strip(" .")
+
     return ToolPlanResponse(
         question=question.strip(),
         planning_mode="heuristic_stub",
         route_hint="tool_execution",
         tool_name=inferred_request.tool_name,
         action=inferred_request.action,
-        target=inferred_request.target,
+        target=cleaned_target,
         arguments=arguments,
         plan_summary=(
             f"Plan {inferred_request.tool_name}:{inferred_request.action} for "
-            f"{inferred_request.target} using a local heuristic planner."
+            f"{cleaned_target} using a local heuristic planner."
         ),
     )

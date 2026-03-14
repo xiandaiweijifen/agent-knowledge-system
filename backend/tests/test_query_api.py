@@ -289,6 +289,7 @@ def test_plan_tool_request_returns_structured_plan():
     assert response.route_hint == "tool_execution"
     assert response.tool_name == "ticketing"
     assert response.action == "create"
+    assert response.target == "payment-service"
     assert response.arguments["severity"] == "high"
     assert response.arguments["environment"] == "production"
 
@@ -306,6 +307,7 @@ def test_query_tool_plan_endpoint_returns_plan():
     payload = response.json()
     assert payload["tool_name"] == "ticketing"
     assert payload["action"] == "create"
+    assert payload["target"] == "payment-service"
     assert payload["arguments"]["severity"] == "high"
 
 
