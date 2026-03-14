@@ -71,3 +71,34 @@ def test_retrieval_evaluation_endpoint_returns_404_for_missing_dataset(monkeypat
     )
 
     assert response.status_code == 404
+
+
+def test_retrieval_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):
+    client = TestClient(app)
+
+    def fake_list():
+        return [
+            {
+                "dataset_name": "rag_overview_retrieval_eval.json",
+                "case_count": 6,
+                "filenames": ["rag_overview.md"],
+            },
+            {
+                "dataset_name": "agent_workflow_retrieval_eval.json",
+                "case_count": 8,
+                "filenames": ["agent_workflow.md"],
+            },
+        ]
+
+    monkeypatch.setattr(
+        retrieval_eval_service,
+        "list_retrieval_datasets",
+        fake_list,
+    )
+
+    response = client.get("/api/evaluation/retrieval/datasets")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["datasets"]) == 2
+    assert payload["datasets"][0]["dataset_name"] == "rag_overview_retrieval_eval.json"

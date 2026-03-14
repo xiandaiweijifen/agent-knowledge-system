@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from app.schemas.evaluation_api import RetrievalEvalDatasetInfo
 from app.schemas.evaluation import (
     RetrievalEvalCase,
     RetrievalEvalCaseResult,
@@ -98,3 +99,25 @@ def evaluate_named_retrieval_dataset(dataset_name: str, top_k: int = 3) -> Retri
         raise FileNotFoundError(dataset_name)
 
     return evaluate_retrieval_dataset(dataset_path=dataset_path, top_k=top_k)
+
+
+def list_retrieval_datasets() -> list[RetrievalEvalDatasetInfo]:
+    """List available retrieval evaluation datasets."""
+    datasets = []
+
+    if not EVAL_DATA_DIR.exists():
+        return datasets
+
+    for dataset_path in sorted(EVAL_DATA_DIR.glob("*.json")):
+        cases = load_retrieval_eval_cases(dataset_path)
+        filenames = sorted({case.filename for case in cases})
+
+        datasets.append(
+            RetrievalEvalDatasetInfo(
+                dataset_name=dataset_path.name,
+                case_count=len(cases),
+                filenames=filenames,
+            )
+        )
+
+    return datasets
