@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "case_id": "workflow_objective",
+      "filename": "agent_workflow.md",
+      "question": "What is the objective of an enterprise agent workflow system?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_0"
+      ]
+    },
+    {
+      "case_id": "request_routing",
+      "filename": "agent_workflow.md",
+      "question": "How does request routing work in an agent workflow?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_1"
+      ]
+    },
+    {
+      "case_id": "retrieval_path",
+      "filename": "agent_workflow.md",
+      "question": "When should the system use the retrieval path?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_2"
+      ]
+    },
+    {
+      "case_id": "tool_execution_path",
+      "filename": "agent_workflow.md",
+      "question": "When should the agent use the tool execution path?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_3"
+      ]
+    },
+    {
+      "case_id": "clarification_step",
+      "filename": "agent_workflow.md",
+      "question": "Why is clarification necessary in an agent workflow?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_4"
+      ]
+    },
+    {
+      "case_id": "failure_handling",
+      "filename": "agent_workflow.md",
+      "question": "How should the system handle failures in production workflows?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_5"
+      ]
+    },
+    {
+      "case_id": "observability",
+      "filename": "agent_workflow.md",
+      "question": "What should engineers log for observability in an agent workflow system?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_6"
+      ]
+    },
+    {
+      "case_id": "workflow_evaluation",
+      "filename": "agent_workflow.md",
+      "question": "What should workflow evaluation measure?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_7"
+      ]
+    }
+  ]
+}
