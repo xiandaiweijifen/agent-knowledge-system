@@ -380,49 +380,59 @@ function App() {
         </div>
       </header>
 
-      <section className="status-banner">
-        <div className="status-pill">
-          <span>Backend</span>
-          <strong>{systemHealth?.status ?? "unknown"}</strong>
+      <section className="status-banner-wrap" aria-label="System Snapshot">
+        <div className="status-banner-heading">
+          <span className="section-label">System Snapshot</span>
+          <p className="status-banner-copy">
+            Active providers and infrastructure readiness for the current backend session.
+          </p>
         </div>
-        <div className="status-pill">
-          <span>Environment</span>
-          <strong>{systemHealth?.app_env ?? "unavailable"}</strong>
-        </div>
-        <div className="status-pill">
-          <span>Embedding</span>
-          <strong>
-            {systemHealth
-              ? `${systemHealth.embedding_provider} / ${systemHealth.embedding_model}`
-              : "unavailable"}
-          </strong>
-        </div>
-        <div className="status-pill">
-          <span>Chat</span>
-          <strong>
-            {systemHealth ? `${systemHealth.chat_provider} / ${systemHealth.chat_model}` : "unavailable"}
-          </strong>
-        </div>
-        <div className="status-pill">
-          <span>Provider Keys</span>
-          <strong>
-            {systemHealth
-              ? `Gemini ${systemHealth.providers.gemini_configured ? "on" : "off"} · OpenAI ${
-                  systemHealth.providers.openai_configured ? "on" : "off"
-                }`
-              : "unavailable"}
-          </strong>
-        </div>
-        <div className="status-pill">
-          <span>Infra</span>
-          <strong>
-            {systemHealth
-              ? `DB ${systemHealth.storage.database_configured ? "on" : "off"} · Redis ${
-                  systemHealth.storage.redis_configured ? "on" : "off"
-                }`
-              : "unavailable"}
-          </strong>
-        </div>
+        <section className="status-banner">
+          <div className="status-pill">
+            <span>Backend</span>
+            <strong>{systemHealth?.status ?? "unknown"}</strong>
+          </div>
+          <div className="status-pill">
+            <span>Environment</span>
+            <strong>{systemHealth?.app_env ?? "unavailable"}</strong>
+          </div>
+          <div className="status-pill">
+            <span>Embedding</span>
+            <strong>
+              {systemHealth
+                ? `${systemHealth.embedding_provider} / ${systemHealth.embedding_model}`
+                : "unavailable"}
+            </strong>
+          </div>
+          <div className="status-pill">
+            <span>Chat</span>
+            <strong>
+              {systemHealth
+                ? `${systemHealth.chat_provider} / ${systemHealth.chat_model}`
+                : "unavailable"}
+            </strong>
+          </div>
+          <div className="status-pill">
+            <span>Provider Keys</span>
+            <strong>
+              {systemHealth
+                ? `Gemini ${systemHealth.providers.gemini_configured ? "on" : "off"} · OpenAI ${
+                    systemHealth.providers.openai_configured ? "on" : "off"
+                  }`
+                : "unavailable"}
+            </strong>
+          </div>
+          <div className="status-pill">
+            <span>Infra</span>
+            <strong>
+              {systemHealth
+                ? `DB ${systemHealth.storage.database_configured ? "on" : "off"} · Redis ${
+                    systemHealth.storage.redis_configured ? "on" : "off"
+                  }`
+                : "unavailable"}
+            </strong>
+          </div>
+        </section>
       </section>
       {systemHealthError && <p className="error">{systemHealthError}</p>}
 
