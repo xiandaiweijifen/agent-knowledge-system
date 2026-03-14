@@ -281,3 +281,92 @@ def test_query_tool_execute_endpoint_returns_structured_stub():
     assert payload["execution_status"] == "stubbed"
     assert payload["execution_mode"] == "local_stub"
     assert payload["trace_id"]
+
+
+def test_query_agent_endpoint_returns_knowledge_workflow_result(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    embedding_dir = workspace_tmp_path / "embeddings"
+    embedding_dir.mkdir()
+
+    monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
+    monkeypatch.setattr(settings, "chat_provider", "fallback")
+
+    embedding_payload = {
+        "filename": "sample.txt",
+        "suffix": ".txt",
+        "embedding_provider": "mock",
+        "embedding_model": "mock-embedding-v1",
+        "vector_dim": 8,
+        "source_path": "../data/raw/sample.txt",
+        "source_chunk_path": "../data/chunks/sample.chunks.json",
+        "created_at": "2026-03-14T00:00:00+00:00",
+        "pipeline_version": "indexing-v1",
+        "chunk_count": 1,
+        "embeddings": [
+            {
+                "embedding_id": "sample.txt::chunk_0::embedding",
+                "chunk_id": "sample.txt::chunk_0",
+                "chunk_index": 0,
+                "source_filename": "sample.txt",
+                "source_suffix": ".txt",
+                "char_count": 11,
+                "content": "rag systems",
+                "vector": embedding_service.build_mock_embedding("rag systems"),
+            }
+        ],
+    }
+    (embedding_dir / "sample.embeddings.json").write_text(
+        json.dumps(embedding_payload),
+        encoding="utf-8",
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "filename": "sample.txt",
+            "question": "What are rag systems?",
+            "top_k": 1,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["route"]["route_type"] == "knowledge_retrieval"
+    assert payload["retrieval"]["filename"] == "sample.txt"
+    assert payload["answer"]
+
+
+def test_query_agent_endpoint_returns_tool_workflow_result():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket for the payment service outage",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert payload["tool_execution"]["execution_status"] == "stubbed"
+
+
+def test_query_agent_endpoint_returns_clarification_result():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Please do that for production",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "clarification_required"
+    assert payload["route"]["route_type"] == "clarification_needed"
+    assert payload["clarification_message"]

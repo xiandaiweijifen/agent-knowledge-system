@@ -1,6 +1,7 @@
+import re
 import uuid
 
-from app.schemas.tools import ToolExecutionRequest, ToolExecutionResponse
+from app.schemas.tools import InferredToolRequest, ToolExecutionRequest, ToolExecutionResponse
 from app.services.ingestion.document_service import build_utc_timestamp
 
 
@@ -9,6 +10,10 @@ SUPPORTED_TOOLS = {
     "system_status",
     "document_search",
 }
+ACTION_PATTERN = re.compile(
+    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete)\b",
+    re.IGNORECASE,
+)
 
 
 def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse:
@@ -42,4 +47,34 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
             "action": action,
             "note": "Replace this stub with a real tool adapter in the next iteration.",
         },
+    )
+
+
+def infer_tool_request(question: str) -> InferredToolRequest:
+    """Infer a minimal tool request from a routed execution query."""
+    normalized_question = question.strip()
+
+    if not normalized_question:
+        raise ValueError("question_must_not_be_empty")
+
+    lowered = normalized_question.lower()
+    action_match = ACTION_PATTERN.search(lowered)
+    action = action_match.group(1).lower() if action_match else "execute"
+
+    if "ticket" in lowered or "incident" in lowered:
+        tool_name = "ticketing"
+    elif "status" in lowered:
+        tool_name = "system_status"
+    else:
+        tool_name = "document_search"
+
+    if " for " in lowered:
+        target = normalized_question.split(" for ", maxsplit=1)[1].strip()
+    else:
+        target = normalized_question
+
+    return InferredToolRequest(
+        tool_name=tool_name,
+        action=action,
+        target=target,
     )

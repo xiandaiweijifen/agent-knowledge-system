@@ -12,6 +12,12 @@ class QueryRouteRequest(BaseModel):
     filename: str | None = None
 
 
+class AgentQueryRequest(BaseModel):
+    question: str
+    filename: str | None = None
+    top_k: int = 3
+
+
 class RouteDecision(BaseModel):
     route_type: str
     route_reason: str
@@ -78,3 +84,20 @@ class QueryDiagnosticsResponse(BaseModel):
     retrieval: RetrievalResult
     diagnostics: RetrievalDiagnosticsSummary
     candidates: list[RetrievedChunkMatch] = Field(default_factory=list)
+
+
+class AgentWorkflowResponse(BaseModel):
+    question: str
+    workflow_status: str
+    route: RouteDecision
+    filename: str | None = None
+    answer: str | None = None
+    answer_source: str | None = None
+    model: str | None = None
+    answered_at: str | None = None
+    answer_latency_ms: float | None = None
+    chat_provider: str | None = None
+    chat_model: str | None = None
+    retrieval: RetrievalResult | None = None
+    clarification_message: str | None = None
+    tool_execution: dict | None = None

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.query import (
+    AgentQueryRequest,
+    AgentWorkflowResponse,
     QueryDiagnosticsRequest,
     QueryDiagnosticsResponse,
     QueryRequest,
@@ -8,6 +10,7 @@ from app.schemas.query import (
     QueryResponse,
     RouteDecision,
 )
+from app.services.agent.orchestrator_service import orchestrate_agent_request
 from app.schemas.tools import ToolExecutionRequest, ToolExecutionResponse
 from app.services.agent.router_service import route_request
 from app.services.agent.tool_service import execute_tool_request
@@ -23,6 +26,23 @@ def route_query_request(request: QueryRouteRequest) -> RouteDecision:
         return route_request(
             question=request.question,
             filename=request.filename,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/agent", response_model=AgentWorkflowResponse)
+def orchestrate_agent_query(request: AgentQueryRequest) -> AgentWorkflowResponse:
+    try:
+        return orchestrate_agent_request(
+            question=request.question,
+            filename=request.filename,
+            top_k=request.top_k,
+        )
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Persisted embedding file not found. Generate embeddings first",
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

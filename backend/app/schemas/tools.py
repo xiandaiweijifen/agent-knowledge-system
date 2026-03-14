@@ -18,3 +18,9 @@ class ToolExecutionResponse(BaseModel):
     trace_id: str
     executed_at: str
     output: dict[str, str] = Field(default_factory=dict)
+
+
+class InferredToolRequest(BaseModel):
+    tool_name: str
+    action: str
+    target: str
