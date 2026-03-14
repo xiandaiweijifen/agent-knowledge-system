@@ -129,6 +129,21 @@ type EvalReportResponse = {
   };
 };
 
+const presetQuestions: Record<string, string[]> = {
+  "rag_overview.md": [
+    "What is RAG?",
+    "Why is chunking important in a RAG system?",
+    "What is the role of embeddings?",
+    "Why do production systems use reranking?",
+  ],
+  "agent_workflow.md": [
+    "How does request routing work in an agent workflow?",
+    "When should the agent use the tool execution path?",
+    "Why is clarification necessary in an agent workflow?",
+    "What should engineers log for observability in an agent workflow system?",
+  ],
+};
+
 const views: Array<{ key: ViewKey; label: string; kicker: string }> = [
   { key: "documents", label: "Documents", kicker: "Ingestion artifacts" },
   { key: "query", label: "Query Lab", kicker: "Retrieval and answer tracing" },
@@ -205,6 +220,12 @@ function App() {
   const [evalResult, setEvalResult] = useState<EvalReportResponse | null>(null);
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
+
+  const activePresetQuestions =
+    presetQuestions[queryFilename] ?? [
+      "What is the main topic of this document?",
+      "What are the most important system behaviors described here?",
+    ];
 
   useEffect(() => {
     void loadDocuments();
@@ -605,6 +626,18 @@ function App() {
                   rows={4}
                 />
               </label>
+              <div className="preset-strip">
+                {activePresetQuestions.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    className="preset-chip"
+                    onClick={() => setQuestion(preset)}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
               <label>
                 Top-K
                 <input
@@ -628,96 +661,122 @@ function App() {
             {queryError && <p className="error">{queryError}</p>}
           </article>
 
-          <article className="panel">
-            <div className="panel-heading">
-              <h2>Answer Trace</h2>
-            </div>
-            {queryResult ? (
-              <div className="result-stack">
-                <div className="trace-grid">
-                  <div>
-                    <span className="trace-label">Chat Provider</span>
-                    <strong>{queryResult.chat_provider}</strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">Chat Model</span>
-                    <strong>{queryResult.chat_model}</strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">Answer Latency</span>
-                    <strong>{queryResult.answer_latency_ms.toFixed(3)} ms</strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">Embedding Provider</span>
-                    <strong>{queryResult.retrieval.embedding_provider}</strong>
-                  </div>
-                </div>
-                <blockquote className="answer-card">{queryResult.answer}</blockquote>
-                <div className="match-list">
-                  {queryResult.retrieval.matches.map((match) => (
-                    <article key={match.chunk_id} className="match-card">
-                      <header>
-                        <strong>{match.chunk_id}</strong>
-                        <span>{match.score.toFixed(6)}</span>
-                      </header>
-                      <p>{match.content}</p>
-                    </article>
-                  ))}
-                </div>
+          <div className="query-results">
+            <article className="panel">
+              <div className="panel-heading">
+                <h2>Answer Trace</h2>
               </div>
-            ) : (
-              <p className="muted">
-                Run a query to inspect answer text, provider selection, and top retrieved chunks.
-              </p>
-            )}
-          </article>
+              {queryResult ? (
+                <div className="result-stack">
+                  <div className="trace-grid">
+                    <div>
+                      <span className="trace-label">Chat Provider</span>
+                      <strong>{queryResult.chat_provider}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Chat Model</span>
+                      <strong>{queryResult.chat_model}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Answer Latency</span>
+                      <strong>{queryResult.answer_latency_ms.toFixed(3)} ms</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Embedding Provider</span>
+                      <strong>{queryResult.retrieval.embedding_provider}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Query Provider</span>
+                      <strong>{queryResult.retrieval.query_embedding_provider}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Retrieval Latency</span>
+                      <strong>{queryResult.retrieval.retrieval_latency_ms.toFixed(3)} ms</strong>
+                    </div>
+                  </div>
+                  <blockquote className="answer-card">{queryResult.answer}</blockquote>
+                  <div className="section-label">Top Retrieved Chunks</div>
+                  <div className="match-list compact">
+                    {queryResult.retrieval.matches.map((match) => (
+                      <article key={match.chunk_id} className="match-card trace-card">
+                        <header>
+                          <strong>{match.chunk_id}</strong>
+                          <span>{match.score.toFixed(6)}</span>
+                        </header>
+                        <div className="meta-row">
+                          <span>chars {match.char_count}</span>
+                          <span>vector {match.vector_score?.toFixed(6) ?? "-"}</span>
+                          <span>bonus {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
+                        </div>
+                        <p>{match.content}</p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="muted">
+                  Run a query to inspect answer text, provider selection, and top retrieved chunks.
+                </p>
+              )}
+            </article>
 
-          <article className="panel panel-span">
-            <div className="panel-heading">
-              <h2>Retrieval Diagnostics</h2>
-            </div>
-            {diagnosticsResult ? (
-              <>
-                <div className="trace-grid">
-                  <div>
-                    <span className="trace-label">Scored Chunks</span>
-                    <strong>{diagnosticsResult.diagnostics.total_scored_chunks}</strong>
+            <article className="panel">
+              <div className="panel-heading">
+                <h2>Retrieval Diagnostics</h2>
+              </div>
+              {diagnosticsResult ? (
+                <>
+                  <div className="trace-grid">
+                    <div>
+                      <span className="trace-label">Scored Chunks</span>
+                      <strong>{diagnosticsResult.diagnostics.total_scored_chunks}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Candidates</span>
+                      <strong>{diagnosticsResult.diagnostics.returned_candidate_count}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Mean Score</span>
+                      <strong>{diagnosticsResult.diagnostics.mean_score.toFixed(6)}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Max Score</span>
+                      <strong>{diagnosticsResult.diagnostics.max_score.toFixed(6)}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Min Score</span>
+                      <strong>{diagnosticsResult.diagnostics.min_score.toFixed(6)}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Latency</span>
+                      <strong>{diagnosticsResult.retrieval.retrieval_latency_ms.toFixed(3)} ms</strong>
+                    </div>
                   </div>
-                  <div>
-                    <span className="trace-label">Mean Score</span>
-                    <strong>{diagnosticsResult.diagnostics.mean_score.toFixed(6)}</strong>
+                  <div className="section-label">Candidate Ranking</div>
+                  <div className="match-list compact">
+                    {diagnosticsResult.candidates.map((match) => (
+                      <article key={match.chunk_id} className="match-card diagnostic trace-card">
+                        <header>
+                          <strong>{match.chunk_id}</strong>
+                          <span>{match.score.toFixed(6)}</span>
+                        </header>
+                        <div className="meta-row">
+                          <span>vector {match.vector_score?.toFixed(6) ?? "-"}</span>
+                          <span>bonus {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
+                          <span>chars {match.char_count}</span>
+                        </div>
+                        <p>{match.content}</p>
+                      </article>
+                    ))}
                   </div>
-                  <div>
-                    <span className="trace-label">Latency</span>
-                    <strong>{diagnosticsResult.retrieval.retrieval_latency_ms.toFixed(3)} ms</strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">Query Provider</span>
-                    <strong>{diagnosticsResult.retrieval.query_embedding_provider}</strong>
-                  </div>
-                </div>
-                <div className="match-list">
-                  {diagnosticsResult.candidates.map((match) => (
-                    <article key={match.chunk_id} className="match-card diagnostic">
-                      <header>
-                        <strong>{match.chunk_id}</strong>
-                        <span>{match.score.toFixed(6)}</span>
-                      </header>
-                      <div className="meta-row">
-                        <span>vector {match.vector_score?.toFixed(6) ?? "-"}</span>
-                        <span>bonus {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
-                      </div>
-                      <p>{match.content}</p>
-                    </article>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="muted">
-                Run diagnostics to inspect vector scores, rerank bonuses, and candidate ordering.
-              </p>
-            )}
-          </article>
+                </>
+              ) : (
+                <p className="muted">
+                  Run diagnostics to inspect vector scores, rerank bonuses, and candidate ordering.
+                </p>
+              )}
+            </article>
+          </div>
         </section>
       )}
 
