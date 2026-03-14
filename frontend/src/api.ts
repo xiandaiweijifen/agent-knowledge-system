@@ -1,4 +1,5 @@
 import type {
+  AgentWorkflowResponse,
   DiagnosticsResponse,
   DocumentListResponse,
   DocumentPreview,
@@ -117,6 +118,17 @@ export function runDiagnostics(filename: string, question: string, topK: number)
       question,
       top_k: topK,
       candidate_count: 10,
+    }),
+  });
+}
+
+export function runAgentQuery(filename: string, question: string, topK: number) {
+  return apiFetch<AgentWorkflowResponse>("/api/query/agent", {
+    method: "POST",
+    body: JSON.stringify({
+      filename: filename || null,
+      question,
+      top_k: topK,
     }),
   });
 }

@@ -9,6 +9,7 @@ import {
   fetchSystemHealth,
   persistChunks as persistChunksRequest,
   persistEmbeddings as persistEmbeddingsRequest,
+  runAgentQuery as runAgentQueryRequest,
   runDiagnostics as runDiagnosticsRequest,
   runEvaluation as runEvaluationRequest,
   runQuery as runQueryRequest,
@@ -19,6 +20,7 @@ import { EvaluationView } from "./components/EvaluationView";
 import { QueryView } from "./components/QueryView";
 import { presetQuestions, views } from "./constants";
 import type {
+  AgentWorkflowResponse,
   DiagnosticsResponse,
   DocumentItem,
   DocumentPreview,
@@ -53,6 +55,7 @@ function App() {
   const [question, setQuestion] = useState("What is RAG?");
   const [topK, setTopK] = useState(3);
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
+  const [agentQueryResult, setAgentQueryResult] = useState<AgentWorkflowResponse | null>(null);
   const [diagnosticsResult, setDiagnosticsResult] = useState<DiagnosticsResponse | null>(null);
   const [queryError, setQueryError] = useState("");
   const [queryBusy, setQueryBusy] = useState(false);
@@ -311,6 +314,7 @@ function App() {
     setQueryBusy(true);
     setQueryError("");
     setQueryResult(null);
+    setAgentQueryResult(null);
 
     try {
       const payload = await runQueryRequest(queryFilename, question, topK);
@@ -332,6 +336,21 @@ function App() {
       setDiagnosticsResult(payload);
     } catch (error) {
       setQueryError(error instanceof Error ? error.message : "Failed to run diagnostics");
+    } finally {
+      setQueryBusy(false);
+    }
+  }
+
+  async function runAgentQuery() {
+    setQueryBusy(true);
+    setQueryError("");
+    setAgentQueryResult(null);
+
+    try {
+      const payload = await runAgentQueryRequest(queryFilename, question, topK);
+      setAgentQueryResult(payload);
+    } catch (error) {
+      setQueryError(error instanceof Error ? error.message : "Failed to run agent workflow");
     } finally {
       setQueryBusy(false);
     }
@@ -496,6 +515,7 @@ function App() {
           topK={topK}
           activePresetQuestions={activePresetQuestions}
           queryResult={queryResult}
+          agentQueryResult={agentQueryResult}
           diagnosticsResult={diagnosticsResult}
           queryError={queryError}
           queryBusy={queryBusy}
@@ -504,6 +524,7 @@ function App() {
           onChangeTopK={setTopK}
           onClearDiagnostics={() => setDiagnosticsResult(null)}
           onSubmitQuery={submitQuery}
+          onRunAgent={() => void runAgentQuery()}
           onRunDiagnostics={() => void runDiagnostics()}
         />
       )}

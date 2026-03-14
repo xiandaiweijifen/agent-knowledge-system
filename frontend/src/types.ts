@@ -107,6 +107,70 @@ export type QueryResponse = {
   retrieval: RetrievalResponse;
 };
 
+export type WorkflowTraceEvent = {
+  stage: string;
+  status: string;
+  timestamp: string;
+  detail: string;
+};
+
+export type RouteDecision = {
+  route_type: string;
+  route_reason: string;
+  filename?: string | null;
+};
+
+export type ClarificationPlan = {
+  question: string;
+  planning_mode: string;
+  missing_fields: string[];
+  follow_up_questions: string[];
+  clarification_summary: string;
+};
+
+export type ToolPlan = {
+  question: string;
+  planning_mode: string;
+  route_hint: string;
+  tool_name: string;
+  action: string;
+  target: string;
+  arguments: Record<string, string>;
+  plan_summary: string;
+};
+
+export type ToolExecution = {
+  tool_name: string;
+  action: string;
+  target: string;
+  execution_status: string;
+  execution_mode: string;
+  result_summary: string;
+  trace_id: string;
+  executed_at: string;
+  output: Record<string, string>;
+};
+
+export type AgentWorkflowResponse = {
+  question: string;
+  workflow_status: string;
+  route: RouteDecision;
+  workflow_trace: WorkflowTraceEvent[];
+  filename?: string | null;
+  answer?: string | null;
+  answer_source?: string | null;
+  model?: string | null;
+  answered_at?: string | null;
+  answer_latency_ms?: number | null;
+  chat_provider?: string | null;
+  chat_model?: string | null;
+  retrieval?: RetrievalResponse | null;
+  clarification_message?: string | null;
+  clarification_plan?: ClarificationPlan | null;
+  tool_plan?: ToolPlan | null;
+  tool_execution?: ToolExecution | null;
+};
+
 export type DiagnosticsResponse = {
   filename: string;
   question: string;

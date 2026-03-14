@@ -61,6 +61,44 @@ describe("QueryView", () => {
             ],
           },
         }}
+        agentQueryResult={{
+          question: "What is RAG?",
+          workflow_status: "completed",
+          route: {
+            route_type: "knowledge_retrieval",
+            route_reason: "Question is a knowledge lookup.",
+            filename: "rag_overview.md",
+          },
+          workflow_trace: [
+            {
+              stage: "routing",
+              status: "completed",
+              timestamp: "2026-03-14T00:00:00+00:00",
+              detail: "Route selected knowledge retrieval.",
+            },
+          ],
+          filename: "rag_overview.md",
+          answer: "RAG combines retrieval with generation.",
+          answer_source: "gemini",
+          model: "gemini-2.5-flash-lite",
+          answered_at: "2026-03-14T00:00:00+00:00",
+          answer_latency_ms: 12.5,
+          chat_provider: "gemini",
+          chat_model: "gemini-2.5-flash-lite",
+          retrieval: {
+            filename: "rag_overview.md",
+            embedding_provider: "gemini",
+            embedding_model: "gemini-embedding-001",
+            vector_dim: 3072,
+            question: "What is RAG?",
+            top_k: 3,
+            retrieved_at: "2026-03-14T00:00:00+00:00",
+            retrieval_latency_ms: 8.2,
+            query_embedding_provider: "gemini",
+            query_embedding_model: "gemini-embedding-001",
+            matches: [],
+          },
+        }}
         diagnosticsResult={null}
         queryError=""
         queryBusy={false}
@@ -69,12 +107,15 @@ describe("QueryView", () => {
         onChangeTopK={vi.fn()}
         onClearDiagnostics={vi.fn()}
         onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
     );
 
     expect(screen.getByText("Answer Trace")).toBeInTheDocument();
-    expect(screen.getByText("RAG combines retrieval with generation.")).toBeInTheDocument();
+    expect(screen.getByText("Agent Workflow")).toBeInTheDocument();
+    expect(screen.getByText("knowledge_retrieval")).toBeInTheDocument();
+    expect(screen.getAllByText("RAG combines retrieval with generation.")).toHaveLength(2);
     expect(screen.getByText("gemini-2.5-flash-lite")).toBeInTheDocument();
 
     await user.click(

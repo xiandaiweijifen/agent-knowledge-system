@@ -800,6 +800,51 @@ textarea {
   gap: 16px;
 }
 
+.subsection-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 252, 245, 0.88);
+}
+
+.subsection-copy {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.pill-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid rgba(159, 58, 29, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 248, 240, 0.92);
+  color: var(--accent-strong);
+  font-size: 0.84rem;
+}
+
+.list-block {
+  display: grid;
+  gap: 8px;
+}
+
+.list-block p {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--muted);
+}
+
 .trace-grid {
   display: grid;
   gap: 14px;
@@ -855,6 +900,33 @@ textarea {
 
 .compact {
   gap: 10px;
+}
+
+.trace-event-list {
+  display: grid;
+  gap: 10px;
+}
+
+.trace-event-card {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.trace-event-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.trace-event-card p,
+.trace-event-card small {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .section-label {

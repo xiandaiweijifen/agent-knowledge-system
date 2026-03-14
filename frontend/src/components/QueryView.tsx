@@ -1,6 +1,11 @@
 import type { FormEvent } from "react";
 
-import type { DiagnosticsResponse, DocumentItem, QueryResponse } from "../types";
+import type {
+  AgentWorkflowResponse,
+  DiagnosticsResponse,
+  DocumentItem,
+  QueryResponse,
+} from "../types";
 
 type QueryViewProps = {
   documents: DocumentItem[];
@@ -9,6 +14,7 @@ type QueryViewProps = {
   topK: number;
   activePresetQuestions: string[];
   queryResult: QueryResponse | null;
+  agentQueryResult: AgentWorkflowResponse | null;
   diagnosticsResult: DiagnosticsResponse | null;
   queryError: string;
   queryBusy: boolean;
@@ -17,6 +23,7 @@ type QueryViewProps = {
   onChangeTopK: (value: number) => void;
   onClearDiagnostics: () => void;
   onSubmitQuery: (event: FormEvent<HTMLFormElement>) => void;
+  onRunAgent: () => void;
   onRunDiagnostics: () => void;
 };
 
@@ -27,6 +34,7 @@ export function QueryView({
   topK,
   activePresetQuestions,
   queryResult,
+  agentQueryResult,
   diagnosticsResult,
   queryError,
   queryBusy,
@@ -35,6 +43,7 @@ export function QueryView({
   onChangeTopK,
   onClearDiagnostics,
   onSubmitQuery,
+  onRunAgent,
   onRunDiagnostics,
 }: QueryViewProps) {
   return (
@@ -117,13 +126,158 @@ export function QueryView({
             <button type="button" className="secondary-button" disabled={queryBusy} onClick={onRunDiagnostics}>
               Run Diagnostics
             </button>
+            <button type="button" className="ghost-button" disabled={queryBusy} onClick={onRunAgent}>
+              Run Agent
+            </button>
           </div>
         </form>
-        {queryBusy && <p className="status">Running retrieval pipeline...</p>}
+        {queryBusy && <p className="status">Running query workflow...</p>}
         {queryError && <p className="error">{queryError}</p>}
       </article>
 
       <div className="query-results">
+        <article className="panel">
+          <div className="panel-heading">
+            <h2>Agent Workflow</h2>
+          </div>
+          {agentQueryResult ? (
+            <div className="result-stack">
+              <div className="trace-grid">
+                <div>
+                  <span className="trace-label">Workflow Status</span>
+                  <strong>{agentQueryResult.workflow_status}</strong>
+                </div>
+                <div>
+                  <span className="trace-label">Route</span>
+                  <strong>{agentQueryResult.route.route_type}</strong>
+                </div>
+                <div>
+                  <span className="trace-label">Answer Provider</span>
+                  <strong>{agentQueryResult.chat_provider ?? "not used"}</strong>
+                </div>
+                <div>
+                  <span className="trace-label">Tool</span>
+                  <strong>{agentQueryResult.tool_plan?.tool_name ?? "not used"}</strong>
+                </div>
+              </div>
+
+              <article className="subsection-card">
+                <span className="section-label">Route Reason</span>
+                <p className="subsection-copy">{agentQueryResult.route.route_reason}</p>
+              </article>
+
+              {agentQueryResult.answer && (
+                <article className="subsection-card">
+                  <span className="section-label">Knowledge Result</span>
+                  <blockquote className="answer-card">{agentQueryResult.answer}</blockquote>
+                </article>
+              )}
+
+              {agentQueryResult.tool_plan && (
+                <article className="subsection-card">
+                  <span className="section-label">Tool Plan</span>
+                  <div className="trace-grid">
+                    <div>
+                      <span className="trace-label">Tool</span>
+                      <strong>{agentQueryResult.tool_plan.tool_name}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Action</span>
+                      <strong>{agentQueryResult.tool_plan.action}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Target</span>
+                      <strong>{agentQueryResult.tool_plan.target}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Planning Mode</span>
+                      <strong>{agentQueryResult.tool_plan.planning_mode}</strong>
+                    </div>
+                  </div>
+                  {Object.keys(agentQueryResult.tool_plan.arguments).length > 0 && (
+                    <div className="pill-strip">
+                      {Object.entries(agentQueryResult.tool_plan.arguments).map(([key, value]) => (
+                        <span key={key} className="meta-pill">
+                          {key}: {value}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <p className="subsection-copy">{agentQueryResult.tool_plan.plan_summary}</p>
+                </article>
+              )}
+
+              {agentQueryResult.tool_execution && (
+                <article className="subsection-card">
+                  <span className="section-label">Tool Execution</span>
+                  <div className="trace-grid">
+                    <div>
+                      <span className="trace-label">Execution Status</span>
+                      <strong>{agentQueryResult.tool_execution.execution_status}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Mode</span>
+                      <strong>{agentQueryResult.tool_execution.execution_mode}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">Trace Id</span>
+                      <strong>{agentQueryResult.tool_execution.trace_id}</strong>
+                    </div>
+                  </div>
+                  <p className="subsection-copy">{agentQueryResult.tool_execution.result_summary}</p>
+                </article>
+              )}
+
+              {agentQueryResult.clarification_plan && (
+                <article className="subsection-card">
+                  <span className="section-label">Clarification Plan</span>
+                  <p className="subsection-copy">
+                    {agentQueryResult.clarification_message ??
+                      agentQueryResult.clarification_plan.clarification_summary}
+                  </p>
+                  {agentQueryResult.clarification_plan.missing_fields.length > 0 && (
+                    <div className="pill-strip">
+                      {agentQueryResult.clarification_plan.missing_fields.map((field) => (
+                        <span key={field} className="meta-pill">
+                          missing: {field}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {agentQueryResult.clarification_plan.follow_up_questions.length > 0 && (
+                    <div className="list-block">
+                      {agentQueryResult.clarification_plan.follow_up_questions.map((item) => (
+                        <p key={item}>{item}</p>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              )}
+
+              <div className="section-label">Workflow Trace</div>
+              <div className="trace-event-list">
+                {agentQueryResult.workflow_trace.map((event) => (
+                  <article key={`${event.stage}-${event.timestamp}`} className="trace-event-card">
+                    <header>
+                      <strong>{event.stage}</strong>
+                      <span>{event.status}</span>
+                    </header>
+                    <p>{event.detail}</p>
+                    <small>{event.timestamp}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="empty-state empty-state-large">
+              <strong>No agent workflow yet</strong>
+              <p>
+                Run Agent to inspect route selection, workflow trace, and tool or clarification output.
+              </p>
+            </div>
+          )}
+        </article>
+
         <article className="panel">
           <div className="panel-heading">
             <h2>Answer Trace</h2>
