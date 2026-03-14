@@ -43,6 +43,7 @@ class PersistedEmbeddingDocument(BaseModel):
     source_chunk_path: str = ""
     created_at: str = ""
     pipeline_version: str = ""
+    embedding_provider: str = ""
     embedding_model: str
     vector_dim: int
     chunk_count: int

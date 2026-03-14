@@ -58,6 +58,7 @@ def test_persist_document_embeddings_creates_embedding_artifact(
     persisted_payload = embedding_service.load_persisted_embeddings("sample.txt")
 
     assert result["filename"] == "sample.txt"
+    assert result["embedding_provider"] == "mock"
     assert result["embedding_model"] == "mock-embedding-v1"
     assert result["vector_dim"] == 8
     assert result["embedding_count"] == 2
@@ -68,6 +69,7 @@ def test_persist_document_embeddings_creates_embedding_artifact(
     assert persisted_payload["source_path"] == "../data/raw/sample.txt"
     assert persisted_payload["source_chunk_path"].endswith("sample.chunks.json")
     assert persisted_payload["pipeline_version"] == "indexing-v1"
+    assert persisted_payload["embedding_provider"] == "mock"
     assert persisted_payload["created_at"]
     assert persisted_payload["chunk_count"] == 2
     assert len(persisted_payload["embeddings"]) == 2

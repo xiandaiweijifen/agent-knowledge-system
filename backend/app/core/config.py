@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     app_port: int = 8000
     openai_api_key: str = ""
     openai_chat_model: str = "gpt-4o-mini"
+    openai_embedding_model: str = "text-embedding-3-small"
     database_url: str = ""
     redis_url: str = ""
 
