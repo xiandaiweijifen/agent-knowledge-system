@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "case_id": "rag_definition",
+      "filename": "rag_overview.md",
+      "question": "What is RAG?",
+      "expected_chunk_ids": [
+        "rag_overview.md::chunk_0"
+      ]
+    },
+    {
+      "case_id": "chunking_importance",
+      "filename": "rag_overview.md",
+      "question": "Why is chunking important in a RAG system?",
+      "expected_chunk_ids": [
+        "rag_overview.md::chunk_2"
+      ]
+    },
+    {
+      "case_id": "embedding_role",
+      "filename": "rag_overview.md",
+      "question": "What is the role of embeddings?",
+      "expected_chunk_ids": [
+        "rag_overview.md::chunk_3"
+      ]
+    },
+    {
+      "case_id": "reranking_purpose",
+      "filename": "rag_overview.md",
+      "question": "Why do production systems use reranking?",
+      "expected_chunk_ids": [
+        "rag_overview.md::chunk_4"
+      ]
+    },
+    {
+      "case_id": "observability_metrics",
+      "filename": "rag_overview.md",
+      "question": "What should engineers track for observability?",
+      "expected_chunk_ids": [
+        "rag_overview.md::chunk_6"
+      ]
+    },
+    {
+      "case_id": "failure_modes",
+      "filename": "rag_overview.md",
+      "question": "What are common failure modes in RAG systems?",
+      "expected_chunk_ids": [
+        "rag_overview.md::chunk_7"
+      ]
+    }
+  ]
+}

@@ -77,3 +77,9 @@ def test_persist_document_embeddings_creates_embedding_artifact(
     assert persisted_payload["chunk_count"] == 2
     assert len(persisted_payload["embeddings"]) == 2
     assert len(persisted_payload["embeddings"][0]["vector"]) == 8
+
+
+def test_build_mock_embedding_supports_large_vector_dimensions():
+    vector = embedding_service.build_mock_embedding("rag systems", vector_dim=3072)
+
+    assert len(vector) == 3072

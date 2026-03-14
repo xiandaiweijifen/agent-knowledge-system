@@ -34,7 +34,7 @@ def build_mock_embedding(text: str, vector_dim: int = MOCK_VECTOR_DIM) -> list[f
     vector = []
 
     for index in range(vector_dim):
-        byte_value = digest[index]
+        byte_value = digest[index % len(digest)]
         normalized_value = round(byte_value / 255, 6)
         vector.append(normalized_value)
 
