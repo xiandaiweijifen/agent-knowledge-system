@@ -1,0 +1,20 @@
+from pydantic import BaseModel, Field
+
+
+class ToolExecutionRequest(BaseModel):
+    tool_name: str
+    action: str
+    target: str
+    arguments: dict[str, str] = Field(default_factory=dict)
+
+
+class ToolExecutionResponse(BaseModel):
+    tool_name: str
+    action: str
+    target: str
+    execution_status: str
+    execution_mode: str
+    result_summary: str
+    trace_id: str
+    executed_at: str
+    output: dict[str, str] = Field(default_factory=dict)

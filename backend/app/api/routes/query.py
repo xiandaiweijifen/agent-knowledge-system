@@ -8,7 +8,9 @@ from app.schemas.query import (
     QueryResponse,
     RouteDecision,
 )
+from app.schemas.tools import ToolExecutionRequest, ToolExecutionResponse
 from app.services.agent.router_service import route_request
+from app.services.agent.tool_service import execute_tool_request
 from app.services.agent.query_service import run_query
 from app.services.retrieval.retrieval_service import retrieve_relevant_chunks_with_diagnostics
 
@@ -22,6 +24,14 @@ def route_query_request(request: QueryRouteRequest) -> RouteDecision:
             question=request.question,
             filename=request.filename,
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/tools/execute", response_model=ToolExecutionResponse)
+def execute_query_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
+    try:
+        return execute_tool_request(request)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

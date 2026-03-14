@@ -5,8 +5,10 @@ from fastapi.testclient import TestClient
 from app.core.config import settings
 from app.main import app
 from app.services.agent.router_service import route_request
+from app.services.agent.tool_service import execute_tool_request
 from app.services.indexing import embedding_service
 from app.services.retrieval.retrieval_service import compute_rerank_bonus
+from app.schemas.tools import ToolExecutionRequest
 
 
 def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
@@ -243,3 +245,39 @@ def test_query_route_endpoint_returns_route_decision():
     assert payload["route_type"] == "knowledge_retrieval"
     assert payload["filename"] == "rag_overview.md"
     assert payload["route_reason"]
+
+
+def test_execute_tool_request_returns_stubbed_result():
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="create",
+            target="payment-service",
+            arguments={"severity": "high"},
+        )
+    )
+
+    assert response.execution_status == "stubbed"
+    assert response.execution_mode == "local_stub"
+    assert response.trace_id
+
+
+def test_query_tool_execute_endpoint_returns_structured_stub():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/tools/execute",
+        json={
+            "tool_name": "ticketing",
+            "action": "create",
+            "target": "payment-service",
+            "arguments": {"severity": "high"},
+        },
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+    assert payload["tool_name"] == "ticketing"
+    assert payload["execution_status"] == "stubbed"
+    assert payload["execution_mode"] == "local_stub"
+    assert payload["trace_id"]
