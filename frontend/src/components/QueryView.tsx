@@ -245,6 +245,28 @@ export function QueryView({
                     </div>
                   </div>
                   <p className="subsection-copy">{agentQueryResult.tool_execution.result_summary}</p>
+                  {agentQueryResult.tool_execution.tool_name === "ticketing" && (
+                    <div className="ticketing-highlight">
+                      <div className="trace-grid">
+                        <div>
+                          <span className="trace-label">Ticket Id</span>
+                          <strong>{agentQueryResult.tool_execution.output.ticket_id ?? "n/a"}</strong>
+                        </div>
+                        <div>
+                          <span className="trace-label">Status</span>
+                          <strong>{agentQueryResult.tool_execution.output.status ?? "n/a"}</strong>
+                        </div>
+                        <div>
+                          <span className="trace-label">Severity</span>
+                          <strong>{agentQueryResult.tool_execution.output.severity ?? "n/a"}</strong>
+                        </div>
+                        <div>
+                          <span className="trace-label">Environment</span>
+                          <strong>{agentQueryResult.tool_execution.output.environment ?? "n/a"}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {Object.keys(agentQueryResult.tool_execution.output).length > 0 && (
                     <>
                       <span className="section-label">Tool Output</span>

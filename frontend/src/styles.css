@@ -941,6 +941,13 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.ticketing-highlight {
+  padding: 14px 16px;
+  border: 1px solid rgba(159, 58, 29, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 248, 240, 0.88);
+}
+
 .tool-output-card {
   display: grid;
   gap: 8px;

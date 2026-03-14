@@ -99,17 +99,19 @@ describe("QueryView", () => {
             matches: [],
           },
           tool_execution: {
-            tool_name: "system_status",
-            action: "query",
-            target: "agent-knowledge-system",
+            tool_name: "ticketing",
+            action: "create",
+            target: "payment-service",
             execution_status: "completed",
             execution_mode: "local_adapter",
-            result_summary: "Collected local system status.",
+            result_summary: "Created local ticket TICKET-0001 for payment-service.",
             trace_id: "trace-1",
             executed_at: "2026-03-14T00:00:00+00:00",
             output: {
-              embedding_provider: "gemini",
-              chat_provider: "fallback",
+              ticket_id: "TICKET-0001",
+              status: "open",
+              severity: "high",
+              environment: "production",
             },
           },
         }}
@@ -132,8 +134,9 @@ describe("QueryView", () => {
     expect(screen.getAllByText("RAG combines retrieval with generation.")).toHaveLength(2);
     expect(screen.getByText("gemini-2.5-flash-lite")).toBeInTheDocument();
     expect(screen.getByText("Tool Output")).toBeInTheDocument();
-    expect(screen.getByText("embedding_provider")).toBeInTheDocument();
-    expect(screen.getByText("fallback")).toBeInTheDocument();
+    expect(screen.getByText("Ticket Id")).toBeInTheDocument();
+    expect(screen.getAllByText("TICKET-0001").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("open").length).toBeGreaterThan(0);
 
     await user.click(
       screen.getByRole("button", { name: "Why is chunking important in a RAG system?" }),
