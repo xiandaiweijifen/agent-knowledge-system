@@ -1,7 +1,11 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services.evaluation import agent_route_eval_service, retrieval_eval_service
+from app.services.evaluation import (
+    agent_route_eval_service,
+    agent_workflow_eval_service,
+    retrieval_eval_service,
+)
 
 
 def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
@@ -169,3 +173,72 @@ def test_agent_route_evaluation_dataset_list_endpoint_returns_datasets(monkeypat
     payload = response.json()
     assert len(payload["datasets"]) == 1
     assert payload["datasets"][0]["dataset_name"] == "agent_route_eval.json"
+
+
+def test_agent_workflow_evaluation_endpoint_returns_report(monkeypatch):
+    client = TestClient(app)
+
+    def fake_eval(dataset_name: str):
+        assert dataset_name == "agent_workflow_eval.json"
+        return {
+            "summary": {
+                "total_cases": 3,
+                "workflow_accuracy": 1.0,
+            },
+            "cases": [
+                {
+                    "case_id": "case_1",
+                    "question": "What is RAG?",
+                    "filename": "rag_overview.md",
+                    "expected_route_type": "knowledge_retrieval",
+                    "actual_route_type": "knowledge_retrieval",
+                    "expected_workflow_status": "completed",
+                    "actual_workflow_status": "completed",
+                    "route_reason": "matched",
+                    "matched": True,
+                }
+            ],
+        }
+
+    monkeypatch.setattr(
+        agent_workflow_eval_service,
+        "evaluate_named_agent_workflow_dataset",
+        fake_eval,
+    )
+
+    response = client.post(
+        "/api/evaluation/agent-workflow",
+        json={
+            "dataset_name": "agent_workflow_eval.json",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["dataset_name"] == "agent_workflow_eval.json"
+    assert payload["report"]["summary"]["workflow_accuracy"] == 1.0
+
+
+def test_agent_workflow_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):
+    client = TestClient(app)
+
+    def fake_list():
+        return [
+            {
+                "dataset_name": "agent_workflow_eval.json",
+                "case_count": 6,
+            }
+        ]
+
+    monkeypatch.setattr(
+        agent_workflow_eval_service,
+        "list_agent_workflow_datasets",
+        fake_list,
+    )
+
+    response = client.get("/api/evaluation/agent-workflow/datasets")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["datasets"]) == 1
+    assert payload["datasets"][0]["dataset_name"] == "agent_workflow_eval.json"

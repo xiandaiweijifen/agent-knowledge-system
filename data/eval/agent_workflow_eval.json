@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "case_id": "workflow_knowledge_1",
+      "question": "What is RAG?",
+      "filename": "rag_overview.md",
+      "top_k": 3,
+      "expected_route_type": "knowledge_retrieval",
+      "expected_workflow_status": "completed"
+    },
+    {
+      "case_id": "workflow_knowledge_2",
+      "question": "What should engineers track for observability?",
+      "filename": "agent_workflow.md",
+      "top_k": 3,
+      "expected_route_type": "knowledge_retrieval",
+      "expected_workflow_status": "completed"
+    },
+    {
+      "case_id": "workflow_tool_1",
+      "question": "Create a ticket for the payment service outage",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed"
+    },
+    {
+      "case_id": "workflow_tool_2",
+      "question": "Query the status for the recommendation service",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed"
+    },
+    {
+      "case_id": "workflow_clarification_1",
+      "question": "Please do that for production",
+      "expected_route_type": "clarification_needed",
+      "expected_workflow_status": "clarification_required"
+    },
+    {
+      "case_id": "workflow_clarification_2",
+      "question": "Handle this in staging",
+      "expected_route_type": "clarification_needed",
+      "expected_workflow_status": "clarification_required"
+    }
+  ]
+}
