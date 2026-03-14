@@ -321,6 +321,31 @@ def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, 
     assert response.output["skipped_documents"] == "1"
 
 
+def test_execute_document_search_tool_returns_filename_filter_when_used(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text("Reranking improves retrieval quality.", encoding="utf-8")
+    (raw_dir / "notes.md").write_text("Reranking appears here too.", encoding="utf-8")
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="document_search",
+            action="query",
+            target="reranking",
+            arguments={"filename": "rag_overview.md"},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.output["filename_filter"] == "rag_overview.md"
+    assert response.output["matched_documents"] == "rag_overview.md"
+
+
 def test_query_tool_execute_endpoint_returns_structured_stub():
     client = TestClient(app)
     response = client.post(

@@ -142,6 +142,8 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
         "matched_documents": ", ".join(matched_documents),
         "skipped_documents": str(skipped_documents),
     }
+    if filename_filter:
+        output["filename_filter"] = filename_filter
     if preview_snippets:
         output["snippets"] = " | ".join(preview_snippets[:3])
 
