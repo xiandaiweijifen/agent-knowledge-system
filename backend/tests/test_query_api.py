@@ -343,6 +343,43 @@ def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
     assert queried.output["status"] == "open"
 
 
+def test_execute_ticketing_tool_supports_list(workspace_tmp_path, monkeypatch):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="create",
+            target="payment-service",
+            arguments={"severity": "high", "environment": "production"},
+        )
+    )
+    execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="create",
+            target="checkout-api",
+            arguments={"severity": "medium", "environment": "staging"},
+        )
+    )
+
+    listed = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="list",
+            target="tickets",
+            arguments={"status": "open"},
+        )
+    )
+
+    assert listed.execution_status == "completed"
+    assert listed.execution_mode == "local_adapter"
+    assert listed.output["ticket_count"] == "2"
+    assert listed.output["status_filter"] == "open"
+    assert "TICKET-0001" in listed.output["tickets"]
+
+
 def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
     monkeypatch.setattr(settings, "app_env", "development")
     monkeypatch.setattr(settings, "embedding_provider", "gemini")
@@ -518,6 +555,15 @@ def test_plan_tool_request_maps_ticket_status_queries_to_ticketing_query():
     assert response.tool_name == "ticketing"
     assert response.action == "query"
     assert response.target == "payment-service"
+
+
+def test_plan_tool_request_maps_ticket_list_queries_to_ticketing_list():
+    response = plan_tool_request("List open tickets")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "list"
+    assert response.target == "tickets"
+    assert response.arguments["status"] == "open"
 
 
 def test_query_tool_plan_endpoint_returns_plan():

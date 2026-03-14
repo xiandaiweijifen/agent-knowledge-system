@@ -18,7 +18,7 @@ from app.services.ingestion import document_service
 
 SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     "ticketing": {
-        "supported_actions": ["create", "update", "close", "query"],
+        "supported_actions": ["create", "update", "close", "query", "list"],
         "description": "Create, inspect, update, or close incident and ticket records for operational issues.",
         "execution_mode": "local_adapter",
     },
@@ -34,7 +34,7 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     },
 }
 ACTION_PATTERN = re.compile(
-    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup)\b",
+    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|list)\b",
     re.IGNORECASE,
 )
 ENVIRONMENT_SEGMENT_PATTERN = re.compile(
@@ -104,6 +104,37 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     action = request.action.strip().lower()
     trace_id = uuid.uuid4().hex
     now = build_utc_timestamp()
+
+    if action == "list":
+        status_filter = request.arguments.get("status", "").strip().lower()
+        filtered_tickets = tickets
+        if status_filter:
+            filtered_tickets = [
+                ticket for ticket in tickets if ticket.get("status", "").lower() == status_filter
+            ]
+
+        ticket_summaries = " | ".join(
+            f"{ticket['ticket_id']} [{ticket['status']}] {ticket['target']}"
+            for ticket in filtered_tickets
+        )
+        output = {
+            "ticket_count": str(len(filtered_tickets)),
+            "tickets": ticket_summaries,
+        }
+        if status_filter:
+            output["status_filter"] = status_filter
+
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target or "tickets",
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=f"Loaded {len(filtered_tickets)} local ticket(s).",
+            trace_id=trace_id,
+            executed_at=now,
+            output=output,
+        )
 
     if action == "create":
         ticket_id = f"TICKET-{len(tickets) + 1:04d}"
@@ -446,6 +477,18 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
             action="query",
             target=inferred_request.target,
         )
+    elif inferred_request.tool_name == "ticketing" and inferred_request.action == "list":
+        inferred_request = InferredToolRequest(
+            tool_name=inferred_request.tool_name,
+            action="list",
+            target="tickets",
+        )
+
+    if inferred_request.tool_name == "ticketing":
+        if "open" in lowered:
+            arguments["status"] = "open"
+        elif "closed" in lowered:
+            arguments["status"] = "closed"
 
     if inferred_request.tool_name == "document_search":
         filename = _extract_filename_argument(question)
