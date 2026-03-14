@@ -364,6 +364,7 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["route"]["route_type"] == "knowledge_retrieval"
+    assert len(payload["workflow_trace"]) >= 3
     assert payload["retrieval"]["filename"] == "sample.txt"
     assert payload["answer"]
 
@@ -381,6 +382,7 @@ def test_query_agent_endpoint_returns_tool_workflow_result():
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["route"]["route_type"] == "tool_execution"
+    assert len(payload["workflow_trace"]) >= 3
     assert payload["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_execution"]["execution_status"] == "stubbed"
 
@@ -398,6 +400,7 @@ def test_query_agent_endpoint_returns_clarification_result():
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
     assert payload["route"]["route_type"] == "clarification_needed"
+    assert len(payload["workflow_trace"]) >= 2
     assert payload["clarification_message"]
     assert "missing_fields" in payload["clarification_plan"]
     assert payload["clarification_plan"]["follow_up_questions"]

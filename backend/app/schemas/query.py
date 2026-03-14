@@ -18,6 +18,13 @@ class AgentQueryRequest(BaseModel):
     top_k: int = 3
 
 
+class WorkflowTraceEvent(BaseModel):
+    stage: str
+    status: str
+    timestamp: str
+    detail: str
+
+
 class RouteDecision(BaseModel):
     route_type: str
     route_reason: str
@@ -90,6 +97,7 @@ class AgentWorkflowResponse(BaseModel):
     question: str
     workflow_status: str
     route: RouteDecision
+    workflow_trace: list[WorkflowTraceEvent] = Field(default_factory=list)
     filename: str | None = None
     answer: str | None = None
     answer_source: str | None = None
