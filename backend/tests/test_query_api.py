@@ -5,7 +5,11 @@ from fastapi.testclient import TestClient
 from app.core.config import settings
 from app.main import app
 from app.services.agent.router_service import route_request
-from app.services.agent.tool_service import execute_tool_request, plan_tool_request
+from app.services.agent.tool_service import (
+    execute_tool_request,
+    list_registered_tools,
+    plan_tool_request,
+)
 from app.services.indexing import embedding_service
 from app.services.retrieval.retrieval_service import compute_rerank_bonus
 from app.schemas.tools import ToolExecutionRequest
@@ -281,6 +285,23 @@ def test_query_tool_execute_endpoint_returns_structured_stub():
     assert payload["execution_status"] == "stubbed"
     assert payload["execution_mode"] == "local_stub"
     assert payload["trace_id"]
+
+
+def test_list_registered_tools_returns_catalog():
+    catalog = list_registered_tools()
+
+    assert catalog.count >= 3
+    assert any(tool.tool_name == "ticketing" for tool in catalog.tools)
+
+
+def test_query_tools_endpoint_returns_catalog():
+    client = TestClient(app)
+    response = client.get("/api/query/tools")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] >= 3
+    assert any(tool["tool_name"] == "ticketing" for tool in payload["tools"])
 
 
 def test_plan_tool_request_returns_structured_plan():

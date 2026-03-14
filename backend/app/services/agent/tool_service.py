@@ -3,6 +3,8 @@ import uuid
 
 from app.schemas.tools import (
     InferredToolRequest,
+    ToolCatalogEntry,
+    ToolCatalogResponse,
     ToolExecutionRequest,
     ToolExecutionResponse,
     ToolPlanResponse,
@@ -10,10 +12,22 @@ from app.schemas.tools import (
 from app.services.ingestion.document_service import build_utc_timestamp
 
 
-SUPPORTED_TOOLS = {
-    "ticketing",
-    "system_status",
-    "document_search",
+SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
+    "ticketing": {
+        "supported_actions": ["create", "update", "close"],
+        "description": "Create or update incident and ticket records for operational issues.",
+        "execution_mode": "local_stub",
+    },
+    "system_status": {
+        "supported_actions": ["query"],
+        "description": "Inspect service or system health status through a status-style tool interface.",
+        "execution_mode": "local_stub",
+    },
+    "document_search": {
+        "supported_actions": ["query"],
+        "description": "Perform a tool-style document lookup outside the main retrieval answer flow.",
+        "execution_mode": "local_stub",
+    },
 }
 ACTION_PATTERN = re.compile(
     r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete)\b",
@@ -56,6 +70,23 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
             "action": action,
             "note": "Replace this stub with a real tool adapter in the next iteration.",
         },
+    )
+
+
+def list_registered_tools() -> ToolCatalogResponse:
+    """Return the currently registered tool catalog."""
+    tools = [
+        ToolCatalogEntry(
+            tool_name=tool_name,
+            supported_actions=list(tool_config["supported_actions"]),
+            description=str(tool_config["description"]),
+            execution_mode=str(tool_config["execution_mode"]),
+        )
+        for tool_name, tool_config in SUPPORTED_TOOLS.items()
+    ]
+    return ToolCatalogResponse(
+        count=len(tools),
+        tools=tools,
     )
 
 

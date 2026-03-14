@@ -39,3 +39,15 @@ class ToolPlanResponse(BaseModel):
     target: str
     arguments: dict[str, str] = Field(default_factory=dict)
     plan_summary: str
+
+
+class ToolCatalogEntry(BaseModel):
+    tool_name: str
+    supported_actions: list[str] = Field(default_factory=list)
+    description: str
+    execution_mode: str
+
+
+class ToolCatalogResponse(BaseModel):
+    count: int
+    tools: list[ToolCatalogEntry] = Field(default_factory=list)
