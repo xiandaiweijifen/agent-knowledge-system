@@ -1,3 +1,4 @@
+import re
 from math import sqrt
 from time import perf_counter
 
@@ -28,6 +29,62 @@ def cosine_similarity(left: list[float], right: list[float]) -> float:
 
     dot_product = sum(left[index] * right[index] for index in range(len(left)))
     return dot_product / (left_norm * right_norm)
+
+
+def tokenize_query(text: str) -> list[str]:
+    """Extract normalized query terms for lightweight reranking."""
+    stopwords = {
+        "a",
+        "an",
+        "and",
+        "are",
+        "does",
+        "how",
+        "in",
+        "is",
+        "of",
+        "the",
+        "what",
+        "why",
+    }
+    tokens = re.findall(r"[a-z0-9]+", text.lower())
+    return [token for token in tokens if token not in stopwords and len(token) > 1]
+
+
+def compute_rerank_bonus(query_text: str, chunk_content: str) -> float:
+    """Apply simple lexical bonuses on top of vector similarity."""
+    content_lower = chunk_content.lower()
+    query_lower = query_text.lower().strip()
+    query_terms = tokenize_query(query_text)
+    heading_window = content_lower[:160]
+    intro_window = content_lower[:240]
+    first_line = content_lower.splitlines()[0] if content_lower.splitlines() else ""
+    bonus = 0.0
+
+    if query_lower and query_lower in content_lower:
+        bonus += 0.02
+
+    if query_terms:
+        matched_terms = sum(1 for term in query_terms if term in content_lower)
+        overlap_ratio = matched_terms / len(query_terms)
+        bonus += 0.02 * overlap_ratio
+
+        if all(term in heading_window for term in query_terms):
+            bonus += 0.03
+
+        if query_lower.startswith("what is"):
+            if re.search(rf"\b{re.escape(query_terms[0])}\b\s+means", heading_window):
+                bonus += 0.12
+
+            if re.search(rf"\bor\s+{re.escape(query_terms[0])}\s*,?\s+is\b", intro_window):
+                bonus += 0.12
+            elif re.search(rf"\b{re.escape(query_terms[0])}\s+is\b", intro_window):
+                bonus += 0.08
+
+            if first_line.startswith("#") and any(term in first_line for term in query_terms):
+                bonus += 0.03
+
+    return round(bonus, 6)
 
 
 def retrieve_relevant_chunks(
@@ -75,8 +132,10 @@ def build_retrieval_outputs(
     )
 
     scored_chunks = []
-
     for embedding in embedding_payload.embeddings:
+        vector_score = round(cosine_similarity(query_vector, embedding.vector), 6)
+        rerank_bonus = compute_rerank_bonus(query_text, embedding.content)
+
         scored_chunks.append(
             RetrievedChunkMatch(
                 chunk_id=embedding.chunk_id,
@@ -85,10 +144,9 @@ def build_retrieval_outputs(
                 source_suffix=embedding.source_suffix,
                 char_count=embedding.char_count,
                 content=embedding.content,
-                score=round(
-                    cosine_similarity(query_vector, embedding.vector),
-                    6,
-                ),
+                vector_score=vector_score,
+                rerank_bonus=rerank_bonus,
+                score=round(vector_score + rerank_bonus, 6),
             )
         )
 

@@ -21,6 +21,8 @@ class RetrievedChunkMatch(BaseModel):
     source_suffix: str
     char_count: int
     content: str
+    vector_score: float = 0.0
+    rerank_bonus: float = 0.0
     score: float
 
 
