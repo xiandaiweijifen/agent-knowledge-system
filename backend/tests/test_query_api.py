@@ -315,6 +315,34 @@ def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path,
     assert closed.output["status"] == "closed"
 
 
+def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    created = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="create",
+            target="payment-service",
+            arguments={"severity": "high", "environment": "production"},
+        )
+    )
+
+    queried = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="query",
+            target="payment-service",
+            arguments={"ticket_id": created.output["ticket_id"]},
+        )
+    )
+
+    assert queried.execution_status == "completed"
+    assert queried.execution_mode == "local_adapter"
+    assert queried.output["ticket_id"] == created.output["ticket_id"]
+    assert queried.output["status"] == "open"
+
+
 def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
     monkeypatch.setattr(settings, "app_env", "development")
     monkeypatch.setattr(settings, "embedding_provider", "gemini")
@@ -482,6 +510,14 @@ def test_plan_tool_request_maps_status_queries_to_system_status():
     assert response.tool_name == "system_status"
     assert response.action == "query"
     assert response.target == "system status"
+
+
+def test_plan_tool_request_maps_ticket_status_queries_to_ticketing_query():
+    response = plan_tool_request("Check ticket status for payment-service")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "query"
+    assert response.target == "payment-service"
 
 
 def test_query_tool_plan_endpoint_returns_plan():

@@ -18,8 +18,8 @@ from app.services.ingestion import document_service
 
 SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     "ticketing": {
-        "supported_actions": ["create", "update", "close"],
-        "description": "Create or update incident and ticket records for operational issues.",
+        "supported_actions": ["create", "update", "close", "query"],
+        "description": "Create, inspect, update, or close incident and ticket records for operational issues.",
         "execution_mode": "local_adapter",
     },
     "system_status": {
@@ -150,6 +150,19 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
                 "target": target,
                 "ticket_id": request.arguments.get("ticket_id", "").strip(),
             },
+        )
+
+    if action == "query":
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target,
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=f"Loaded local ticket {ticket['ticket_id']} for {target}.",
+            trace_id=trace_id,
+            executed_at=now,
+            output=ticket,
         )
 
     if action == "update":
@@ -421,6 +434,18 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
         arguments["environment"] = "production"
     elif "staging" in lowered:
         arguments["environment"] = "staging"
+
+    if inferred_request.tool_name == "ticketing" and inferred_request.action in {
+        "check",
+        "show",
+        "inspect",
+        "query",
+    }:
+        inferred_request = InferredToolRequest(
+            tool_name=inferred_request.tool_name,
+            action="query",
+            target=inferred_request.target,
+        )
 
     if inferred_request.tool_name == "document_search":
         filename = _extract_filename_argument(question)
