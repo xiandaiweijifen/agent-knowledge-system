@@ -34,7 +34,7 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     },
 }
 ACTION_PATTERN = re.compile(
-    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|list)\b",
+    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|list|set|move)\b",
     re.IGNORECASE,
 )
 ENVIRONMENT_SEGMENT_PATTERN = re.compile(
@@ -58,6 +58,15 @@ FILENAME_PATTERN = re.compile(
     re.IGNORECASE,
 )
 TICKET_ID_PATTERN = re.compile(r"\b(TICKET-\d{4})\b", re.IGNORECASE)
+TICKET_UPDATE_SUFFIX_PATTERN = re.compile(
+    r"\b(to\s+(high|medium|low|unspecified)\s+severity"
+    r"|severity\s+to\s+(high|medium|low|unspecified)"
+    r"|priority\s+to\s+(high|medium|low|unspecified)"
+    r"|status\s+to\s+(open|closed)"
+    r"|to\s+(production|staging)"
+    r"|environment\s+to\s+(production|staging))\b",
+    re.IGNORECASE,
+)
 TICKET_DATA_DIR = Path("../data/tool_state")
 TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
@@ -71,6 +80,61 @@ def _extract_filename_argument(question: str) -> str | None:
 def _extract_ticket_id_argument(question: str) -> str | None:
     match = TICKET_ID_PATTERN.search(question)
     return match.group(1).upper() if match else None
+
+
+def _extract_ticket_update_arguments(question: str) -> dict[str, str]:
+    lowered = question.lower()
+    arguments: dict[str, str] = {}
+
+    if "high" in lowered:
+        arguments["severity"] = "high"
+    elif "medium" in lowered:
+        arguments["severity"] = "medium"
+    elif "low" in lowered:
+        arguments["severity"] = "low"
+    elif "unspecified" in lowered:
+        arguments["severity"] = "unspecified"
+
+    if "production" in lowered:
+        arguments["environment"] = "production"
+    elif "staging" in lowered:
+        arguments["environment"] = "staging"
+
+    if re.search(r"\bstatus\s+to\s+closed\b", lowered):
+        arguments["status"] = "closed"
+    elif re.search(r"\bstatus\s+to\s+open\b", lowered):
+        arguments["status"] = "open"
+    elif re.search(r"\blist\s+open\s+tickets?\b", lowered):
+        arguments["status"] = "open"
+    elif re.search(r"\blist\s+closed\s+tickets?\b", lowered):
+        arguments["status"] = "closed"
+
+    return arguments
+
+
+def _clean_ticket_target(question: str, target: str, action: str) -> str:
+    cleaned_target = target.strip()
+    cleaned_target = TICKET_ID_PATTERN.sub("", cleaned_target).strip(" .")
+    cleaned_target = re.sub(
+        r"^(set|update|close|move)\s+",
+        "",
+        cleaned_target,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    cleaned_target = re.sub(r"^(for\s+)", "", cleaned_target, flags=re.IGNORECASE).strip(" .")
+
+    if action in {"close", "update", "query"}:
+        cleaned_target = re.sub(
+            r"^(ticket\s+status\s+for|ticket\s+for|ticket\s+)",
+            "",
+            cleaned_target,
+            flags=re.IGNORECASE,
+        ).strip(" .")
+
+    if action == "update":
+        cleaned_target = TICKET_UPDATE_SUFFIX_PATTERN.sub("", cleaned_target).strip(" .")
+
+    return cleaned_target or "ticket"
 
 
 def _load_ticket_store() -> list[dict[str, str]]:
@@ -433,6 +497,8 @@ def infer_tool_request(question: str) -> InferredToolRequest:
         action = "query"
 
     if tool_name == "ticketing":
+        if action in {"set", "move"}:
+            action = "update"
         if " for " in lowered:
             target = normalized_question.split(" for ", maxsplit=1)[1].strip()
         else:
@@ -460,18 +526,6 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
     lowered = question.lower()
     arguments: dict[str, str] = {}
 
-    if "high" in lowered:
-        arguments["severity"] = "high"
-    elif "medium" in lowered:
-        arguments["severity"] = "medium"
-    elif "low" in lowered:
-        arguments["severity"] = "low"
-
-    if "production" in lowered:
-        arguments["environment"] = "production"
-    elif "staging" in lowered:
-        arguments["environment"] = "staging"
-
     ticket_id = _extract_ticket_id_argument(question)
     if ticket_id:
         arguments["ticket_id"] = ticket_id
@@ -495,22 +549,13 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
         )
 
     if inferred_request.tool_name == "ticketing":
-        if "open" in lowered:
-            arguments["status"] = "open"
-        elif "closed" in lowered:
-            arguments["status"] = "closed"
+        arguments.update(_extract_ticket_update_arguments(question))
 
-        if inferred_request.action in {"close", "update"} and ticket_id:
-            cleaned_target = TICKET_ID_PATTERN.sub("", inferred_request.target).strip(" .")
-            if cleaned_target:
-                inferred_request = InferredToolRequest(
-                    tool_name=inferred_request.tool_name,
-                    action=inferred_request.action,
-                    target=cleaned_target,
-                )
-        if inferred_request.action == "update":
-            if "unspecified" in lowered:
-                arguments["severity"] = "unspecified"
+        inferred_request = InferredToolRequest(
+            tool_name=inferred_request.tool_name,
+            action=inferred_request.action,
+            target=_clean_ticket_target(question, inferred_request.target, inferred_request.action),
+        )
 
     if inferred_request.tool_name == "document_search":
         filename = _extract_filename_argument(question)

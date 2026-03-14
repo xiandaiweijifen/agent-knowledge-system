@@ -1,0 +1,12 @@
+[
+  {
+    "ticket_id": "TICKET-0001",
+    "target": "payment-service",
+    "status": "closed",
+    "severity": "medium",
+    "environment": "production",
+    "created_at": "2026-03-14T17:59:42.934556+00:00",
+    "updated_at": "2026-03-14T17:59:42.944569+00:00",
+    "closed_at": "2026-03-14T17:59:42.944569+00:00"
+  }
+]

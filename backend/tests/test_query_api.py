@@ -580,9 +580,39 @@ def test_plan_tool_request_extracts_ticket_id_for_update_requests():
 
     assert response.tool_name == "ticketing"
     assert response.action == "update"
-    assert response.target == "checkout-api to high severity"
+    assert response.target == "checkout-api"
     assert response.arguments["ticket_id"] == "TICKET-0009"
     assert response.arguments["severity"] == "high"
+
+
+def test_plan_tool_request_maps_set_ticket_severity_to_update():
+    response = plan_tool_request("Set ticket TICKET-0003 severity to medium")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "update"
+    assert response.target == "ticket"
+    assert response.arguments["ticket_id"] == "TICKET-0003"
+    assert response.arguments["severity"] == "medium"
+
+
+def test_plan_tool_request_maps_move_ticket_to_environment_update():
+    response = plan_tool_request("Move ticket TICKET-0004 for payment-service to staging")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "update"
+    assert response.target == "payment-service"
+    assert response.arguments["ticket_id"] == "TICKET-0004"
+    assert response.arguments["environment"] == "staging"
+
+
+def test_plan_tool_request_extracts_ticket_status_update():
+    response = plan_tool_request("Update ticket TICKET-0010 for payment-service status to closed")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "update"
+    assert response.target == "payment-service"
+    assert response.arguments["ticket_id"] == "TICKET-0010"
+    assert response.arguments["status"] == "closed"
 
 
 def test_query_tool_plan_endpoint_returns_plan():
