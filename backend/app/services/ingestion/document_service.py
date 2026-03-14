@@ -109,11 +109,27 @@ def read_text_document(filename: str) -> dict:
 
 def chunk_document(filename: str, chunk_size: int = 500, chunk_overlap: int = 100) -> dict:
     """Load a text document and split it into retrievable chunks."""
+    return chunk_document_with_strategy(
+        filename=filename,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        chunk_strategy="character",
+    )
+
+
+def chunk_document_with_strategy(
+    filename: str,
+    chunk_size: int = 500,
+    chunk_overlap: int = 100,
+    chunk_strategy: str = "character",
+) -> dict:
+    """Load a text document and split it into retrievable chunks."""
     document = read_text_document(filename)
     chunks = chunk_text(
         text=document["content"],
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
+        chunk_strategy=chunk_strategy,
         source_filename=document["filename"],
         source_suffix=document["suffix"],
     )
@@ -122,6 +138,7 @@ def chunk_document(filename: str, chunk_size: int = 500, chunk_overlap: int = 10
         "filename": document["filename"],
         "suffix": document["suffix"],
         "size_bytes": document["size_bytes"],
+        "chunk_strategy": chunk_strategy,
         "chunk_count": len(chunks),
         "chunks": chunks,
     }
@@ -142,12 +159,14 @@ def persist_document_chunks(
     filename: str,
     chunk_size: int = 500,
     chunk_overlap: int = 100,
+    chunk_strategy: str = "character",
 ) -> dict:
     """Generate chunks for a document and persist them as JSON."""
-    chunked_document = chunk_document(
+    chunked_document = chunk_document_with_strategy(
         filename=filename,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
+        chunk_strategy=chunk_strategy,
     )
 
     output_path = get_chunk_output_path(filename)
@@ -159,6 +178,7 @@ def persist_document_chunks(
         "source_path": str(get_document_path(filename)),
         "created_at": build_utc_timestamp(),
         "pipeline_version": CHUNK_PIPELINE_VERSION,
+        "chunk_strategy": chunk_strategy,
         "chunk_count": chunked_document["chunk_count"],
         "chunk_size": chunk_size,
         "chunk_overlap": chunk_overlap,
@@ -172,6 +192,7 @@ def persist_document_chunks(
 
     return {
         "filename": chunked_document["filename"],
+        "chunk_strategy": chunk_strategy,
         "chunk_count": chunked_document["chunk_count"],
         "output_path": str(output_path),
     }

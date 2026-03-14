@@ -2,6 +2,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.services.ingestion.document_service import (
     chunk_document,
+    chunk_document_with_strategy,
     list_documents,
     load_persisted_chunks,
     persist_document_chunks,
@@ -75,12 +76,14 @@ def get_document_chunks(
     filename: str,
     chunk_size: int = 500,
     chunk_overlap: int = 100,
+    chunk_strategy: str = "character",
 ):
     try:
-        return chunk_document(
+        return chunk_document_with_strategy(
             filename=filename,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            chunk_strategy=chunk_strategy,
         )
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -93,12 +96,14 @@ def persist_chunks(
     filename: str,
     chunk_size: int = 500,
     chunk_overlap: int = 100,
+    chunk_strategy: str = "character",
 ):
     try:
         return persist_document_chunks(
             filename=filename,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            chunk_strategy=chunk_strategy,
         )
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Document not found")

@@ -19,6 +19,7 @@ class PersistedChunkDocument(BaseModel):
     source_path: str = ""
     created_at: str = ""
     pipeline_version: str = ""
+    chunk_strategy: str = "character"
     chunk_count: int
     chunk_size: int
     chunk_overlap: int

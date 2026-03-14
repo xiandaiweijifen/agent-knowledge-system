@@ -25,6 +25,7 @@ def test_persist_document_embeddings_creates_embedding_artifact(
         "source_path": "../data/raw/sample.txt",
         "created_at": "2026-03-14T00:00:00+00:00",
         "pipeline_version": "ingestion-v1",
+        "chunk_strategy": "character",
         "chunk_count": 2,
         "chunk_size": 500,
         "chunk_overlap": 100,
