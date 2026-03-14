@@ -20,6 +20,31 @@ type DocumentPreview = {
   content: string;
 };
 
+type PersistedChunkDocument = {
+  filename: string;
+  suffix: string;
+  source_path: string;
+  created_at: string;
+  pipeline_version: string;
+  chunk_strategy: string;
+  chunk_count: number;
+  chunk_size: number;
+  chunk_overlap: number;
+};
+
+type PersistedEmbeddingDocument = {
+  filename: string;
+  suffix: string;
+  source_path: string;
+  source_chunk_path: string;
+  created_at: string;
+  pipeline_version: string;
+  embedding_provider: string;
+  embedding_model: string;
+  vector_dim: number;
+  chunk_count: number;
+};
+
 type RetrievalMatch = {
   chunk_id: string;
   chunk_index: number;
@@ -139,14 +164,32 @@ function formatBytes(value: number): string {
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function formatTimestamp(value: string): string {
+  if (!value) {
+    return "Not available";
+  }
+
+  const timestamp = new Date(value);
+
+  if (Number.isNaN(timestamp.getTime())) {
+    return value;
+  }
+
+  return timestamp.toLocaleString();
+}
+
 function App() {
   const [activeView, setActiveView] = useState<ViewKey>("documents");
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [selectedFilename, setSelectedFilename] = useState("");
   const [preview, setPreview] = useState<DocumentPreview | null>(null);
+  const [chunkArtifact, setChunkArtifact] = useState<PersistedChunkDocument | null>(null);
+  const [embeddingArtifact, setEmbeddingArtifact] = useState<PersistedEmbeddingDocument | null>(null);
   const [documentsError, setDocumentsError] = useState("");
   const [documentsBusy, setDocumentsBusy] = useState(false);
+  const [artifactBusy, setArtifactBusy] = useState(false);
+  const [artifactMessage, setArtifactMessage] = useState("");
 
   const [queryFilename, setQueryFilename] = useState("");
   const [question, setQuestion] = useState("What is RAG?");
@@ -174,6 +217,15 @@ function App() {
       setQueryFilename(documents[0].filename);
     }
   }, [documents, selectedFilename]);
+
+  useEffect(() => {
+    if (!selectedFilename) {
+      return;
+    }
+
+    void loadPreview(selectedFilename);
+    void loadArtifactStatus(selectedFilename);
+  }, [selectedFilename]);
 
   async function loadDocuments() {
     setDocumentsBusy(true);
@@ -208,6 +260,78 @@ function App() {
       setDocumentsError(error instanceof Error ? error.message : "Failed to load preview");
     } finally {
       setDocumentsBusy(false);
+    }
+  }
+
+  async function loadArtifactStatus(filename: string) {
+    setArtifactBusy(true);
+    setArtifactMessage("");
+
+    try {
+      const [chunkResult, embeddingResult] = await Promise.allSettled([
+        apiFetch<PersistedChunkDocument>(
+          `/api/documents/${encodeURIComponent(filename)}/chunks/persisted`,
+        ),
+        apiFetch<PersistedEmbeddingDocument>(
+          `/api/documents/${encodeURIComponent(filename)}/embeddings/persisted`,
+        ),
+      ]);
+
+      setChunkArtifact(chunkResult.status === "fulfilled" ? chunkResult.value : null);
+      setEmbeddingArtifact(embeddingResult.status === "fulfilled" ? embeddingResult.value : null);
+    } finally {
+      setArtifactBusy(false);
+    }
+  }
+
+  async function persistChunks() {
+    if (!selectedFilename) {
+      return;
+    }
+
+    setArtifactBusy(true);
+    setArtifactMessage("");
+    setDocumentsError("");
+
+    try {
+      const payload = await apiFetch<PersistedChunkDocument>(
+        `/api/documents/${encodeURIComponent(selectedFilename)}/chunks/persist?chunk_size=500&chunk_overlap=100&chunk_strategy=paragraph`,
+        {
+          method: "POST",
+        },
+      );
+      setChunkArtifact(payload);
+      setArtifactMessage("Persisted paragraph chunks successfully.");
+      setEmbeddingArtifact(null);
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : "Failed to persist chunks");
+    } finally {
+      setArtifactBusy(false);
+    }
+  }
+
+  async function persistEmbeddings() {
+    if (!selectedFilename) {
+      return;
+    }
+
+    setArtifactBusy(true);
+    setArtifactMessage("");
+    setDocumentsError("");
+
+    try {
+      const payload = await apiFetch<PersistedEmbeddingDocument>(
+        `/api/documents/${encodeURIComponent(selectedFilename)}/embeddings/persist`,
+        {
+          method: "POST",
+        },
+      );
+      setEmbeddingArtifact(payload);
+      setArtifactMessage("Persisted embeddings successfully.");
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : "Failed to persist embeddings");
+    } finally {
+      setArtifactBusy(false);
     }
   }
 
@@ -351,7 +475,6 @@ function App() {
                   className={`document-card${selectedFilename === item.filename ? " active" : ""}`}
                   onClick={() => {
                     setSelectedFilename(item.filename);
-                    void loadPreview(item.filename);
                   }}
                 >
                   <strong>{item.filename}</strong>
@@ -364,16 +487,77 @@ function App() {
 
           <article className="panel preview-panel">
             <div className="panel-heading">
-              <h2>Preview</h2>
-              {selectedFilename && (
+              <h2>Document Pipeline</h2>
+              <div className="button-row">
+                {selectedFilename && (
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    onClick={() => void loadArtifactStatus(selectedFilename)}
+                  >
+                    Refresh Status
+                  </button>
+                )}
+                <button type="button" className="secondary-button" onClick={() => void persistChunks()} disabled={artifactBusy || !selectedFilename}>
+                  Persist Chunks
+                </button>
                 <button
                   type="button"
-                  className="ghost-button"
-                  onClick={() => void loadPreview(selectedFilename)}
+                  className="primary-button"
+                  onClick={() => void persistEmbeddings()}
+                  disabled={artifactBusy || !selectedFilename || !chunkArtifact}
                 >
-                  Load Preview
+                  Persist Embeddings
                 </button>
-              )}
+              </div>
+            </div>
+            {artifactBusy && <p className="status">Refreshing artifact status...</p>}
+            {artifactMessage && <p className="status">{artifactMessage}</p>}
+            <div className="artifact-grid">
+              <article className="artifact-card">
+                <header>
+                  <strong>Chunk Artifact</strong>
+                  <span>{chunkArtifact ? "ready" : "missing"}</span>
+                </header>
+                {chunkArtifact ? (
+                  <>
+                    <div className="meta-stack">
+                      <span>Strategy: {chunkArtifact.chunk_strategy}</span>
+                      <span>Chunks: {chunkArtifact.chunk_count}</span>
+                      <span>Chunk Size: {chunkArtifact.chunk_size}</span>
+                      <span>Overlap: {chunkArtifact.chunk_overlap}</span>
+                      <span>Created: {formatTimestamp(chunkArtifact.created_at)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="muted">
+                    No persisted chunk artifact yet. Generate paragraph chunks from the selected
+                    document to enable downstream indexing.
+                  </p>
+                )}
+              </article>
+              <article className="artifact-card">
+                <header>
+                  <strong>Embedding Artifact</strong>
+                  <span>{embeddingArtifact ? "ready" : "missing"}</span>
+                </header>
+                {embeddingArtifact ? (
+                  <>
+                    <div className="meta-stack">
+                      <span>Provider: {embeddingArtifact.embedding_provider}</span>
+                      <span>Model: {embeddingArtifact.embedding_model}</span>
+                      <span>Dimension: {embeddingArtifact.vector_dim}</span>
+                      <span>Chunks Indexed: {embeddingArtifact.chunk_count}</span>
+                      <span>Created: {formatTimestamp(embeddingArtifact.created_at)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="muted">
+                    No persisted embedding artifact yet. Embeddings can be generated after chunk
+                    persistence succeeds.
+                  </p>
+                )}
+              </article>
             </div>
             {preview ? (
               <>
@@ -386,8 +570,7 @@ function App() {
               </>
             ) : (
               <p className="muted">
-                Select a document and load its preview. This view is optimized for text and markdown
-                inputs used in the ingestion pipeline.
+                Select a document to inspect its content and current pipeline artifact status.
               </p>
             )}
           </article>
