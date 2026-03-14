@@ -660,6 +660,11 @@ def test_query_agent_endpoint_returns_tool_workflow_result(workspace_tmp_path, m
     assert len(payload["workflow_trace"]) >= 3
     assert payload["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_execution"]["execution_status"] == "completed"
+    assert any(
+        event["stage"] == "tool_execution"
+        and "local_adapter tool ticketing:create" in event["detail"]
+        for event in payload["workflow_trace"]
+    )
 
 
 def test_query_agent_endpoint_returns_document_search_workflow_with_filename_hint():

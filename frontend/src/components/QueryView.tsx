@@ -253,7 +253,8 @@ export function QueryView({
                     </div>
                   </div>
                   <p className="subsection-copy">{agentQueryResult.tool_execution.result_summary}</p>
-                  {agentQueryResult.tool_execution.tool_name === "ticketing" && (
+                  {agentQueryResult.tool_execution.tool_name === "ticketing" &&
+                    agentQueryResult.tool_execution.action !== "list" && (
                     <div className="ticketing-highlight">
                       <div className="trace-grid">
                         <div>

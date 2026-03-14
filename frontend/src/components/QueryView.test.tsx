@@ -222,5 +222,6 @@ describe("QueryView", () => {
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("TICKET-0001 [open] payment-service")).toBeInTheDocument();
     expect(screen.getByText("TICKET-0002 [open] checkout-api")).toBeInTheDocument();
+    expect(screen.queryByText("Ticket Id")).not.toBeInTheDocument();
   });
 });

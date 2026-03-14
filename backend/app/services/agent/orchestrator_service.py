@@ -94,7 +94,8 @@ def orchestrate_agent_request(
                 status="completed",
                 timestamp=build_utc_timestamp(),
                 detail=(
-                    f"Executed stub tool {tool_response.tool_name}:{tool_response.action} "
+                    f"Executed {tool_response.execution_mode} tool "
+                    f"{tool_response.tool_name}:{tool_response.action} "
                     f"with status {tool_response.execution_status}."
                 ),
             )
