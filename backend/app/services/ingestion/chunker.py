@@ -43,12 +43,18 @@ def chunk_text_by_character(
     source_suffix: str | None,
 ) -> list[dict]:
     """Split text into overlapping character-based chunks."""
+    min_chunk_size = max(1, chunk_size // 5)
     chunks = []
     start = 0
     chunk_index = 0
 
     while start < len(text):
         end = min(start + chunk_size, len(text))
+
+        # Merge tiny tail fragments into the previous chunk to reduce noise.
+        if len(text) - end < min_chunk_size:
+            end = len(text)
+
         chunk_content = text[start:end]
 
         chunks.append(

@@ -33,3 +33,19 @@ def test_chunk_text_rejects_unsupported_strategy():
         assert str(exc) == "unsupported_chunk_strategy"
     else:
         raise AssertionError("Expected unsupported_chunk_strategy")
+
+
+def test_character_chunking_merges_tiny_tail_fragment():
+    text = "a" * 62
+
+    chunks = chunk_text(
+        text=text,
+        chunk_size=60,
+        chunk_overlap=0,
+        chunk_strategy="character",
+        source_filename="sample.txt",
+        source_suffix=".txt",
+    )
+
+    assert len(chunks) == 1
+    assert chunks[0]["char_count"] == 62
