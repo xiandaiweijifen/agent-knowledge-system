@@ -245,6 +245,19 @@ export function QueryView({
                     </div>
                   </div>
                   <p className="subsection-copy">{agentQueryResult.tool_execution.result_summary}</p>
+                  {Object.keys(agentQueryResult.tool_execution.output).length > 0 && (
+                    <>
+                      <span className="section-label">Tool Output</span>
+                      <div className="tool-output-grid">
+                        {Object.entries(agentQueryResult.tool_execution.output).map(([key, value]) => (
+                          <article key={key} className="tool-output-card">
+                            <span className="trace-label">{key}</span>
+                            <strong>{value}</strong>
+                          </article>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </article>
               )}
 

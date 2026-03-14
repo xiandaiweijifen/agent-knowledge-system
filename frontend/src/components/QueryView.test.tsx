@@ -98,6 +98,20 @@ describe("QueryView", () => {
             query_embedding_model: "gemini-embedding-001",
             matches: [],
           },
+          tool_execution: {
+            tool_name: "system_status",
+            action: "query",
+            target: "agent-knowledge-system",
+            execution_status: "completed",
+            execution_mode: "local_adapter",
+            result_summary: "Collected local system status.",
+            trace_id: "trace-1",
+            executed_at: "2026-03-14T00:00:00+00:00",
+            output: {
+              embedding_provider: "gemini",
+              chat_provider: "fallback",
+            },
+          },
         }}
         diagnosticsResult={null}
         queryError=""
@@ -117,6 +131,9 @@ describe("QueryView", () => {
     expect(screen.getByText("knowledge_retrieval")).toBeInTheDocument();
     expect(screen.getAllByText("RAG combines retrieval with generation.")).toHaveLength(2);
     expect(screen.getByText("gemini-2.5-flash-lite")).toBeInTheDocument();
+    expect(screen.getByText("Tool Output")).toBeInTheDocument();
+    expect(screen.getByText("embedding_provider")).toBeInTheDocument();
+    expect(screen.getByText("fallback")).toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", { name: "Why is chunking important in a RAG system?" }),

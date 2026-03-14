@@ -935,6 +935,27 @@ textarea {
   line-height: 1.6;
 }
 
+.tool-output-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.tool-output-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.tool-output-card strong {
+  display: block;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 .section-label {
   color: var(--accent);
   text-transform: uppercase;
