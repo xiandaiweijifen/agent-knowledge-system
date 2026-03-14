@@ -24,3 +24,18 @@ class InferredToolRequest(BaseModel):
     tool_name: str
     action: str
     target: str
+
+
+class ToolPlanRequest(BaseModel):
+    question: str
+
+
+class ToolPlanResponse(BaseModel):
+    question: str
+    planning_mode: str
+    route_hint: str
+    tool_name: str
+    action: str
+    target: str
+    arguments: dict[str, str] = Field(default_factory=dict)
+    plan_summary: str

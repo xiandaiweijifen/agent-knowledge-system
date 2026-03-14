@@ -1,7 +1,12 @@
 import re
 import uuid
 
-from app.schemas.tools import InferredToolRequest, ToolExecutionRequest, ToolExecutionResponse
+from app.schemas.tools import (
+    InferredToolRequest,
+    ToolExecutionRequest,
+    ToolExecutionResponse,
+    ToolPlanResponse,
+)
 from app.services.ingestion.document_service import build_utc_timestamp
 
 
@@ -77,4 +82,37 @@ def infer_tool_request(question: str) -> InferredToolRequest:
         tool_name=tool_name,
         action=action,
         target=target,
+    )
+
+
+def plan_tool_request(question: str) -> ToolPlanResponse:
+    """Create a structured tool plan from a natural-language tool request."""
+    inferred_request = infer_tool_request(question)
+    lowered = question.lower()
+    arguments: dict[str, str] = {}
+
+    if "high" in lowered:
+        arguments["severity"] = "high"
+    elif "medium" in lowered:
+        arguments["severity"] = "medium"
+    elif "low" in lowered:
+        arguments["severity"] = "low"
+
+    if "production" in lowered:
+        arguments["environment"] = "production"
+    elif "staging" in lowered:
+        arguments["environment"] = "staging"
+
+    return ToolPlanResponse(
+        question=question.strip(),
+        planning_mode="heuristic_stub",
+        route_hint="tool_execution",
+        tool_name=inferred_request.tool_name,
+        action=inferred_request.action,
+        target=inferred_request.target,
+        arguments=arguments,
+        plan_summary=(
+            f"Plan {inferred_request.tool_name}:{inferred_request.action} for "
+            f"{inferred_request.target} using a local heuristic planner."
+        ),
     )

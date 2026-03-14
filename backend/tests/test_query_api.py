@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from app.core.config import settings
 from app.main import app
 from app.services.agent.router_service import route_request
-from app.services.agent.tool_service import execute_tool_request
+from app.services.agent.tool_service import execute_tool_request, plan_tool_request
 from app.services.indexing import embedding_service
 from app.services.retrieval.retrieval_service import compute_rerank_bonus
 from app.schemas.tools import ToolExecutionRequest
@@ -283,6 +283,32 @@ def test_query_tool_execute_endpoint_returns_structured_stub():
     assert payload["trace_id"]
 
 
+def test_plan_tool_request_returns_structured_plan():
+    response = plan_tool_request("Create a high severity ticket for payment-service in production")
+
+    assert response.route_hint == "tool_execution"
+    assert response.tool_name == "ticketing"
+    assert response.action == "create"
+    assert response.arguments["severity"] == "high"
+    assert response.arguments["environment"] == "production"
+
+
+def test_query_tool_plan_endpoint_returns_plan():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/tools/plan",
+        json={
+            "question": "Create a high severity ticket for payment-service in production",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["tool_name"] == "ticketing"
+    assert payload["action"] == "create"
+    assert payload["arguments"]["severity"] == "high"
+
+
 def test_query_agent_endpoint_returns_knowledge_workflow_result(
     workspace_tmp_path,
     monkeypatch,
@@ -353,6 +379,7 @@ def test_query_agent_endpoint_returns_tool_workflow_result():
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["route"]["route_type"] == "tool_execution"
+    assert payload["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_execution"]["execution_status"] == "stubbed"
 
 

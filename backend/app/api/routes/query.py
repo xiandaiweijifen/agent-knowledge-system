@@ -11,9 +11,14 @@ from app.schemas.query import (
     RouteDecision,
 )
 from app.services.agent.orchestrator_service import orchestrate_agent_request
-from app.schemas.tools import ToolExecutionRequest, ToolExecutionResponse
+from app.schemas.tools import (
+    ToolExecutionRequest,
+    ToolExecutionResponse,
+    ToolPlanRequest,
+    ToolPlanResponse,
+)
 from app.services.agent.router_service import route_request
-from app.services.agent.tool_service import execute_tool_request
+from app.services.agent.tool_service import execute_tool_request, plan_tool_request
 from app.services.agent.query_service import run_query
 from app.services.retrieval.retrieval_service import retrieve_relevant_chunks_with_diagnostics
 
@@ -52,6 +57,14 @@ def orchestrate_agent_query(request: AgentQueryRequest) -> AgentWorkflowResponse
 def execute_query_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     try:
         return execute_tool_request(request)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/tools/plan", response_model=ToolPlanResponse)
+def plan_query_tool(request: ToolPlanRequest) -> ToolPlanResponse:
+    try:
+        return plan_tool_request(request.question)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

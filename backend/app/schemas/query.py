@@ -100,4 +100,5 @@ class AgentWorkflowResponse(BaseModel):
     chat_model: str | None = None
     retrieval: RetrievalResult | None = None
     clarification_message: str | None = None
+    tool_plan: dict | None = None
     tool_execution: dict | None = None

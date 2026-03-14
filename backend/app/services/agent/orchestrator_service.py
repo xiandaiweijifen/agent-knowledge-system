@@ -2,7 +2,7 @@ from app.schemas.query import AgentWorkflowResponse
 from app.schemas.tools import ToolExecutionRequest
 from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
-from app.services.agent.tool_service import execute_tool_request, infer_tool_request
+from app.services.agent.tool_service import execute_tool_request, plan_tool_request
 
 
 def orchestrate_agent_request(
@@ -38,12 +38,13 @@ def orchestrate_agent_request(
         )
 
     if route.route_type == "tool_execution":
-        inferred_tool_request = infer_tool_request(question)
+        tool_plan = plan_tool_request(question)
         tool_response = execute_tool_request(
             ToolExecutionRequest(
-                tool_name=inferred_tool_request.tool_name,
-                action=inferred_tool_request.action,
-                target=inferred_tool_request.target,
+                tool_name=tool_plan.tool_name,
+                action=tool_plan.action,
+                target=tool_plan.target,
+                arguments=tool_plan.arguments,
             )
         )
         return AgentWorkflowResponse(
@@ -51,6 +52,7 @@ def orchestrate_agent_request(
             workflow_status="completed",
             route=route,
             filename=filename,
+            tool_plan=tool_plan.model_dump(),
             tool_execution=tool_response.model_dump(),
         )
 
