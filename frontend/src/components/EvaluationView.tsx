@@ -74,15 +74,22 @@ export function EvaluationView({
         </form>
         {evalBusy && <p className="status">Benchmarking retrieval set...</p>}
         {evalError && <p className="error">{evalError}</p>}
-        <div className="dataset-list">
-          {datasets.map((dataset) => (
-            <article key={dataset.dataset_name} className="dataset-card">
-              <strong>{dataset.dataset_name}</strong>
-              <span>{dataset.case_count} cases</span>
-              <small>{dataset.filenames.join(", ")}</small>
-            </article>
-          ))}
-        </div>
+        {datasets.length > 0 ? (
+          <div className="dataset-list">
+            {datasets.map((dataset) => (
+              <article key={dataset.dataset_name} className="dataset-card">
+                <strong>{dataset.dataset_name}</strong>
+                <span>{dataset.case_count} cases</span>
+                <small>{dataset.filenames.join(", ")}</small>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <strong>No evaluation datasets</strong>
+            <p>Add a retrieval evaluation dataset to benchmark query quality.</p>
+          </div>
+        )}
       </article>
 
       <article className="panel preview-panel">
@@ -164,9 +171,10 @@ export function EvaluationView({
             )}
           </>
         ) : (
-          <p className="muted">
-            Select a dataset and run evaluation to view retrieval benchmark summaries and per-case outcomes.
-          </p>
+          <div className="empty-state empty-state-large">
+            <strong>No evaluation report yet</strong>
+            <p>Select a dataset and run evaluation to view benchmark summaries and per-case outcomes.</p>
+          </div>
         )}
       </article>
     </section>

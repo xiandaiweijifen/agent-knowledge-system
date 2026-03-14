@@ -274,6 +274,7 @@ textarea {
 .primary-button,
 .secondary-button,
 .danger-button {
+  min-height: 42px;
   padding: 11px 16px;
   border-radius: 999px;
   cursor: pointer;
@@ -303,12 +304,51 @@ textarea {
   color: #8a1c1c;
 }
 
+.ghost-button:focus-visible,
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.danger-button:focus-visible,
+.preset-chip:focus-visible,
+.filter-chip:focus-visible,
+.tab-button:focus-visible,
+.document-card:focus-visible,
+.stack-form input:focus-visible,
+.stack-form select:focus-visible,
+.stack-form textarea:focus-visible {
+  outline: 2px solid rgba(159, 58, 29, 0.45);
+  outline-offset: 2px;
+}
+
 .document-list,
 .dataset-list,
 .case-list,
 .match-list {
   display: grid;
   gap: 12px;
+}
+
+.empty-state {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px dashed rgba(31, 41, 51, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 252, 245, 0.74);
+}
+
+.empty-state strong {
+  font-size: 1rem;
+}
+
+.empty-state p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.empty-state-large {
+  min-height: 240px;
+  align-content: center;
 }
 
 .upload-dropzone {
@@ -482,6 +522,20 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.82);
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.stack-form input:hover,
+.stack-form select:hover,
+.stack-form textarea:hover {
+  border-color: rgba(159, 58, 29, 0.22);
+}
+
+.stack-form input:focus-visible,
+.stack-form select:focus-visible,
+.stack-form textarea:focus-visible {
+  border-color: rgba(159, 58, 29, 0.35);
+  box-shadow: 0 0 0 4px rgba(159, 58, 29, 0.08);
 }
 
 .button-row {
@@ -525,6 +579,7 @@ textarea {
   background: rgba(255, 248, 240, 0.92);
   color: var(--accent-strong);
   cursor: pointer;
+  text-align: left;
 }
 
 .filter-row {
@@ -593,6 +648,7 @@ textarea {
 .dataset-card,
 .case-card {
   padding: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
 }
 
 .trace-card {
@@ -668,6 +724,10 @@ textarea {
   .button-row-split {
     justify-content: flex-start;
   }
+
+  .button-cluster-danger {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 640px) {
@@ -690,5 +750,31 @@ textarea {
 
   .status-banner {
     grid-template-columns: 1fr;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .card-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .button-cluster,
+  .button-cluster-danger {
+    width: 100%;
+  }
+
+  .button-cluster > button,
+  .button-cluster-danger > button,
+  .button-row > button {
+    width: 100%;
+    justify-content: center;
   }
 }

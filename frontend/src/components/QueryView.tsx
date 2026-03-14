@@ -157,9 +157,10 @@ export function QueryView({
               </div>
             </div>
           ) : (
-            <p className="muted">
-              Run a query to inspect answer text, provider selection, and top retrieved chunks.
-            </p>
+            <div className="empty-state empty-state-large">
+              <strong>No answer trace yet</strong>
+              <p>Run a query to inspect answer text, provider selection, and top retrieved chunks.</p>
+            </div>
           )}
         </article>
 
@@ -214,9 +215,10 @@ export function QueryView({
               </div>
             </>
           ) : (
-            <p className="muted">
-              Run diagnostics to inspect vector scores, rerank bonuses, and candidate ordering.
-            </p>
+            <div className="empty-state empty-state-large">
+              <strong>No diagnostics yet</strong>
+              <p>Run diagnostics to inspect vector scores, rerank bonuses, and candidate ordering.</p>
+            </div>
           )}
         </article>
       </div>

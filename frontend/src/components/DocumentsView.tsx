@@ -81,22 +81,29 @@ export function DocumentsView({
         {uploadMessage && <p className="status">{uploadMessage}</p>}
         {documentsBusy && <p className="status">Loading documents...</p>}
         {documentsError && <p className="error">{documentsError}</p>}
-        <div className="document-list">
-          {documents.map((item) => (
-            <button
-              key={item.filename}
-              type="button"
-              className={`document-card${selectedFilename === item.filename ? " active" : ""}`}
-              onClick={() => onSelectDocument(item.filename)}
-            >
-              <div className="card-title-row">
-                <strong>{item.filename}</strong>
-                <span className="file-pill">{item.suffix}</span>
-              </div>
-              <small>{formatBytes(item.size_bytes)}</small>
-            </button>
-          ))}
-        </div>
+        {documents.length > 0 ? (
+          <div className="document-list">
+            {documents.map((item) => (
+              <button
+                key={item.filename}
+                type="button"
+                className={`document-card${selectedFilename === item.filename ? " active" : ""}`}
+                onClick={() => onSelectDocument(item.filename)}
+              >
+                <div className="card-title-row">
+                  <strong>{item.filename}</strong>
+                  <span className="file-pill">{item.suffix}</span>
+                </div>
+                <small>{formatBytes(item.size_bytes)}</small>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <strong>No documents yet</strong>
+            <p>Upload a markdown or text file to start the ingestion pipeline.</p>
+          </div>
+        )}
       </article>
 
       <article className="panel preview-panel">
@@ -209,9 +216,10 @@ export function DocumentsView({
             <pre className="preview-text">{preview.content}</pre>
           </>
         ) : (
-          <p className="muted">
-            Select a document to inspect its content and current pipeline artifact status.
-          </p>
+          <div className="empty-state empty-state-large">
+            <strong>No document selected</strong>
+            <p>Select a document to inspect its content and current pipeline artifact status.</p>
+          </div>
         )}
       </article>
     </section>
