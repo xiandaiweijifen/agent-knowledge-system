@@ -29,6 +29,18 @@
       "expected_workflow_status": "completed"
     },
     {
+      "case_id": "workflow_tool_3",
+      "question": "Search docs for RAG",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed"
+    },
+    {
+      "case_id": "workflow_tool_4",
+      "question": "Check system status",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed"
+    },
+    {
       "case_id": "workflow_clarification_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed",

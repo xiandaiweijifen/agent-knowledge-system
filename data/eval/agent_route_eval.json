@@ -23,6 +23,16 @@
       "expected_route_type": "tool_execution"
     },
     {
+      "case_id": "tool_route_3",
+      "question": "Search docs for RAG",
+      "expected_route_type": "tool_execution"
+    },
+    {
+      "case_id": "tool_route_4",
+      "question": "Check system status",
+      "expected_route_type": "tool_execution"
+    },
+    {
       "case_id": "clarification_route_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed"

@@ -65,6 +65,18 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
                     },
                     {
                         "case_id": "case_3",
+                        "question": "Search docs for RAG",
+                        "expected_route_type": "tool_execution",
+                        "expected_workflow_status": "completed",
+                    },
+                    {
+                        "case_id": "case_4",
+                        "question": "Check system status",
+                        "expected_route_type": "tool_execution",
+                        "expected_workflow_status": "completed",
+                    },
+                    {
+                        "case_id": "case_5",
                         "question": "Please do that for production",
                         "expected_route_type": "clarification_needed",
                         "expected_workflow_status": "clarification_required",
@@ -77,6 +89,6 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
 
     report = evaluate_agent_workflow_dataset(dataset_path=dataset_path)
 
-    assert report.summary.total_cases == 3
+    assert report.summary.total_cases == 5
     assert report.summary.workflow_accuracy == 1.0
     assert all(case.matched for case in report.cases)

@@ -20,6 +20,16 @@ def test_evaluate_agent_route_dataset_computes_route_accuracy(workspace_tmp_path
                         "question": "Create a ticket for the payment service outage",
                         "expected_route_type": "tool_execution",
                     },
+                    {
+                        "case_id": "case_3",
+                        "question": "Search docs for RAG",
+                        "expected_route_type": "tool_execution",
+                    },
+                    {
+                        "case_id": "case_4",
+                        "question": "Check system status",
+                        "expected_route_type": "tool_execution",
+                    },
                 ]
             }
         ),
@@ -28,6 +38,6 @@ def test_evaluate_agent_route_dataset_computes_route_accuracy(workspace_tmp_path
 
     report = evaluate_agent_route_dataset(dataset_path=dataset_path)
 
-    assert report.summary.total_cases == 2
+    assert report.summary.total_cases == 4
     assert report.summary.route_accuracy == 1.0
     assert all(case.matched for case in report.cases)
