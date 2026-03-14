@@ -21,5 +21,9 @@ def run_query(filename: str, question: str, top_k: int = 3) -> QueryResponse:
         answer=answer_result["answer"],
         answer_source=answer_result["answer_source"],
         model=answer_result["model"],
+        answered_at=answer_result["answered_at"],
+        answer_latency_ms=answer_result["answer_latency_ms"],
+        chat_provider=answer_result["chat_provider"],
+        chat_model=answer_result["chat_model"],
         retrieval=retrieval_result,
     )

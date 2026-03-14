@@ -70,6 +70,10 @@ def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
     assert payload["filename"] == "sample.txt"
     assert payload["answer_source"] == "fallback"
     assert payload["model"] == "local-fallback"
+    assert payload["answered_at"]
+    assert payload["answer_latency_ms"] >= 0
+    assert payload["chat_provider"] == "fallback"
+    assert payload["chat_model"] == "local-fallback"
     assert payload["retrieval"]["top_k"] == 1
     assert payload["retrieval"]["embedding_provider"] == "mock"
     assert payload["retrieval"]["embedding_model"] == "mock-embedding-v1"

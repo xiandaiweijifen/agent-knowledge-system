@@ -1,6 +1,8 @@
 import httpx
+from time import perf_counter
 
 from app.core.config import settings
+from app.services.ingestion.document_service import build_utc_timestamp
 
 
 OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
@@ -38,11 +40,17 @@ def build_fallback_answer(question: str, matches: list[dict]) -> str:
 
 def generate_rag_answer(question: str, matches: list[dict]) -> dict:
     """Generate a RAG answer from retrieved chunks."""
+    answer_started = perf_counter()
+
     if not settings.openai_api_key:
         return {
             "answer": build_fallback_answer(question, matches),
             "answer_source": "fallback",
             "model": "local-fallback",
+            "chat_provider": "fallback",
+            "chat_model": "local-fallback",
+            "answered_at": build_utc_timestamp(),
+            "answer_latency_ms": round((perf_counter() - answer_started) * 1000, 3),
         }
 
     context_block = build_context_block(matches)
@@ -86,10 +94,18 @@ def generate_rag_answer(question: str, matches: list[dict]) -> dict:
             "answer": answer,
             "answer_source": "openai",
             "model": settings.openai_chat_model,
+            "chat_provider": "openai",
+            "chat_model": settings.openai_chat_model,
+            "answered_at": build_utc_timestamp(),
+            "answer_latency_ms": round((perf_counter() - answer_started) * 1000, 3),
         }
     except (httpx.HTTPError, KeyError, IndexError, TypeError):
         return {
             "answer": build_fallback_answer(question, matches),
             "answer_source": "fallback_after_openai_error",
             "model": settings.openai_chat_model,
+            "chat_provider": "fallback_after_openai_error",
+            "chat_model": settings.openai_chat_model,
+            "answered_at": build_utc_timestamp(),
+            "answer_latency_ms": round((perf_counter() - answer_started) * 1000, 3),
         }

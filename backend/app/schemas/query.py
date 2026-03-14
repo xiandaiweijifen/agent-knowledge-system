@@ -37,4 +37,8 @@ class QueryResponse(BaseModel):
     answer: str
     answer_source: str
     model: str
+    answered_at: str
+    answer_latency_ms: float
+    chat_provider: str
+    chat_model: str
     retrieval: RetrievalResult
