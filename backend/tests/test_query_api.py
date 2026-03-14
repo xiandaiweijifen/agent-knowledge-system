@@ -189,3 +189,26 @@ def test_definition_query_gets_higher_bonus_for_definition_chunk():
     generic_bonus = compute_rerank_bonus("What is RAG?", generic_chunk)
 
     assert definition_bonus > generic_bonus
+
+
+def test_reranking_query_gets_higher_bonus_for_reranking_chunk():
+    reranking_chunk = (
+        "The first retrieval stage usually returns a set of candidate chunks.\n\n"
+        "## Retrieval and Reranking\n\n"
+        "Many production systems then apply a reranker to reorder the candidates."
+    )
+    generic_chunk = (
+        "A strong RAG system needs evaluation and observability. Engineers should "
+        "track retrieval latency and answer latency."
+    )
+
+    reranking_bonus = compute_rerank_bonus(
+        "Why do production systems use reranking?",
+        reranking_chunk,
+    )
+    generic_bonus = compute_rerank_bonus(
+        "Why do production systems use reranking?",
+        generic_chunk,
+    )
+
+    assert reranking_bonus > generic_bonus
