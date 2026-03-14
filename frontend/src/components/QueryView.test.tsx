@@ -146,4 +146,81 @@ describe("QueryView", () => {
       "Why is chunking important in a RAG system?",
     );
   });
+
+  it("renders ticket list execution details for ticketing list workflows", () => {
+    render(
+      <QueryView
+        documents={[
+          {
+            filename: "rag_overview.md",
+            size_bytes: 1024,
+            suffix: ".md",
+          },
+        ]}
+        queryFilename="rag_overview.md"
+        question="List open tickets"
+        topK={3}
+        activePresetQuestions={["List open tickets"]}
+        queryResult={null}
+        agentQueryResult={{
+          question: "List open tickets",
+          workflow_status: "completed",
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Ticket list requests should go through tool execution.",
+            filename: "rag_overview.md",
+          },
+          workflow_trace: [
+            {
+              stage: "routing",
+              status: "completed",
+              timestamp: "2026-03-14T00:00:00+00:00",
+              detail: "Route selected tool execution.",
+            },
+          ],
+          tool_plan: {
+            question: "List open tickets",
+            planning_mode: "heuristic_stub",
+            route_hint: "tool_execution",
+            tool_name: "ticketing",
+            action: "list",
+            target: "tickets",
+            arguments: { status: "open" },
+            plan_summary: "Plan ticketing:list for tickets using a local heuristic planner.",
+          },
+          tool_execution: {
+            tool_name: "ticketing",
+            action: "list",
+            target: "tickets",
+            execution_status: "completed",
+            execution_mode: "local_adapter",
+            result_summary: "Loaded 2 local ticket(s).",
+            trace_id: "trace-2",
+            executed_at: "2026-03-14T00:00:00+00:00",
+            output: {
+              ticket_count: "2",
+              status_filter: "open",
+              tickets: "TICKET-0001 [open] payment-service | TICKET-0002 [open] checkout-api",
+            },
+          },
+        }}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Ticket Count")).toBeInTheDocument();
+    expect(screen.getByText("Status Filter")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("TICKET-0001 [open] payment-service")).toBeInTheDocument();
+    expect(screen.getByText("TICKET-0002 [open] checkout-api")).toBeInTheDocument();
+  });
 });

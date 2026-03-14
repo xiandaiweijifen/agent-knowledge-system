@@ -50,6 +50,14 @@ export function QueryView({
     agentQueryResult?.route.route_type === "knowledge_retrieval" && !!agentQueryResult.filename;
   const routeUsesRetrieval = !!agentQueryResult?.retrieval;
   const routeUsesToolPlanning = !!agentQueryResult?.tool_plan;
+  const ticketListItems =
+    agentQueryResult?.tool_execution?.tool_name === "ticketing" &&
+    agentQueryResult.tool_execution.action === "list"
+      ? (agentQueryResult.tool_execution.output.tickets || "")
+          .split(" | ")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : [];
 
   return (
     <section className="panel-grid query-layout">
@@ -267,6 +275,30 @@ export function QueryView({
                       </div>
                     </div>
                   )}
+                  {agentQueryResult.tool_execution.tool_name === "ticketing" &&
+                    agentQueryResult.tool_execution.action === "list" && (
+                      <div className="ticketing-highlight">
+                        <div className="trace-grid">
+                          <div>
+                            <span className="trace-label">Ticket Count</span>
+                            <strong>{agentQueryResult.tool_execution.output.ticket_count ?? "0"}</strong>
+                          </div>
+                          <div>
+                            <span className="trace-label">Status Filter</span>
+                            <strong>{agentQueryResult.tool_execution.output.status_filter ?? "all"}</strong>
+                          </div>
+                        </div>
+                        {ticketListItems.length > 0 ? (
+                          <div className="list-block">
+                            {ticketListItems.map((item) => (
+                              <p key={item}>{item}</p>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="subsection-copy">No tickets matched the current filter.</p>
+                        )}
+                      </div>
+                    )}
                   {Object.keys(agentQueryResult.tool_execution.output).length > 0 && (
                     <>
                       <span className="section-label">Tool Output</span>
