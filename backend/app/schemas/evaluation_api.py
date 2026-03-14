@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.evaluation import RetrievalEvalReport
+from app.schemas.evaluation import AgentRouteEvalReport, RetrievalEvalReport
 
 
 class RetrievalEvalDatasetInfo(BaseModel):
@@ -21,3 +21,21 @@ class RetrievalEvalResponse(BaseModel):
 
 class RetrievalEvalDatasetListResponse(BaseModel):
     datasets: list[RetrievalEvalDatasetInfo]
+
+
+class AgentRouteEvalDatasetInfo(BaseModel):
+    dataset_name: str
+    case_count: int
+
+
+class AgentRouteEvalRequest(BaseModel):
+    dataset_name: str
+
+
+class AgentRouteEvalResponse(BaseModel):
+    dataset_name: str
+    report: AgentRouteEvalReport
+
+
+class AgentRouteEvalDatasetListResponse(BaseModel):
+    datasets: list[AgentRouteEvalDatasetInfo]

@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services.evaluation import retrieval_eval_service
+from app.services.evaluation import agent_route_eval_service, retrieval_eval_service
 
 
 def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
@@ -102,3 +102,70 @@ def test_retrieval_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch
     payload = response.json()
     assert len(payload["datasets"]) == 2
     assert payload["datasets"][0]["dataset_name"] == "rag_overview_retrieval_eval.json"
+
+
+def test_agent_route_evaluation_endpoint_returns_report(monkeypatch):
+    client = TestClient(app)
+
+    def fake_eval(dataset_name: str):
+        assert dataset_name == "agent_route_eval.json"
+        return {
+            "summary": {
+                "total_cases": 2,
+                "route_accuracy": 1.0,
+            },
+            "cases": [
+                {
+                    "case_id": "case_1",
+                    "question": "What is RAG?",
+                    "filename": "rag_overview.md",
+                    "expected_route_type": "knowledge_retrieval",
+                    "actual_route_type": "knowledge_retrieval",
+                    "route_reason": "matched",
+                    "matched": True,
+                }
+            ],
+        }
+
+    monkeypatch.setattr(
+        agent_route_eval_service,
+        "evaluate_named_agent_route_dataset",
+        fake_eval,
+    )
+
+    response = client.post(
+        "/api/evaluation/agent-route",
+        json={
+            "dataset_name": "agent_route_eval.json",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["dataset_name"] == "agent_route_eval.json"
+    assert payload["report"]["summary"]["route_accuracy"] == 1.0
+
+
+def test_agent_route_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):
+    client = TestClient(app)
+
+    def fake_list():
+        return [
+            {
+                "dataset_name": "agent_route_eval.json",
+                "case_count": 6,
+            }
+        ]
+
+    monkeypatch.setattr(
+        agent_route_eval_service,
+        "list_agent_route_datasets",
+        fake_list,
+    )
+
+    response = client.get("/api/evaluation/agent-route/datasets")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["datasets"]) == 1
+    assert payload["datasets"][0]["dataset_name"] == "agent_route_eval.json"

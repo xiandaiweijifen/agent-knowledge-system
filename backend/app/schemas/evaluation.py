@@ -28,3 +28,30 @@ class RetrievalEvalReport(BaseModel):
     top_k: int
     summary: RetrievalEvalSummary
     cases: list[RetrievalEvalCaseResult] = Field(default_factory=list)
+
+
+class AgentRouteEvalCase(BaseModel):
+    case_id: str
+    question: str
+    filename: str | None = None
+    expected_route_type: str
+
+
+class AgentRouteEvalCaseResult(BaseModel):
+    case_id: str
+    question: str
+    filename: str | None = None
+    expected_route_type: str
+    actual_route_type: str
+    route_reason: str
+    matched: bool
+
+
+class AgentRouteEvalSummary(BaseModel):
+    total_cases: int
+    route_accuracy: float
+
+
+class AgentRouteEvalReport(BaseModel):
+    summary: AgentRouteEvalSummary
+    cases: list[AgentRouteEvalCaseResult] = Field(default_factory=list)
