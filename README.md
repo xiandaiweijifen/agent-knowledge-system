@@ -12,6 +12,15 @@ This project aims to build an agent-based knowledge system that supports:
 - tool calling for task execution
 - evaluation and observability
 
+The current implementation is already beyond repository scaffolding. The system now includes:
+
+- local document upload and preview for `.txt` and `.md`
+- persisted chunk and embedding artifacts
+- Gemini and OpenAI provider routing with local fallback paths
+- retrieval diagnostics and lightweight reranking
+- retrieval evaluation datasets and benchmark APIs
+- a React console for documents, query tracing, and evaluation workflows
+
 ## Tech Stack
 
 - Backend: FastAPI
@@ -23,7 +32,127 @@ This project aims to build an agent-based knowledge system that supports:
 
 ## Current Stage
 
-Phase 1: repository scaffolding and local development setup.
+Phase 1 and the MVP of Phase 2/3 are complete.
+
+Current focus:
+
+- stable ingestion and indexing workflow
+- retrieval quality diagnostics
+- evaluation and observability
+- frontend console polish
+
+## Implemented Capabilities
+
+### Backend
+
+- `GET /api/health`
+- `GET /api/health/system`
+- `GET /api/documents`
+- `GET /api/documents/{filename}`
+- `POST /api/documents/upload`
+- `DELETE /api/documents/{filename}`
+- `GET /api/documents/{filename}/chunks`
+- `POST /api/documents/{filename}/chunks/persist`
+- `GET /api/documents/{filename}/chunks/persisted`
+- `POST /api/documents/{filename}/embeddings/persist`
+- `GET /api/documents/{filename}/embeddings/persisted`
+- `POST /api/query`
+- `POST /api/query/diagnostics`
+- `GET /api/evaluation/retrieval/datasets`
+- `POST /api/evaluation/retrieval`
+
+### Frontend Console
+
+- `Documents`
+  - upload documents
+  - preview content
+  - persist chunks
+  - persist embeddings
+  - one-click pipeline generation
+  - delete document with artifact cleanup
+- `Query Lab`
+  - run retrieval-backed queries
+  - inspect answer tracing
+  - inspect diagnostics candidates and rerank scores
+- `Evaluation`
+  - list retrieval datasets
+  - run benchmark reports
+  - inspect hit/miss cases
+
+## Local Setup
+
+### Backend
+
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Backend URLs:
+
+- API root: `http://127.0.0.1:8000/`
+- Swagger: `http://127.0.0.1:8000/docs`
+
+### Frontend
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend URL:
+
+- Console: `http://127.0.0.1:5173`
+
+The frontend proxies `/api` requests to the local FastAPI server by default.
+
+## Environment Configuration
+
+Create a repo-root `.env` file based on `.env.example`.
+
+Common provider configuration:
+
+```env
+EMBEDDING_PROVIDER=gemini
+CHAT_PROVIDER=gemini
+
+GEMINI_API_KEY=your_key
+GEMINI_EMBEDDING_MODEL=gemini-embedding-001
+GEMINI_CHAT_MODEL=gemini-2.5-flash-lite
+
+OPENAI_API_KEY=
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_CHAT_MODEL=gpt-4o-mini
+```
+
+## Testing
+
+### Backend
+
+```powershell
+cd backend
+.\.venv\Scripts\pytest
+```
+
+### Frontend
+
+```powershell
+cd frontend
+npm test
+npm run build
+```
+
+## Example Workflow
+
+1. Upload a document in the `Documents` page.
+2. Click `Generate Pipeline` to persist chunks and embeddings.
+3. Open `Query Lab` and run a question against the uploaded document.
+4. Inspect answer tracing and diagnostics candidates.
+5. Open `Evaluation` and run a retrieval benchmark dataset.
 
 ## Project Structure
 
@@ -32,3 +161,18 @@ Phase 1: repository scaffolding and local development setup.
 - `docs/`: architecture and roadmap
 - `data/`: raw and processed files
 - `scripts/`: helper scripts
+
+## Current Retrieval Evaluation Baseline
+
+The project currently includes two focused benchmark datasets:
+
+- `rag_overview_retrieval_eval.json`
+- `agent_workflow_retrieval_eval.json`
+
+With the current pipeline:
+
+- paragraph-aware chunking
+- Gemini embeddings
+- lightweight heuristic reranking
+
+the local retrieval benchmark currently reaches a strong baseline on both datasets.
