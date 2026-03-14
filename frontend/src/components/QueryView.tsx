@@ -46,6 +46,11 @@ export function QueryView({
   onRunAgent,
   onRunDiagnostics,
 }: QueryViewProps) {
+  const routeUsesFilename =
+    agentQueryResult?.route.route_type === "knowledge_retrieval" && !!agentQueryResult.filename;
+  const routeUsesRetrieval = !!agentQueryResult?.retrieval;
+  const routeUsesToolPlanning = !!agentQueryResult?.tool_plan;
+
   return (
     <section className="panel-grid query-layout">
       <article className="panel panel-span view-banner">
@@ -164,6 +169,21 @@ export function QueryView({
               <article className="subsection-card">
                 <span className="section-label">Route Reason</span>
                 <p className="subsection-copy">{agentQueryResult.route.route_reason}</p>
+              </article>
+
+              <article className="subsection-card">
+                <span className="section-label">Route Context</span>
+                <div className="pill-strip">
+                  <span className={`meta-pill${routeUsesFilename ? "" : " muted-pill"}`}>
+                    document {routeUsesFilename ? `used: ${agentQueryResult.filename}` : "not used"}
+                  </span>
+                  <span className={`meta-pill${routeUsesRetrieval ? "" : " muted-pill"}`}>
+                    retrieval {routeUsesRetrieval ? "used" : "not used"}
+                  </span>
+                  <span className={`meta-pill${routeUsesToolPlanning ? "" : " muted-pill"}`}>
+                    tool planning {routeUsesToolPlanning ? "used" : "not used"}
+                  </span>
+                </div>
               </article>
 
               {agentQueryResult.answer && (
