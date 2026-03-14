@@ -195,6 +195,15 @@ export type EvalDatasetListResponse = {
   datasets: EvalDatasetInfo[];
 };
 
+export type AgentEvalDatasetInfo = {
+  dataset_name: string;
+  case_count: number;
+};
+
+export type AgentEvalDatasetListResponse = {
+  datasets: AgentEvalDatasetInfo[];
+};
+
 export type EvalReportResponse = {
   dataset_name: string;
   report: {
@@ -216,4 +225,45 @@ export type EvalReportResponse = {
   };
 };
 
+export type AgentRouteEvalReportResponse = {
+  dataset_name: string;
+  report: {
+    summary: {
+      total_cases: number;
+      route_accuracy: number;
+    };
+    cases: Array<{
+      case_id: string;
+      question: string;
+      filename?: string | null;
+      expected_route_type: string;
+      actual_route_type: string;
+      route_reason: string;
+      matched: boolean;
+    }>;
+  };
+};
+
+export type AgentWorkflowEvalReportResponse = {
+  dataset_name: string;
+  report: {
+    summary: {
+      total_cases: number;
+      workflow_accuracy: number;
+    };
+    cases: Array<{
+      case_id: string;
+      question: string;
+      filename?: string | null;
+      expected_route_type: string;
+      actual_route_type: string;
+      expected_workflow_status: string;
+      actual_workflow_status: string;
+      route_reason: string;
+      matched: boolean;
+    }>;
+  };
+};
+
 export type EvalCaseFilter = "all" | "hit" | "miss";
+export type EvaluationMode = "retrieval" | "agent-route" | "agent-workflow";

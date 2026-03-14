@@ -1,5 +1,8 @@
 import type {
   AgentWorkflowResponse,
+  AgentEvalDatasetListResponse,
+  AgentRouteEvalReportResponse,
+  AgentWorkflowEvalReportResponse,
   DiagnosticsResponse,
   DocumentListResponse,
   DocumentPreview,
@@ -143,6 +146,32 @@ export function runEvaluation(datasetName: string, topK: number) {
     body: JSON.stringify({
       dataset_name: datasetName,
       top_k: topK,
+    }),
+  });
+}
+
+export function fetchAgentRouteEvaluationDatasets() {
+  return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/agent-route/datasets");
+}
+
+export function runAgentRouteEvaluation(datasetName: string) {
+  return apiFetch<AgentRouteEvalReportResponse>("/api/evaluation/agent-route", {
+    method: "POST",
+    body: JSON.stringify({
+      dataset_name: datasetName,
+    }),
+  });
+}
+
+export function fetchAgentWorkflowEvaluationDatasets() {
+  return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/agent-workflow/datasets");
+}
+
+export function runAgentWorkflowEvaluation(datasetName: string) {
+  return apiFetch<AgentWorkflowEvalReportResponse>("/api/evaluation/agent-workflow", {
+    method: "POST",
+    body: JSON.stringify({
+      dataset_name: datasetName,
     }),
   });
 }

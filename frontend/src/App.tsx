@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import {
   deleteDocument as deleteDocumentRequest,
   fetchDocumentPreview,
+  fetchAgentRouteEvaluationDatasets,
+  fetchAgentWorkflowEvaluationDatasets,
   fetchDocuments,
   fetchEvaluationDatasets,
   fetchPersistedChunks,
@@ -9,6 +11,8 @@ import {
   fetchSystemHealth,
   persistChunks as persistChunksRequest,
   persistEmbeddings as persistEmbeddingsRequest,
+  runAgentRouteEvaluation as runAgentRouteEvaluationRequest,
+  runAgentWorkflowEvaluation as runAgentWorkflowEvaluationRequest,
   runAgentQuery as runAgentQueryRequest,
   runDiagnostics as runDiagnosticsRequest,
   runEvaluation as runEvaluationRequest,
@@ -21,11 +25,15 @@ import { QueryView } from "./components/QueryView";
 import { presetQuestions, views } from "./constants";
 import type {
   AgentWorkflowResponse,
+  AgentEvalDatasetInfo,
+  AgentRouteEvalReportResponse,
+  AgentWorkflowEvalReportResponse,
   DiagnosticsResponse,
   DocumentItem,
   DocumentPreview,
   EvalCaseFilter,
   EvalDatasetInfo,
+  EvaluationMode,
   EvalReportResponse,
   PersistedChunkDocument,
   PersistedEmbeddingDocument,
@@ -61,9 +69,15 @@ function App() {
   const [queryBusy, setQueryBusy] = useState(false);
 
   const [datasets, setDatasets] = useState<EvalDatasetInfo[]>([]);
+  const [agentRouteDatasets, setAgentRouteDatasets] = useState<AgentEvalDatasetInfo[]>([]);
+  const [agentWorkflowDatasets, setAgentWorkflowDatasets] = useState<AgentEvalDatasetInfo[]>([]);
+  const [evaluationMode, setEvaluationMode] = useState<EvaluationMode>("retrieval");
   const [datasetName, setDatasetName] = useState("");
   const [evalTopK, setEvalTopK] = useState(3);
   const [evalResult, setEvalResult] = useState<EvalReportResponse | null>(null);
+  const [agentRouteEvalResult, setAgentRouteEvalResult] = useState<AgentRouteEvalReportResponse | null>(null);
+  const [agentWorkflowEvalResult, setAgentWorkflowEvalResult] =
+    useState<AgentWorkflowEvalReportResponse | null>(null);
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
   const [evalCaseFilter, setEvalCaseFilter] = useState<EvalCaseFilter>("all");
@@ -87,10 +101,39 @@ function App() {
       return true;
     }) ?? [];
 
+  const filteredAgentRouteCases =
+    agentRouteEvalResult?.report.cases.filter((item) => {
+      if (evalCaseFilter === "hit") {
+        return item.matched;
+      }
+      if (evalCaseFilter === "miss") {
+        return !item.matched;
+      }
+      return true;
+    }) ?? [];
+
+  const filteredAgentWorkflowCases =
+    agentWorkflowEvalResult?.report.cases.filter((item) => {
+      if (evalCaseFilter === "hit") {
+        return item.matched;
+      }
+      if (evalCaseFilter === "miss") {
+        return !item.matched;
+      }
+      return true;
+    }) ?? [];
+
+  const visibleDatasetOptions =
+    evaluationMode === "retrieval"
+      ? datasets
+      : evaluationMode === "agent-route"
+        ? agentRouteDatasets
+        : agentWorkflowDatasets;
+
   useEffect(() => {
     void loadSystemHealth();
     void loadDocuments();
-    void loadDatasets();
+    void loadEvaluationDatasets();
   }, []);
 
   useEffect(() => {
@@ -297,17 +340,43 @@ function App() {
     }
   }
 
-  async function loadDatasets() {
-    try {
-      const payload = await fetchEvaluationDatasets();
-      setDatasets(payload.datasets);
-      if (payload.datasets.length > 0) {
-        setDatasetName((current) => current || payload.datasets[0].dataset_name);
-      }
-    } catch (error) {
-      setEvalError(error instanceof Error ? error.message : "Failed to load evaluation datasets");
+  async function loadEvaluationDatasets() {
+    setEvalError("");
+
+    const [retrievalPayload, routePayload, workflowPayload] = await Promise.allSettled([
+      fetchEvaluationDatasets(),
+      fetchAgentRouteEvaluationDatasets(),
+      fetchAgentWorkflowEvaluationDatasets(),
+    ]);
+
+    setDatasets(retrievalPayload.status === "fulfilled" ? retrievalPayload.value.datasets : []);
+    setAgentRouteDatasets(routePayload.status === "fulfilled" ? routePayload.value.datasets : []);
+    setAgentWorkflowDatasets(
+      workflowPayload.status === "fulfilled" ? workflowPayload.value.datasets : [],
+    );
+
+    const failures = [
+      retrievalPayload.status === "rejected" ? "retrieval" : null,
+      routePayload.status === "rejected" ? "agent-route" : null,
+      workflowPayload.status === "rejected" ? "agent-workflow" : null,
+    ].filter((item): item is string => item !== null);
+
+    if (failures.length > 0) {
+      setEvalError(`Some evaluation datasets failed to load: ${failures.join(", ")}`);
     }
   }
+
+  useEffect(() => {
+    const currentOptions = visibleDatasetOptions;
+    if (currentOptions.length === 0) {
+      setDatasetName("");
+      return;
+    }
+
+    if (!currentOptions.some((item) => item.dataset_name === datasetName)) {
+      setDatasetName(currentOptions[0].dataset_name);
+    }
+  }, [evaluationMode, datasetName, visibleDatasetOptions]);
 
   async function submitQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -361,10 +430,20 @@ function App() {
     setEvalBusy(true);
     setEvalError("");
     setEvalResult(null);
+    setAgentRouteEvalResult(null);
+    setAgentWorkflowEvalResult(null);
 
     try {
-      const payload = await runEvaluationRequest(datasetName, evalTopK);
-      setEvalResult(payload);
+      if (evaluationMode === "retrieval") {
+        const payload = await runEvaluationRequest(datasetName, evalTopK);
+        setEvalResult(payload);
+      } else if (evaluationMode === "agent-route") {
+        const payload = await runAgentRouteEvaluationRequest(datasetName);
+        setAgentRouteEvalResult(payload);
+      } else {
+        const payload = await runAgentWorkflowEvaluationRequest(datasetName);
+        setAgentWorkflowEvalResult(payload);
+      }
     } catch (error) {
       setEvalError(error instanceof Error ? error.message : "Failed to run evaluation");
     } finally {
@@ -390,7 +469,7 @@ function App() {
           </div>
           <div className="stat-card">
             <span>Eval Datasets</span>
-            <strong>{datasets.length}</strong>
+            <strong>{datasets.length + agentRouteDatasets.length + agentWorkflowDatasets.length}</strong>
           </div>
           <div className="stat-card">
             <span>Default Query Top-K</span>
@@ -531,15 +610,23 @@ function App() {
 
       {activeView === "evaluation" && (
         <EvaluationView
+          evaluationMode={evaluationMode}
           datasets={datasets}
+          agentRouteDatasets={agentRouteDatasets}
+          agentWorkflowDatasets={agentWorkflowDatasets}
           datasetName={datasetName}
           evalTopK={evalTopK}
           evalResult={evalResult}
+          agentRouteEvalResult={agentRouteEvalResult}
+          agentWorkflowEvalResult={agentWorkflowEvalResult}
           evalError={evalError}
           evalBusy={evalBusy}
           evalCaseFilter={evalCaseFilter}
           filteredEvalCases={filteredEvalCases}
-          onRefreshDatasets={() => void loadDatasets()}
+          filteredAgentRouteCases={filteredAgentRouteCases}
+          filteredAgentWorkflowCases={filteredAgentWorkflowCases}
+          onRefreshDatasets={() => void loadEvaluationDatasets()}
+          onChangeEvaluationMode={setEvaluationMode}
           onChangeDatasetName={setDatasetName}
           onChangeEvalTopK={setEvalTopK}
           onSubmitEvaluation={submitEvaluation}
