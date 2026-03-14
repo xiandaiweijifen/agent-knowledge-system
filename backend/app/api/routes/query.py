@@ -1,19 +1,13 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 
+from app.schemas.query import QueryRequest, QueryResponse
 from app.services.agent.query_service import run_query
 
 router = APIRouter(tags=["query"])
 
 
-class QueryRequest(BaseModel):
-    filename: str
-    question: str
-    top_k: int = 3
-
-
-@router.post("/query")
-def query_knowledge(request: QueryRequest):
+@router.post("/query", response_model=QueryResponse)
+def query_knowledge(request: QueryRequest) -> QueryResponse:
     try:
         return run_query(
             filename=request.filename,
