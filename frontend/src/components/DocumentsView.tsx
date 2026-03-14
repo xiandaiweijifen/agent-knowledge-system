@@ -26,6 +26,7 @@ type DocumentsViewProps = {
   onPersistChunks: () => void;
   onPersistEmbeddings: () => void;
   onGeneratePipeline: () => void;
+  onDeleteDocument: () => void;
   onUploadFile: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -47,6 +48,7 @@ export function DocumentsView({
   onPersistChunks,
   onPersistEmbeddings,
   onGeneratePipeline,
+  onDeleteDocument,
   onUploadFile,
 }: DocumentsViewProps) {
   return (
@@ -122,6 +124,14 @@ export function DocumentsView({
               disabled={artifactBusy || !selectedFilename}
             >
               Generate Pipeline
+            </button>
+            <button
+              type="button"
+              className="danger-button"
+              onClick={onDeleteDocument}
+              disabled={artifactBusy || uploadBusy || !selectedFilename}
+            >
+              Delete Document
             </button>
           </div>
         </div>

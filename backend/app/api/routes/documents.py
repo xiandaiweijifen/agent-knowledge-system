@@ -3,6 +3,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from app.services.ingestion.document_service import (
     chunk_document,
     chunk_document_with_strategy,
+    delete_document_with_artifacts,
     list_documents,
     load_persisted_chunks,
     persist_document_chunks,
@@ -53,6 +54,14 @@ def get_document_content(filename: str):
         raise HTTPException(status_code=404, detail="Document not found")
     except ValueError as exc:
         raise_document_value_error(exc)
+
+
+@router.delete("/documents/{filename}")
+def delete_document(filename: str):
+    try:
+        return delete_document_with_artifacts(filename)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Document not found")
 
 
 @router.post("/documents/upload")

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import {
+  deleteDocument as deleteDocumentRequest,
   fetchDocumentPreview,
   fetchDocuments,
   fetchEvaluationDatasets,
@@ -121,6 +122,48 @@ function App() {
       setDocumentsError(error instanceof Error ? error.message : "Failed to load documents");
     } finally {
       setDocumentsBusy(false);
+    }
+  }
+
+  async function deleteDocument() {
+    if (!selectedFilename) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete ${selectedFilename} and its persisted chunk / embedding artifacts?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setArtifactBusy(true);
+    setArtifactMessage("");
+    setUploadMessage("");
+    setDocumentsError("");
+
+    try {
+      await deleteDocumentRequest(selectedFilename);
+      setArtifactMessage(`Deleted ${selectedFilename} and related artifacts.`);
+      setPreview(null);
+      setChunkArtifact(null);
+      setEmbeddingArtifact(null);
+
+      const payload = await fetchDocuments();
+      setDocuments(payload.documents);
+
+      if (payload.documents.length > 0) {
+        setSelectedFilename(payload.documents[0].filename);
+        setQueryFilename(payload.documents[0].filename);
+      } else {
+        setSelectedFilename("");
+        setQueryFilename("");
+      }
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : "Failed to delete document");
+    } finally {
+      setArtifactBusy(false);
     }
   }
 
@@ -416,6 +459,7 @@ function App() {
           onPersistChunks={() => void persistChunks()}
           onPersistEmbeddings={() => void persistEmbeddings()}
           onGeneratePipeline={() => void generatePipeline()}
+          onDeleteDocument={() => void deleteDocument()}
           onUploadFile={(event) => {
             const file = event.target.files?.[0];
             if (file) {

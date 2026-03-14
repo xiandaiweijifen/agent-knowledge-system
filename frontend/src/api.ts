@@ -36,6 +36,17 @@ export function fetchSystemHealth() {
   return apiFetch<SystemHealthResponse>("/api/health/system");
 }
 
+export function deleteDocument(filename: string) {
+  return apiFetch<{
+    filename: string;
+    deleted_document: boolean;
+    deleted_chunks: boolean;
+    deleted_embeddings: boolean;
+  }>(`/api/documents/${encodeURIComponent(filename)}`, {
+    method: "DELETE",
+  });
+}
+
 export async function uploadDocument(file: File) {
   const formData = new FormData();
   formData.append("file", file);

@@ -10,6 +10,7 @@ describe("DocumentsView", () => {
     const onPersistChunks = vi.fn();
     const onUploadFile = vi.fn();
     const onGeneratePipeline = vi.fn();
+    const onDeleteDocument = vi.fn();
 
     render(
       <DocumentsView
@@ -51,6 +52,7 @@ describe("DocumentsView", () => {
         onPersistChunks={onPersistChunks}
         onPersistEmbeddings={vi.fn()}
         onGeneratePipeline={onGeneratePipeline}
+        onDeleteDocument={onDeleteDocument}
         onUploadFile={onUploadFile}
       />,
     );
@@ -65,6 +67,9 @@ describe("DocumentsView", () => {
 
     await user.click(screen.getByRole("button", { name: "Generate Pipeline" }));
     expect(onGeneratePipeline).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole("button", { name: "Delete Document" }));
+    expect(onDeleteDocument).toHaveBeenCalledTimes(1);
 
     await user.upload(
       screen.getByLabelText("Upload Document"),

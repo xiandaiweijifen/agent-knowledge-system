@@ -206,3 +206,37 @@ def load_persisted_chunks(filename: str) -> dict:
         raise FileNotFoundError(filename)
 
     return json.loads(chunk_file_path.read_text(encoding="utf-8"))
+
+
+def delete_document_with_artifacts(filename: str) -> dict:
+    """Delete a raw document and its persisted chunk and embedding artifacts."""
+    document_path = get_document_path(filename)
+
+    if not document_path.exists() or not document_path.is_file():
+        raise FileNotFoundError(filename)
+
+    chunk_path = get_chunk_output_path(filename)
+
+    # Avoid top-level import cycles with the indexing service.
+    from app.services.indexing.embedding_service import get_embedding_output_path
+
+    embedding_path = get_embedding_output_path(filename)
+
+    document_path.unlink()
+
+    deleted_chunks = False
+    if chunk_path.exists() and chunk_path.is_file():
+        chunk_path.unlink()
+        deleted_chunks = True
+
+    deleted_embeddings = False
+    if embedding_path.exists() and embedding_path.is_file():
+        embedding_path.unlink()
+        deleted_embeddings = True
+
+    return {
+        "filename": filename,
+        "deleted_document": True,
+        "deleted_chunks": deleted_chunks,
+        "deleted_embeddings": deleted_embeddings,
+    }
