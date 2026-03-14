@@ -399,3 +399,5 @@ def test_query_agent_endpoint_returns_clarification_result():
     assert payload["workflow_status"] == "clarification_required"
     assert payload["route"]["route_type"] == "clarification_needed"
     assert payload["clarification_message"]
+    assert "missing_fields" in payload["clarification_plan"]
+    assert payload["clarification_plan"]["follow_up_questions"]

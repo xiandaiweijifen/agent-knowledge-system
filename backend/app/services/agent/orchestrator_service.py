@@ -1,5 +1,6 @@
 from app.schemas.query import AgentWorkflowResponse
 from app.schemas.tools import ToolExecutionRequest
+from app.services.agent.clarification_service import plan_clarification
 from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
@@ -56,13 +57,12 @@ def orchestrate_agent_request(
             tool_execution=tool_response.model_dump(),
         )
 
+    clarification_plan = plan_clarification(question)
     return AgentWorkflowResponse(
         question=question,
         workflow_status="clarification_required",
         route=route,
         filename=filename,
-        clarification_message=(
-            "The request is underspecified. Clarify the target, environment, or action "
-            "before the agent proceeds."
-        ),
+        clarification_message=clarification_plan.clarification_summary,
+        clarification_plan=clarification_plan.model_dump(),
     )
