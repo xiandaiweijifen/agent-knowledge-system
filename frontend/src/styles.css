@@ -253,6 +253,13 @@ textarea {
   font-size: 1.4rem;
 }
 
+.panel-intro {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+  max-width: 62ch;
+}
+
 .case-toolbar {
   align-items: center;
   margin-top: 8px;
@@ -342,6 +349,34 @@ textarea {
   box-shadow: 0 12px 24px rgba(159, 58, 29, 0.12);
 }
 
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.file-pill,
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 41, 51, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status-chip.success {
+  border-color: rgba(92, 140, 108, 0.25);
+  background: rgba(242, 251, 245, 0.95);
+  color: #34624a;
+}
+
 .document-card span,
 .document-card small,
 .dataset-card span,
@@ -378,10 +413,7 @@ textarea {
 }
 
 .artifact-card header span {
-  color: var(--accent-strong);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.75rem;
+  flex-shrink: 0;
 }
 
 .meta-stack {
@@ -423,6 +455,14 @@ textarea {
   font-size: 0.9rem;
 }
 
+.preview-meta {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 248, 240, 0.8);
+  border: 1px solid rgba(31, 41, 51, 0.08);
+}
+
 .stack-form {
   display: grid;
   gap: 14px;
@@ -449,6 +489,27 @@ textarea {
   gap: 10px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.button-row-split {
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.button-cluster {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.button-cluster-danger {
+  justify-content: flex-end;
+}
+
+.preset-block {
+  display: grid;
+  gap: 8px;
 }
 
 .preset-strip {
@@ -516,6 +577,7 @@ textarea {
 .trace-grid strong {
   display: block;
   margin-top: 6px;
+  line-height: 1.45;
 }
 
 .answer-card {
@@ -601,6 +663,10 @@ textarea {
 
   .status-banner {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .button-row-split {
+    justify-content: flex-start;
   }
 }
 

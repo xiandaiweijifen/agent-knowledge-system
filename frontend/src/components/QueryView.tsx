@@ -41,7 +41,12 @@ export function QueryView({
     <section className="panel-grid query-layout">
       <article className="panel">
         <div className="panel-heading">
-          <h2>Query Lab</h2>
+          <div>
+            <h2>Query Lab</h2>
+            <p className="panel-intro">
+              Probe retrieval behavior, answer generation, and reranking signals for a selected document.
+            </p>
+          </div>
           <button type="button" className="ghost-button" onClick={onClearDiagnostics}>
             Clear Diagnostics
           </button>
@@ -61,17 +66,20 @@ export function QueryView({
             Question
             <textarea value={question} onChange={(event) => onChangeQuestion(event.target.value)} rows={4} />
           </label>
-          <div className="preset-strip">
-            {activePresetQuestions.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                className="preset-chip"
-                onClick={() => onChangeQuestion(preset)}
-              >
-                {preset}
-              </button>
-            ))}
+          <div className="preset-block">
+            <span className="section-label">Preset Questions</span>
+            <div className="preset-strip">
+              {activePresetQuestions.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  className="preset-chip"
+                  onClick={() => onChangeQuestion(preset)}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
           </div>
           <label>
             Top-K

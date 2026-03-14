@@ -55,7 +55,12 @@ export function DocumentsView({
     <section className="panel-grid">
       <article className="panel">
         <div className="panel-heading">
-          <h2>Document Registry</h2>
+          <div>
+            <h2>Document Registry</h2>
+            <p className="panel-intro">
+              Manage raw knowledge files before they enter chunking and embedding.
+            </p>
+          </div>
           <button type="button" className="ghost-button" onClick={onRefreshDocuments}>
             Refresh
           </button>
@@ -84,8 +89,10 @@ export function DocumentsView({
               className={`document-card${selectedFilename === item.filename ? " active" : ""}`}
               onClick={() => onSelectDocument(item.filename)}
             >
-              <strong>{item.filename}</strong>
-              <span>{item.suffix}</span>
+              <div className="card-title-row">
+                <strong>{item.filename}</strong>
+                <span className="file-pill">{item.suffix}</span>
+              </div>
               <small>{formatBytes(item.size_bytes)}</small>
             </button>
           ))}
@@ -94,8 +101,15 @@ export function DocumentsView({
 
       <article className="panel preview-panel">
         <div className="panel-heading">
-          <h2>Document Pipeline</h2>
-          <div className="button-row">
+          <div>
+            <h2>Document Pipeline</h2>
+            <p className="panel-intro">
+              Inspect persisted artifacts and move the selected document into a retrievable state.
+            </p>
+          </div>
+        </div>
+        <div className="button-row button-row-split">
+          <div className="button-cluster">
             {selectedFilename && (
               <button type="button" className="ghost-button" onClick={onRefreshArtifacts}>
                 Refresh Status
@@ -125,6 +139,8 @@ export function DocumentsView({
             >
               Generate Pipeline
             </button>
+          </div>
+          <div className="button-cluster button-cluster-danger">
             <button
               type="button"
               className="danger-button"
@@ -141,7 +157,9 @@ export function DocumentsView({
           <article className="artifact-card">
             <header>
               <strong>Chunk Artifact</strong>
-              <span>{chunkArtifact ? "ready" : "missing"}</span>
+              <span className={`status-chip${chunkArtifact ? " success" : ""}`}>
+                {chunkArtifact ? "ready" : "missing"}
+              </span>
             </header>
             {chunkArtifact ? (
               <div className="meta-stack">
@@ -161,7 +179,9 @@ export function DocumentsView({
           <article className="artifact-card">
             <header>
               <strong>Embedding Artifact</strong>
-              <span>{embeddingArtifact ? "ready" : "missing"}</span>
+              <span className={`status-chip${embeddingArtifact ? " success" : ""}`}>
+                {embeddingArtifact ? "ready" : "missing"}
+              </span>
             </header>
             {embeddingArtifact ? (
               <div className="meta-stack">
@@ -181,7 +201,7 @@ export function DocumentsView({
         </div>
         {preview ? (
           <>
-            <div className="meta-row">
+            <div className="meta-row preview-meta">
               <span>{preview.filename}</span>
               <span>{preview.suffix}</span>
               <span>{formatBytes(preview.size_bytes)}</span>

@@ -37,7 +37,12 @@ export function EvaluationView({
     <section className="panel-grid">
       <article className="panel">
         <div className="panel-heading">
-          <h2>Evaluation Runner</h2>
+          <div>
+            <h2>Evaluation Runner</h2>
+            <p className="panel-intro">
+              Run curated retrieval benchmarks and inspect per-case ranking outcomes.
+            </p>
+          </div>
           <button type="button" className="ghost-button" onClick={onRefreshDatasets}>
             Refresh Datasets
           </button>
@@ -82,7 +87,12 @@ export function EvaluationView({
 
       <article className="panel preview-panel">
         <div className="panel-heading">
-          <h2>Evaluation Report</h2>
+          <div>
+            <h2>Evaluation Report</h2>
+            <p className="panel-intro">
+              Compare benchmark hit rate, reciprocal rank, and individual case behavior.
+            </p>
+          </div>
         </div>
         {evalResult ? (
           <>
