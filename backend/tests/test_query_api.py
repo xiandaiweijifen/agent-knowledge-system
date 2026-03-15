@@ -1338,3 +1338,92 @@ def test_resume_agent_endpoint_can_continue_ticket_workflow_after_search_miss_wh
         if event["stage"] == "resume_context"
     )
 
+
+def test_query_agent_endpoint_persists_workflow_run_and_supports_lookup(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Check system status",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"]
+    assert payload["resumed_from_question"] is None
+
+    lookup_response = client.get(f"/api/query/agent/runs/{payload['run_id']}")
+
+    assert lookup_response.status_code == 200
+    lookup_payload = lookup_response.json()
+    assert lookup_payload["run_id"] == payload["run_id"]
+    assert lookup_payload["question"] == "Check system status"
+    assert lookup_payload["workflow_status"] == "completed"
+    assert lookup_payload["tool_plan"]["tool_name"] == "system_status"
+    assert workflow_run_store_path.exists()
+    persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
+    assert len(persisted_runs) == 1
+
+
+def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "Retrieval-augmented generation, or RAG, combines retrieval and generation.",
+        encoding="utf-8",
+    )
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "original_question": "Search docs for payment-service outage and summarize top 2 results",
+            "clarification_context": {
+                "search_query_refinement": "RAG",
+                "document_scope": "rag_overview.md",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"]
+    assert (
+        payload["resumed_from_question"]
+        == "Search docs for payment-service outage and summarize top 2 results"
+    )
+
+    lookup_response = client.get(f"/api/query/agent/runs/{payload['run_id']}")
+
+    assert lookup_response.status_code == 200
+    lookup_payload = lookup_response.json()
+    assert lookup_payload["run_id"] == payload["run_id"]
+    assert (
+        lookup_payload["resumed_from_question"]
+        == "Search docs for payment-service outage and summarize top 2 results"
+    )
+    assert lookup_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
+    persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
+    assert len(persisted_runs) == 1
+

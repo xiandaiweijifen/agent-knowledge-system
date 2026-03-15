@@ -12,6 +12,7 @@ from app.schemas.query import (
     RouteDecision,
 )
 from app.services.agent.orchestrator_service import (
+    get_persisted_workflow_run,
     orchestrate_agent_request,
     resume_agent_request,
 )
@@ -76,6 +77,16 @@ def resume_agent_query(request: AgentResumeRequest) -> AgentWorkflowResponse:
             status_code=404,
             detail="Persisted embedding file not found. Generate embeddings first",
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/query/agent/runs/{run_id}", response_model=AgentWorkflowResponse)
+def get_agent_workflow_run(run_id: str) -> AgentWorkflowResponse:
+    try:
+        return get_persisted_workflow_run(run_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

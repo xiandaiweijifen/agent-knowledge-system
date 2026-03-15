@@ -101,7 +101,9 @@ class QueryDiagnosticsResponse(BaseModel):
 
 
 class AgentWorkflowResponse(BaseModel):
+    run_id: str | None = None
     question: str
+    resumed_from_question: str | None = None
     workflow_status: str
     route: RouteDecision
     workflow_trace: list[WorkflowTraceEvent] = Field(default_factory=list)

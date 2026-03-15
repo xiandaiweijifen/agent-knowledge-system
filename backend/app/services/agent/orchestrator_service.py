@@ -1,4 +1,7 @@
+import json
 import re
+import uuid
+from pathlib import Path
 
 from app.schemas.query import AgentWorkflowResponse, WorkflowTraceEvent
 from app.schemas.tools import ToolExecutionRequest
@@ -12,6 +15,10 @@ from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
 
+WORKFLOW_RUN_DATA_DIR = Path("../data/tool_state")
+WORKFLOW_RUN_DATA_DIR.mkdir(parents=True, exist_ok=True)
+WORKFLOW_RUN_STORE_PATH = WORKFLOW_RUN_DATA_DIR / "workflow_runs.json"
+
 SEARCH_AND_TICKET_PATTERN = re.compile(
     r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<ticket>(?:create|open).+\bticket\b.+)$",
     re.IGNORECASE,
@@ -20,6 +27,52 @@ SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
     r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<summarize>summari[sz]e.+)$",
     re.IGNORECASE,
 )
+
+
+def _load_workflow_runs() -> list[dict]:
+    if not WORKFLOW_RUN_STORE_PATH.exists():
+        return []
+    raw_content = WORKFLOW_RUN_STORE_PATH.read_text(encoding="utf-8").strip()
+    if not raw_content:
+        return []
+    try:
+        loaded = json.loads(raw_content)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(loaded, list):
+        return []
+    return loaded
+
+
+def _save_workflow_runs(runs: list[dict]) -> None:
+    WORKFLOW_RUN_STORE_PATH.write_text(
+        json.dumps(runs, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _persist_workflow_response(
+    response: AgentWorkflowResponse,
+    resumed_from_question: str | None = None,
+) -> AgentWorkflowResponse:
+    response.run_id = uuid.uuid4().hex
+    response.resumed_from_question = resumed_from_question
+    runs = _load_workflow_runs()
+    runs.append(response.model_dump())
+    _save_workflow_runs(runs)
+    return response
+
+
+def get_persisted_workflow_run(run_id: str) -> AgentWorkflowResponse:
+    normalized_run_id = run_id.strip()
+    if not normalized_run_id:
+        raise ValueError("run_id_must_not_be_empty")
+
+    for run in reversed(_load_workflow_runs()):
+        if run.get("run_id") == normalized_run_id:
+            return AgentWorkflowResponse.model_validate(run)
+
+    raise FileNotFoundError(run_id)
 
 
 def _match_search_then_ticket_workflow(question: str) -> tuple[str, str] | None:
@@ -255,6 +308,7 @@ def resume_agent_request(
         filename=filename,
         top_k=top_k,
         resume_context=clarification_context,
+        persist_run=False,
     )
     response.workflow_trace.insert(
         0,
@@ -266,7 +320,10 @@ def resume_agent_request(
         ),
     )
     response.question = resumed_question
-    return response
+    return _persist_workflow_response(
+        response=response,
+        resumed_from_question=original_question,
+    )
 
 
 def orchestrate_agent_request(
@@ -274,6 +331,7 @@ def orchestrate_agent_request(
     filename: str | None = None,
     top_k: int = 3,
     resume_context: dict[str, str] | None = None,
+    persist_run: bool = True,
 ) -> AgentWorkflowResponse:
     """Route and execute the next workflow step for an agent request."""
     route = route_request(question=question, filename=filename)
@@ -314,7 +372,7 @@ def orchestrate_agent_request(
                 ),
             ]
         )
-        return AgentWorkflowResponse(
+        response = AgentWorkflowResponse(
             question=question,
             workflow_status="completed",
             route=route,
@@ -329,6 +387,7 @@ def orchestrate_agent_request(
             chat_model=query_response.chat_model,
             retrieval=query_response.retrieval,
         )
+        return _persist_workflow_response(response) if persist_run else response
 
     if route.route_type == "tool_execution":
         chained_steps: list[dict] = []
@@ -453,7 +512,7 @@ def orchestrate_agent_request(
                             ),
                         )
                     )
-                    return AgentWorkflowResponse(
+                    response = AgentWorkflowResponse(
                         question=question,
                         workflow_status="clarification_required",
                         route=route,
@@ -468,12 +527,13 @@ def orchestrate_agent_request(
                         tool_execution=tool_response.model_dump(),
                         tool_chain=chained_steps,
                     )
+                    return _persist_workflow_response(response) if persist_run else response
 
                 if step_index == 1 and tool_response.tool_name == "document_search":
                     prior_search_context = _build_search_context_arguments(tool_response.output)
 
             final_step = chained_steps[-1]
-            return AgentWorkflowResponse(
+            response = AgentWorkflowResponse(
                 question=question,
                 workflow_status="completed",
                 route=route,
@@ -483,6 +543,7 @@ def orchestrate_agent_request(
                 tool_execution=final_step["tool_execution"],
                 tool_chain=chained_steps,
             )
+            return _persist_workflow_response(response) if persist_run else response
 
         if search_then_summarize is not None:
             search_question, summarize_question = search_then_summarize
@@ -545,7 +606,7 @@ def orchestrate_agent_request(
                         ),
                     )
                 )
-                return AgentWorkflowResponse(
+                response = AgentWorkflowResponse(
                     question=question,
                     workflow_status="clarification_required",
                     route=route,
@@ -560,6 +621,7 @@ def orchestrate_agent_request(
                     tool_execution=tool_response.model_dump(),
                     tool_chain=chained_steps,
                 )
+                return _persist_workflow_response(response) if persist_run else response
 
             summary_answer = _build_search_summary(tool_response.output)
             workflow_trace.append(
@@ -574,7 +636,7 @@ def orchestrate_agent_request(
                 )
             )
             answered_at = build_utc_timestamp()
-            return AgentWorkflowResponse(
+            response = AgentWorkflowResponse(
                 question=question,
                 workflow_status="completed",
                 route=route,
@@ -591,6 +653,7 @@ def orchestrate_agent_request(
                 tool_execution=tool_response.model_dump(),
                 tool_chain=chained_steps,
             )
+            return _persist_workflow_response(response) if persist_run else response
 
         tool_plan = plan_tool_request(question)
         workflow_trace.append(
@@ -624,7 +687,7 @@ def orchestrate_agent_request(
                 ),
             )
         )
-        return AgentWorkflowResponse(
+        response = AgentWorkflowResponse(
             question=question,
             workflow_status="completed",
             route=route,
@@ -640,6 +703,7 @@ def orchestrate_agent_request(
                 }
             ],
         )
+        return _persist_workflow_response(response) if persist_run else response
 
     clarification_plan = plan_clarification(question)
     workflow_trace.append(
@@ -653,7 +717,7 @@ def orchestrate_agent_request(
             ),
         )
     )
-    return AgentWorkflowResponse(
+    response = AgentWorkflowResponse(
         question=question,
         workflow_status="clarification_required",
         route=route,
@@ -663,3 +727,4 @@ def orchestrate_agent_request(
         clarification_plan=clarification_plan.model_dump(),
         tool_chain=[],
     )
+    return _persist_workflow_response(response) if persist_run else response
