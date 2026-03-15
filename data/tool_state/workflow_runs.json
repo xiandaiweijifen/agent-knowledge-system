@@ -82,6 +82,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.487871+00:00",
+        "completed_at": "2026-03-15T16:12:37.487871+00:00",
         "question": "Search rag_overview.md for reranking",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking",
@@ -121,7 +126,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -231,6 +237,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.527253+00:00",
+        "completed_at": "2026-03-15T16:12:37.527253+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -267,9 +278,15 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.527590+00:00",
+        "completed_at": "2026-03-15T16:12:37.527590+00:00",
         "question": "create a high severity ticket for payment-service",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service",
@@ -314,7 +331,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -414,6 +432,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.549180+00:00",
+        "completed_at": "2026-03-15T16:12:37.549180+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -446,7 +469,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -533,6 +557,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.574385+00:00",
+        "completed_at": "2026-03-15T16:12:37.574385+00:00",
         "question": "Search docs for RAG and show top 2 results",
         "tool_plan": {
           "question": "Search docs for RAG and show top 2 results",
@@ -572,7 +601,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -661,6 +691,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.598307+00:00",
+        "completed_at": "2026-03-15T16:12:37.598307+00:00",
         "question": "Search rag_overview.md for reranking limit to 1",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking limit to 1",
@@ -702,7 +737,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -795,6 +831,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.620068+00:00",
+        "completed_at": "2026-03-15T16:12:37.620068+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -834,7 +875,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -935,6 +977,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.640206+00:00",
+        "completed_at": "2026-03-15T16:12:37.640206+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -970,7 +1017,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -1065,6 +1113,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.664279+00:00",
+        "completed_at": "2026-03-15T16:12:37.664279+00:00",
         "question": "Search rag_overview.md for reranking",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking",
@@ -1106,7 +1159,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -1259,6 +1313,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.707844+00:00",
+        "completed_at": "2026-03-15T16:12:37.707844+00:00",
         "question": "Search rag_overview.md for RAG",
         "tool_plan": {
           "question": "Search rag_overview.md for RAG",
@@ -1300,7 +1359,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -1423,6 +1483,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.737850+00:00",
+        "completed_at": "2026-03-15T16:12:37.737850+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -1459,9 +1524,15 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.738240+00:00",
+        "completed_at": "2026-03-15T16:12:37.738240+00:00",
         "question": "create a high severity ticket for payment-service in production",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in production",
@@ -1507,7 +1578,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -1630,6 +1702,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.766018+00:00",
+        "completed_at": "2026-03-15T16:12:37.766018+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -1666,9 +1743,15 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.766426+00:00",
+        "completed_at": "2026-03-15T16:12:37.766426+00:00",
         "question": "create a high severity ticket for payment-service in staging",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in staging",
@@ -1714,7 +1797,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -1828,6 +1912,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.797428+00:00",
+        "completed_at": "2026-03-15T16:12:37.797428+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -1860,9 +1949,15 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:12:37.797850+00:00",
+        "completed_at": "2026-03-15T16:12:37.797850+00:00",
         "question": "create a high severity ticket for payment-service in production",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in production",
@@ -1899,7 +1994,8 @@
             "created_at": "2026-03-15T16:12:37.797850+00:00",
             "updated_at": "2026-03-15T16:12:37.797850+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -2050,6 +2146,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.456166+00:00",
+        "completed_at": "2026-03-15T16:16:28.456166+00:00",
         "question": "Create a ticket for the payment service outage",
         "tool_plan": {
           "question": "Create a ticket for the payment service outage",
@@ -2083,7 +2184,8 @@
             "created_at": "2026-03-15T16:16:28.456166+00:00",
             "updated_at": "2026-03-15T16:16:28.456166+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -2170,6 +2272,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.485339+00:00",
+        "completed_at": "2026-03-15T16:16:28.485339+00:00",
         "question": "Search rag_overview.md for reranking",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking",
@@ -2209,7 +2316,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -2319,6 +2427,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.517341+00:00",
+        "completed_at": "2026-03-15T16:16:28.517341+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -2355,9 +2468,15 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.517803+00:00",
+        "completed_at": "2026-03-15T16:16:28.517803+00:00",
         "question": "create a high severity ticket for payment-service",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service",
@@ -2402,7 +2521,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -2502,6 +2622,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.555533+00:00",
+        "completed_at": "2026-03-15T16:16:28.555533+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -2534,7 +2659,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -2621,6 +2747,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.595097+00:00",
+        "completed_at": "2026-03-15T16:16:28.595097+00:00",
         "question": "Search docs for RAG and show top 2 results",
         "tool_plan": {
           "question": "Search docs for RAG and show top 2 results",
@@ -2660,7 +2791,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -2749,6 +2881,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.635325+00:00",
+        "completed_at": "2026-03-15T16:16:28.635325+00:00",
         "question": "Search rag_overview.md for reranking limit to 1",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking limit to 1",
@@ -2790,7 +2927,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -2883,6 +3021,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.681412+00:00",
+        "completed_at": "2026-03-15T16:16:28.681412+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -2922,7 +3065,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -3023,6 +3167,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.723633+00:00",
+        "completed_at": "2026-03-15T16:16:28.723633+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -3058,7 +3207,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -3153,6 +3303,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.762834+00:00",
+        "completed_at": "2026-03-15T16:16:28.762834+00:00",
         "question": "Search rag_overview.md for reranking",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking",
@@ -3194,7 +3349,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -3347,6 +3503,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.836104+00:00",
+        "completed_at": "2026-03-15T16:16:28.836104+00:00",
         "question": "Search rag_overview.md for RAG",
         "tool_plan": {
           "question": "Search rag_overview.md for RAG",
@@ -3388,7 +3549,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -3511,6 +3673,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.878622+00:00",
+        "completed_at": "2026-03-15T16:16:28.878622+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -3547,9 +3714,15 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.879112+00:00",
+        "completed_at": "2026-03-15T16:16:28.879112+00:00",
         "question": "create a high severity ticket for payment-service in production",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in production",
@@ -3595,7 +3768,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -3718,6 +3892,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.917145+00:00",
+        "completed_at": "2026-03-15T16:16:28.917145+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -3754,9 +3933,15 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.917637+00:00",
+        "completed_at": "2026-03-15T16:16:28.917637+00:00",
         "question": "create a high severity ticket for payment-service in staging",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in staging",
@@ -3802,7 +3987,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -3916,6 +4102,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.960695+00:00",
+        "completed_at": "2026-03-15T16:16:28.960695+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -3948,9 +4139,15 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:28.961162+00:00",
+        "completed_at": "2026-03-15T16:16:28.961162+00:00",
         "question": "create a high severity ticket for payment-service in production",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in production",
@@ -3987,7 +4184,8 @@
             "created_at": "2026-03-15T16:16:28.961162+00:00",
             "updated_at": "2026-03-15T16:16:28.961162+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -4138,6 +4336,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.348496+00:00",
+        "completed_at": "2026-03-15T16:16:29.348496+00:00",
         "question": "Create a ticket for the payment service outage",
         "tool_plan": {
           "question": "Create a ticket for the payment service outage",
@@ -4171,7 +4374,8 @@
             "created_at": "2026-03-15T16:16:29.348496+00:00",
             "updated_at": "2026-03-15T16:16:29.348496+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -4258,6 +4462,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.378629+00:00",
+        "completed_at": "2026-03-15T16:16:29.378629+00:00",
         "question": "Search rag_overview.md for reranking",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking",
@@ -4297,7 +4506,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -4407,6 +4617,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.408773+00:00",
+        "completed_at": "2026-03-15T16:16:29.408773+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -4443,9 +4658,15 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.409199+00:00",
+        "completed_at": "2026-03-15T16:16:29.409199+00:00",
         "question": "create a high severity ticket for payment-service",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service",
@@ -4490,7 +4711,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -4590,6 +4812,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.439458+00:00",
+        "completed_at": "2026-03-15T16:16:29.439458+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -4622,7 +4849,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -4709,6 +4937,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.469982+00:00",
+        "completed_at": "2026-03-15T16:16:29.469982+00:00",
         "question": "Search docs for RAG and show top 2 results",
         "tool_plan": {
           "question": "Search docs for RAG and show top 2 results",
@@ -4748,7 +4981,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -4837,6 +5071,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.498735+00:00",
+        "completed_at": "2026-03-15T16:16:29.498735+00:00",
         "question": "Search rag_overview.md for reranking limit to 1",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking limit to 1",
@@ -4878,7 +5117,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -4971,6 +5211,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.528283+00:00",
+        "completed_at": "2026-03-15T16:16:29.528283+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -5010,7 +5255,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -5111,6 +5357,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.563571+00:00",
+        "completed_at": "2026-03-15T16:16:29.563571+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -5146,7 +5397,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -5241,6 +5493,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.614442+00:00",
+        "completed_at": "2026-03-15T16:16:29.614442+00:00",
         "question": "Search rag_overview.md for reranking",
         "tool_plan": {
           "question": "Search rag_overview.md for reranking",
@@ -5282,7 +5539,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -5435,6 +5693,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.714353+00:00",
+        "completed_at": "2026-03-15T16:16:29.714353+00:00",
         "question": "Search rag_overview.md for RAG",
         "tool_plan": {
           "question": "Search rag_overview.md for RAG",
@@ -5476,7 +5739,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -5599,6 +5863,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.758748+00:00",
+        "completed_at": "2026-03-15T16:16:29.758748+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -5635,9 +5904,15 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.759391+00:00",
+        "completed_at": "2026-03-15T16:16:29.759391+00:00",
         "question": "create a high severity ticket for payment-service in production",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in production",
@@ -5683,7 +5958,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -5806,6 +6082,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.796930+00:00",
+        "completed_at": "2026-03-15T16:16:29.796930+00:00",
         "question": "Search docs for RAG",
         "tool_plan": {
           "question": "Search docs for RAG",
@@ -5842,9 +6123,15 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.797409+00:00",
+        "completed_at": "2026-03-15T16:16:29.797409+00:00",
         "question": "create a high severity ticket for payment-service in staging",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in staging",
@@ -5890,7 +6177,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -6004,6 +6292,11 @@
     },
     "tool_chain": [
       {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.837048+00:00",
+        "completed_at": "2026-03-15T16:16:29.837048+00:00",
         "question": "Search docs for payment-service outage",
         "tool_plan": {
           "question": "Search docs for payment-service outage",
@@ -6036,9 +6329,15 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-15T16:16:29.837649+00:00",
+        "completed_at": "2026-03-15T16:16:29.837649+00:00",
         "question": "create a high severity ticket for payment-service in production",
         "tool_plan": {
           "question": "create a high severity ticket for payment-service in production",
@@ -6075,7 +6374,8 @@
             "created_at": "2026-03-15T16:16:29.837649+00:00",
             "updated_at": "2026-03-15T16:16:29.837649+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -6195,7 +6495,8 @@
             "created_at": "2026-03-15T16:22:02.883902+00:00",
             "updated_at": "2026-03-15T16:22:02.883902+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -6347,7 +6648,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -6399,7 +6701,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -6537,7 +6840,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -6781,7 +7085,8 @@
             "created_at": "2026-03-15T16:22:11.223945+00:00",
             "updated_at": "2026-03-15T16:22:11.223945+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -6913,7 +7218,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -7065,7 +7371,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -7117,7 +7424,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -7255,7 +7563,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -7387,7 +7696,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -7523,7 +7833,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -7661,7 +7972,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -7803,7 +8115,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -7945,7 +8258,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -8146,7 +8460,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -8311,7 +8626,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -8364,7 +8680,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -8529,7 +8846,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -8582,7 +8900,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -8734,7 +9053,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -8778,7 +9098,8 @@
             "created_at": "2026-03-15T16:22:11.735345+00:00",
             "updated_at": "2026-03-15T16:22:11.735345+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -8969,7 +9290,8 @@
             "created_at": "2026-03-15T16:22:12.100858+00:00",
             "updated_at": "2026-03-15T16:22:12.100858+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -9101,7 +9423,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -9253,7 +9576,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -9305,7 +9629,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -9443,7 +9768,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -9575,7 +9901,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -9711,7 +10038,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -9849,7 +10177,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -9991,7 +10320,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -10133,7 +10463,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -10334,7 +10665,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -10499,7 +10831,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -10552,7 +10885,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -10717,7 +11051,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -10770,7 +11105,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -10922,7 +11258,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -10966,7 +11303,8 @@
             "created_at": "2026-03-15T16:22:12.619091+00:00",
             "updated_at": "2026-03-15T16:22:12.619091+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -11086,7 +11424,8 @@
             "created_at": "2026-03-15T16:23:23.345409+00:00",
             "updated_at": "2026-03-15T16:23:23.345409+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -11238,7 +11577,8 @@
             "top_match_score": "9.373",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -11290,7 +11630,8 @@
             "supporting_match_count": "2",
             "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -11413,7 +11754,8 @@
             "created_at": "2026-03-15T16:27:52.457982+00:00",
             "updated_at": "2026-03-15T16:27:52.457982+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -11568,7 +11910,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -11620,7 +11963,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -11761,7 +12105,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -12014,7 +12359,8 @@
             "created_at": "2026-03-15T16:28:04.643225+00:00",
             "updated_at": "2026-03-15T16:28:04.643225+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -12149,7 +12495,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -12304,7 +12651,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -12356,7 +12704,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -12497,7 +12846,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -12632,7 +12982,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -12771,7 +13122,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -12912,7 +13264,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -13057,7 +13410,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -13202,7 +13556,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -13409,7 +13764,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -13577,7 +13933,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -13630,7 +13987,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -13798,7 +14156,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -13851,7 +14210,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -14006,7 +14366,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -14050,7 +14411,8 @@
             "created_at": "2026-03-15T16:28:05.204601+00:00",
             "updated_at": "2026-03-15T16:28:05.204601+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -14247,7 +14609,8 @@
             "created_at": "2026-03-15T16:28:05.474486+00:00",
             "updated_at": "2026-03-15T16:28:05.474486+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -14382,7 +14745,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -14537,7 +14901,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -14589,7 +14954,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -14730,7 +15096,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -14865,7 +15232,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -15004,7 +15372,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -15145,7 +15514,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -15290,7 +15660,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -15435,7 +15806,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -15642,7 +16014,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -15810,7 +16183,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -15863,7 +16237,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -16031,7 +16406,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -16084,7 +16460,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -16239,7 +16616,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -16283,7 +16661,8 @@
             "created_at": "2026-03-15T16:28:06.047524+00:00",
             "updated_at": "2026-03-15T16:28:06.047524+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -16406,7 +16785,8 @@
             "created_at": "2026-03-15T16:29:31.592402+00:00",
             "updated_at": "2026-03-15T16:29:31.592402+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -16586,7 +16966,8 @@
             "created_at": "2026-03-15T16:36:06.608705+00:00",
             "updated_at": "2026-03-15T16:36:06.608705+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -16742,7 +17123,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -16794,7 +17176,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -16936,7 +17319,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -17082,7 +17466,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -17338,7 +17723,8 @@
             "created_at": "2026-03-15T16:36:06.984873+00:00",
             "updated_at": "2026-03-15T16:36:06.984873+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -17474,7 +17860,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -17630,7 +18017,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -17682,7 +18070,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -17824,7 +18213,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -17960,7 +18350,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -18100,7 +18491,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -18242,7 +18634,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -18388,7 +18781,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -18534,7 +18928,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -18743,7 +19138,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -18912,7 +19308,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -18965,7 +19362,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -19134,7 +19532,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -19187,7 +19586,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -19343,7 +19743,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -19387,7 +19788,8 @@
             "created_at": "2026-03-15T16:36:07.741928+00:00",
             "updated_at": "2026-03-15T16:36:07.741928+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -19586,7 +19988,8 @@
             "created_at": "2026-03-15T16:36:07.919913+00:00",
             "updated_at": "2026-03-15T16:36:07.919913+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -19722,7 +20125,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -19878,7 +20282,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -19930,7 +20335,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -20072,7 +20478,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -20208,7 +20615,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -20348,7 +20756,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -20490,7 +20899,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -20636,7 +21046,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -20782,7 +21193,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -20991,7 +21403,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -21160,7 +21573,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -21213,7 +21627,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -21382,7 +21797,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -21435,7 +21851,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -21591,7 +22008,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -21635,7 +22053,8 @@
             "created_at": "2026-03-15T16:36:08.633266+00:00",
             "updated_at": "2026-03-15T16:36:08.633266+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -21834,7 +22253,8 @@
             "created_at": "2026-03-15T16:36:32.810306+00:00",
             "updated_at": "2026-03-15T16:36:32.810306+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -21970,7 +22390,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -22126,7 +22547,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -22178,7 +22600,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -22320,7 +22743,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -22456,7 +22880,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -22596,7 +23021,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -22738,7 +23164,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -22884,7 +23311,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -23030,7 +23458,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -23239,7 +23668,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -23408,7 +23838,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -23461,7 +23892,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -23630,7 +24062,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -23683,7 +24116,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -23882,7 +24316,8 @@
             "created_at": "2026-03-15T16:36:33.726542+00:00",
             "updated_at": "2026-03-15T16:36:33.726542+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -24018,7 +24453,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -24174,7 +24610,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -24226,7 +24663,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -24368,7 +24806,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -24504,7 +24943,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -24644,7 +25084,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -24786,7 +25227,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -24932,7 +25374,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -25078,7 +25521,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -25287,7 +25731,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -25456,7 +25901,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -25509,7 +25955,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -25678,7 +26125,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -25731,7 +26179,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -25887,7 +26336,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -25931,7 +26381,8 @@
             "created_at": "2026-03-15T16:36:34.478270+00:00",
             "updated_at": "2026-03-15T16:36:34.478270+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -26055,7 +26506,8 @@
             "created_at": "2026-03-15T16:39:14.798984+00:00",
             "updated_at": "2026-03-15T16:39:14.798984+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -26258,7 +26710,8 @@
             "skipped_documents": "1",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -26544,7 +26997,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -26680,7 +27134,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -26822,7 +27277,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -26964,7 +27420,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -27100,7 +27557,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -27236,7 +27694,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -27376,7 +27835,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -27516,7 +27976,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -27658,7 +28119,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -27800,7 +28262,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -27946,7 +28409,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -28092,7 +28556,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -28238,7 +28703,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -28384,7 +28850,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -28650,7 +29117,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -28802,7 +29270,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -29088,7 +29557,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -29224,7 +29694,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -29366,7 +29837,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -29508,7 +29980,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -29644,7 +30117,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -29780,7 +30254,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -29920,7 +30395,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -30060,7 +30536,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -30202,7 +30679,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -30344,7 +30822,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -30490,7 +30969,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -30636,7 +31116,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -30782,7 +31263,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -30928,7 +31410,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -31194,7 +31677,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -31346,7 +31830,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -31545,7 +32030,8 @@
             "created_at": "2026-03-15T16:43:54.171407+00:00",
             "updated_at": "2026-03-15T16:43:54.171407+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -31681,7 +32167,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -31837,7 +32324,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -31889,7 +32377,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -32031,7 +32520,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -32167,7 +32657,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -32307,7 +32798,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -32449,7 +32941,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -32595,7 +33088,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -32741,7 +33235,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -32950,7 +33445,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -33119,7 +33615,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -33172,7 +33669,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -33341,7 +33839,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -33394,7 +33893,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -33550,7 +34050,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -33594,7 +34095,8 @@
             "created_at": "2026-03-15T16:43:54.975954+00:00",
             "updated_at": "2026-03-15T16:43:54.975954+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -33793,7 +34295,8 @@
             "created_at": "2026-03-15T16:44:01.521180+00:00",
             "updated_at": "2026-03-15T16:44:01.521180+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -33929,7 +34432,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -34085,7 +34589,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -34137,7 +34642,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -34279,7 +34785,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -34415,7 +34922,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -34555,7 +35063,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -34697,7 +35206,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -34843,7 +35353,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -34989,7 +35500,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -35198,7 +35710,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -35367,7 +35880,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -35420,7 +35934,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -35589,7 +36104,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -35642,7 +36158,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -35798,7 +36315,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -35842,7 +36360,8 @@
             "created_at": "2026-03-15T16:44:02.222929+00:00",
             "updated_at": "2026-03-15T16:44:02.222929+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -35978,7 +36497,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -36234,7 +36754,8 @@
             "created_at": "2026-03-15T16:51:06.921454+00:00",
             "updated_at": "2026-03-15T16:51:06.921454+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -36370,7 +36891,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -36526,7 +37048,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -36578,7 +37101,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -36720,7 +37244,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -36856,7 +37381,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -36996,7 +37522,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -37138,7 +37665,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -37284,7 +37812,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -37430,7 +37959,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -37639,7 +38169,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -37808,7 +38339,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -37861,7 +38393,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -38030,7 +38563,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -38083,7 +38617,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -38239,7 +38774,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -38283,7 +38819,8 @@
             "created_at": "2026-03-15T16:51:07.745092+00:00",
             "updated_at": "2026-03-15T16:51:07.745092+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -38482,7 +39019,8 @@
             "created_at": "2026-03-15T16:51:23.556999+00:00",
             "updated_at": "2026-03-15T16:51:23.556999+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -38618,7 +39156,8 @@
             "top_match_score": "4.000",
             "top_match_reason": "full query match, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -38774,7 +39313,8 @@
             "top_match_score": "5.490",
             "top_match_reason": "full query match, early occurrence, term coverage 3/3"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -38826,7 +39366,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -38968,7 +39509,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -39104,7 +39646,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -39244,7 +39787,8 @@
             "top_match_score": "5.500",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -39386,7 +39930,8 @@
             "top_match_score": "9.375",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -39532,7 +40077,8 @@
             "skipped_documents": "0",
             "max_results": "2"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -39678,7 +40224,8 @@
             "top_match_score": "5.317",
             "top_match_reason": "full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -39887,7 +40434,8 @@
             "top_match_score": "9.412",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -40056,7 +40604,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -40109,7 +40658,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -40278,7 +40828,8 @@
             "top_match_score": "9.500",
             "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -40331,7 +40882,8 @@
             "supporting_match_count": "1",
             "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },
@@ -40487,7 +41039,8 @@
             "matched_documents": "",
             "skipped_documents": "0"
           }
-        }
+        },
+        "failure_message": null
       },
       {
         "step_id": "step_2",
@@ -40531,7 +41084,8 @@
             "created_at": "2026-03-15T16:51:24.389267+00:00",
             "updated_at": "2026-03-15T16:51:24.389267+00:00"
           }
-        }
+        },
+        "failure_message": null
       }
     ]
   },

@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.schemas.query import (
     AgentQueryRequest,
+    AgentWorkflowMigrationResponse,
     AgentResumeRequest,
     AgentWorkflowResponse,
     AgentWorkflowRunListResponse,
@@ -15,6 +16,7 @@ from app.schemas.query import (
 from app.services.agent.orchestrator_service import (
     get_persisted_workflow_run,
     list_persisted_workflow_runs,
+    migrate_persisted_workflow_runs,
     orchestrate_agent_request,
     resume_agent_request,
 )
@@ -90,6 +92,11 @@ def list_agent_workflow_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
         return list_persisted_workflow_runs(limit=limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/agent/runs/migrate", response_model=AgentWorkflowMigrationResponse)
+def migrate_agent_workflow_runs() -> AgentWorkflowMigrationResponse:
+    return migrate_persisted_workflow_runs()
 
 
 @router.get("/query/agent/runs/{run_id}", response_model=AgentWorkflowResponse)

@@ -4,6 +4,7 @@ import uuid
 from pathlib import Path
 
 from app.schemas.query import (
+    AgentWorkflowMigrationResponse,
     AgentWorkflowResponse,
     AgentWorkflowRunListResponse,
     AgentWorkflowRunSummary,
@@ -95,6 +96,20 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run = dict(run)
     normalized_run["tool_chain"] = _normalize_persisted_workflow_step_records(normalized_run)
     return normalized_run
+
+
+def _workflow_run_requires_migration(run: dict) -> bool:
+    tool_chain = run.get("tool_chain")
+    if not isinstance(tool_chain, list):
+        return False
+
+    for step in tool_chain:
+        if not isinstance(step, dict):
+            return True
+        if not {"step_id", "step_index", "step_status", "started_at"}.issubset(step):
+            return True
+
+    return False
 
 
 def _extract_final_tool_identity(run: AgentWorkflowResponse) -> tuple[str | None, str | None]:
@@ -243,6 +258,32 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
             for run in persisted_runs
             if run.run_id
         ]
+    )
+
+
+def migrate_persisted_workflow_runs() -> AgentWorkflowMigrationResponse:
+    runs = _load_workflow_runs()
+    migrated_runs: list[dict] = []
+    migrated_run_count = 0
+    migrated_step_count = 0
+
+    for run in runs:
+        normalized_run = _normalize_persisted_workflow_run(run)
+        migrated_runs.append(normalized_run)
+
+        if _workflow_run_requires_migration(run):
+            migrated_run_count += 1
+            original_steps = run.get("tool_chain")
+            if isinstance(original_steps, list):
+                migrated_step_count += len(normalized_run.get("tool_chain", []))
+
+    if migrated_run_count:
+        _save_workflow_runs(migrated_runs)
+
+    return AgentWorkflowMigrationResponse(
+        migrated_run_count=migrated_run_count,
+        migrated_step_count=migrated_step_count,
+        total_run_count=len(runs),
     )
 
 

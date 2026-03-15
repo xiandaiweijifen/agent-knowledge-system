@@ -2276,6 +2276,112 @@ def test_get_agent_workflow_run_endpoint_normalizes_legacy_tool_chain(
     assert payload["tool_chain"][0]["started_at"] == "2026-03-15T16:12:37.487871+00:00"
 
 
+def test_migrate_agent_workflow_runs_endpoint_upgrades_legacy_tool_chain(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "legacy-run-migrate",
+                    "question": "Search docs for reranking and create a ticket",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "legacy route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [
+                        {
+                            "question": "Search docs for reranking",
+                            "tool_plan": {"tool_name": "document_search"},
+                            "tool_execution": {
+                                "execution_status": "completed",
+                                "executed_at": "2026-03-15T16:12:37.487871+00:00",
+                            },
+                        }
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.post("/api/query/agent/runs/migrate")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["migrated_run_count"] == 1
+    assert payload["migrated_step_count"] == 1
+    assert payload["total_run_count"] == 1
+
+    persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
+    assert persisted_runs[0]["tool_chain"][0]["step_id"] == "step_1"
+    assert persisted_runs[0]["tool_chain"][0]["step_index"] == 1
+
+
+def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "current-run",
+                    "question": "Check system status",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "current route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [
+                        {
+                            "step_id": "step_1",
+                            "step_index": 1,
+                            "step_status": "completed",
+                            "started_at": "2026-03-15T16:12:37.487871+00:00",
+                            "completed_at": "2026-03-15T16:12:37.487871+00:00",
+                            "question": "Check system status",
+                            "tool_plan": {"tool_name": "system_status"},
+                            "tool_execution": {
+                                "execution_status": "completed",
+                                "executed_at": "2026-03-15T16:12:37.487871+00:00",
+                            },
+                            "failure_message": None,
+                        }
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.post("/api/query/agent/runs/migrate")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["migrated_run_count"] == 0
+    assert payload["migrated_step_count"] == 0
+    assert payload["total_run_count"] == 1
+
+
 def test_list_agent_workflow_runs_endpoint_includes_resume_metadata(
     workspace_tmp_path,
     monkeypatch,

@@ -178,3 +178,9 @@ class AgentWorkflowRunSummary(BaseModel):
 
 class AgentWorkflowRunListResponse(BaseModel):
     runs: list[AgentWorkflowRunSummary] = Field(default_factory=list)
+
+
+class AgentWorkflowMigrationResponse(BaseModel):
+    migrated_run_count: int
+    migrated_step_count: int
+    total_run_count: int
