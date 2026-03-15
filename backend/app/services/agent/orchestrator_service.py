@@ -72,6 +72,15 @@ def _split_search_snippets(snippets: str) -> list[tuple[str | None, str]]:
     return parsed_snippets
 
 
+def _ensure_summary_sentence(text: str) -> str:
+    cleaned = text.strip()
+    if not cleaned:
+        return cleaned
+    if cleaned.endswith((".", "!", "?")):
+        return cleaned
+    return f"{cleaned}."
+
+
 def _build_search_summary(tool_output: dict[str, str]) -> str:
     query = tool_output.get("query", "").strip()
     matched_count = tool_output.get("matched_count", "0").strip()
@@ -110,6 +119,7 @@ def _build_search_summary(tool_output: dict[str, str]) -> str:
 
     if parsed_snippets:
         first_source, first_snippet = parsed_snippets[0]
+        first_snippet = _ensure_summary_sentence(first_snippet)
         if first_source:
             summary_parts.append(f"Key evidence from {first_source}: {first_snippet}")
         else:
@@ -117,6 +127,7 @@ def _build_search_summary(tool_output: dict[str, str]) -> str:
 
     if len(parsed_snippets) > 1:
         second_source, second_snippet = parsed_snippets[1]
+        second_snippet = _ensure_summary_sentence(second_snippet)
         if second_source and second_source != top_match_document:
             summary_parts.append(f"Additional support from {second_source}: {second_snippet}")
 

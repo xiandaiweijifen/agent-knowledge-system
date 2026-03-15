@@ -255,6 +255,22 @@ def _candidate_search_segments(content: str) -> list[tuple[int, str]]:
     return segments
 
 
+def _ensure_sentence_boundary_excerpt(text: str) -> str:
+    cleaned = _normalize_search_excerpt(text)
+    if not cleaned:
+        return cleaned
+
+    # If a snippet starts mid-word, drop the leading fragment up to the next space.
+    if cleaned and cleaned[0].isalnum() and not cleaned.startswith(("RAG", "Retrieval", "Reranking")):
+        first_space = cleaned.find(" ")
+        if 0 < first_space < 24:
+            candidate = cleaned[first_space + 1 :].strip()
+            if candidate and candidate[0].isupper():
+                cleaned = candidate
+
+    return cleaned
+
+
 def _extract_search_snippet(content: str, first_index: int, query: str) -> str:
     snippet_start = max(0, first_index - 120)
     snippet_end = min(len(content), first_index + len(query) + 180)
@@ -271,12 +287,12 @@ def _extract_search_snippet(content: str, first_index: int, query: str) -> str:
             local_end = index + 1
             break
 
-    snippet = _normalize_search_excerpt(content[local_start:local_end])
+    snippet = _ensure_sentence_boundary_excerpt(content[local_start:local_end])
     lowered_query = query.lower()
 
     if _is_heading_like_excerpt(snippet) or len(snippet) < max(36, len(query) + 8):
         for segment_start, segment in _candidate_search_segments(content):
-            normalized_segment = _normalize_search_excerpt(segment)
+            normalized_segment = _ensure_sentence_boundary_excerpt(segment)
             if not normalized_segment:
                 continue
             if segment_start < first_index:

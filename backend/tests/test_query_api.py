@@ -1156,6 +1156,7 @@ def test_query_agent_endpoint_supports_filename_scoped_search_summary(
     assert payload["tool_execution"]["output"]["returned_count"] == "1"
     assert "I searched 'rag_overview.md' for 'reranking'" in payload["answer"]
     assert "The strongest supporting document is rag_overview.md." in payload["answer"]
+    assert "Key evidence from rag_overview.md: Reranking improves precision for the strongest chunks." in payload["answer"]
     assert "Returned documents:" not in payload["answer"]
 
 
