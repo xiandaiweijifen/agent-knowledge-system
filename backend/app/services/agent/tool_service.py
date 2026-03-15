@@ -16,7 +16,7 @@ from app.schemas.tools import (
 )
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.ingestion import document_service
-from app.services.agent.state_store import atomic_write_json, load_json_list
+from app.services.agent.state_store import JsonListRepository
 
 
 SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
@@ -210,15 +210,17 @@ def _clean_ticket_target(question: str, target: str, action: str) -> str:
 
 
 def _load_ticket_store() -> list[dict[str, Any]]:
-    tickets = load_json_list(TICKET_STORE_PATH)
-    return [_normalize_ticket_record(ticket) for ticket in tickets]
+    return JsonListRepository(
+        TICKET_STORE_PATH,
+        normalizer=_normalize_ticket_record,
+    ).load()
 
 
 def _save_ticket_store(tickets: list[dict[str, Any]]) -> None:
-    atomic_write_json(
+    JsonListRepository(
         TICKET_STORE_PATH,
-        [_normalize_ticket_record(ticket) for ticket in tickets],
-    )
+        normalizer=_normalize_ticket_record,
+    ).save(tickets)
 
 
 def _normalize_ticket_record(ticket: dict[str, Any]) -> dict[str, Any]:

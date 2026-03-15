@@ -11,7 +11,7 @@ from app.schemas.query import (
 )
 from app.schemas.tools import ToolExecutionRequest
 from app.services.ingestion.document_service import build_utc_timestamp
-from app.services.agent.state_store import atomic_write_json, load_json_list
+from app.services.agent.state_store import JsonListRepository
 from app.services.agent.clarification_service import (
     plan_clarification,
     plan_search_miss_clarification,
@@ -36,11 +36,65 @@ SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
 
 
 def _load_workflow_runs() -> list[dict]:
-    return load_json_list(WORKFLOW_RUN_STORE_PATH)
+    return JsonListRepository(WORKFLOW_RUN_STORE_PATH).load()
 
 
 def _save_workflow_runs(runs: list[dict]) -> None:
-    atomic_write_json(WORKFLOW_RUN_STORE_PATH, runs)
+    JsonListRepository(WORKFLOW_RUN_STORE_PATH).save(runs)
+
+
+def _normalize_persisted_workflow_step_records(
+    run: dict,
+) -> list[dict]:
+    normalized_steps: list[dict] = []
+    tool_chain = run.get("tool_chain")
+    if not isinstance(tool_chain, list):
+        return normalized_steps
+
+    fallback_started_at = run.get("started_at") or run.get("completed_at")
+    fallback_completed_at = run.get("completed_at") or run.get("last_updated_at") or fallback_started_at
+
+    for index, raw_step in enumerate(tool_chain, start=1):
+        if not isinstance(raw_step, dict):
+            continue
+
+        if {"step_id", "step_index", "step_status", "started_at"}.issubset(raw_step):
+            normalized_step = dict(raw_step)
+            normalized_step.setdefault("failure_message", None)
+            normalized_steps.append(normalized_step)
+            continue
+
+        tool_execution = raw_step.get("tool_execution")
+        execution_status = "completed"
+        executed_at = None
+        if isinstance(tool_execution, dict):
+            execution_status = tool_execution.get("execution_status", "completed")
+            executed_at = tool_execution.get("executed_at")
+
+        started_at = raw_step.get("started_at") or executed_at or fallback_started_at
+        completed_at = raw_step.get("completed_at") or executed_at or fallback_completed_at
+
+        normalized_steps.append(
+            {
+                "step_id": f"step_{index}",
+                "step_index": index,
+                "step_status": execution_status,
+                "started_at": started_at,
+                "completed_at": completed_at,
+                "question": raw_step.get("question", run.get("question", "")),
+                "tool_plan": raw_step.get("tool_plan", {}),
+                "tool_execution": tool_execution if isinstance(tool_execution, dict) else None,
+                "failure_message": raw_step.get("failure_message"),
+            }
+        )
+
+    return normalized_steps
+
+
+def _normalize_persisted_workflow_run(run: dict) -> dict:
+    normalized_run = dict(run)
+    normalized_run["tool_chain"] = _normalize_persisted_workflow_step_records(normalized_run)
+    return normalized_run
 
 
 def _persist_workflow_response(
@@ -124,7 +178,7 @@ def get_persisted_workflow_run(run_id: str) -> AgentWorkflowResponse:
 
     for run in reversed(_load_workflow_runs()):
         if run.get("run_id") == normalized_run_id:
-            return AgentWorkflowResponse.model_validate(run)
+            return AgentWorkflowResponse.model_validate(_normalize_persisted_workflow_run(run))
 
     raise FileNotFoundError(run_id)
 
@@ -134,7 +188,7 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
         raise ValueError("limit_must_be_positive")
 
     persisted_runs = [
-        AgentWorkflowResponse.model_validate(run)
+        AgentWorkflowResponse.model_validate(_normalize_persisted_workflow_run(run))
         for run in reversed(_load_workflow_runs())
     ][:limit]
 

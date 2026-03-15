@@ -2168,6 +2168,110 @@ def test_list_agent_workflow_runs_endpoint_recovers_from_invalid_store(
     assert persisted_runs[0]["question"] == "Check system status"
 
 
+def test_list_agent_workflow_runs_endpoint_normalizes_legacy_tool_chain(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "legacy-run-1",
+                    "question": "Search docs for reranking and create a ticket",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "legacy route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [
+                        {
+                            "question": "Search docs for reranking",
+                            "tool_plan": {"tool_name": "document_search"},
+                            "tool_execution": {
+                                "execution_status": "completed",
+                                "executed_at": "2026-03-15T16:12:37.487871+00:00",
+                            },
+                        },
+                        {
+                            "question": "create a ticket",
+                            "tool_plan": {"tool_name": "ticketing"},
+                            "tool_execution": {
+                                "execution_status": "completed",
+                                "executed_at": "2026-03-15T16:12:38.000000+00:00",
+                            },
+                        },
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/query/agent/runs?limit=1")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["runs"][0]["run_id"] == "legacy-run-1"
+
+
+def test_get_agent_workflow_run_endpoint_normalizes_legacy_tool_chain(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "legacy-run-2",
+                    "question": "Search docs for reranking and create a ticket",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "legacy route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [
+                        {
+                            "question": "Search docs for reranking",
+                            "tool_plan": {"tool_name": "document_search"},
+                            "tool_execution": {
+                                "execution_status": "completed",
+                                "executed_at": "2026-03-15T16:12:37.487871+00:00",
+                            },
+                        }
+                    ],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/query/agent/runs/legacy-run-2")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"] == "legacy-run-2"
+    assert payload["tool_chain"][0]["step_id"] == "step_1"
+    assert payload["tool_chain"][0]["step_index"] == 1
+    assert payload["tool_chain"][0]["step_status"] == "completed"
+    assert payload["tool_chain"][0]["started_at"] == "2026-03-15T16:12:37.487871+00:00"
+
+
 def test_list_agent_workflow_runs_endpoint_includes_resume_metadata(
     workspace_tmp_path,
     monkeypatch,

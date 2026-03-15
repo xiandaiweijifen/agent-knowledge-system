@@ -60279,5 +60279,281 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "092b3c430b9c47d3b83dfa38e1be3b6b",
+    "question": "Check system status",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T17:59:04.589116+00:00",
+    "completed_at": "2026-03-15T17:59:04.589399+00:00",
+    "last_updated_at": "2026-03-15T17:59:04.589399+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T17:59:04.589178+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T17:59:04.589287+00:00",
+        "detail": "Planned system_status:query for system status."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T17:59:04.589399+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for system status.",
+      "trace_id": "4b1b93f725f541949175e07bf3baf86c",
+      "executed_at": "2026-03-15T17:59:04.589373+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "agent-knowledge-system",
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash-lite",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T17:59:04.589204+00:00",
+        "completed_at": "2026-03-15T17:59:04.589399+00:00",
+        "question": "Check system status",
+        "tool_plan": {
+          "question": "Check system status",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for system status.",
+          "trace_id": "4b1b93f725f541949175e07bf3baf86c",
+          "executed_at": "2026-03-15T17:59:04.589373+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "agent-knowledge-system",
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash-lite",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "70f0f1e06b3b443380433a64cfc0784e",
+    "question": "Check system status",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T18:03:30.720840+00:00",
+    "completed_at": "2026-03-15T18:03:30.721068+00:00",
+    "last_updated_at": "2026-03-15T18:03:30.721068+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T18:03:30.720885+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T18:03:30.720977+00:00",
+        "detail": "Planned system_status:query for system status."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T18:03:30.721068+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for system status.",
+      "trace_id": "dcc5795041554f76934ad3dfd2c79a2c",
+      "executed_at": "2026-03-15T18:03:30.721051+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "agent-knowledge-system",
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash-lite",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T18:03:30.720908+00:00",
+        "completed_at": "2026-03-15T18:03:30.721068+00:00",
+        "question": "Check system status",
+        "tool_plan": {
+          "question": "Check system status",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for system status.",
+          "trace_id": "dcc5795041554f76934ad3dfd2c79a2c",
+          "executed_at": "2026-03-15T18:03:30.721051+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "agent-knowledge-system",
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash-lite",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

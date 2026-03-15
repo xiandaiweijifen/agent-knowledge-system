@@ -2,7 +2,7 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 def _unlink_with_retries(path: Path, attempts: int = 5, delay_seconds: float = 0.05) -> None:
@@ -76,3 +76,26 @@ def load_json_list(path: Path) -> list[dict[str, Any]]:
         return []
 
     return [item for item in loaded if isinstance(item, dict)]
+
+
+class JsonListRepository:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        normalizer: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    ) -> None:
+        self.path = path
+        self.normalizer = normalizer
+
+    def load(self) -> list[dict[str, Any]]:
+        records = load_json_list(self.path)
+        if self.normalizer is None:
+            return records
+        return [self.normalizer(record) for record in records]
+
+    def save(self, records: list[dict[str, Any]]) -> None:
+        payload = records
+        if self.normalizer is not None:
+            payload = [self.normalizer(record) for record in records]
+        atomic_write_json(self.path, payload)
