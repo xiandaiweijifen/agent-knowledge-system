@@ -78,6 +78,28 @@ TICKET_UPDATE_SUFFIX_PATTERN = re.compile(
 TICKET_DATA_DIR = Path("../data/tool_state")
 TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
+TOOL_OUTPUT_SCHEMA_VERSION = "tool-output-v1"
+
+
+def _build_tool_output_metadata(
+    *,
+    output_kind: str,
+    resource_type: str,
+    target: str,
+    item_count: int | None = None,
+    resource_id: str | None = None,
+) -> dict[str, str]:
+    metadata = {
+        "schema_version": TOOL_OUTPUT_SCHEMA_VERSION,
+        "output_kind": output_kind,
+        "resource_type": resource_type,
+        "target": target,
+    }
+    if item_count is not None:
+        metadata["item_count"] = str(item_count)
+    if resource_id:
+        metadata["resource_id"] = resource_id
+    return metadata
 
 
 def _extract_filename_argument(question: str) -> str | None:
@@ -473,6 +495,12 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             for ticket in filtered_tickets
         )
         output = {
+            **_build_tool_output_metadata(
+                output_kind="collection",
+                resource_type="ticket",
+                target=target or "tickets",
+                item_count=len(filtered_tickets),
+            ),
             "ticket_count": str(len(filtered_tickets)),
             "tickets": ticket_summaries,
         }
@@ -494,6 +522,12 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     if action == "create":
         ticket_id = f"TICKET-{len(tickets) + 1:04d}"
         ticket = {
+            **_build_tool_output_metadata(
+                output_kind="record",
+                resource_type="ticket",
+                target=target,
+                resource_id=ticket_id,
+            ),
             "ticket_id": ticket_id,
             "target": target,
             "status": "open",
@@ -545,6 +579,11 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             trace_id=trace_id,
             executed_at=now,
             output={
+                **_build_tool_output_metadata(
+                    output_kind="record",
+                    resource_type="ticket",
+                    target=target,
+                ),
                 "target": target,
                 "ticket_id": request.arguments.get("ticket_id", "").strip(),
             },
@@ -619,6 +658,11 @@ def _build_system_status_output() -> dict[str, str]:
     )
 
     return {
+        **_build_tool_output_metadata(
+            output_kind="status_snapshot",
+            resource_type="system_status",
+            target="agent-knowledge-system",
+        ),
         "status": "ok",
         "app_env": settings.app_env,
         "embedding_provider": settings.embedding_provider,
@@ -684,6 +728,12 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
     )
 
     output: dict[str, str] = {
+        **_build_tool_output_metadata(
+            output_kind="search_results",
+            resource_type="document_match",
+            target=query,
+            item_count=len(returned_matches),
+        ),
         "query": query,
         "matched_count": str(len(ranked_matches)),
         "returned_count": str(len(returned_matches)),

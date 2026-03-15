@@ -24,7 +24,7 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T13:10:46.933439+00:00",
+    "updated_at": "2026-03-15T15:17:50.878011+00:00",
     "closed_at": "2026-03-14T17:15:20.287583+00:00"
   },
   {
@@ -34,7 +34,7 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T13:10:46.968888+00:00"
+    "updated_at": "2026-03-15T15:17:50.901850+00:00"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -61,8 +61,8 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T13:10:46.870714+00:00",
-    "closed_at": "2026-03-15T13:10:46.870714+00:00"
+    "updated_at": "2026-03-15T15:17:50.837430+00:00",
+    "closed_at": "2026-03-15T15:17:50.837430+00:00"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -80,7 +80,7 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T13:10:46.903129+00:00"
+    "updated_at": "2026-03-15T15:17:50.858024+00:00"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +89,7 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T13:10:47.002500+00:00"
+    "updated_at": "2026-03-15T15:17:50.925487+00:00"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -1300,5 +1300,88 @@
     "environment": "unspecified",
     "created_at": "2026-03-15T14:14:14.459275+00:00",
     "updated_at": "2026-03-15T14:14:14.459275+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "the payment service outage",
+    "resource_id": "TICKET-0122",
+    "ticket_id": "TICKET-0122",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:17:42.758994+00:00",
+    "updated_at": "2026-03-15T15:17:42.758994+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "the payment service outage",
+    "resource_id": "TICKET-0123",
+    "ticket_id": "TICKET-0123",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:17:50.791546+00:00",
+    "updated_at": "2026-03-15T15:17:50.791546+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0124",
+    "ticket_id": "TICKET-0124",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:17:50.953950+00:00",
+    "updated_at": "2026-03-15T15:17:50.953950+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "sample.txt",
+    "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
+    "supporting_match_count": "1",
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0125",
+    "ticket_id": "TICKET-0125",
+    "status": "open",
+    "severity": "high",
+    "environment": "production",
+    "created_at": "2026-03-15T15:17:51.077866+00:00",
+    "updated_at": "2026-03-15T15:17:51.077866+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "the payment service outage",
+    "resource_id": "TICKET-0126",
+    "ticket_id": "TICKET-0126",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:17:52.057029+00:00",
+    "updated_at": "2026-03-15T15:17:52.057029+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0127",
+    "ticket_id": "TICKET-0127",
+    "status": "open",
+    "severity": "high",
+    "environment": "production",
+    "created_at": "2026-03-15T15:26:20.447975+00:00",
+    "updated_at": "2026-03-15T15:26:20.447975+00:00"
   }
 ]

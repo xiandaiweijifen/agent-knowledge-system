@@ -310,6 +310,10 @@ def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path,
     )
 
     assert created.execution_status == "completed"
+    assert created.output["schema_version"] == "tool-output-v1"
+    assert created.output["output_kind"] == "record"
+    assert created.output["resource_type"] == "ticket"
+    assert created.output["resource_id"] == ticket_id
     assert created.output["status"] == "open"
     assert updated.output["severity"] == "medium"
     assert closed.output["status"] == "closed"
@@ -339,6 +343,8 @@ def test_execute_ticketing_tool_builds_supporting_summary_from_search_context(
 
     assert created.output["supporting_summary"].startswith("Search for 'RAG' matched 2 supporting document")
     assert "rag_overview.md" in created.output["supporting_summary"]
+    assert created.output["schema_version"] == "tool-output-v1"
+    assert created.output["resource_type"] == "ticket"
 
 
 def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
@@ -365,6 +371,8 @@ def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
 
     assert queried.execution_status == "completed"
     assert queried.execution_mode == "local_adapter"
+    assert queried.output["schema_version"] == "tool-output-v1"
+    assert queried.output["resource_id"] == created.output["ticket_id"]
     assert queried.output["ticket_id"] == created.output["ticket_id"]
     assert queried.output["status"] == "open"
 
@@ -401,6 +409,10 @@ def test_execute_ticketing_tool_supports_list(workspace_tmp_path, monkeypatch):
 
     assert listed.execution_status == "completed"
     assert listed.execution_mode == "local_adapter"
+    assert listed.output["schema_version"] == "tool-output-v1"
+    assert listed.output["output_kind"] == "collection"
+    assert listed.output["resource_type"] == "ticket"
+    assert listed.output["item_count"] == "2"
     assert listed.output["ticket_count"] == "2"
     assert listed.output["status_filter"] == "open"
     assert "TICKET-0001" in listed.output["tickets"]
@@ -424,6 +436,9 @@ def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
 
     assert response.execution_status == "completed"
     assert response.execution_mode == "local_adapter"
+    assert response.output["schema_version"] == "tool-output-v1"
+    assert response.output["output_kind"] == "status_snapshot"
+    assert response.output["resource_type"] == "system_status"
     assert response.output["embedding_provider"] == "gemini"
     assert response.output["chat_provider"] == "fallback"
     assert response.output["gemini_configured"] == "true"
@@ -449,6 +464,10 @@ def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, 
 
     assert response.execution_status == "completed"
     assert response.execution_mode == "local_adapter"
+    assert response.output["schema_version"] == "tool-output-v1"
+    assert response.output["output_kind"] == "search_results"
+    assert response.output["resource_type"] == "document_match"
+    assert response.output["item_count"] == "1"
     assert response.output["matched_count"] == "1"
     assert "notes.md" in response.output["matched_documents"]
     assert response.output["skipped_documents"] == "1"
