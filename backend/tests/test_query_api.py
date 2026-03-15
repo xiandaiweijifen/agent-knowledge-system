@@ -1122,6 +1122,68 @@ def test_plan_tool_request_extracts_ticket_status_update():
     assert response.arguments["status"] == "closed"
 
 
+def test_plan_tool_request_uses_llm_planner_when_available(monkeypatch):
+    monkeypatch.setattr(settings, "tool_planner_provider", "openai")
+    monkeypatch.setattr(
+        "app.services.agent.tool_service.generate_llm_tool_plan",
+        lambda question, supported_tools: (
+            "llm_openai",
+            {
+                "tool_name": "ticketing",
+                "action": "create",
+                "target": "payment-service",
+                "arguments": {"severity": "high", "environment": "production"},
+            },
+        ),
+    )
+
+    response = plan_tool_request("Create a high severity ticket for payment-service in production")
+
+    assert response.planning_mode == "llm_openai"
+    assert response.tool_name == "ticketing"
+    assert response.action == "create"
+    assert response.target == "payment-service"
+    assert response.arguments["severity"] == "high"
+    assert response.arguments["environment"] == "production"
+
+
+def test_plan_tool_request_falls_back_when_llm_plan_is_invalid(monkeypatch):
+    monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.tool_service.generate_llm_tool_plan",
+        lambda question, supported_tools: (
+            "llm_gemini",
+            {
+                "tool_name": "not_a_real_tool",
+                "action": "create",
+                "target": "payment-service",
+                "arguments": {},
+            },
+        ),
+    )
+
+    response = plan_tool_request("Create a high severity ticket for payment-service in production")
+
+    assert response.planning_mode == "heuristic_fallback_invalid_llm_plan"
+    assert response.tool_name == "ticketing"
+    assert response.action == "create"
+    assert response.target == "payment-service"
+
+
+def test_plan_tool_request_falls_back_when_llm_provider_is_unavailable(monkeypatch):
+    monkeypatch.setattr(settings, "tool_planner_provider", "openai")
+    monkeypatch.setattr(
+        "app.services.agent.tool_service.generate_llm_tool_plan",
+        lambda question, supported_tools: ("heuristic_fallback_missing_openai_key", None),
+    )
+
+    response = plan_tool_request("Search docs for RAG architecture")
+
+    assert response.planning_mode == "heuristic_fallback_missing_openai_key"
+    assert response.tool_name == "document_search"
+    assert response.action == "query"
+
+
 def test_query_tool_plan_endpoint_returns_plan():
     client = TestClient(app)
     response = client.post(

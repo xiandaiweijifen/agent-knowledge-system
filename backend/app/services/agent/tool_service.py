@@ -17,6 +17,7 @@ from app.schemas.tools import (
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.ingestion import document_service
 from app.services.agent.state_store import JsonListRepository
+from app.services.llm.tool_planner_service import generate_llm_tool_plan
 
 
 SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
@@ -1008,15 +1009,59 @@ def infer_tool_request(question: str) -> InferredToolRequest:
     )
 
 
-def plan_tool_request(question: str) -> ToolPlanResponse:
-    """Create a structured tool plan from a natural-language tool request."""
-    inferred_request = infer_tool_request(question)
+def _build_tool_plan_response(
+    *,
+    question: str,
+    inferred_request: InferredToolRequest,
+    arguments: dict[str, str],
+    planning_mode: str,
+) -> ToolPlanResponse:
+    cleaned_target = inferred_request.target
+    cleaned_target = ENVIRONMENT_SEGMENT_PATTERN.sub("", cleaned_target).strip(" .")
+    if inferred_request.tool_name == "document_search" and "filename" in arguments:
+        cleaned_target = cleaned_target.replace(arguments["filename"], "").strip(" .")
+        cleaned_target = re.sub(
+            r"\b(for|in|inside|within)\b",
+            "",
+            cleaned_target,
+            flags=re.IGNORECASE,
+        ).strip(" .")
+        if not cleaned_target:
+            cleaned_target = "documents"
+    if inferred_request.tool_name == "document_search" and "max_results" in arguments:
+        cleaned_target = RESULT_LIMIT_PATTERN.sub("", cleaned_target).strip(" .")
+        cleaned_target = re.sub(r"\band\s+show\b", "", cleaned_target, flags=re.IGNORECASE).strip(" .")
+        if not cleaned_target:
+            cleaned_target = "documents"
+
+    planner_label = "llm planner" if planning_mode.startswith("llm_") else "local heuristic planner"
+
+    return ToolPlanResponse(
+        question=question.strip(),
+        planning_mode=planning_mode,
+        route_hint="tool_execution",
+        tool_name=inferred_request.tool_name,
+        action=inferred_request.action,
+        target=cleaned_target,
+        arguments=arguments,
+        plan_summary=(
+            f"Plan {inferred_request.tool_name}:{inferred_request.action} for "
+            f"{cleaned_target} using a {planner_label}."
+        ),
+    )
+
+
+def _normalize_planned_request(
+    question: str,
+    inferred_request: InferredToolRequest,
+    arguments: dict[str, str],
+) -> tuple[InferredToolRequest, dict[str, str]]:
     lowered = question.lower()
-    arguments: dict[str, str] = {}
+    normalized_arguments = dict(arguments)
 
     ticket_id = _extract_ticket_id_argument(question)
-    if ticket_id:
-        arguments["ticket_id"] = ticket_id
+    if ticket_id and "ticket_id" not in normalized_arguments:
+        normalized_arguments["ticket_id"] = ticket_id
 
     if inferred_request.tool_name == "ticketing" and inferred_request.action in {
         "check",
@@ -1037,18 +1082,20 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
         )
 
     if inferred_request.tool_name == "ticketing":
-        arguments.update(_extract_ticket_update_arguments(question))
+        extracted_ticket_arguments = _extract_ticket_update_arguments(question)
+        for key, value in extracted_ticket_arguments.items():
+            normalized_arguments.setdefault(key, value)
         if inferred_request.action == "list":
-            if "severity" in arguments:
-                arguments["severity_filter"] = arguments.pop("severity")
-            if "environment" in arguments:
-                arguments["environment_filter"] = arguments.pop("environment")
+            if "severity" in normalized_arguments:
+                normalized_arguments["severity_filter"] = normalized_arguments.pop("severity")
+            if "environment" in normalized_arguments:
+                normalized_arguments["environment_filter"] = normalized_arguments.pop("environment")
             target_filter = _extract_ticket_target_filter(question)
-            if target_filter:
-                arguments["target_filter"] = target_filter
+            if target_filter and "target_filter" not in normalized_arguments:
+                normalized_arguments["target_filter"] = target_filter
             max_results = _extract_search_max_results_argument(question)
-            if max_results:
-                arguments["max_results"] = max_results
+            if max_results and "max_results" not in normalized_arguments:
+                normalized_arguments["max_results"] = max_results
 
         inferred_request = InferredToolRequest(
             tool_name=inferred_request.tool_name,
@@ -1058,41 +1105,60 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
 
     if inferred_request.tool_name == "document_search":
         filename = _extract_filename_argument(question)
-        if filename:
-            arguments["filename"] = filename
+        if filename and "filename" not in normalized_arguments:
+            normalized_arguments["filename"] = filename
         max_results = _extract_search_max_results_argument(question)
-        if max_results:
-            arguments["max_results"] = max_results
+        if max_results and "max_results" not in normalized_arguments:
+            normalized_arguments["max_results"] = max_results
 
-    cleaned_target = inferred_request.target
-    cleaned_target = ENVIRONMENT_SEGMENT_PATTERN.sub("", cleaned_target).strip(" .")
-    if inferred_request.tool_name == "document_search" and "filename" in arguments:
-        cleaned_target = cleaned_target.replace(arguments["filename"], "").strip(" .")
-        cleaned_target = re.sub(
-            r"\b(for|in|inside|within)\b",
-            "",
-            cleaned_target,
-            flags=re.IGNORECASE,
-        ).strip(" .")
-        if not cleaned_target:
-            cleaned_target = "documents"
-    if inferred_request.tool_name == "document_search" and "max_results" in arguments:
-        cleaned_target = RESULT_LIMIT_PATTERN.sub("", cleaned_target).strip(" .")
-        cleaned_target = re.sub(r"\band\s+show\b", "", cleaned_target, flags=re.IGNORECASE).strip(" .")
-        if not cleaned_target:
-            cleaned_target = "documents"
+    return inferred_request, normalized_arguments
 
-    return ToolPlanResponse(
-        question=question.strip(),
-        planning_mode="heuristic_stub",
-        route_hint="tool_execution",
-        tool_name=inferred_request.tool_name,
-        action=inferred_request.action,
-        target=cleaned_target,
+
+def _heuristic_tool_plan(question: str, planning_mode: str = "heuristic_stub") -> ToolPlanResponse:
+    inferred_request = infer_tool_request(question)
+    inferred_request, arguments = _normalize_planned_request(question, inferred_request, {})
+    return _build_tool_plan_response(
+        question=question,
+        inferred_request=inferred_request,
         arguments=arguments,
-        plan_summary=(
-            f"Plan {inferred_request.tool_name}:{inferred_request.action} for "
-            f"{cleaned_target} using a local heuristic planner."
-        ),
+        planning_mode=planning_mode,
     )
+
+
+def _plan_tool_request_with_llm(question: str) -> ToolPlanResponse | None:
+    planning_mode, llm_plan = generate_llm_tool_plan(question, SUPPORTED_TOOLS)
+    if llm_plan is None:
+        return _heuristic_tool_plan(question, planning_mode=planning_mode)
+
+    tool_name = llm_plan["tool_name"].strip().lower()
+    metadata = SUPPORTED_TOOLS.get(tool_name)
+    if metadata is None:
+        return _heuristic_tool_plan(question, planning_mode="heuristic_fallback_invalid_llm_plan")
+
+    action = llm_plan["action"].strip().lower()
+    supported_actions = metadata.get("supported_actions", [])
+    if action not in supported_actions:
+        return _heuristic_tool_plan(question, planning_mode="heuristic_fallback_invalid_llm_plan")
+
+    inferred_request = InferredToolRequest(
+        tool_name=tool_name,
+        action=action,
+        target=llm_plan["target"],
+    )
+    inferred_request, arguments = _normalize_planned_request(
+        question,
+        inferred_request,
+        llm_plan.get("arguments", {}),
+    )
+    return _build_tool_plan_response(
+        question=question,
+        inferred_request=inferred_request,
+        arguments=arguments,
+        planning_mode=planning_mode,
+    )
+
+
+def plan_tool_request(question: str) -> ToolPlanResponse:
+    """Create a structured tool plan from a natural-language tool request."""
+    return _plan_tool_request_with_llm(question)
 
