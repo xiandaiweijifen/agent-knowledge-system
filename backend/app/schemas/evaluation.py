@@ -66,6 +66,7 @@ class AgentWorkflowEvalCase(BaseModel):
     expected_route_type: str
     expected_workflow_status: str
     expected_question: str | None = None
+    expected_resume_trace: bool | None = None
     expected_tool_chain_length: int | None = None
     expected_final_tool_name: str | None = None
     expected_final_action: str | None = None
@@ -84,6 +85,7 @@ class AgentWorkflowEvalCaseResult(BaseModel):
     route_reason: str
     matched: bool
     expected_question: str | None = None
+    expected_resume_trace: bool | None = None
     resume_trace_present: bool = False
     expected_tool_chain_length: int | None = None
     actual_tool_chain_length: int = 0

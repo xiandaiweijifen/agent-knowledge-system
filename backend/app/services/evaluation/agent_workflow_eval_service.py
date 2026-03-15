@@ -72,6 +72,10 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 or response.question == case.expected_question
             )
             and (
+                case.expected_resume_trace is None
+                or resume_trace_present == case.expected_resume_trace
+            )
+            and (
                 case.expected_tool_chain_length is None
                 or actual_tool_chain_length == case.expected_tool_chain_length
             )
@@ -98,6 +102,7 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 route_reason=response.route.route_reason,
                 matched=matched,
                 expected_question=case.expected_question,
+                expected_resume_trace=case.expected_resume_trace,
                 resume_trace_present=resume_trace_present,
                 expected_tool_chain_length=case.expected_tool_chain_length,
                 actual_tool_chain_length=actual_tool_chain_length,

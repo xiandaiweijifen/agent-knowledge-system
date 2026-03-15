@@ -189,6 +189,7 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
                         "expected_route_type": "tool_execution",
                         "expected_workflow_status": "completed",
                         "expected_question": "Search sample.txt for RAG and summarize top 1 results",
+                        "expected_resume_trace": True,
                         "expected_tool_chain_length": 1,
                         "expected_final_tool_name": "document_search",
                         "expected_final_action": "query",
@@ -196,6 +197,22 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
                     },
                     {
                         "case_id": "case_17",
+                        "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+                        "clarification_context": {
+                            "execution_confirmation": "yes",
+                            "environment": "production",
+                        },
+                        "expected_route_type": "tool_execution",
+                        "expected_workflow_status": "completed",
+                        "expected_question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
+                        "expected_resume_trace": True,
+                        "expected_tool_chain_length": 2,
+                        "expected_final_tool_name": "ticketing",
+                        "expected_final_action": "create",
+                        "expected_final_output_keys": ["ticket_id", "environment"],
+                    },
+                    {
+                        "case_id": "case_18",
                         "question": "Please do that for production",
                         "expected_route_type": "clarification_needed",
                         "expected_workflow_status": "clarification_required",
@@ -208,7 +225,7 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
 
     report = evaluate_agent_workflow_dataset(dataset_path=dataset_path)
 
-    assert report.summary.total_cases == 17
+    assert report.summary.total_cases == 18
     assert report.summary.workflow_accuracy == 1.0
     assert all(case.matched for case in report.cases)
     multistep_case = next(case for case in report.cases if case.case_id == "case_10")
@@ -231,3 +248,9 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
     assert resumed_case.actual_question == "Search sample.txt for RAG and summarize top 1 results"
     assert resumed_case.resume_trace_present is True
     assert resumed_case.final_output_key_matches["filename_filter"] is True
+    confirmed_resume_case = next(case for case in report.cases if case.case_id == "case_17")
+    assert confirmed_resume_case.actual_question == (
+        "Search docs for payment-service outage and create a high severity ticket for payment-service in production"
+    )
+    assert confirmed_resume_case.resume_trace_present is True
+    assert confirmed_resume_case.final_output_key_matches["environment"] is True
