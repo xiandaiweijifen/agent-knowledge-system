@@ -180,5 +180,14 @@
     "environment": "unspecified",
     "created_at": "2026-03-15T04:52:27.707148+00:00",
     "updated_at": "2026-03-15T04:52:27.707148+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0021",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T05:00:29.129173+00:00",
+    "updated_at": "2026-03-15T05:00:29.129173+00:00"
   }
 ]

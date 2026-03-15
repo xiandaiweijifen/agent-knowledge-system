@@ -913,6 +913,32 @@ textarea {
   gap: 10px;
 }
 
+.tool-chain-list {
+  display: grid;
+  gap: 12px;
+}
+
+.tool-chain-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.tool-chain-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tool-chain-header h3 {
+  margin: 8px 0 0;
+  font-size: 1.1rem;
+}
+
 .trace-event-card {
   padding: 14px 16px;
   border: 1px solid var(--line);

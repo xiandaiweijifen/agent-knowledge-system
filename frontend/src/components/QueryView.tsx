@@ -5,6 +5,7 @@ import type {
   DiagnosticsResponse,
   DocumentItem,
   QueryResponse,
+  ToolChainStep,
 } from "../types";
 
 type QueryViewProps = {
@@ -46,19 +47,107 @@ export function QueryView({
   onRunAgent,
   onRunDiagnostics,
 }: QueryViewProps) {
+  function renderToolExecutionDetails(
+    toolExecution: AgentWorkflowResponse["tool_execution"] | ToolChainStep["tool_execution"],
+  ) {
+    if (!toolExecution) {
+      return null;
+    }
+
+    const listItems =
+      toolExecution.tool_name === "ticketing" && toolExecution.action === "list"
+        ? (toolExecution.output.tickets || "")
+            .split(" | ")
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : [];
+
+    return (
+      <>
+        <div className="trace-grid">
+          <div>
+            <span className="trace-label">Execution Status</span>
+            <strong>{toolExecution.execution_status}</strong>
+          </div>
+          <div>
+            <span className="trace-label">Mode</span>
+            <strong>{toolExecution.execution_mode}</strong>
+          </div>
+          <div>
+            <span className="trace-label">Trace Id</span>
+            <strong>{toolExecution.trace_id}</strong>
+          </div>
+        </div>
+        <p className="subsection-copy">{toolExecution.result_summary}</p>
+        {toolExecution.tool_name === "ticketing" && toolExecution.action !== "list" && (
+          <div className="ticketing-highlight">
+            <div className="trace-grid">
+              <div>
+                <span className="trace-label">Ticket Id</span>
+                <strong>{toolExecution.output.ticket_id ?? "n/a"}</strong>
+              </div>
+              <div>
+                <span className="trace-label">Status</span>
+                <strong>{toolExecution.output.status ?? "n/a"}</strong>
+              </div>
+              <div>
+                <span className="trace-label">Severity</span>
+                <strong>{toolExecution.output.severity ?? "n/a"}</strong>
+              </div>
+              <div>
+                <span className="trace-label">Environment</span>
+                <strong>{toolExecution.output.environment ?? "n/a"}</strong>
+              </div>
+            </div>
+          </div>
+        )}
+        {toolExecution.tool_name === "ticketing" && toolExecution.action === "list" && (
+          <div className="ticketing-highlight">
+            <div className="trace-grid">
+              <div>
+                <span className="trace-label">Ticket Count</span>
+                <strong>{toolExecution.output.ticket_count ?? "0"}</strong>
+              </div>
+              <div>
+                <span className="trace-label">Status Filter</span>
+                <strong>{toolExecution.output.status_filter ?? "all"}</strong>
+              </div>
+            </div>
+            {listItems.length > 0 ? (
+              <div className="list-block">
+                {listItems.map((item) => (
+                  <p key={item}>{item}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="subsection-copy">No tickets matched the current filter.</p>
+            )}
+          </div>
+        )}
+        {Object.keys(toolExecution.output).length > 0 &&
+          !(toolExecution.tool_name === "ticketing" && toolExecution.action === "list") && (
+            <>
+              <span className="section-label">Tool Output</span>
+              <div className="tool-output-grid">
+                {Object.entries(toolExecution.output).map(([key, value]) => (
+                  <article key={key} className="tool-output-card">
+                    <span className="trace-label">{key}</span>
+                    <strong>{value}</strong>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
+      </>
+    );
+  }
+
   const hasDocument = documents.length > 0 && Boolean(queryFilename);
   const routeUsesFilename =
     agentQueryResult?.route.route_type === "knowledge_retrieval" && !!agentQueryResult.filename;
   const routeUsesRetrieval = !!agentQueryResult?.retrieval;
   const routeUsesToolPlanning = !!agentQueryResult?.tool_plan;
-  const ticketListItems =
-    agentQueryResult?.tool_execution?.tool_name === "ticketing" &&
-    agentQueryResult.tool_execution.action === "list"
-      ? (agentQueryResult.tool_execution.output.tickets || "")
-          .split(" | ")
-          .map((item) => item.trim())
-          .filter(Boolean)
-      : [];
+  const hasToolChain = (agentQueryResult?.tool_chain.length ?? 0) > 0;
 
   return (
     <section className="panel-grid query-layout">
@@ -219,9 +308,66 @@ export function QueryView({
                 </article>
               )}
 
+              {hasToolChain && (
+                <article className="subsection-card">
+                  <span className="section-label">Executed Steps</span>
+                  <p className="subsection-copy">
+                    The workflow executed {agentQueryResult.tool_chain.length} step
+                    {agentQueryResult.tool_chain.length === 1 ? "" : "s"} before returning the final result.
+                  </p>
+                  <div className="tool-chain-list">
+                    {agentQueryResult.tool_chain.map((step, index) => (
+                      <article
+                        key={`${step.question}-${index + 1}`}
+                        className="tool-chain-card"
+                      >
+                        <header className="tool-chain-header">
+                          <div>
+                            <span className="section-label">Step {index + 1}</span>
+                            <h3>{step.tool_plan.tool_name}</h3>
+                          </div>
+                          <span className="status-chip success">
+                            {step.tool_plan.action}
+                          </span>
+                        </header>
+                        <p className="subsection-copy">
+                          <strong>Question:</strong> {step.question}
+                        </p>
+                        <div className="trace-grid">
+                          <div>
+                            <span className="trace-label">Target</span>
+                            <strong>{step.tool_plan.target}</strong>
+                          </div>
+                          <div>
+                            <span className="trace-label">Planning Mode</span>
+                            <strong>{step.tool_plan.planning_mode}</strong>
+                          </div>
+                          <div>
+                            <span className="trace-label">Execution Mode</span>
+                            <strong>{step.tool_execution.execution_mode}</strong>
+                          </div>
+                        </div>
+                        {Object.keys(step.tool_plan.arguments).length > 0 && (
+                          <div className="pill-strip">
+                            {Object.entries(step.tool_plan.arguments).map(([key, value]) => (
+                              <span key={key} className="meta-pill">
+                                {key}: {value}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {renderToolExecutionDetails(step.tool_execution)}
+                      </article>
+                    ))}
+                  </div>
+                </article>
+              )}
+
               {agentQueryResult.tool_plan && (
                 <article className="subsection-card">
-                  <span className="section-label">Tool Plan</span>
+                  <span className="section-label">
+                    {hasToolChain ? "Final Step" : "Tool Plan"}
+                  </span>
                   <div className="trace-grid">
                     <div>
                       <span className="trace-label">Tool</span>
@@ -250,89 +396,21 @@ export function QueryView({
                     </div>
                   )}
                   <p className="subsection-copy">{agentQueryResult.tool_plan.plan_summary}</p>
+                  {hasToolChain && (
+                    <p className="muted">
+                      This top-level snapshot shows the final executed step. Use Executed Steps above
+                      to inspect the full chain.
+                    </p>
+                  )}
                 </article>
               )}
 
               {agentQueryResult.tool_execution && (
                 <article className="subsection-card">
-                  <span className="section-label">Tool Execution</span>
-                  <div className="trace-grid">
-                    <div>
-                      <span className="trace-label">Execution Status</span>
-                      <strong>{agentQueryResult.tool_execution.execution_status}</strong>
-                    </div>
-                    <div>
-                      <span className="trace-label">Mode</span>
-                      <strong>{agentQueryResult.tool_execution.execution_mode}</strong>
-                    </div>
-                    <div>
-                      <span className="trace-label">Trace Id</span>
-                      <strong>{agentQueryResult.tool_execution.trace_id}</strong>
-                    </div>
-                  </div>
-                  <p className="subsection-copy">{agentQueryResult.tool_execution.result_summary}</p>
-                  {agentQueryResult.tool_execution.tool_name === "ticketing" &&
-                    agentQueryResult.tool_execution.action !== "list" && (
-                      <div className="ticketing-highlight">
-                        <div className="trace-grid">
-                          <div>
-                            <span className="trace-label">Ticket Id</span>
-                            <strong>{agentQueryResult.tool_execution.output.ticket_id ?? "n/a"}</strong>
-                          </div>
-                          <div>
-                            <span className="trace-label">Status</span>
-                            <strong>{agentQueryResult.tool_execution.output.status ?? "n/a"}</strong>
-                          </div>
-                          <div>
-                            <span className="trace-label">Severity</span>
-                            <strong>{agentQueryResult.tool_execution.output.severity ?? "n/a"}</strong>
-                          </div>
-                          <div>
-                            <span className="trace-label">Environment</span>
-                            <strong>{agentQueryResult.tool_execution.output.environment ?? "n/a"}</strong>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  {agentQueryResult.tool_execution.tool_name === "ticketing" &&
-                    agentQueryResult.tool_execution.action === "list" && (
-                      <div className="ticketing-highlight">
-                        <div className="trace-grid">
-                          <div>
-                            <span className="trace-label">Ticket Count</span>
-                            <strong>{agentQueryResult.tool_execution.output.ticket_count ?? "0"}</strong>
-                          </div>
-                          <div>
-                            <span className="trace-label">Status Filter</span>
-                            <strong>{agentQueryResult.tool_execution.output.status_filter ?? "all"}</strong>
-                          </div>
-                        </div>
-                        {ticketListItems.length > 0 ? (
-                          <div className="list-block">
-                            {ticketListItems.map((item) => (
-                              <p key={item}>{item}</p>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="subsection-copy">No tickets matched the current filter.</p>
-                        )}
-                      </div>
-                    )}
-                  {Object.keys(agentQueryResult.tool_execution.output).length > 0 &&
-                    !(agentQueryResult.tool_execution.tool_name === "ticketing" &&
-                      agentQueryResult.tool_execution.action === "list") && (
-                      <>
-                        <span className="section-label">Tool Output</span>
-                        <div className="tool-output-grid">
-                          {Object.entries(agentQueryResult.tool_execution.output).map(([key, value]) => (
-                            <article key={key} className="tool-output-card">
-                              <span className="trace-label">{key}</span>
-                              <strong>{value}</strong>
-                            </article>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                  <span className="section-label">
+                    {hasToolChain ? "Final Step Execution" : "Tool Execution"}
+                  </span>
+                  {renderToolExecutionDetails(agentQueryResult.tool_execution)}
                 </article>
               )}
 

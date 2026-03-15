@@ -98,6 +98,7 @@ describe("QueryView", () => {
             query_embedding_model: "gemini-embedding-001",
             matches: [],
           },
+          tool_chain: [],
           tool_execution: {
             tool_name: "ticketing",
             action: "create",
@@ -178,6 +179,36 @@ describe("QueryView", () => {
               detail: "Route selected tool execution.",
             },
           ],
+          tool_chain: [
+            {
+              question: "List open tickets",
+              tool_plan: {
+                question: "List open tickets",
+                planning_mode: "heuristic_stub",
+                route_hint: "tool_execution",
+                tool_name: "ticketing",
+                action: "list",
+                target: "tickets",
+                arguments: { status: "open" },
+                plan_summary: "Plan ticketing:list for tickets using a local heuristic planner.",
+              },
+              tool_execution: {
+                tool_name: "ticketing",
+                action: "list",
+                target: "tickets",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Loaded 2 local ticket(s).",
+                trace_id: "trace-step-1",
+                executed_at: "2026-03-14T00:00:00+00:00",
+                output: {
+                  ticket_count: "2",
+                  status_filter: "open",
+                  tickets: "TICKET-0001 [open] payment-service | TICKET-0002 [open] checkout-api",
+                },
+              },
+            },
+          ],
           tool_plan: {
             question: "List open tickets",
             planning_mode: "heuristic_stub",
@@ -219,6 +250,8 @@ describe("QueryView", () => {
 
     expect(screen.getByText("Ticket Count")).toBeInTheDocument();
     expect(screen.getByText("Status Filter")).toBeInTheDocument();
+    expect(screen.getByText("Executed Steps")).toBeInTheDocument();
+    expect(screen.getByText("Final Step")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("TICKET-0001 [open] payment-service")).toBeInTheDocument();
     expect(screen.getByText("TICKET-0002 [open] checkout-api")).toBeInTheDocument();

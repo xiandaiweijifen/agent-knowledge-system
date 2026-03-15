@@ -151,6 +151,12 @@ export type ToolExecution = {
   output: Record<string, string>;
 };
 
+export type ToolChainStep = {
+  question: string;
+  tool_plan: ToolPlan;
+  tool_execution: ToolExecution;
+};
+
 export type AgentWorkflowResponse = {
   question: string;
   workflow_status: string;
@@ -169,6 +175,7 @@ export type AgentWorkflowResponse = {
   clarification_plan?: ClarificationPlan | null;
   tool_plan?: ToolPlan | null;
   tool_execution?: ToolExecution | null;
+  tool_chain: ToolChainStep[];
 };
 
 export type DiagnosticsResponse = {
