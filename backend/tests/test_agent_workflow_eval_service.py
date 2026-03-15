@@ -15,6 +15,7 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
     raw_dir.mkdir()
     dataset_path = workspace_tmp_path / "agent_workflow_eval.json"
     workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
     monkeypatch.setattr(settings, "chat_provider", "fallback")
@@ -23,6 +24,7 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
 
     embedding_payload = {
         "filename": "sample.txt",

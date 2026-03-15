@@ -118,6 +118,7 @@ class AgentWorkflowResponse(BaseModel):
     resumed_from_question: str | None = None
     source_run_id: str | None = None
     workflow_status: str
+    terminal_reason: str | None = None
     started_at: str | None = None
     completed_at: str | None = None
     last_updated_at: str | None = None
@@ -146,6 +147,7 @@ class AgentWorkflowRunSummary(BaseModel):
     resumed_from_question: str | None = None
     source_run_id: str | None = None
     workflow_status: str
+    terminal_reason: str | None = None
     started_at: str | None = None
     completed_at: str | None = None
     last_updated_at: str | None = None

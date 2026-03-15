@@ -1167,6 +1167,7 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "knowledge_answer_generated"
     assert payload["route"]["route_type"] == "knowledge_retrieval"
     assert len(payload["workflow_trace"]) >= 3
     assert payload["retrieval"]["filename"] == "sample.txt"
@@ -1188,6 +1189,7 @@ def test_query_agent_endpoint_returns_tool_workflow_result(workspace_tmp_path, m
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
     assert payload["step_count"] == 1
     assert payload["started_at"]
     assert payload["completed_at"]
@@ -1251,6 +1253,7 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
     assert payload["step_count"] == 2
     assert payload["started_at"]
     assert payload["completed_at"]
@@ -1303,6 +1306,7 @@ def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
+    assert payload["terminal_reason"] == "search_miss_clarification"
     assert payload["step_count"] == 1
     assert payload["started_at"]
     assert payload["completed_at"] is None
@@ -1468,6 +1472,7 @@ def test_query_agent_endpoint_stops_search_then_summarize_when_search_misses(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
+    assert payload["terminal_reason"] == "search_summary_miss_clarification"
     assert payload["route"]["route_type"] == "tool_execution"
     assert payload["tool_execution"]["tool_name"] == "document_search"
     assert payload["tool_execution"]["output"]["matched_count"] == "0"
@@ -1535,6 +1540,7 @@ def test_query_agent_endpoint_returns_clarification_result():
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
+    assert payload["terminal_reason"] == "clarification_requested"
     assert payload["step_count"] == 0
     assert payload["started_at"]
     assert payload["completed_at"] is None
@@ -1730,6 +1736,7 @@ def test_query_agent_endpoint_persists_workflow_run_and_supports_lookup(
     assert lookup_payload["run_id"] == payload["run_id"]
     assert lookup_payload["question"] == "Check system status"
     assert lookup_payload["workflow_status"] == "completed"
+    assert lookup_payload["terminal_reason"] == "tool_execution_completed"
     assert lookup_payload["started_at"]
     assert lookup_payload["completed_at"]
     assert lookup_payload["last_updated_at"] == lookup_payload["completed_at"]
@@ -1873,11 +1880,13 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     monkeypatch,
 ):
     workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     first_response = client.post(
@@ -1902,6 +1911,7 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["run_id"] == second_run_id
     assert payload["runs"][0]["question"] == "Create a ticket for the payment service outage"
     assert payload["runs"][0]["route_type"] == "tool_execution"
+    assert payload["runs"][0]["terminal_reason"] == "tool_execution_completed"
     assert payload["runs"][0]["resumed_from_question"] is None
     assert payload["runs"][0]["source_run_id"] is None
     assert payload["runs"][0]["started_at"]

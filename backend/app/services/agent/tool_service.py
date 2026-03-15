@@ -16,6 +16,7 @@ from app.schemas.tools import (
 )
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.ingestion import document_service
+from app.services.agent.state_store import atomic_write_json
 
 
 SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
@@ -217,13 +218,9 @@ def _load_ticket_store() -> list[dict[str, Any]]:
 
 
 def _save_ticket_store(tickets: list[dict[str, Any]]) -> None:
-    TICKET_STORE_PATH.write_text(
-        json.dumps(
-            [_normalize_ticket_record(ticket) for ticket in tickets],
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
+    atomic_write_json(
+        TICKET_STORE_PATH,
+        [_normalize_ticket_record(ticket) for ticket in tickets],
     )
 
 

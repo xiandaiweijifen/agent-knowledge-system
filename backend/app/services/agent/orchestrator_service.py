@@ -11,6 +11,7 @@ from app.schemas.query import (
 )
 from app.schemas.tools import ToolExecutionRequest
 from app.services.ingestion.document_service import build_utc_timestamp
+from app.services.agent.state_store import atomic_write_json
 from app.services.agent.clarification_service import (
     plan_clarification,
     plan_search_miss_clarification,
@@ -50,10 +51,7 @@ def _load_workflow_runs() -> list[dict]:
 
 
 def _save_workflow_runs(runs: list[dict]) -> None:
-    WORKFLOW_RUN_STORE_PATH.write_text(
-        json.dumps(runs, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    atomic_write_json(WORKFLOW_RUN_STORE_PATH, runs)
 
 
 def _persist_workflow_response(
@@ -74,9 +72,11 @@ def _finalize_workflow_response(
     response: AgentWorkflowResponse,
     *,
     started_at: str,
+    terminal_reason: str,
     completed_at: str | None = None,
     last_updated_at: str | None = None,
 ) -> AgentWorkflowResponse:
+    response.terminal_reason = terminal_reason
     response.started_at = started_at
     response.completed_at = completed_at
     response.last_updated_at = last_updated_at or completed_at or started_at
@@ -112,6 +112,7 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 resumed_from_question=run.resumed_from_question,
                 source_run_id=run.source_run_id,
                 workflow_status=run.workflow_status,
+                terminal_reason=run.terminal_reason,
                 started_at=run.started_at,
                 completed_at=run.completed_at,
                 last_updated_at=run.last_updated_at,
@@ -483,6 +484,7 @@ def orchestrate_agent_request(
         response = _finalize_workflow_response(
             response,
             started_at=workflow_started_at,
+            terminal_reason="knowledge_answer_generated",
             completed_at=query_response.answered_at,
         )
         return _persist_workflow_response(response) if persist_run else response
@@ -634,6 +636,7 @@ def orchestrate_agent_request(
                     response = _finalize_workflow_response(
                         response,
                         started_at=workflow_started_at,
+                        terminal_reason="search_miss_clarification",
                         last_updated_at=workflow_trace[-1].timestamp,
                     )
                     return _persist_workflow_response(response) if persist_run else response
@@ -656,6 +659,7 @@ def orchestrate_agent_request(
             response = _finalize_workflow_response(
                 response,
                 started_at=workflow_started_at,
+                terminal_reason="tool_execution_completed",
                 completed_at=workflow_trace[-1].timestamp,
             )
             return _persist_workflow_response(response) if persist_run else response
@@ -745,6 +749,7 @@ def orchestrate_agent_request(
                 response = _finalize_workflow_response(
                     response,
                     started_at=workflow_started_at,
+                    terminal_reason="search_summary_miss_clarification",
                     last_updated_at=workflow_trace[-1].timestamp,
                 )
                 return _persist_workflow_response(response) if persist_run else response
@@ -783,6 +788,7 @@ def orchestrate_agent_request(
             response = _finalize_workflow_response(
                 response,
                 started_at=workflow_started_at,
+                terminal_reason="search_summary_completed",
                 completed_at=answered_at,
             )
             return _persist_workflow_response(response) if persist_run else response
@@ -844,6 +850,7 @@ def orchestrate_agent_request(
         response = _finalize_workflow_response(
             response,
             started_at=workflow_started_at,
+            terminal_reason="tool_execution_completed",
             completed_at=step_completed_at,
         )
         return _persist_workflow_response(response) if persist_run else response
@@ -874,6 +881,7 @@ def orchestrate_agent_request(
     response = _finalize_workflow_response(
         response,
         started_at=workflow_started_at,
+        terminal_reason="clarification_requested",
         last_updated_at=workflow_trace[-1].timestamp,
     )
     return _persist_workflow_response(response) if persist_run else response
