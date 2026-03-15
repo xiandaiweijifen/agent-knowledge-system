@@ -479,6 +479,37 @@ def test_execute_document_search_tool_returns_filename_filter_when_used(
     assert response.output["matched_documents"] == "rag_overview.md"
 
 
+def test_execute_document_search_tool_ranks_more_specific_match_first(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG is a system pattern. Retrieval-augmented generation improves factual grounding.",
+        encoding="utf-8",
+    )
+    (raw_dir / "notes.txt").write_text(
+        "This note mentions RAG briefly near the end. Something else first. RAG.",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="document_search",
+            action="query",
+            target="RAG",
+            arguments={},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.output["matched_documents"].split(", ")[0] == "rag_overview.md"
+    assert response.output["snippets"].split(" | ")[0].startswith("rag_overview.md:")
+
+
 def test_query_tool_execute_endpoint_returns_structured_stub(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
     monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)

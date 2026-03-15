@@ -1,0 +1,1 @@
+RAG is a system pattern. Retrieval-augmented generation improves factual grounding.

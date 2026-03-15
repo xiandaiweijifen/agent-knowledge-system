@@ -198,6 +198,42 @@ def _build_supporting_summary(arguments: dict[str, str]) -> str:
     return " ".join(summary_parts).strip()
 
 
+def _tokenize_search_terms(query: str) -> list[str]:
+    return [token for token in re.split(r"[^a-z0-9]+", query.lower()) if token]
+
+
+def _score_document_search_match(
+    filename: str,
+    content: str,
+    query: str,
+    first_index: int,
+) -> tuple[float, str]:
+    lowered_filename = filename.lower()
+    lowered_content = content.lower()
+    lowered_query = query.lower()
+    query_terms = _tokenize_search_terms(query)
+
+    score = 0.0
+
+    if lowered_query in lowered_filename:
+        score += 4.0
+
+    if lowered_query in lowered_content:
+        score += 3.0
+
+    score += max(0.0, 1.5 - min(first_index, 600) / 400)
+
+    if query_terms:
+        matched_terms = sum(1 for term in query_terms if term in lowered_content)
+        score += matched_terms / len(query_terms)
+
+    snippet_start = max(0, first_index - 40)
+    snippet_end = min(len(content), first_index + len(query) + 80)
+    snippet = content[snippet_start:snippet_end].replace("\n", " ").strip()
+
+    return score, f"{filename}: {snippet}"
+
+
 def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     tickets = _load_ticket_store()
     target = request.target.strip()
@@ -386,8 +422,7 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
     if filename_filter:
         documents = [item for item in documents if item["filename"] == filename_filter]
 
-    matched_documents: list[str] = []
-    preview_snippets: list[str] = []
+    ranked_matches: list[tuple[float, str, str]] = []
     skipped_documents = 0
 
     for item in documents:
@@ -408,12 +443,18 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
         if lowered_query not in lowered_content:
             continue
 
-        matched_documents.append(item["filename"])
         first_index = lowered_content.index(lowered_query)
-        snippet_start = max(0, first_index - 40)
-        snippet_end = min(len(content), first_index + len(query) + 80)
-        snippet = content[snippet_start:snippet_end].replace("\n", " ").strip()
-        preview_snippets.append(f'{item["filename"]}: {snippet}')
+        score, snippet = _score_document_search_match(
+            filename=item["filename"],
+            content=content,
+            query=query,
+            first_index=first_index,
+        )
+        ranked_matches.append((score, item["filename"], snippet))
+
+    ranked_matches.sort(key=lambda item: (-item[0], item[1]))
+    matched_documents = [filename for _, filename, _ in ranked_matches]
+    preview_snippets = [snippet for _, _, snippet in ranked_matches]
 
     result_summary = (
         f"Found {len(matched_documents)} matching document(s) for '{query}'."
