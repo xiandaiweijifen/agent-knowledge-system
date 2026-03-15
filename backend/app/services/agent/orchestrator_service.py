@@ -156,8 +156,11 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 question=run.question,
                 resumed_from_question=run.resumed_from_question,
                 source_run_id=run.source_run_id,
+                resume_source_type=run.resume_source_type,
                 resume_strategy=run.resume_strategy,
                 applied_clarification_fields=run.applied_clarification_fields,
+                question_rewritten=run.question_rewritten,
+                overridden_plan_arguments=run.overridden_plan_arguments,
                 workflow_status=run.workflow_status,
                 terminal_reason=run.terminal_reason,
                 failure_stage=run.failure_stage,
@@ -368,6 +371,25 @@ def _extract_applied_clarification_fields(
     )
 
 
+def _extract_overridden_plan_arguments(
+    clarification_context: dict[str, str],
+) -> list[str]:
+    overridden_arguments: set[str] = set()
+
+    if clarification_context.get("search_query_refinement", "").strip():
+        overridden_arguments.add("target")
+    if clarification_context.get("document_scope", "").strip() or clarification_context.get(
+        "filename", ""
+    ).strip():
+        overridden_arguments.add("filename")
+
+    for key in ("environment", "severity", "status", "ticket_id"):
+        if clarification_context.get(key, "").strip():
+            overridden_arguments.add(key)
+
+    return sorted(overridden_arguments)
+
+
 def _resume_search_question(
     search_question: str,
     clarification_context: dict[str, str],
@@ -424,18 +446,18 @@ def _resume_generic_question(
 def _resolve_resume_source(
     original_question: str | None,
     run_id: str | None,
-) -> tuple[str, str | None, str | None]:
+) -> tuple[str, str | None, str | None, str]:
     normalized_question = (original_question or "").strip()
     normalized_run_id = (run_id or "").strip()
 
     if normalized_question:
-        return normalized_question, None, None
+        return normalized_question, None, None, "original_question"
 
     if not normalized_run_id:
         raise ValueError("original_question_or_run_id_required")
 
     persisted_run = get_persisted_workflow_run(normalized_run_id)
-    return persisted_run.question, persisted_run.filename, persisted_run.run_id
+    return persisted_run.question, persisted_run.filename, persisted_run.run_id, "run_id"
 
 
 def resume_agent_request(
@@ -448,9 +470,12 @@ def resume_agent_request(
     if not clarification_context:
         raise ValueError("clarification_context_required")
 
-    source_question, source_filename, source_run_id = _resolve_resume_source(original_question, run_id)
+    source_question, source_filename, source_run_id, resume_source_type = _resolve_resume_source(
+        original_question, run_id
+    )
     resumed_question = source_question.strip()
     applied_clarification_fields = _extract_applied_clarification_fields(clarification_context)
+    overridden_plan_arguments = _extract_overridden_plan_arguments(clarification_context)
     resume_strategy = "generic_clarification_resume"
 
     search_then_ticket = _match_search_then_ticket_workflow(resumed_question)
@@ -493,14 +518,20 @@ def resume_agent_request(
             status="completed",
             timestamp=build_utc_timestamp(),
             detail=(
-                f"Resumed workflow from '{source_question}' using {resume_strategy} "
-                f"with fields: {', '.join(applied_clarification_fields) if applied_clarification_fields else 'none'}."
+                f"Resumed workflow from '{source_question}' via {resume_source_type} using "
+                f"{resume_strategy} with fields: "
+                f"{', '.join(applied_clarification_fields) if applied_clarification_fields else 'none'}; "
+                f"overridden arguments: "
+                f"{', '.join(overridden_plan_arguments) if overridden_plan_arguments else 'none'}."
             ),
         ),
     )
     response.question = resumed_question
+    response.resume_source_type = resume_source_type
     response.resume_strategy = resume_strategy
     response.applied_clarification_fields = applied_clarification_fields
+    response.question_rewritten = resumed_question != source_question
+    response.overridden_plan_arguments = overridden_plan_arguments
     return _persist_workflow_response(
         response=response,
         resumed_from_question=source_question,

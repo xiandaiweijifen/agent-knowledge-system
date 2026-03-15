@@ -1711,11 +1711,14 @@ def test_resume_agent_endpoint_continues_search_then_summarize_workflow(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["resume_source_type"] == "original_question"
     assert payload["resume_strategy"] == "search_then_summarize_resume"
     assert payload["applied_clarification_fields"] == [
         "document_scope",
         "search_query_refinement",
     ]
+    assert payload["question_rewritten"] is True
+    assert payload["overridden_plan_arguments"] == ["filename", "target"]
     assert payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     assert payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
     assert payload["tool_plan"]["arguments"]["max_results"] == "2"
@@ -1755,11 +1758,14 @@ def test_resume_agent_endpoint_continues_search_then_ticket_workflow(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["resume_source_type"] == "original_question"
     assert payload["resume_strategy"] == "search_then_ticket_resume"
     assert payload["applied_clarification_fields"] == [
         "environment",
         "search_query_refinement",
     ]
+    assert payload["question_rewritten"] is True
+    assert payload["overridden_plan_arguments"] == ["environment", "target"]
     assert payload["question"] == (
         "Search docs for RAG and create a high severity ticket for payment-service in production"
     )
@@ -1800,11 +1806,14 @@ def test_resume_agent_endpoint_applies_structured_ticket_overrides(
     assert response.status_code == 200
     payload = response.json()
     assert payload["resume_strategy"] == "search_then_ticket_resume"
+    assert payload["resume_source_type"] == "original_question"
     assert payload["applied_clarification_fields"] == [
         "environment",
         "search_query_refinement",
         "severity",
     ]
+    assert payload["question_rewritten"] is True
+    assert payload["overridden_plan_arguments"] == ["environment", "severity", "target"]
     final_plan = payload["tool_chain"][-1]["tool_plan"]
     final_output = payload["tool_chain"][-1]["tool_execution"]["output"]
     assert final_plan["arguments"]["environment"] == "staging"
@@ -1843,11 +1852,14 @@ def test_resume_agent_endpoint_can_continue_ticket_workflow_after_search_miss_wh
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["resume_source_type"] == "original_question"
     assert payload["resume_strategy"] == "search_then_ticket_resume"
     assert payload["applied_clarification_fields"] == [
         "environment",
         "execution_confirmation",
     ]
+    assert payload["question_rewritten"] is True
+    assert payload["overridden_plan_arguments"] == ["environment"]
     assert payload["tool_chain"][0]["tool_execution"]["output"]["matched_count"] == "0"
     assert payload["tool_chain"][-1]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][-1]["tool_execution"]["output"]["environment"] == "production"
@@ -1937,11 +1949,14 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
         == "Search docs for payment-service outage and summarize top 2 results"
     )
     assert payload["source_run_id"] is None
+    assert payload["resume_source_type"] == "original_question"
     assert payload["resume_strategy"] == "search_then_summarize_resume"
     assert payload["applied_clarification_fields"] == [
         "document_scope",
         "search_query_refinement",
     ]
+    assert payload["question_rewritten"] is True
+    assert payload["overridden_plan_arguments"] == ["filename", "target"]
 
     lookup_response = client.get(f"/api/query/agent/runs/{payload['run_id']}")
 
@@ -1953,11 +1968,14 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
         == "Search docs for payment-service outage and summarize top 2 results"
     )
     assert lookup_payload["source_run_id"] is None
+    assert lookup_payload["resume_source_type"] == "original_question"
     assert lookup_payload["resume_strategy"] == "search_then_summarize_resume"
     assert lookup_payload["applied_clarification_fields"] == [
         "document_scope",
         "search_query_refinement",
     ]
+    assert lookup_payload["question_rewritten"] is True
+    assert lookup_payload["overridden_plan_arguments"] == ["filename", "target"]
     assert lookup_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     assert lookup_payload["started_at"]
     assert lookup_payload["completed_at"]
@@ -2019,11 +2037,14 @@ def test_resume_agent_endpoint_supports_run_id_as_resume_source(
         "Search docs for payment-service outage and summarize top 2 results"
     )
     assert resumed_payload["source_run_id"] == initial_payload["run_id"]
+    assert resumed_payload["resume_source_type"] == "run_id"
     assert resumed_payload["resume_strategy"] == "search_then_summarize_resume"
     assert resumed_payload["applied_clarification_fields"] == [
         "document_scope",
         "search_query_refinement",
     ]
+    assert resumed_payload["question_rewritten"] is True
+    assert resumed_payload["overridden_plan_arguments"] == ["filename", "target"]
     assert resumed_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     assert resumed_payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
 
@@ -2082,8 +2103,11 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["terminal_reason"] == "tool_execution_completed"
     assert payload["runs"][0]["resumed_from_question"] is None
     assert payload["runs"][0]["source_run_id"] is None
+    assert payload["runs"][0]["resume_source_type"] is None
     assert payload["runs"][0]["resume_strategy"] is None
     assert payload["runs"][0]["applied_clarification_fields"] == []
+    assert payload["runs"][0]["question_rewritten"] is False
+    assert payload["runs"][0]["overridden_plan_arguments"] == []
     assert payload["runs"][0]["started_at"]
     assert payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["last_updated_at"] == payload["runs"][0]["completed_at"]
@@ -2127,11 +2151,14 @@ def test_list_agent_workflow_runs_endpoint_includes_resume_metadata(
     assert list_response.status_code == 200
     payload = list_response.json()
     assert len(payload["runs"]) == 1
+    assert payload["runs"][0]["resume_source_type"] == "original_question"
     assert payload["runs"][0]["resume_strategy"] == "search_then_summarize_resume"
     assert payload["runs"][0]["applied_clarification_fields"] == [
         "document_scope",
         "search_query_refinement",
     ]
+    assert payload["runs"][0]["question_rewritten"] is True
+    assert payload["runs"][0]["overridden_plan_arguments"] == ["filename", "target"]
 
 
 def test_list_agent_workflow_runs_endpoint_rejects_non_positive_limit():
