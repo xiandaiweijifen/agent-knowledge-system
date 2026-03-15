@@ -29,6 +29,27 @@ def _strip_json_fences(text: str) -> str:
     return cleaned.strip()
 
 
+def _extract_first_json_object(text: str) -> str:
+    cleaned = _strip_json_fences(text)
+    if not cleaned:
+        return ""
+
+    start = cleaned.find("{")
+    if start == -1:
+        return cleaned
+
+    depth = 0
+    for index in range(start, len(cleaned)):
+        char = cleaned[index]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return cleaned[start : index + 1]
+    return cleaned
+
+
 def _build_workflow_planner_prompt(question: str) -> str:
     return (
         "You are a workflow planning assistant for an enterprise agent system. "
@@ -40,20 +61,55 @@ def _build_workflow_planner_prompt(question: str) -> str:
         "follow_up_question must contain the ticket action step. "
         "If workflow_kind is search_then_summarize, search_question must contain the search step and "
         "follow_up_question must contain the summary step. "
+        "Use single_step if the request is not clearly a search-first workflow. "
+        "Good examples:\n"
+        '- "Search docs for payment-service outage and create a high severity ticket for payment-service" '
+        '-> {"workflow_kind":"search_then_ticket","search_question":"Search docs for payment-service outage",'
+        '"follow_up_question":"create a high severity ticket for payment-service"}\n'
+        '- "Look up docs about RAG, then summarize top 1 results" '
+        '-> {"workflow_kind":"search_then_summarize","search_question":"Look up docs about RAG",'
+        '"follow_up_question":"summarize top 1 results"}\n'
+        '- "Create a ticket for payment-service outage" '
+        '-> {"workflow_kind":"single_step","search_question":"","follow_up_question":""}\n'
         "Preserve clear user constraints like filename, max_results, severity, environment, and target. "
         "Do not include markdown fences or explanations.\n\n"
         f"User request: {question}"
     )
 
 
+def _normalize_workflow_kind(value: str) -> str:
+    normalized = value.strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "single": "single_step",
+        "single_step": "single_step",
+        "singletool": "single_step",
+        "single_tool": "single_step",
+        "search_ticket": "search_then_ticket",
+        "search_then_ticket": "search_then_ticket",
+        "search_to_ticket": "search_then_ticket",
+        "search_summary": "search_then_summarize",
+        "search_then_summary": "search_then_summarize",
+        "search_then_summarize": "search_then_summarize",
+        "search_to_summary": "search_then_summarize",
+    }
+    return aliases.get(normalized, normalized)
+
+
 def _normalize_workflow_plan_payload(payload: dict) -> dict[str, str] | None:
-    workflow_kind = payload.get("workflow_kind")
+    workflow_kind = payload.get("workflow_kind") or payload.get("workflow_type")
     search_question = payload.get("search_question", "")
     follow_up_question = payload.get("follow_up_question", "")
 
+    if not search_question and isinstance(payload.get("search_step"), str):
+        search_question = payload["search_step"]
+    if not follow_up_question and isinstance(payload.get("action_step"), str):
+        follow_up_question = payload["action_step"]
+    if not follow_up_question and isinstance(payload.get("summary_step"), str):
+        follow_up_question = payload["summary_step"]
+
     if not isinstance(workflow_kind, str):
         return None
-    normalized_kind = workflow_kind.strip()
+    normalized_kind = _normalize_workflow_kind(workflow_kind)
     if normalized_kind not in {"single_step", "search_then_ticket", "search_then_summarize"}:
         return None
 
@@ -76,7 +132,7 @@ def _normalize_workflow_plan_payload(payload: dict) -> dict[str, str] | None:
 
 
 def _parse_llm_workflow_plan_response(raw_text: str) -> dict[str, str] | None:
-    cleaned = _strip_json_fences(raw_text)
+    cleaned = _extract_first_json_object(raw_text)
     if not cleaned:
         return None
 
@@ -128,7 +184,10 @@ def _generate_gemini_workflow_plan(question: str) -> dict[str, str] | None:
         },
         json={
             "contents": [{"role": "user", "parts": [{"text": _build_workflow_planner_prompt(question)}]}],
-            "generationConfig": {"temperature": 0},
+            "generationConfig": {
+                "temperature": 0,
+                "responseMimeType": "application/json",
+            },
         },
         timeout=30.0,
     )

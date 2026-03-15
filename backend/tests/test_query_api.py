@@ -10,6 +10,7 @@ from app.services.agent.tool_service import (
     list_registered_tools,
     plan_tool_request,
 )
+from app.services.llm.workflow_planner_service import _parse_llm_workflow_plan_response
 from app.services.agent.clarification_service import (
     plan_clarification,
     plan_search_miss_clarification,
@@ -1485,6 +1486,36 @@ def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow
         and "search_then_summarize workflow via heuristic workflow matcher" in event["detail"]
         for event in payload["workflow_trace"]
     )
+
+
+def test_parse_llm_workflow_plan_response_accepts_json_with_explanatory_wrapper():
+    payload = _parse_llm_workflow_plan_response(
+        'Here is the plan: {"workflow_kind":"search_then_summarize","search_question":"Look up docs about RAG","follow_up_question":"summarize top 1 results"}'
+    )
+
+    assert payload == {
+        "workflow_kind": "search_then_summarize",
+        "search_question": "Look up docs about RAG",
+        "follow_up_question": "summarize top 1 results",
+    }
+
+
+def test_parse_llm_workflow_plan_response_accepts_alias_keys_and_kind_names():
+    payload = _parse_llm_workflow_plan_response(
+        json.dumps(
+            {
+                "workflow_type": "search_then_summary",
+                "search_step": "Look up docs about RAG",
+                "summary_step": "summarize top 1 results",
+            }
+        )
+    )
+
+    assert payload == {
+        "workflow_kind": "search_then_summarize",
+        "search_question": "Look up docs about RAG",
+        "follow_up_question": "summarize top 1 results",
+    }
 
 
 def test_plan_clarification_falls_back_when_provider_is_unavailable(monkeypatch):
