@@ -1189,6 +1189,9 @@ def test_query_agent_endpoint_returns_tool_workflow_result(workspace_tmp_path, m
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["step_count"] == 1
+    assert payload["started_at"]
+    assert payload["completed_at"]
+    assert payload["last_updated_at"] == payload["completed_at"]
     assert payload["route"]["route_type"] == "tool_execution"
     assert len(payload["workflow_trace"]) >= 3
     assert payload["tool_plan"]["tool_name"] == "ticketing"
@@ -1249,6 +1252,9 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["step_count"] == 2
+    assert payload["started_at"]
+    assert payload["completed_at"]
+    assert payload["last_updated_at"] == payload["completed_at"]
     assert payload["route"]["route_type"] == "tool_execution"
     assert len(payload["tool_chain"]) == 2
     assert payload["tool_chain"][0]["step_id"] == "step_1"
@@ -1298,6 +1304,9 @@ def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
     assert payload["step_count"] == 1
+    assert payload["started_at"]
+    assert payload["completed_at"] is None
+    assert payload["last_updated_at"]
     assert payload["route"]["route_type"] == "tool_execution"
     assert len(payload["tool_chain"]) == 1
     assert payload["tool_chain"][0]["step_id"] == "step_1"
@@ -1527,6 +1536,9 @@ def test_query_agent_endpoint_returns_clarification_result():
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
     assert payload["step_count"] == 0
+    assert payload["started_at"]
+    assert payload["completed_at"] is None
+    assert payload["last_updated_at"]
     assert payload["route"]["route_type"] == "clarification_needed"
     assert len(payload["workflow_trace"]) >= 2
     assert payload["clarification_message"]
@@ -1718,6 +1730,9 @@ def test_query_agent_endpoint_persists_workflow_run_and_supports_lookup(
     assert lookup_payload["run_id"] == payload["run_id"]
     assert lookup_payload["question"] == "Check system status"
     assert lookup_payload["workflow_status"] == "completed"
+    assert lookup_payload["started_at"]
+    assert lookup_payload["completed_at"]
+    assert lookup_payload["last_updated_at"] == lookup_payload["completed_at"]
     assert lookup_payload["tool_plan"]["tool_name"] == "system_status"
     assert workflow_run_store_path.exists()
     persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
@@ -1774,6 +1789,9 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
     )
     assert lookup_payload["source_run_id"] is None
     assert lookup_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
+    assert lookup_payload["started_at"]
+    assert lookup_payload["completed_at"]
+    assert lookup_payload["last_updated_at"] == lookup_payload["completed_at"]
     persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
     assert len(persisted_runs) == 1
 
@@ -1886,6 +1904,9 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["route_type"] == "tool_execution"
     assert payload["runs"][0]["resumed_from_question"] is None
     assert payload["runs"][0]["source_run_id"] is None
+    assert payload["runs"][0]["started_at"]
+    assert payload["runs"][0]["completed_at"]
+    assert payload["runs"][0]["last_updated_at"] == payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["run_id"] != first_run_id
 
 

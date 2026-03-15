@@ -70,6 +70,19 @@ def _persist_workflow_response(
     return response
 
 
+def _finalize_workflow_response(
+    response: AgentWorkflowResponse,
+    *,
+    started_at: str,
+    completed_at: str | None = None,
+    last_updated_at: str | None = None,
+) -> AgentWorkflowResponse:
+    response.started_at = started_at
+    response.completed_at = completed_at
+    response.last_updated_at = last_updated_at or completed_at or started_at
+    return response
+
+
 def get_persisted_workflow_run(run_id: str) -> AgentWorkflowResponse:
     normalized_run_id = run_id.strip()
     if not normalized_run_id:
@@ -99,6 +112,9 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 resumed_from_question=run.resumed_from_question,
                 source_run_id=run.source_run_id,
                 workflow_status=run.workflow_status,
+                started_at=run.started_at,
+                completed_at=run.completed_at,
+                last_updated_at=run.last_updated_at,
                 route_type=run.route.route_type,
                 route_reason=run.route.route_reason,
                 filename=run.filename,
@@ -410,6 +426,7 @@ def orchestrate_agent_request(
     persist_run: bool = True,
 ) -> AgentWorkflowResponse:
     """Route and execute the next workflow step for an agent request."""
+    workflow_started_at = build_utc_timestamp()
     route = route_request(question=question, filename=filename)
     workflow_trace = [
         WorkflowTraceEvent(
@@ -462,6 +479,11 @@ def orchestrate_agent_request(
             chat_provider=query_response.chat_provider,
             chat_model=query_response.chat_model,
             retrieval=query_response.retrieval,
+        )
+        response = _finalize_workflow_response(
+            response,
+            started_at=workflow_started_at,
+            completed_at=query_response.answered_at,
         )
         return _persist_workflow_response(response) if persist_run else response
 
@@ -609,6 +631,11 @@ def orchestrate_agent_request(
                         step_count=len(chained_steps),
                         tool_chain=chained_steps,
                     )
+                    response = _finalize_workflow_response(
+                        response,
+                        started_at=workflow_started_at,
+                        last_updated_at=workflow_trace[-1].timestamp,
+                    )
                     return _persist_workflow_response(response) if persist_run else response
 
                 if step_index == 1 and tool_response.tool_name == "document_search":
@@ -625,6 +652,11 @@ def orchestrate_agent_request(
                 tool_plan=final_step["tool_plan"],
                 tool_execution=final_step["tool_execution"],
                 tool_chain=chained_steps,
+            )
+            response = _finalize_workflow_response(
+                response,
+                started_at=workflow_started_at,
+                completed_at=workflow_trace[-1].timestamp,
             )
             return _persist_workflow_response(response) if persist_run else response
 
@@ -710,6 +742,11 @@ def orchestrate_agent_request(
                     step_count=len(chained_steps),
                     tool_chain=chained_steps,
                 )
+                response = _finalize_workflow_response(
+                    response,
+                    started_at=workflow_started_at,
+                    last_updated_at=workflow_trace[-1].timestamp,
+                )
                 return _persist_workflow_response(response) if persist_run else response
 
             summary_answer = _build_search_summary(tool_response.output)
@@ -742,6 +779,11 @@ def orchestrate_agent_request(
                 tool_execution=tool_response.model_dump(),
                 step_count=len(chained_steps),
                 tool_chain=chained_steps,
+            )
+            response = _finalize_workflow_response(
+                response,
+                started_at=workflow_started_at,
+                completed_at=answered_at,
             )
             return _persist_workflow_response(response) if persist_run else response
 
@@ -799,6 +841,11 @@ def orchestrate_agent_request(
                 )
             ],
         )
+        response = _finalize_workflow_response(
+            response,
+            started_at=workflow_started_at,
+            completed_at=step_completed_at,
+        )
         return _persist_workflow_response(response) if persist_run else response
 
     clarification_plan = plan_clarification(question)
@@ -823,5 +870,10 @@ def orchestrate_agent_request(
         clarification_message=clarification_plan.clarification_summary,
         clarification_plan=clarification_plan.model_dump(),
         tool_chain=[],
+    )
+    response = _finalize_workflow_response(
+        response,
+        started_at=workflow_started_at,
+        last_updated_at=workflow_trace[-1].timestamp,
     )
     return _persist_workflow_response(response) if persist_run else response
