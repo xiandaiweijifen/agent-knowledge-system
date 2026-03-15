@@ -18,6 +18,13 @@ class AgentQueryRequest(BaseModel):
     top_k: int = 3
 
 
+class AgentResumeRequest(BaseModel):
+    original_question: str
+    clarification_context: dict[str, str] = Field(default_factory=dict)
+    filename: str | None = None
+    top_k: int = 3
+
+
 class WorkflowTraceEvent(BaseModel):
     stage: str
     status: str

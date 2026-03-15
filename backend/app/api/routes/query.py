@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.schemas.query import (
     AgentQueryRequest,
+    AgentResumeRequest,
     AgentWorkflowResponse,
     QueryDiagnosticsRequest,
     QueryDiagnosticsResponse,
@@ -10,7 +11,10 @@ from app.schemas.query import (
     QueryResponse,
     RouteDecision,
 )
-from app.services.agent.orchestrator_service import orchestrate_agent_request
+from app.services.agent.orchestrator_service import (
+    orchestrate_agent_request,
+    resume_agent_request,
+)
 from app.schemas.tools import (
     ToolCatalogResponse,
     ToolExecutionRequest,
@@ -46,6 +50,24 @@ def orchestrate_agent_query(request: AgentQueryRequest) -> AgentWorkflowResponse
     try:
         return orchestrate_agent_request(
             question=request.question,
+            filename=request.filename,
+            top_k=request.top_k,
+        )
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Persisted embedding file not found. Generate embeddings first",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/agent/resume", response_model=AgentWorkflowResponse)
+def resume_agent_query(request: AgentResumeRequest) -> AgentWorkflowResponse:
+    try:
+        return resume_agent_request(
+            original_question=request.original_question,
+            clarification_context=request.clarification_context,
             filename=request.filename,
             top_k=request.top_k,
         )

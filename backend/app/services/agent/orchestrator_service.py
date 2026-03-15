@@ -147,6 +147,115 @@ def _extract_summary_step_context(summarize_question: str) -> dict[str, str]:
     return context
 
 
+def _normalize_confirmation(value: str) -> bool:
+    return value.strip().lower() in {"yes", "y", "true", "confirmed", "continue"}
+
+
+def _resume_search_question(
+    search_question: str,
+    clarification_context: dict[str, str],
+) -> str:
+    query_override = clarification_context.get("search_query_refinement", "").strip()
+    filename_override = (
+        clarification_context.get("document_scope", "").strip()
+        or clarification_context.get("filename", "").strip()
+    )
+
+    search_plan = plan_tool_request(search_question)
+    resolved_query = query_override or search_plan.target
+
+    if filename_override:
+        return f"Search {filename_override} for {resolved_query}"
+
+    if search_plan.arguments.get("filename"):
+        return f"Search {search_plan.arguments['filename']} for {resolved_query}"
+
+    return f"Search docs for {resolved_query}"
+
+
+def _resume_ticket_question(
+    ticket_question: str,
+    clarification_context: dict[str, str],
+) -> str:
+    updated_question = ticket_question.strip()
+    environment = clarification_context.get("environment", "").strip().lower()
+
+    if environment and environment in {"production", "staging"}:
+        if environment not in updated_question.lower():
+            updated_question = f"{updated_question} in {environment}"
+
+    return updated_question
+
+
+def _resume_generic_question(
+    original_question: str,
+    clarification_context: dict[str, str],
+) -> str:
+    tokens: list[str] = []
+    for key, value in clarification_context.items():
+        if not value.strip():
+            continue
+        label = key.replace("_", " ")
+        tokens.append(f"{label}: {value.strip()}")
+
+    if not tokens:
+        return original_question
+
+    return f"{original_question} {' '.join(tokens)}"
+
+
+def resume_agent_request(
+    original_question: str,
+    clarification_context: dict[str, str],
+    filename: str | None = None,
+    top_k: int = 3,
+) -> AgentWorkflowResponse:
+    if not clarification_context:
+        raise ValueError("clarification_context_required")
+
+    resumed_question = original_question.strip()
+
+    search_then_ticket = _match_search_then_ticket_workflow(resumed_question)
+    search_then_summarize = _match_search_then_summarize_workflow(resumed_question)
+
+    if search_then_ticket is not None:
+        search_question, ticket_question = search_then_ticket
+        resumed_search = _resume_search_question(search_question, clarification_context)
+        resumed_ticket = _resume_ticket_question(ticket_question, clarification_context)
+
+        if not clarification_context.get("search_query_refinement", "").strip() and not _normalize_confirmation(
+            clarification_context.get("execution_confirmation", "")
+        ):
+            raise ValueError("search_query_refinement_or_execution_confirmation_required")
+
+        resumed_question = f"{resumed_search} and {resumed_ticket}"
+
+    elif search_then_summarize is not None:
+        search_question, summarize_question = search_then_summarize
+        resumed_search = _resume_search_question(search_question, clarification_context)
+        resumed_question = f"{resumed_search} and {summarize_question}"
+
+    else:
+        resumed_question = _resume_generic_question(original_question, clarification_context)
+
+    response = orchestrate_agent_request(
+        question=resumed_question,
+        filename=filename,
+        top_k=top_k,
+    )
+    response.workflow_trace.insert(
+        0,
+        WorkflowTraceEvent(
+            stage="workflow_resume",
+            status="completed",
+            timestamp=build_utc_timestamp(),
+            detail=f"Resumed workflow from '{original_question}' using clarification context.",
+        ),
+    )
+    response.question = resumed_question
+    return response
+
+
 def orchestrate_agent_request(
     question: str,
     filename: str | None = None,
