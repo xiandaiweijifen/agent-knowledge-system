@@ -268,16 +268,35 @@ def _resume_generic_question(
     return f"{original_question} {' '.join(tokens)}"
 
 
+def _resolve_resume_source(
+    original_question: str | None,
+    run_id: str | None,
+) -> tuple[str, str | None]:
+    normalized_question = (original_question or "").strip()
+    normalized_run_id = (run_id or "").strip()
+
+    if normalized_question:
+        return normalized_question, None
+
+    if not normalized_run_id:
+        raise ValueError("original_question_or_run_id_required")
+
+    persisted_run = get_persisted_workflow_run(normalized_run_id)
+    return persisted_run.question, persisted_run.filename
+
+
 def resume_agent_request(
-    original_question: str,
+    original_question: str | None,
     clarification_context: dict[str, str],
+    run_id: str | None = None,
     filename: str | None = None,
     top_k: int = 3,
 ) -> AgentWorkflowResponse:
     if not clarification_context:
         raise ValueError("clarification_context_required")
 
-    resumed_question = original_question.strip()
+    source_question, source_filename = _resolve_resume_source(original_question, run_id)
+    resumed_question = source_question.strip()
 
     search_then_ticket = _match_search_then_ticket_workflow(resumed_question)
     search_then_summarize = _match_search_then_summarize_workflow(resumed_question)
@@ -305,7 +324,7 @@ def resume_agent_request(
 
     response = orchestrate_agent_request(
         question=resumed_question,
-        filename=filename,
+        filename=filename if filename is not None else source_filename,
         top_k=top_k,
         resume_context=clarification_context,
         persist_run=False,
@@ -316,13 +335,13 @@ def resume_agent_request(
             stage="workflow_resume",
             status="completed",
             timestamp=build_utc_timestamp(),
-            detail=f"Resumed workflow from '{original_question}' using clarification context.",
+            detail=f"Resumed workflow from '{source_question}' using clarification context.",
         ),
     )
     response.question = resumed_question
     return _persist_workflow_response(
         response=response,
-        resumed_from_question=original_question,
+        resumed_from_question=source_question,
     )
 
 

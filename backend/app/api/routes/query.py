@@ -69,6 +69,7 @@ def resume_agent_query(request: AgentResumeRequest) -> AgentWorkflowResponse:
         return resume_agent_request(
             original_question=request.original_question,
             clarification_context=request.clarification_context,
+            run_id=request.run_id,
             filename=request.filename,
             top_k=request.top_k,
         )

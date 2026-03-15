@@ -19,7 +19,8 @@ class AgentQueryRequest(BaseModel):
 
 
 class AgentResumeRequest(BaseModel):
-    original_question: str
+    original_question: str | None = None
+    run_id: str | None = None
     clarification_context: dict[str, str] = Field(default_factory=dict)
     filename: str | None = None
     top_k: int = 3

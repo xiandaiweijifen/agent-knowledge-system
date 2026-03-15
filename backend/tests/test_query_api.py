@@ -1427,3 +1427,74 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
     persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
     assert len(persisted_runs) == 1
 
+
+def test_resume_agent_endpoint_supports_run_id_as_resume_source(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text(
+        "This file only mentions deployment workflows.",
+        encoding="utf-8",
+    )
+    (raw_dir / "rag_overview.md").write_text(
+        "Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    initial_response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for payment-service outage and summarize top 2 results",
+        },
+    )
+
+    assert initial_response.status_code == 200
+    initial_payload = initial_response.json()
+    assert initial_payload["workflow_status"] == "clarification_required"
+    assert initial_payload["run_id"]
+
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "run_id": initial_payload["run_id"],
+            "clarification_context": {
+                "search_query_refinement": "RAG",
+                "document_scope": "rag_overview.md",
+            },
+        },
+    )
+
+    assert resumed_response.status_code == 200
+    resumed_payload = resumed_response.json()
+    assert resumed_payload["workflow_status"] == "completed"
+    assert resumed_payload["resumed_from_question"] == (
+        "Search docs for payment-service outage and summarize top 2 results"
+    )
+    assert resumed_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
+    assert resumed_payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
+
+
+def test_resume_agent_endpoint_requires_original_question_or_run_id():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "clarification_context": {
+                "search_query_refinement": "RAG",
+            },
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "original_question_or_run_id_required"
+
