@@ -3,7 +3,10 @@ import re
 from app.schemas.query import AgentWorkflowResponse, WorkflowTraceEvent
 from app.schemas.tools import ToolExecutionRequest
 from app.services.ingestion.document_service import build_utc_timestamp
-from app.services.agent.clarification_service import plan_clarification
+from app.services.agent.clarification_service import (
+    plan_clarification,
+    plan_search_miss_clarification,
+)
 from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
@@ -135,7 +138,10 @@ def orchestrate_agent_request(
                     and tool_response.tool_name == "document_search"
                     and tool_response.output.get("matched_count") == "0"
                 ):
-                    clarification_plan = plan_clarification(ticket_question)
+                    clarification_plan = plan_search_miss_clarification(
+                        search_query=tool_plan.target,
+                        next_action_question=ticket_question,
+                    )
                     workflow_trace.append(
                         WorkflowTraceEvent(
                             stage="clarification_planning",

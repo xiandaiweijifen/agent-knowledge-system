@@ -24,7 +24,7 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T03:56:49.390832+00:00",
+    "updated_at": "2026-03-15T04:49:32.117531+00:00",
     "closed_at": "2026-03-14T17:15:20.287583+00:00"
   },
   {
@@ -34,7 +34,7 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T03:56:49.405601+00:00"
+    "updated_at": "2026-03-15T04:49:32.132805+00:00"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -61,8 +61,8 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T03:56:49.363629+00:00",
-    "closed_at": "2026-03-15T03:56:49.363629+00:00"
+    "updated_at": "2026-03-15T04:49:32.086897+00:00",
+    "closed_at": "2026-03-15T04:49:32.086897+00:00"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -80,7 +80,7 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T03:56:49.376606+00:00"
+    "updated_at": "2026-03-15T04:49:32.102795+00:00"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +89,7 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T03:56:49.419485+00:00"
+    "updated_at": "2026-03-15T04:49:32.145474+00:00"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -162,5 +162,23 @@
     "environment": "unspecified",
     "created_at": "2026-03-15T04:45:02.281128+00:00",
     "updated_at": "2026-03-15T04:45:02.281128+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0019",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T04:49:32.070647+00:00",
+    "updated_at": "2026-03-15T04:49:32.070647+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0020",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T04:52:27.707148+00:00",
+    "updated_at": "2026-03-15T04:52:27.707148+00:00"
   }
 ]

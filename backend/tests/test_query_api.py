@@ -799,6 +799,12 @@ def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses
     assert payload["tool_execution"]["tool_name"] == "document_search"
     assert payload["tool_execution"]["output"]["matched_count"] == "0"
     assert payload["clarification_message"]
+    assert "search_query_refinement" in payload["clarification_plan"]["missing_fields"]
+    assert "execution_confirmation" in payload["clarification_plan"]["missing_fields"]
+    assert any(
+        "different phrase or document set" in question
+        for question in payload["clarification_plan"]["follow_up_questions"]
+    )
     assert any(
         event["stage"] == "clarification_planning"
         and "Search produced no supporting documents" in event["detail"]

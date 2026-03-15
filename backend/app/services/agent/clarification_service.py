@@ -38,3 +38,39 @@ def plan_clarification(question: str) -> ClarificationPlanResponse:
             "continues."
         ),
     )
+
+
+def plan_search_miss_clarification(
+    search_query: str,
+    next_action_question: str,
+) -> ClarificationPlanResponse:
+    """Return a targeted clarification plan when a search step finds no support."""
+    normalized_search_query = search_query.strip()
+    normalized_action = next_action_question.strip()
+
+    if not normalized_search_query or not normalized_action:
+        raise ValueError("search_query_and_action_must_not_be_empty")
+
+    follow_up_questions = [
+        f"I could not find supporting documents for '{normalized_search_query}'. "
+        "Should I search a different phrase or document set?",
+        "Do you still want me to continue with the action even without supporting documentation?",
+    ]
+
+    lowered_action = normalized_action.lower()
+    missing_fields = ["search_query_refinement", "execution_confirmation"]
+
+    if "production" not in lowered_action and "staging" not in lowered_action and "dev" not in lowered_action:
+        missing_fields.append("environment")
+        follow_up_questions.append("Which environment should the action apply to?")
+
+    return ClarificationPlanResponse(
+        question=normalized_action,
+        planning_mode="heuristic_stub",
+        missing_fields=missing_fields,
+        follow_up_questions=follow_up_questions,
+        clarification_summary=(
+            "The workflow could not find supporting documents for the search step, so it should "
+            "be clarified before continuing to execution."
+        ),
+    )
