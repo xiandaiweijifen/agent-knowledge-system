@@ -76,6 +76,10 @@ TICKET_UPDATE_SUFFIX_PATTERN = re.compile(
     r"|environment\s+to\s+(production|staging))\b",
     re.IGNORECASE,
 )
+TICKET_LIST_TARGET_PATTERN = re.compile(
+    r"\blist\b.+?\btickets?\b\s+for\s+(?P<target>.+)$",
+    re.IGNORECASE,
+)
 TICKET_DATA_DIR = Path("../data/tool_state")
 TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
@@ -143,6 +147,37 @@ def _extract_ticket_update_arguments(question: str) -> dict[str, str]:
     return arguments
 
 
+def _canonicalize_ticket_target(target: str) -> str:
+    cleaned_target = target.strip().lower()
+    if not cleaned_target:
+        return "ticket"
+
+    cleaned_target = TICKET_ID_PATTERN.sub("", cleaned_target).strip(" .")
+    cleaned_target = re.sub(r"^(?:a|an|the)\s+", "", cleaned_target).strip()
+    cleaned_target = re.sub(
+        r"\b(?:outage|incident|issue|problem|alert|failure)s?\b$",
+        "",
+        cleaned_target,
+        flags=re.IGNORECASE,
+    ).strip(" .")
+    cleaned_target = re.sub(r"\s+", " ", cleaned_target)
+
+    if not cleaned_target:
+        return "ticket"
+
+    if "-" in cleaned_target and " " not in cleaned_target:
+        return cleaned_target
+
+    return cleaned_target.replace(" ", "-")
+
+
+def _extract_ticket_target_filter(question: str) -> str | None:
+    match = TICKET_LIST_TARGET_PATTERN.search(question.strip())
+    if not match:
+        return None
+    return _canonicalize_ticket_target(match.group("target"))
+
+
 def _clean_ticket_target(question: str, target: str, action: str) -> str:
     cleaned_target = target.strip()
     cleaned_target = TICKET_ID_PATTERN.sub("", cleaned_target).strip(" .")
@@ -165,7 +200,9 @@ def _clean_ticket_target(question: str, target: str, action: str) -> str:
     if action == "update":
         cleaned_target = TICKET_UPDATE_SUFFIX_PATTERN.sub("", cleaned_target).strip(" .")
 
-    return cleaned_target or "ticket"
+    cleaned_target = ENVIRONMENT_SEGMENT_PATTERN.sub("", cleaned_target).strip(" .")
+
+    return _canonicalize_ticket_target(cleaned_target or "ticket")
 
 
 def _load_ticket_store() -> list[dict[str, Any]]:
@@ -190,7 +227,8 @@ def _save_ticket_store(tickets: list[dict[str, Any]]) -> None:
 def _normalize_ticket_record(ticket: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(ticket)
     ticket_id = normalized.get("ticket_id", "").strip()
-    target = normalized.get("target", "").strip() or "ticket"
+    target = _canonicalize_ticket_target(normalized.get("target", "").strip() or "ticket")
+    normalized["target"] = target
     normalized.update(
         _build_tool_output_metadata(
             output_kind="record",
@@ -520,10 +558,19 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
 
     if action == "list":
         status_filter = request.arguments.get("status", "").strip().lower()
+        target_filter = _canonicalize_ticket_target(
+            request.arguments.get("target_filter", "").strip()
+        ) if request.arguments.get("target_filter", "").strip() else ""
         filtered_tickets = tickets
         if status_filter:
             filtered_tickets = [
                 ticket for ticket in tickets if ticket.get("status", "").lower() == status_filter
+            ]
+        if target_filter:
+            filtered_tickets = [
+                ticket
+                for ticket in filtered_tickets
+                if _canonicalize_ticket_target(ticket.get("target", "")) == target_filter
             ]
 
         ticket_summaries = " | ".join(
@@ -546,6 +593,8 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         }
         if status_filter:
             output["status_filter"] = status_filter
+        if target_filter:
+            output["target_filter"] = target_filter
 
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -952,6 +1001,10 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
 
     if inferred_request.tool_name == "ticketing":
         arguments.update(_extract_ticket_update_arguments(question))
+        if inferred_request.action == "list":
+            target_filter = _extract_ticket_target_filter(question)
+            if target_filter:
+                arguments["target_filter"] = target_filter
 
         inferred_request = InferredToolRequest(
             tool_name=inferred_request.tool_name,

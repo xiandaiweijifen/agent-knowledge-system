@@ -45,6 +45,21 @@
       "expected_output_keys": ["schema_version", "output_kind", "resource_type", "item_count", "ticket_count", "tickets", "ticket_ids", "tickets_json", "ticket_records", "status_filter"]
     },
     {
+      "case_id": "tool_eval_4b",
+      "question": "List open tickets for payment service",
+      "expected_tool_name": "ticketing",
+      "expected_action": "list",
+      "expected_execution_status": "completed",
+      "expected_arguments": {
+        "status": "open",
+        "target_filter": "payment-service"
+      },
+      "expected_output": {
+        "target_filter": "payment-service"
+      },
+      "expected_output_keys": ["ticket_records", "target_filter", "ticket_ids"]
+    },
+    {
       "case_id": "tool_eval_5",
       "question": "Search docs for RAG and show top 2 results",
       "expected_tool_name": "document_search",
