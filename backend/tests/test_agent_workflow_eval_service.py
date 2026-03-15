@@ -14,10 +14,15 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
     raw_dir = workspace_tmp_path / "raw"
     raw_dir.mkdir()
     dataset_path = workspace_tmp_path / "agent_workflow_eval.json"
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
     monkeypatch.setattr(settings, "chat_provider", "fallback")
     monkeypatch.setattr("app.services.ingestion.document_service.RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
 
     embedding_payload = {
         "filename": "sample.txt",
@@ -184,6 +189,7 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
                             "search_query_refinement": "RAG",
                             "document_scope": "sample.txt",
                         },
+                        "resume_via_run_id": True,
                         "filename": "sample.txt",
                         "top_k": 1,
                         "expected_route_type": "tool_execution",

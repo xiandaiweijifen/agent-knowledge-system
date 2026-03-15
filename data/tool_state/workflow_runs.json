@@ -3097,5 +3097,1938 @@
         }
       }
     ]
+  },
+  {
+    "run_id": "b6ceedfa2bdc4ada843b28b1dfa93374",
+    "question": "What are rag systems?",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "knowledge_retrieval",
+      "route_reason": "The request is best handled as a knowledge query and should continue through retrieval and answer generation.",
+      "filename": "sample.txt"
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.825760+00:00",
+        "detail": "Request routed to knowledge_retrieval."
+      },
+      {
+        "stage": "retrieval",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.827701+00:00",
+        "detail": "Retrieved 1 supporting chunks from sample.txt."
+      },
+      {
+        "stage": "answer_generation",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.827715+00:00",
+        "detail": "Answer generated via fallback."
+      }
+    ],
+    "filename": "sample.txt",
+    "answer": "Retrieved relevant context for the question, but LLM answer generation is using local fallback right now. Top supporting chunks: sample.txt::chunk_0. Question: What are rag systems?",
+    "answer_source": "fallback",
+    "model": "local-fallback",
+    "answered_at": "2026-03-15T13:05:18.827679+00:00",
+    "answer_latency_ms": 0.012,
+    "chat_provider": "fallback",
+    "chat_model": "local-fallback",
+    "retrieval": {
+      "filename": "sample.txt",
+      "embedding_provider": "mock",
+      "embedding_model": "mock-embedding-v1",
+      "vector_dim": 8,
+      "question": "What are rag systems?",
+      "top_k": 1,
+      "retrieved_at": "2026-03-15T13:05:18.827628+00:00",
+      "retrieval_latency_ms": 1.837,
+      "query_embedding_provider": "mock",
+      "query_embedding_model": "mock-embedding-v1",
+      "matches": [
+        {
+          "chunk_id": "sample.txt::chunk_0",
+          "chunk_index": 0,
+          "source_filename": "sample.txt",
+          "source_suffix": ".txt",
+          "char_count": 11,
+          "content": "rag systems",
+          "vector_score": 0.554195,
+          "rerank_bonus": 0.05,
+          "score": 0.604195
+        }
+      ]
+    },
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": null,
+    "tool_execution": null,
+    "tool_chain": []
+  },
+  {
+    "run_id": "229f3dd4f0b14558898a623f86a937fb",
+    "question": "Create a ticket for the payment service outage",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.841817+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.841912+00:00",
+        "detail": "Planned ticketing:create for the payment service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.842854+00:00",
+        "detail": "Executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a ticket for the payment service outage",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "the payment service outage",
+      "arguments": {},
+      "plan_summary": "Plan ticketing:create for the payment service outage using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "the payment service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0001 for the payment service outage.",
+      "trace_id": "b2f53be234fb4a6e95496dc5f7e808bf",
+      "executed_at": "2026-03-15T13:05:18.842191+00:00",
+      "output": {
+        "ticket_id": "TICKET-0001",
+        "target": "the payment service outage",
+        "status": "open",
+        "severity": "unspecified",
+        "environment": "unspecified",
+        "created_at": "2026-03-15T13:05:18.842191+00:00",
+        "updated_at": "2026-03-15T13:05:18.842191+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Create a ticket for the payment service outage",
+        "tool_plan": {
+          "question": "Create a ticket for the payment service outage",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "the payment service outage",
+          "arguments": {},
+          "plan_summary": "Plan ticketing:create for the payment service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "the payment service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0001 for the payment service outage.",
+          "trace_id": "b2f53be234fb4a6e95496dc5f7e808bf",
+          "executed_at": "2026-03-15T13:05:18.842191+00:00",
+          "output": {
+            "ticket_id": "TICKET-0001",
+            "target": "the payment service outage",
+            "status": "open",
+            "severity": "unspecified",
+            "environment": "unspecified",
+            "created_at": "2026-03-15T13:05:18.842191+00:00",
+            "updated_at": "2026-03-15T13:05:18.842191+00:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "1b7abdd85fcb4ed9b4c7661829a707d7",
+    "question": "Search rag_overview.md for reranking",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.869675+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.869763+00:00",
+        "detail": "Planned document_search:query for reranking."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.871612+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search rag_overview.md for reranking",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "reranking",
+      "arguments": {
+        "filename": "rag_overview.md"
+      },
+      "plan_summary": "Plan document_search:query for reranking using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "reranking",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'reranking'.",
+      "trace_id": "1e02792d62f341eb893b064db5244840",
+      "executed_at": "2026-03-15T13:05:18.871582+00:00",
+      "output": {
+        "query": "reranking",
+        "matched_count": "1",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "0",
+        "filename_filter": "rag_overview.md",
+        "snippets": "rag_overview.md: Reranking is useful when relevant chunks are present in the candidate set but are not ranked highly enough by the embedding search step.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "4.000",
+        "top_match_reason": "full query match, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search rag_overview.md for reranking",
+        "tool_plan": {
+          "question": "Search rag_overview.md for reranking",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "reranking",
+          "arguments": {
+            "filename": "rag_overview.md"
+          },
+          "plan_summary": "Plan document_search:query for reranking using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "reranking",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'reranking'.",
+          "trace_id": "1e02792d62f341eb893b064db5244840",
+          "executed_at": "2026-03-15T13:05:18.871582+00:00",
+          "output": {
+            "query": "reranking",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "filename_filter": "rag_overview.md",
+            "snippets": "rag_overview.md: Reranking is useful when relevant chunks are present in the candidate set but are not ranked highly enough by the embedding search step.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "4.000",
+            "top_match_reason": "full query match, term coverage 1/1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "40636de645604465927b4b737c1c217e",
+    "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.898454+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.898538+00:00",
+        "detail": "Step 1: planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.900490+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "tool_context",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.900597+00:00",
+        "detail": "Step 2 inherited supporting search context from step 1 before ticket creation."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.900607+00:00",
+        "detail": "Step 2: planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.901801+00:00",
+        "detail": "Step 2: executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "create a high severity ticket for payment-service",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "supporting_query": "payment-service outage",
+        "supporting_documents": "notes.md",
+        "supporting_snippets": "notes.md: The payment-service outage requires a high severity response.",
+        "supporting_match_count": "1",
+        "severity": "high"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+      "trace_id": "54f7e0fe1c6f495ea347a6eebf632899",
+      "executed_at": "2026-03-15T13:05:18.900865+00:00",
+      "output": {
+        "ticket_id": "TICKET-0001",
+        "target": "payment-service",
+        "status": "open",
+        "severity": "high",
+        "environment": "unspecified",
+        "created_at": "2026-03-15T13:05:18.900865+00:00",
+        "updated_at": "2026-03-15T13:05:18.900865+00:00",
+        "supporting_query": "payment-service outage",
+        "supporting_documents": "notes.md",
+        "supporting_snippets": "notes.md: The payment-service outage requires a high severity response.",
+        "supporting_match_count": "1",
+        "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'payment-service outage'.",
+          "trace_id": "4cc6ac9a3f2c4e2dbb950e287d13543a",
+          "executed_at": "2026-03-15T13:05:18.900462+00:00",
+          "output": {
+            "query": "payment-service outage",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "notes.md",
+            "skipped_documents": "0",
+            "snippets": "notes.md: The payment-service outage requires a high severity response.",
+            "top_match_document": "notes.md",
+            "top_match_score": "5.490",
+            "top_match_reason": "full query match, early occurrence, term coverage 3/3"
+          }
+        }
+      },
+      {
+        "question": "create a high severity ticket for payment-service",
+        "tool_plan": {
+          "question": "create a high severity ticket for payment-service",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "supporting_query": "payment-service outage",
+            "supporting_documents": "notes.md",
+            "supporting_snippets": "notes.md: The payment-service outage requires a high severity response.",
+            "supporting_match_count": "1",
+            "severity": "high"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+          "trace_id": "54f7e0fe1c6f495ea347a6eebf632899",
+          "executed_at": "2026-03-15T13:05:18.900865+00:00",
+          "output": {
+            "ticket_id": "TICKET-0001",
+            "target": "payment-service",
+            "status": "open",
+            "severity": "high",
+            "environment": "unspecified",
+            "created_at": "2026-03-15T13:05:18.900865+00:00",
+            "updated_at": "2026-03-15T13:05:18.900865+00:00",
+            "supporting_query": "payment-service outage",
+            "supporting_documents": "notes.md",
+            "supporting_snippets": "notes.md: The payment-service outage requires a high severity response.",
+            "supporting_match_count": "1",
+            "supporting_summary": "Search for 'payment-service outage' matched 1 supporting document(s). Primary supporting documents: notes.md. Top supporting snippet: notes.md: The payment-service outage requires a high severity response."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "3c241ae5fb1949e1ac69f958a0987802",
+    "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+    "resumed_from_question": null,
+    "workflow_status": "clarification_required",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.924745+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.924825+00:00",
+        "detail": "Step 1: planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.926356+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.926401+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before ticket creation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before creating a ticket.",
+    "clarification_plan": {
+      "question": "create a high severity ticket for payment-service",
+      "planning_mode": "heuristic_stub",
+      "missing_fields": [
+        "search_query_refinement",
+        "execution_confirmation",
+        "environment"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'payment-service outage'. Should I search a different phrase or document set?",
+        "Do you still want me to continue with the action even without supporting documentation?",
+        "Which environment should the action apply to?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents for the search step, so it should be clarified before continuing to execution."
+    },
+    "tool_plan": {
+      "question": "Search docs for payment-service outage",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "arguments": {},
+      "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'payment-service outage'.",
+      "trace_id": "30d12fc31f4349c79b8c5b34764c9c59",
+      "executed_at": "2026-03-15T13:05:18.926329+00:00",
+      "output": {
+        "query": "payment-service outage",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "0"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "30d12fc31f4349c79b8c5b34764c9c59",
+          "executed_at": "2026-03-15T13:05:18.926329+00:00",
+          "output": {
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "0"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "77c1c203603d40dd9b86b8d36b18d173",
+    "question": "Search docs for RAG and show top 2 results",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.949126+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.949217+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.953440+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search docs for RAG and show top 2 results",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 2 matching document(s) for 'RAG'.",
+      "trace_id": "a14e19b82075417f8ec9d2748e02a066",
+      "executed_at": "2026-03-15T13:05:18.953409+00:00",
+      "output": {
+        "query": "RAG",
+        "matched_count": "3",
+        "returned_count": "2",
+        "matched_documents": "rag_overview.md, notes.txt",
+        "skipped_documents": "0",
+        "max_results": "2",
+        "snippets": "rag_overview.md: RAG appears here first and most clearly. | notes.txt: RAG is mentioned in this note.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.500",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for RAG and show top 2 results",
+        "tool_plan": {
+          "question": "Search docs for RAG and show top 2 results",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 2 matching document(s) for 'RAG'.",
+          "trace_id": "a14e19b82075417f8ec9d2748e02a066",
+          "executed_at": "2026-03-15T13:05:18.953409+00:00",
+          "output": {
+            "query": "RAG",
+            "matched_count": "3",
+            "returned_count": "2",
+            "matched_documents": "rag_overview.md, notes.txt",
+            "skipped_documents": "0",
+            "max_results": "2",
+            "snippets": "rag_overview.md: RAG appears here first and most clearly. | notes.txt: RAG is mentioned in this note.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.500",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "e8871711249748a9a27319c5560ff4a2",
+    "question": "Search rag_overview.md for reranking limit to 1",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.975366+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.975455+00:00",
+        "detail": "Planned document_search:query for reranking."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.977362+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search rag_overview.md for reranking limit to 1",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "reranking",
+      "arguments": {
+        "filename": "rag_overview.md",
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for reranking using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "reranking",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'reranking'.",
+      "trace_id": "32d95e4a07ad4f7cac57878c2578d942",
+      "executed_at": "2026-03-15T13:05:18.977330+00:00",
+      "output": {
+        "query": "reranking",
+        "matched_count": "1",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "0",
+        "filename_filter": "rag_overview.md",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Reranking improves retrieval quality.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "5.500",
+        "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search rag_overview.md for reranking limit to 1",
+        "tool_plan": {
+          "question": "Search rag_overview.md for reranking limit to 1",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "reranking",
+          "arguments": {
+            "filename": "rag_overview.md",
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for reranking using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "reranking",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'reranking'.",
+          "trace_id": "32d95e4a07ad4f7cac57878c2578d942",
+          "executed_at": "2026-03-15T13:05:18.977330+00:00",
+          "output": {
+            "query": "reranking",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "filename_filter": "rag_overview.md",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Reranking improves retrieval quality.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "5.500",
+            "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "362893ca8c7d41a7a52dc3eb705c0308",
+    "question": "Search docs for RAG and summarize top 2 results",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.999092+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:18.999203+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.002263+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.002309+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 2 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 2 matching document(s) for 'RAG' and returned 2 result(s). The strongest supporting document is rag_overview.md. Returned documents: rag_overview.md, notes.txt. Key evidence from rag_overview.md: RAG combines document retrieval with language model generation. Additional support from notes.txt: RAG improves factual grounding and retrieval quality.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-15T13:05:19.002317+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search docs for RAG",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 2 matching document(s) for 'RAG'.",
+      "trace_id": "310e1539552a4207962c9afc5909d21d",
+      "executed_at": "2026-03-15T13:05:19.002234+00:00",
+      "output": {
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "2",
+        "matched_documents": "rag_overview.md, notes.txt",
+        "skipped_documents": "0",
+        "max_results": "2",
+        "snippets": "rag_overview.md: RAG combines document retrieval with language model generation. | notes.txt: RAG improves factual grounding and retrieval quality.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.375",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for RAG",
+        "tool_plan": {
+          "question": "Search docs for RAG",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 2 matching document(s) for 'RAG'.",
+          "trace_id": "310e1539552a4207962c9afc5909d21d",
+          "executed_at": "2026-03-15T13:05:19.002234+00:00",
+          "output": {
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "2",
+            "matched_documents": "rag_overview.md, notes.txt",
+            "skipped_documents": "0",
+            "max_results": "2",
+            "snippets": "rag_overview.md: RAG combines document retrieval with language model generation. | notes.txt: RAG improves factual grounding and retrieval quality.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.375",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "9002ba8fd70a435d9d51578d82420b5d",
+    "question": "Search docs for payment-service outage and summarize top 2 results",
+    "resumed_from_question": null,
+    "workflow_status": "clarification_required",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.023308+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.023424+00:00",
+        "detail": "Planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.025013+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.025052+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before summary generation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before generating a summary.",
+    "clarification_plan": {
+      "question": "payment-service outage",
+      "planning_mode": "heuristic_stub",
+      "missing_fields": [
+        "search_query_refinement",
+        "document_scope"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'payment-service outage'. Should I search a different phrase?",
+        "Should I narrow the search to a specific document or file?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents to summarize, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Search docs for payment-service outage",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "arguments": {
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'payment-service outage'.",
+      "trace_id": "6f18fc5781874d30a13caa8d8d9f0c3a",
+      "executed_at": "2026-03-15T13:05:19.024984+00:00",
+      "output": {
+        "query": "payment-service outage",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "0",
+        "max_results": "2"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "6f18fc5781874d30a13caa8d8d9f0c3a",
+          "executed_at": "2026-03-15T13:05:19.024984+00:00",
+          "output": {
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "0",
+            "max_results": "2"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "1108b24fcbb74843b1a7e4b0c56749f7",
+    "question": "Search rag_overview.md for reranking and summarize top 1 results",
+    "resumed_from_question": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.046469+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.046588+00:00",
+        "detail": "Planned document_search:query for reranking."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.048432+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.048470+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I searched 'rag_overview.md' for 'reranking' and found 1 matching result(s). The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Reranking is useful when relevant chunks are present but not ranked highly enough.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-15T13:05:19.048477+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search rag_overview.md for reranking",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "reranking",
+      "arguments": {
+        "filename": "rag_overview.md",
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for reranking using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "reranking",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'reranking'.",
+      "trace_id": "c2d4f93960de43f384770bf11dfb1176",
+      "executed_at": "2026-03-15T13:05:19.048405+00:00",
+      "output": {
+        "query": "reranking",
+        "matched_count": "1",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "0",
+        "filename_filter": "rag_overview.md",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Reranking is useful when relevant chunks are present but not ranked highly enough.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "5.317",
+        "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search rag_overview.md for reranking",
+        "tool_plan": {
+          "question": "Search rag_overview.md for reranking",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "reranking",
+          "arguments": {
+            "filename": "rag_overview.md",
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for reranking using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "reranking",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'reranking'.",
+          "trace_id": "c2d4f93960de43f384770bf11dfb1176",
+          "executed_at": "2026-03-15T13:05:19.048405+00:00",
+          "output": {
+            "query": "reranking",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "filename_filter": "rag_overview.md",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Reranking is useful when relevant chunks are present but not ranked highly enough.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "5.317",
+            "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "ef4f153e4322436ab65609e035b35bdc",
+    "question": "Please do that for production",
+    "resumed_from_question": null,
+    "workflow_status": "clarification_required",
+    "route": {
+      "route_type": "clarification_needed",
+      "route_reason": "The request refers to an action with an ambiguous reference, so the system should ask for clarification before proceeding.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.069354+00:00",
+        "detail": "Request routed to clarification_needed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.069392+00:00",
+        "detail": "Clarification requested for fields: target, priority."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "The request is underspecified and should be clarified before the workflow continues.",
+    "clarification_plan": {
+      "question": "Please do that for production",
+      "planning_mode": "heuristic_stub",
+      "missing_fields": [
+        "target",
+        "priority"
+      ],
+      "follow_up_questions": [
+        "Which service, system, or resource should the agent act on?",
+        "What priority or severity should the action use?"
+      ],
+      "clarification_summary": "The request is underspecified and should be clarified before the workflow continues."
+    },
+    "tool_plan": null,
+    "tool_execution": null,
+    "tool_chain": []
+  },
+  {
+    "run_id": "1e8af240387447f596359ee041842a58",
+    "question": "Search rag_overview.md for RAG and summarize top 2 results",
+    "resumed_from_question": "Search docs for payment-service outage and summarize top 2 results",
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.095428+00:00",
+        "detail": "Resumed workflow from 'Search docs for payment-service outage and summarize top 2 results' using clarification context."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.093567+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.093657+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.095347+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.095384+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 2 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I searched 'rag_overview.md' for 'RAG' and found 1 matching result(s). The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, combines retrieval and generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-15T13:05:19.095392+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search rag_overview.md for RAG",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "filename": "rag_overview.md",
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "e89bbca50b66456ab533ef95758b0e79",
+      "executed_at": "2026-03-15T13:05:19.095318+00:00",
+      "output": {
+        "query": "RAG",
+        "matched_count": "1",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "0",
+        "filename_filter": "rag_overview.md",
+        "max_results": "2",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, combines retrieval and generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.412",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search rag_overview.md for RAG",
+        "tool_plan": {
+          "question": "Search rag_overview.md for RAG",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "filename": "rag_overview.md",
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "e89bbca50b66456ab533ef95758b0e79",
+          "executed_at": "2026-03-15T13:05:19.095318+00:00",
+          "output": {
+            "query": "RAG",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "filename_filter": "rag_overview.md",
+            "max_results": "2",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, combines retrieval and generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.412",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "bab16465766f4bd7b14a26f93dfca04c",
+    "question": "Search docs for RAG and create a high severity ticket for payment-service in production",
+    "resumed_from_question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.118982+00:00",
+        "detail": "Resumed workflow from 'Search docs for payment-service outage and create a high severity ticket for payment-service' using clarification context."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.116367+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.116415+00:00",
+        "detail": "Step 1: planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.118065+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "tool_context",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.118164+00:00",
+        "detail": "Step 2 inherited supporting search context from step 1 before ticket creation."
+      },
+      {
+        "stage": "resume_context",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.118177+00:00",
+        "detail": "Applied structured clarification fields to ticket execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.118183+00:00",
+        "detail": "Step 2: planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.118916+00:00",
+        "detail": "Step 2: executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "create a high severity ticket for payment-service in production",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "supporting_query": "RAG",
+        "supporting_documents": "rag_overview.md",
+        "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+        "supporting_match_count": "1",
+        "severity": "high",
+        "environment": "production"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+      "trace_id": "a6c963eca9a24bbfaff27adb12903e28",
+      "executed_at": "2026-03-15T13:05:19.118417+00:00",
+      "output": {
+        "ticket_id": "TICKET-0001",
+        "target": "payment-service",
+        "status": "open",
+        "severity": "high",
+        "environment": "production",
+        "created_at": "2026-03-15T13:05:19.118417+00:00",
+        "updated_at": "2026-03-15T13:05:19.118417+00:00",
+        "supporting_query": "RAG",
+        "supporting_documents": "rag_overview.md",
+        "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+        "supporting_match_count": "1",
+        "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for RAG",
+        "tool_plan": {
+          "question": "Search docs for RAG",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "98a6dfebda6f4a248ed40208704204b9",
+          "executed_at": "2026-03-15T13:05:19.118039+00:00",
+          "output": {
+            "query": "RAG",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.500",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      },
+      {
+        "question": "create a high severity ticket for payment-service in production",
+        "tool_plan": {
+          "question": "create a high severity ticket for payment-service in production",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "supporting_query": "RAG",
+            "supporting_documents": "rag_overview.md",
+            "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+            "supporting_match_count": "1",
+            "severity": "high",
+            "environment": "production"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+          "trace_id": "a6c963eca9a24bbfaff27adb12903e28",
+          "executed_at": "2026-03-15T13:05:19.118417+00:00",
+          "output": {
+            "ticket_id": "TICKET-0001",
+            "target": "payment-service",
+            "status": "open",
+            "severity": "high",
+            "environment": "production",
+            "created_at": "2026-03-15T13:05:19.118417+00:00",
+            "updated_at": "2026-03-15T13:05:19.118417+00:00",
+            "supporting_query": "RAG",
+            "supporting_documents": "rag_overview.md",
+            "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+            "supporting_match_count": "1",
+            "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "758ff7bec6124991a75d082056a7184b",
+    "question": "Search docs for RAG and create a high severity ticket for payment-service in staging",
+    "resumed_from_question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.146127+00:00",
+        "detail": "Resumed workflow from 'Search docs for payment-service outage and create a high severity ticket for payment-service' using clarification context."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.143577+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.143628+00:00",
+        "detail": "Step 1: planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.145212+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "tool_context",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.145299+00:00",
+        "detail": "Step 2 inherited supporting search context from step 1 before ticket creation."
+      },
+      {
+        "stage": "resume_context",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.145309+00:00",
+        "detail": "Applied structured clarification fields to ticket execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.145314+00:00",
+        "detail": "Step 2: planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.146070+00:00",
+        "detail": "Step 2: executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "create a high severity ticket for payment-service in staging",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "supporting_query": "RAG",
+        "supporting_documents": "rag_overview.md",
+        "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+        "supporting_match_count": "1",
+        "severity": "medium",
+        "environment": "staging"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+      "trace_id": "d53a03fb41eb457eb1924cc3a6de1b73",
+      "executed_at": "2026-03-15T13:05:19.145537+00:00",
+      "output": {
+        "ticket_id": "TICKET-0001",
+        "target": "payment-service",
+        "status": "open",
+        "severity": "medium",
+        "environment": "staging",
+        "created_at": "2026-03-15T13:05:19.145537+00:00",
+        "updated_at": "2026-03-15T13:05:19.145537+00:00",
+        "supporting_query": "RAG",
+        "supporting_documents": "rag_overview.md",
+        "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+        "supporting_match_count": "1",
+        "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for RAG",
+        "tool_plan": {
+          "question": "Search docs for RAG",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "4996c04de1a94f66bffa4070138691bb",
+          "executed_at": "2026-03-15T13:05:19.145185+00:00",
+          "output": {
+            "query": "RAG",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.500",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      },
+      {
+        "question": "create a high severity ticket for payment-service in staging",
+        "tool_plan": {
+          "question": "create a high severity ticket for payment-service in staging",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "supporting_query": "RAG",
+            "supporting_documents": "rag_overview.md",
+            "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+            "supporting_match_count": "1",
+            "severity": "medium",
+            "environment": "staging"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+          "trace_id": "d53a03fb41eb457eb1924cc3a6de1b73",
+          "executed_at": "2026-03-15T13:05:19.145537+00:00",
+          "output": {
+            "ticket_id": "TICKET-0001",
+            "target": "payment-service",
+            "status": "open",
+            "severity": "medium",
+            "environment": "staging",
+            "created_at": "2026-03-15T13:05:19.145537+00:00",
+            "updated_at": "2026-03-15T13:05:19.145537+00:00",
+            "supporting_query": "RAG",
+            "supporting_documents": "rag_overview.md",
+            "supporting_snippets": "rag_overview.md: RAG reduces hallucinations and improves factual grounding.",
+            "supporting_match_count": "1",
+            "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: rag_overview.md. Top supporting snippet: rag_overview.md: RAG reduces hallucinations and improves factual grounding."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "c91fa665cd40499cbc296bb5ffb00535",
+    "question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
+    "resumed_from_question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.170414+00:00",
+        "detail": "Resumed workflow from 'Search docs for payment-service outage and create a high severity ticket for payment-service' using clarification context."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.168010+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.168063+00:00",
+        "detail": "Step 1: planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.169583+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "resume_context",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.169614+00:00",
+        "detail": "Search returned no supporting documents, but execution continued because the clarified workflow explicitly confirmed proceeding."
+      },
+      {
+        "stage": "resume_context",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.169683+00:00",
+        "detail": "Applied structured clarification fields to ticket execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.169690+00:00",
+        "detail": "Step 2: planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:05:19.170362+00:00",
+        "detail": "Step 2: executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "create a high severity ticket for payment-service in production",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "severity": "high",
+        "environment": "production"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+      "trace_id": "7a011f7569a44be181532be152a77107",
+      "executed_at": "2026-03-15T13:05:19.169882+00:00",
+      "output": {
+        "ticket_id": "TICKET-0001",
+        "target": "payment-service",
+        "status": "open",
+        "severity": "high",
+        "environment": "production",
+        "created_at": "2026-03-15T13:05:19.169882+00:00",
+        "updated_at": "2026-03-15T13:05:19.169882+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "b7b01f4b0de04fcfbae261471e91156e",
+          "executed_at": "2026-03-15T13:05:19.169547+00:00",
+          "output": {
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "0"
+          }
+        }
+      },
+      {
+        "question": "create a high severity ticket for payment-service in production",
+        "tool_plan": {
+          "question": "create a high severity ticket for payment-service in production",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "severity": "high",
+            "environment": "production"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0001 for payment-service.",
+          "trace_id": "7a011f7569a44be181532be152a77107",
+          "executed_at": "2026-03-15T13:05:19.169882+00:00",
+          "output": {
+            "ticket_id": "TICKET-0001",
+            "target": "payment-service",
+            "status": "open",
+            "severity": "high",
+            "environment": "production",
+            "created_at": "2026-03-15T13:05:19.169882+00:00",
+            "updated_at": "2026-03-15T13:05:19.169882+00:00"
+          }
+        }
+      }
+    ]
   }
 ]

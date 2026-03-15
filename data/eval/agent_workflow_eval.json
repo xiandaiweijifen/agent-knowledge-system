@@ -141,6 +141,7 @@
         "search_query_refinement": "RAG",
         "document_scope": "rag_overview.md"
       },
+      "resume_via_run_id": true,
       "expected_route_type": "tool_execution",
       "expected_workflow_status": "completed",
       "expected_question": "Search rag_overview.md for RAG and summarize top 2 results",

@@ -63,6 +63,7 @@ class AgentWorkflowEvalCase(BaseModel):
     filename: str | None = None
     top_k: int = 3
     clarification_context: dict[str, str] = Field(default_factory=dict)
+    resume_via_run_id: bool = False
     expected_route_type: str
     expected_workflow_status: str
     expected_question: str | None = None

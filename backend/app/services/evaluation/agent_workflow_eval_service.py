@@ -29,12 +29,26 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
 
     for case in cases:
         if case.clarification_context:
-            response = resume_agent_request(
-                original_question=case.question,
-                clarification_context=case.clarification_context,
-                filename=case.filename,
-                top_k=case.top_k,
-            )
+            if case.resume_via_run_id:
+                initial_response = orchestrate_agent_request(
+                    question=case.question,
+                    filename=case.filename,
+                    top_k=case.top_k,
+                )
+                response = resume_agent_request(
+                    original_question=None,
+                    run_id=initial_response.run_id,
+                    clarification_context=case.clarification_context,
+                    filename=case.filename,
+                    top_k=case.top_k,
+                )
+            else:
+                response = resume_agent_request(
+                    original_question=case.question,
+                    clarification_context=case.clarification_context,
+                    filename=case.filename,
+                    top_k=case.top_k,
+                )
         else:
             response = orchestrate_agent_request(
                 question=case.question,
