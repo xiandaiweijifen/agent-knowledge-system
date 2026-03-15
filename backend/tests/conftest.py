@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from app.core.config import settings
+
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TEST_TMP_ROOT = BACKEND_DIR / "tests" / "_tmp"
 SESSION_TMP_ROOT = TEST_TMP_ROOT / f"session_{uuid.uuid4().hex}"
@@ -58,3 +60,9 @@ def isolated_workflow_run_store(workspace_tmp_path, monkeypatch):
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
+
+
+@pytest.fixture(autouse=True)
+def isolate_llm_planner_providers(monkeypatch):
+    monkeypatch.setattr(settings, "tool_planner_provider", "fallback")
+    monkeypatch.setattr(settings, "clarification_planner_provider", "fallback")

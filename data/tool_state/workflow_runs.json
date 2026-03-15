@@ -282,5 +282,159 @@
     "tool_plan": null,
     "tool_execution": null,
     "tool_chain": []
+  },
+  {
+    "run_id": "0ca9a53c46af485c807679f7b76e0da5",
+    "question": "Search docs for payment-service outage and summarize top 2 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "search_summary_miss_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:18:54.704752+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:19:04.452954+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:18:54.704807+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:18:58.984312+00:00",
+        "detail": "Planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:18:58.988661+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:19:04.452954+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before summary generation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before generating a summary.",
+    "clarification_plan": {
+      "question": "payment-service outage",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "search_query_refinement",
+        "document_scope"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'payment-service outage'. Should I search a different phrase?",
+        "Should I narrow the search to a specific document or file?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents to summarize, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Search docs for payment-service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "arguments": {
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for payment-service outage using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'payment-service outage'.",
+      "trace_id": "03c2b58608d744599c8efc99ddb531db",
+      "executed_at": "2026-03-15T19:18:58.988606+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "payment-service outage",
+        "item_count": "0",
+        "query": "payment-service outage",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "1",
+        "max_results": "2"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T19:18:54.704834+00:00",
+        "completed_at": "2026-03-15T19:18:58.988661+00:00",
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for payment-service outage using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "03c2b58608d744599c8efc99ddb531db",
+          "executed_at": "2026-03-15T19:18:58.988606+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "payment-service outage",
+            "item_count": "0",
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "1",
+            "max_results": "2"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

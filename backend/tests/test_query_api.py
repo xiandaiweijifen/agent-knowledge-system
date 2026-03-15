@@ -1188,6 +1188,34 @@ def test_plan_tool_request_falls_back_when_llm_provider_is_unavailable(monkeypat
     assert response.action == "query"
 
 
+def test_plan_tool_request_normalizes_llm_document_search_query_contract(monkeypatch):
+    monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.tool_service.generate_llm_tool_plan",
+        lambda question, supported_tools: (
+            "llm_gemini",
+            {
+                "tool_name": "document_search",
+                "action": "query",
+                "target": "docs",
+                "arguments": {
+                    "query": "payment-service outage",
+                    "max_results": "2",
+                },
+            },
+        ),
+    )
+
+    response = plan_tool_request("Search docs for payment-service outage and summarize top 2 results")
+
+    assert response.planning_mode == "llm_gemini"
+    assert response.tool_name == "document_search"
+    assert response.action == "query"
+    assert response.target == "payment-service outage"
+    assert "query" not in response.arguments
+    assert response.arguments["max_results"] == "2"
+
+
 def test_query_tool_plan_endpoint_returns_plan():
     client = TestClient(app)
     response = client.post(

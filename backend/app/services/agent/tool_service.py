@@ -1056,7 +1056,6 @@ def _normalize_planned_request(
     inferred_request: InferredToolRequest,
     arguments: dict[str, str],
 ) -> tuple[InferredToolRequest, dict[str, str]]:
-    lowered = question.lower()
     normalized_arguments = dict(arguments)
 
     ticket_id = _extract_ticket_id_argument(question)
@@ -1104,6 +1103,25 @@ def _normalize_planned_request(
         )
 
     if inferred_request.tool_name == "document_search":
+        llm_query = normalized_arguments.pop("query", "").strip()
+        if llm_query and inferred_request.target.strip().lower() in {
+            "doc",
+            "docs",
+            "document",
+            "documents",
+        }:
+            inferred_request = InferredToolRequest(
+                tool_name=inferred_request.tool_name,
+                action=inferred_request.action,
+                target=llm_query,
+            )
+        elif llm_query and not inferred_request.target.strip():
+            inferred_request = InferredToolRequest(
+                tool_name=inferred_request.tool_name,
+                action=inferred_request.action,
+                target=llm_query,
+            )
+
         filename = _extract_filename_argument(question)
         if filename and "filename" not in normalized_arguments:
             normalized_arguments["filename"] = filename
