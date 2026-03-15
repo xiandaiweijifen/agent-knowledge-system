@@ -156,6 +156,8 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 question=run.question,
                 resumed_from_question=run.resumed_from_question,
                 source_run_id=run.source_run_id,
+                resume_strategy=run.resume_strategy,
+                applied_clarification_fields=run.applied_clarification_fields,
                 workflow_status=run.workflow_status,
                 terminal_reason=run.terminal_reason,
                 failure_stage=run.failure_stage,
@@ -358,6 +360,14 @@ def _extract_resume_ticket_overrides(clarification_context: dict[str, str]) -> d
     return overrides
 
 
+def _extract_applied_clarification_fields(
+    clarification_context: dict[str, str],
+) -> list[str]:
+    return sorted(
+        key for key, value in clarification_context.items() if isinstance(value, str) and value.strip()
+    )
+
+
 def _resume_search_question(
     search_question: str,
     clarification_context: dict[str, str],
@@ -440,11 +450,14 @@ def resume_agent_request(
 
     source_question, source_filename, source_run_id = _resolve_resume_source(original_question, run_id)
     resumed_question = source_question.strip()
+    applied_clarification_fields = _extract_applied_clarification_fields(clarification_context)
+    resume_strategy = "generic_clarification_resume"
 
     search_then_ticket = _match_search_then_ticket_workflow(resumed_question)
     search_then_summarize = _match_search_then_summarize_workflow(resumed_question)
 
     if search_then_ticket is not None:
+        resume_strategy = "search_then_ticket_resume"
         search_question, ticket_question = search_then_ticket
         resumed_search = _resume_search_question(search_question, clarification_context)
         resumed_ticket = _resume_ticket_question(ticket_question, clarification_context)
@@ -458,6 +471,7 @@ def resume_agent_request(
         resumed_question = f"{resumed_search} and {resumed_ticket}"
 
     elif search_then_summarize is not None:
+        resume_strategy = "search_then_summarize_resume"
         search_question, summarize_question = search_then_summarize
         resumed_search = _resume_search_question(search_question, clarification_context)
         resumed_question = f"{resumed_search} and {summarize_question}"
@@ -478,10 +492,15 @@ def resume_agent_request(
             stage="workflow_resume",
             status="completed",
             timestamp=build_utc_timestamp(),
-            detail=f"Resumed workflow from '{source_question}' using clarification context.",
+            detail=(
+                f"Resumed workflow from '{source_question}' using {resume_strategy} "
+                f"with fields: {', '.join(applied_clarification_fields) if applied_clarification_fields else 'none'}."
+            ),
         ),
     )
     response.question = resumed_question
+    response.resume_strategy = resume_strategy
+    response.applied_clarification_fields = applied_clarification_fields
     return _persist_workflow_response(
         response=response,
         resumed_from_question=source_question,

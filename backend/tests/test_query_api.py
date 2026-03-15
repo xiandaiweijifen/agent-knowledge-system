@@ -1711,11 +1711,17 @@ def test_resume_agent_endpoint_continues_search_then_summarize_workflow(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["resume_strategy"] == "search_then_summarize_resume"
+    assert payload["applied_clarification_fields"] == [
+        "document_scope",
+        "search_query_refinement",
+    ]
     assert payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     assert payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
     assert payload["tool_plan"]["arguments"]["max_results"] == "2"
     assert payload["answer_source"] == "local_search_summary"
     assert payload["workflow_trace"][0]["stage"] == "workflow_resume"
+    assert "search_then_summarize_resume" in payload["workflow_trace"][0]["detail"]
     assert any(event["stage"] == "search_summary" for event in payload["workflow_trace"])
 
 
@@ -1749,6 +1755,11 @@ def test_resume_agent_endpoint_continues_search_then_ticket_workflow(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["resume_strategy"] == "search_then_ticket_resume"
+    assert payload["applied_clarification_fields"] == [
+        "environment",
+        "search_query_refinement",
+    ]
     assert payload["question"] == (
         "Search docs for RAG and create a high severity ticket for payment-service in production"
     )
@@ -1788,6 +1799,12 @@ def test_resume_agent_endpoint_applies_structured_ticket_overrides(
 
     assert response.status_code == 200
     payload = response.json()
+    assert payload["resume_strategy"] == "search_then_ticket_resume"
+    assert payload["applied_clarification_fields"] == [
+        "environment",
+        "search_query_refinement",
+        "severity",
+    ]
     final_plan = payload["tool_chain"][-1]["tool_plan"]
     final_output = payload["tool_chain"][-1]["tool_execution"]["output"]
     assert final_plan["arguments"]["environment"] == "staging"
@@ -1826,6 +1843,11 @@ def test_resume_agent_endpoint_can_continue_ticket_workflow_after_search_miss_wh
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["resume_strategy"] == "search_then_ticket_resume"
+    assert payload["applied_clarification_fields"] == [
+        "environment",
+        "execution_confirmation",
+    ]
     assert payload["tool_chain"][0]["tool_execution"]["output"]["matched_count"] == "0"
     assert payload["tool_chain"][-1]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][-1]["tool_execution"]["output"]["environment"] == "production"
@@ -1915,6 +1937,11 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
         == "Search docs for payment-service outage and summarize top 2 results"
     )
     assert payload["source_run_id"] is None
+    assert payload["resume_strategy"] == "search_then_summarize_resume"
+    assert payload["applied_clarification_fields"] == [
+        "document_scope",
+        "search_query_refinement",
+    ]
 
     lookup_response = client.get(f"/api/query/agent/runs/{payload['run_id']}")
 
@@ -1926,6 +1953,11 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
         == "Search docs for payment-service outage and summarize top 2 results"
     )
     assert lookup_payload["source_run_id"] is None
+    assert lookup_payload["resume_strategy"] == "search_then_summarize_resume"
+    assert lookup_payload["applied_clarification_fields"] == [
+        "document_scope",
+        "search_query_refinement",
+    ]
     assert lookup_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     assert lookup_payload["started_at"]
     assert lookup_payload["completed_at"]
@@ -1987,6 +2019,11 @@ def test_resume_agent_endpoint_supports_run_id_as_resume_source(
         "Search docs for payment-service outage and summarize top 2 results"
     )
     assert resumed_payload["source_run_id"] == initial_payload["run_id"]
+    assert resumed_payload["resume_strategy"] == "search_then_summarize_resume"
+    assert resumed_payload["applied_clarification_fields"] == [
+        "document_scope",
+        "search_query_refinement",
+    ]
     assert resumed_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     assert resumed_payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
 
@@ -2045,10 +2082,56 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["terminal_reason"] == "tool_execution_completed"
     assert payload["runs"][0]["resumed_from_question"] is None
     assert payload["runs"][0]["source_run_id"] is None
+    assert payload["runs"][0]["resume_strategy"] is None
+    assert payload["runs"][0]["applied_clarification_fields"] == []
     assert payload["runs"][0]["started_at"]
     assert payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["last_updated_at"] == payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["run_id"] != first_run_id
+
+
+def test_list_agent_workflow_runs_endpoint_includes_resume_metadata(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "Retrieval-augmented generation, or RAG, combines retrieval and generation.",
+        encoding="utf-8",
+    )
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "original_question": "Search docs for payment-service outage and summarize top 2 results",
+            "clarification_context": {
+                "search_query_refinement": "RAG",
+                "document_scope": "rag_overview.md",
+            },
+        },
+    )
+
+    assert resumed_response.status_code == 200
+
+    list_response = client.get("/api/query/agent/runs?limit=1")
+
+    assert list_response.status_code == 200
+    payload = list_response.json()
+    assert len(payload["runs"]) == 1
+    assert payload["runs"][0]["resume_strategy"] == "search_then_summarize_resume"
+    assert payload["runs"][0]["applied_clarification_fields"] == [
+        "document_scope",
+        "search_query_refinement",
+    ]
 
 
 def test_list_agent_workflow_runs_endpoint_rejects_non_positive_limit():
