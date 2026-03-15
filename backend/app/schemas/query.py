@@ -38,10 +38,11 @@ class WorkflowStepRecord(BaseModel):
     step_index: int
     step_status: str
     started_at: str
-    completed_at: str
+    completed_at: str | None = None
     question: str
     tool_plan: dict
-    tool_execution: dict
+    tool_execution: dict | None = None
+    failure_message: str | None = None
 
 
 class RouteDecision(BaseModel):
@@ -119,6 +120,8 @@ class AgentWorkflowResponse(BaseModel):
     source_run_id: str | None = None
     workflow_status: str
     terminal_reason: str | None = None
+    failure_stage: str | None = None
+    failure_message: str | None = None
     started_at: str | None = None
     completed_at: str | None = None
     last_updated_at: str | None = None
@@ -148,6 +151,8 @@ class AgentWorkflowRunSummary(BaseModel):
     source_run_id: str | None = None
     workflow_status: str
     terminal_reason: str | None = None
+    failure_stage: str | None = None
+    failure_message: str | None = None
     started_at: str | None = None
     completed_at: str | None = None
     last_updated_at: str | None = None

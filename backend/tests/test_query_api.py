@@ -1552,6 +1552,137 @@ def test_query_agent_endpoint_returns_clarification_result():
     assert payload["clarification_plan"]["follow_up_questions"]
 
 
+def test_query_agent_endpoint_returns_structured_failure_for_knowledge_errors(
+    monkeypatch,
+):
+    def raise_retrieval_failure(*args, **kwargs):
+        raise RuntimeError("simulated retrieval failure")
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.run_query",
+        raise_retrieval_failure,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "What is RAG?",
+            "filename": "rag_overview.md",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "failed"
+    assert payload["terminal_reason"] == "knowledge_retrieval_failed"
+    assert payload["failure_stage"] == "retrieval"
+    assert "simulated retrieval failure" in payload["failure_message"]
+    assert payload["step_count"] == 0
+    assert payload["started_at"]
+    assert payload["completed_at"]
+    assert payload["last_updated_at"] == payload["completed_at"]
+    assert any(
+        event["stage"] == "retrieval" and event["status"] == "failed"
+        for event in payload["workflow_trace"]
+    )
+
+
+def test_query_agent_endpoint_returns_structured_failure_for_single_tool_errors(
+    monkeypatch,
+):
+    def raise_tool_failure(*args, **kwargs):
+        raise RuntimeError("simulated tool failure")
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.execute_tool_request",
+        raise_tool_failure,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket for the payment service outage",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "failed"
+    assert payload["terminal_reason"] == "tool_execution_failed"
+    assert payload["failure_stage"] == "tool_execution"
+    assert "simulated tool failure" in payload["failure_message"]
+    assert payload["step_count"] == 1
+    assert payload["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_execution"] is None
+    assert payload["tool_chain"][0]["step_status"] == "failed"
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][0]["tool_execution"] is None
+    assert "simulated tool failure" in payload["tool_chain"][0]["failure_message"]
+    assert any(
+        event["stage"] == "tool_execution" and event["status"] == "failed"
+        for event in payload["workflow_trace"]
+    )
+
+
+def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text(
+        "The payment-service outage requires a high severity response.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    real_execute_tool_request = execute_tool_request
+
+    def fail_ticket_step(request):
+        if request.tool_name == "ticketing":
+            raise RuntimeError("simulated ticket failure")
+        return real_execute_tool_request(request)
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.execute_tool_request",
+        fail_ticket_step,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "failed"
+    assert payload["terminal_reason"] == "tool_execution_failed"
+    assert payload["failure_stage"] == "tool_execution"
+    assert "simulated ticket failure" in payload["failure_message"]
+    assert payload["step_count"] == 2
+    assert len(payload["tool_chain"]) == 2
+    assert payload["tool_chain"][0]["step_status"] == "completed"
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_chain"][1]["step_status"] == "failed"
+    assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][1]["tool_execution"] is None
+    assert "simulated ticket failure" in payload["tool_chain"][1]["failure_message"]
+    assert payload["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_execution"] is None
+    failed_execution_events = [
+        event for event in payload["workflow_trace"] if event["stage"] == "tool_execution"
+    ]
+    assert any(event["status"] == "failed" for event in failed_execution_events)
+
+
 def test_resume_agent_endpoint_continues_search_then_summarize_workflow(
     workspace_tmp_path,
     monkeypatch,
