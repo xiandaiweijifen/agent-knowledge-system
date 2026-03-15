@@ -209,6 +209,36 @@ def _tokenize_search_terms(query: str) -> list[str]:
     return [token for token in re.split(r"[^a-z0-9]+", query.lower()) if token]
 
 
+def _normalize_search_excerpt(text: str) -> str:
+    cleaned = text.replace("\r", " ").replace("\n", " ")
+    cleaned = re.sub(r"[•▪◦]+", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned.strip(" -|")
+
+
+def _extract_search_snippet(content: str, first_index: int, query: str) -> str:
+    snippet_start = max(0, first_index - 120)
+    snippet_end = min(len(content), first_index + len(query) + 180)
+
+    local_start = first_index
+    for index in range(first_index, snippet_start, -1):
+        if content[index - 1] in ".!?。\n":
+            local_start = index
+            break
+
+    local_end = snippet_end
+    for index in range(first_index + len(query), snippet_end):
+        if content[index] in ".!?。\n":
+            local_end = index + 1
+            break
+
+    snippet = _normalize_search_excerpt(content[local_start:local_end])
+    if len(snippet) > 220:
+        snippet = f"{snippet[:217].rstrip()}..."
+
+    return snippet
+
+
 def _score_document_search_match(
     filename: str,
     content: str,
@@ -243,9 +273,7 @@ def _score_document_search_match(
         if matched_terms:
             reasons.append(f"term coverage {matched_terms}/{len(query_terms)}")
 
-    snippet_start = max(0, first_index - 40)
-    snippet_end = min(len(content), first_index + len(query) + 80)
-    snippet = content[snippet_start:snippet_end].replace("\n", " ").strip()
+    snippet = _extract_search_snippet(content, first_index, query)
 
     return score, f"{filename}: {snippet}", ", ".join(reasons)
 

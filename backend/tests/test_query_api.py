@@ -513,6 +513,46 @@ def test_execute_document_search_tool_ranks_more_specific_match_first(
     assert "full query match" in response.output["top_match_reason"]
 
 
+def test_execute_document_search_tool_returns_clean_sentence_snippets(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "Intro line.\n"
+        "RAG combines retrieval with generation to improve factual grounding.\n"
+        "Extra trailing details follow after the main statement.\n",
+        encoding="utf-8",
+    )
+    (raw_dir / "notes.txt").write_text(
+        "Bullet list:\n"
+        "• RAG appears in this supporting note.\n"
+        "• Another line that should be normalized.\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="document_search",
+            action="query",
+            target="RAG",
+            arguments={},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    first_snippet = response.output["snippets"].split(" | ")[0]
+    second_snippet = response.output["snippets"].split(" | ")[1]
+    assert first_snippet == (
+        "rag_overview.md: RAG combines retrieval with generation to improve factual grounding."
+    )
+    assert "•" not in second_snippet
+    assert "  " not in second_snippet
+
+
 def test_execute_document_search_tool_honors_max_results(
     workspace_tmp_path,
     monkeypatch,
