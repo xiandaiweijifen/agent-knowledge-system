@@ -1080,7 +1080,8 @@ def test_query_agent_endpoint_supports_search_then_summarize_workflow(
     assert payload["chat_provider"] == "local"
     assert "I found 2 matching document(s)" in payload["answer"]
     assert "The strongest supporting document is" in payload["answer"]
-    assert "Key evidence:" in payload["answer"]
+    assert "Key evidence from rag_overview.md:" in payload["answer"]
+    assert "Additional support from notes.txt:" in payload["answer"]
     assert "## What RAG Means" not in payload["answer"]
     assert "term coverage" not in payload["answer"]
     assert any(event["stage"] == "search_summary" for event in payload["workflow_trace"])
@@ -1118,6 +1119,44 @@ def test_query_agent_endpoint_stops_search_then_summarize_when_search_misses(
     assert "search_query_refinement" in payload["clarification_plan"]["missing_fields"]
     assert "document_scope" in payload["clarification_plan"]["missing_fields"]
     assert any(event["stage"] == "clarification_planning" for event in payload["workflow_trace"])
+
+
+def test_query_agent_endpoint_supports_filename_scoped_search_summary(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines retrieval with language model generation.\n"
+        "Reranking improves precision for the strongest chunks.",
+        encoding="utf-8",
+    )
+    (raw_dir / "notes.txt").write_text(
+        "This file mentions retrieval but not reranking.",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search rag_overview.md for reranking and summarize top 1 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
+    assert payload["tool_plan"]["arguments"]["max_results"] == "1"
+    assert payload["tool_execution"]["output"]["filename_filter"] == "rag_overview.md"
+    assert payload["tool_execution"]["output"]["returned_count"] == "1"
+    assert "I searched 'rag_overview.md' for 'reranking'" in payload["answer"]
+    assert "The strongest supporting document is rag_overview.md." in payload["answer"]
+    assert "Returned documents:" not in payload["answer"]
 
 
 def test_query_agent_endpoint_returns_clarification_result():

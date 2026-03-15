@@ -58,6 +58,20 @@ def _build_search_context_arguments(tool_output: dict[str, str]) -> dict[str, st
     return arguments
 
 
+def _split_search_snippets(snippets: str) -> list[tuple[str | None, str]]:
+    parsed_snippets: list[tuple[str | None, str]] = []
+    for raw_snippet in snippets.split(" | "):
+        snippet = raw_snippet.strip()
+        if not snippet:
+            continue
+        if ": " in snippet:
+            source, content = snippet.split(": ", maxsplit=1)
+            parsed_snippets.append((source.strip(), content.strip()))
+        else:
+            parsed_snippets.append((None, snippet))
+    return parsed_snippets
+
+
 def _build_search_summary(tool_output: dict[str, str]) -> str:
     query = tool_output.get("query", "").strip()
     matched_count = tool_output.get("matched_count", "0").strip()
@@ -65,23 +79,46 @@ def _build_search_summary(tool_output: dict[str, str]) -> str:
     matched_documents = tool_output.get("matched_documents", "").strip()
     snippets = tool_output.get("snippets", "").strip()
     top_match_document = tool_output.get("top_match_document", "").strip()
+    filename_filter = tool_output.get("filename_filter", "").strip()
+    max_results = tool_output.get("max_results", "").strip()
+    parsed_snippets = _split_search_snippets(snippets)
 
     summary_parts: list[str] = []
 
     if query:
+        if filename_filter:
+            summary_parts.append(
+                f"I searched '{filename_filter}' for '{query}' and found {matched_count} matching result(s)."
+            )
+        else:
+            summary_parts.append(
+                f"I found {matched_count} matching document(s) for '{query}' and returned {returned_count} result(s)."
+            )
+
+    if max_results and matched_count and returned_count and matched_count != returned_count:
         summary_parts.append(
-            f"I found {matched_count} matching document(s) for '{query}' and returned {returned_count} result(s)."
+            f"Showing the top {returned_count} result(s) out of {matched_count} total matches."
         )
+
     if top_match_document:
         summary_parts.append(f"The strongest supporting document is {top_match_document}.")
+
     if matched_documents:
-        summary_parts.append(f"Returned documents: {matched_documents}.")
-    if snippets:
-        first_snippet = snippets.split(" | ", maxsplit=1)[0].strip()
-        if first_snippet:
-            if ": " in first_snippet:
-                _, first_snippet = first_snippet.split(": ", maxsplit=1)
+        document_list = [item.strip() for item in matched_documents.split(",") if item.strip()]
+        if len(document_list) > 1:
+            summary_parts.append(f"Returned documents: {', '.join(document_list)}.")
+
+    if parsed_snippets:
+        first_source, first_snippet = parsed_snippets[0]
+        if first_source:
+            summary_parts.append(f"Key evidence from {first_source}: {first_snippet}")
+        else:
             summary_parts.append(f"Key evidence: {first_snippet}")
+
+    if len(parsed_snippets) > 1:
+        second_source, second_snippet = parsed_snippets[1]
+        if second_source and second_source != top_match_document:
+            summary_parts.append(f"Additional support from {second_source}: {second_snippet}")
 
     return " ".join(summary_parts).strip()
 
