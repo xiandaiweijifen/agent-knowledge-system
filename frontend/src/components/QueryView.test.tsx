@@ -131,6 +131,7 @@ describe("QueryView", () => {
 
     expect(screen.getByText("Answer Trace")).toBeInTheDocument();
     expect(screen.getByText("Agent Workflow")).toBeInTheDocument();
+    expect(screen.getByText(/Run Agent can operate without one/i)).toBeInTheDocument();
     expect(screen.getByText("knowledge_retrieval")).toBeInTheDocument();
     expect(screen.getAllByText("RAG combines retrieval with generation.")).toHaveLength(2);
     expect(screen.getByText("gemini-2.5-flash-lite")).toBeInTheDocument();
@@ -256,5 +257,43 @@ describe("QueryView", () => {
     expect(screen.getByText("TICKET-0001 [open] payment-service")).toBeInTheDocument();
     expect(screen.getByText("TICKET-0002 [open] checkout-api")).toBeInTheDocument();
     expect(screen.queryByText("Ticket Id")).not.toBeInTheDocument();
+  });
+
+  it("allows agent workflows without document context while keeping retrieval actions disabled", () => {
+    render(
+      <QueryView
+        documents={[
+          {
+            filename: "rag_overview.md",
+            size_bytes: 1024,
+            suffix: ".md",
+          },
+        ]}
+        queryFilename=""
+        question="Check system status"
+        topK={3}
+        activePresetQuestions={["Check system status"]}
+        queryResult={null}
+        agentQueryResult={null}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByDisplayValue("")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Run Query" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Run Diagnostics" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Run Agent" })).toBeEnabled();
+    expect(
+      screen.getByText(/No document context selected\. Retrieval-only actions are disabled/i),
+    ).toBeInTheDocument();
   });
 });

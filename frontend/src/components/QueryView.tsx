@@ -143,6 +143,7 @@ export function QueryView({
   }
 
   const hasDocument = documents.length > 0 && Boolean(queryFilename);
+  const hasQuestion = question.trim().length > 0;
   const routeUsesFilename =
     agentQueryResult?.route.route_type === "knowledge_retrieval" && !!agentQueryResult.filename;
   const routeUsesRetrieval = !!agentQueryResult?.retrieval;
@@ -184,12 +185,13 @@ export function QueryView({
         </div>
         <form className="stack-form" onSubmit={onSubmitQuery}>
           <label>
-            Document
+            Document Context
             <select
               value={queryFilename}
               onChange={(event) => onChangeDocument(event.target.value)}
               disabled={documents.length === 0}
             >
+              <option value="">No document context (Agent optional)</option>
               {documents.map((item) => (
                 <option key={item.filename} value={item.filename}>
                   {item.filename}
@@ -197,6 +199,10 @@ export function QueryView({
               ))}
             </select>
           </label>
+          <p className="muted">
+            `Run Query` and `Run Diagnostics` require a document. `Run Agent` can operate without one
+            for tool execution or clarification workflows.
+          </p>
           <label>
             Question
             <textarea value={question} onChange={(event) => onChangeQuestion(event.target.value)} rows={4} />
@@ -227,13 +233,13 @@ export function QueryView({
             />
           </label>
           <div className="button-row">
-            <button type="submit" className="primary-button" disabled={queryBusy || !hasDocument}>
+            <button type="submit" className="primary-button" disabled={queryBusy || !hasDocument || !hasQuestion}>
               Run Query
             </button>
             <button
               type="button"
               className="secondary-button"
-              disabled={queryBusy || !hasDocument}
+              disabled={queryBusy || !hasDocument || !hasQuestion}
               onClick={onRunDiagnostics}
             >
               Run Diagnostics
@@ -241,7 +247,7 @@ export function QueryView({
             <button
               type="button"
               className="ghost-button"
-              disabled={queryBusy || !hasDocument}
+              disabled={queryBusy || !hasQuestion}
               onClick={onRunAgent}
             >
               Run Agent
@@ -249,7 +255,10 @@ export function QueryView({
           </div>
         </form>
         {!hasDocument && (
-          <p className="muted">Upload or select a document before running retrieval or agent queries.</p>
+          <p className="muted">
+            No document context selected. Retrieval-only actions are disabled, but agent tool workflows can
+            still run.
+          </p>
         )}
         {queryBusy && <p className="status">Running query workflow...</p>}
         {queryError && <p className="error">{queryError}</p>}

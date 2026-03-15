@@ -139,7 +139,6 @@ function App() {
   useEffect(() => {
     if (!selectedFilename && documents.length > 0) {
       setSelectedFilename(documents[0].filename);
-      setQueryFilename(documents[0].filename);
     }
   }, [documents, selectedFilename]);
 
@@ -161,7 +160,6 @@ function App() {
 
   function handleSelectDocument(filename: string) {
     setSelectedFilename(filename);
-    setQueryFilename(filename);
     resetQueryOutputs();
   }
 
@@ -180,7 +178,6 @@ function App() {
 
       if (payload.documents.length > 0) {
         setSelectedFilename((current) => current || payload.documents[0].filename);
-        setQueryFilename((current) => current || payload.documents[0].filename);
       }
     } catch (error) {
       setDocumentsError(error instanceof Error ? error.message : "Failed to load documents");
@@ -220,7 +217,6 @@ function App() {
 
       if (payload.documents.length > 0) {
         setSelectedFilename(payload.documents[0].filename);
-        setQueryFilename(payload.documents[0].filename);
       } else {
         setSelectedFilename("");
         setQueryFilename("");
@@ -254,7 +250,6 @@ function App() {
       setUploadMessage(`Uploaded ${payload.filename} successfully.`);
       await loadDocuments();
       setSelectedFilename(payload.filename);
-      setQueryFilename(payload.filename);
     } catch (error) {
       setDocumentsError(error instanceof Error ? error.message : "Failed to upload document");
     } finally {

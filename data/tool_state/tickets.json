@@ -189,5 +189,23 @@
     "environment": "unspecified",
     "created_at": "2026-03-15T05:00:29.129173+00:00",
     "updated_at": "2026-03-15T05:00:29.129173+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0022",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T05:04:21.107466+00:00",
+    "updated_at": "2026-03-15T05:04:21.107466+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0023",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T05:04:25.814519+00:00",
+    "updated_at": "2026-03-15T05:04:25.814519+00:00"
   }
 ]
