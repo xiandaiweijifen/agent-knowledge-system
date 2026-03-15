@@ -1,1 +1,0 @@
-Reranking improves retrieval quality.

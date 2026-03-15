@@ -1,1 +1,0 @@
-{"cases": [{"case_id": "case_1", "filename": "sample.txt", "question": "rag systems", "expected_chunk_ids": ["sample.txt::chunk_0"]}, {"case_id": "case_2", "filename": "sample.txt", "question": "agent system", "expected_chunk_ids": ["sample.txt::chunk_1"]}]}

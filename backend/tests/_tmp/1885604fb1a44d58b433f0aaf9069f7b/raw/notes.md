@@ -1,1 +1,0 @@
-RAG systems rely on retrieval and grounding.

@@ -1,1 +1,0 @@
-The payment-service outage requires a high severity response.

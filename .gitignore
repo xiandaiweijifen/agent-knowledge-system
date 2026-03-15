@@ -30,8 +30,12 @@ data/chunks/*
 # Python test / cache
 .pytest_cache/
 .mypy_cache/
+backend/tests/_tmp/
+backend/tests/.pytest_tmp/
 
 # Build
 build/
 coverage/
+*.tsbuildinfo
+.codex_write_check.tmp
 
