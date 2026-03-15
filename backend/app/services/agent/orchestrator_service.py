@@ -5,9 +5,12 @@ from pathlib import Path
 
 from app.schemas.query import (
     AgentWorkflowMigrationResponse,
+    AgentWorkflowRunPruneResponse,
     AgentWorkflowResponse,
     AgentWorkflowRunListResponse,
     AgentWorkflowRunSummary,
+    AgentWorkflowRunResetResponse,
+    AgentWorkflowRunStatsResponse,
     WorkflowTraceEvent,
 )
 from app.schemas.tools import ToolExecutionRequest
@@ -430,6 +433,54 @@ def migrate_persisted_workflow_runs() -> AgentWorkflowMigrationResponse:
         migrated_step_count=migrated_step_count,
         total_run_count=len(runs),
     )
+
+
+def get_workflow_run_stats() -> AgentWorkflowRunStatsResponse:
+    persisted_runs = [
+        AgentWorkflowResponse.model_validate(_normalize_persisted_workflow_run(run))
+        for run in _load_workflow_runs()
+    ]
+    latest_run = persisted_runs[-1] if persisted_runs else None
+
+    return AgentWorkflowRunStatsResponse(
+        total_run_count=len(persisted_runs),
+        completed_run_count=sum(1 for run in persisted_runs if run.workflow_status == "completed"),
+        clarification_required_run_count=sum(
+            1 for run in persisted_runs if run.workflow_status == "clarification_required"
+        ),
+        failed_run_count=sum(1 for run in persisted_runs if run.workflow_status == "failed"),
+        latest_run_id=latest_run.run_id if latest_run else None,
+        latest_updated_at=latest_run.last_updated_at if latest_run else None,
+    )
+
+
+def prune_persisted_workflow_runs(retain: int) -> AgentWorkflowRunPruneResponse:
+    if retain < 0:
+        raise ValueError("retain_must_not_be_negative")
+
+    runs = _load_workflow_runs()
+    total_run_count_before = len(runs)
+    retained_runs = runs[-retain:] if retain > 0 else []
+    removed_run_count = total_run_count_before - len(retained_runs)
+
+    if removed_run_count > 0:
+        _save_workflow_runs(retained_runs)
+
+    return AgentWorkflowRunPruneResponse(
+        total_run_count_before=total_run_count_before,
+        retained_run_count=len(retained_runs),
+        removed_run_count=removed_run_count,
+    )
+
+
+def reset_persisted_workflow_runs(confirm: bool) -> AgentWorkflowRunResetResponse:
+    if not confirm:
+        raise ValueError("reset_confirmation_required")
+
+    runs = _load_workflow_runs()
+    removed_run_count = len(runs)
+    _save_workflow_runs([])
+    return AgentWorkflowRunResetResponse(removed_run_count=removed_run_count)
 
 
 def _match_search_then_ticket_workflow(question: str) -> tuple[str, str] | None:

@@ -184,3 +184,30 @@ class AgentWorkflowMigrationResponse(BaseModel):
     migrated_run_count: int
     migrated_step_count: int
     total_run_count: int
+
+
+class AgentWorkflowRunStatsResponse(BaseModel):
+    total_run_count: int
+    completed_run_count: int
+    clarification_required_run_count: int
+    failed_run_count: int
+    latest_run_id: str | None = None
+    latest_updated_at: str | None = None
+
+
+class AgentWorkflowRunPruneRequest(BaseModel):
+    retain: int = 100
+
+
+class AgentWorkflowRunPruneResponse(BaseModel):
+    total_run_count_before: int
+    retained_run_count: int
+    removed_run_count: int
+
+
+class AgentWorkflowRunResetRequest(BaseModel):
+    confirm: bool = False
+
+
+class AgentWorkflowRunResetResponse(BaseModel):
+    removed_run_count: int

@@ -2494,3 +2494,242 @@ def test_list_agent_workflow_runs_endpoint_rejects_non_positive_limit():
     assert response.status_code == 400
     assert response.json()["detail"] == "limit_must_be_positive"
 
+
+def test_get_agent_workflow_run_stats_endpoint_returns_summary_counts(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "run-1",
+                    "question": "Check system status",
+                    "workflow_status": "completed",
+                    "terminal_reason": "tool_execution_completed",
+                    "started_at": "2026-03-15T10:00:00+00:00",
+                    "completed_at": "2026-03-15T10:00:01+00:00",
+                    "last_updated_at": "2026-03-15T10:00:01+00:00",
+                    "step_count": 1,
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route 1",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+                {
+                    "run_id": "run-2",
+                    "question": "Please do that for production",
+                    "workflow_status": "clarification_required",
+                    "terminal_reason": "clarification_requested",
+                    "started_at": "2026-03-15T10:01:00+00:00",
+                    "completed_at": None,
+                    "last_updated_at": "2026-03-15T10:01:01+00:00",
+                    "step_count": 0,
+                    "route": {
+                        "route_type": "clarification_needed",
+                        "route_reason": "route 2",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+                {
+                    "run_id": "run-3",
+                    "question": "Broken run",
+                    "workflow_status": "failed",
+                    "terminal_reason": "tool_execution_failed",
+                    "started_at": "2026-03-15T10:02:00+00:00",
+                    "completed_at": "2026-03-15T10:02:03+00:00",
+                    "last_updated_at": "2026-03-15T10:02:03+00:00",
+                    "step_count": 1,
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route 3",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/query/agent/runs/stats")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload == {
+        "total_run_count": 3,
+        "completed_run_count": 1,
+        "clarification_required_run_count": 1,
+        "failed_run_count": 1,
+        "latest_run_id": "run-3",
+        "latest_updated_at": "2026-03-15T10:02:03+00:00",
+    }
+
+
+def test_prune_agent_workflow_runs_endpoint_keeps_latest_runs(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "run-1",
+                    "question": "Question 1",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+                {
+                    "run_id": "run-2",
+                    "question": "Question 2",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+                {
+                    "run_id": "run-3",
+                    "question": "Question 3",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.post("/api/query/agent/runs/prune", json={"retain": 2})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload == {
+        "total_run_count_before": 3,
+        "retained_run_count": 2,
+        "removed_run_count": 1,
+    }
+
+    persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
+    assert [run["run_id"] for run in persisted_runs] == ["run-2", "run-3"]
+
+
+def test_reset_agent_workflow_runs_endpoint_requires_confirmation(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "run-1",
+                    "question": "Question 1",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.post("/api/query/agent/runs/reset", json={"confirm": False})
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "reset_confirmation_required"
+    persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
+    assert len(persisted_runs) == 1
+
+
+def test_reset_agent_workflow_runs_endpoint_clears_runs_with_confirmation(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "run-1",
+                    "question": "Question 1",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+                {
+                    "run_id": "run-2",
+                    "question": "Question 2",
+                    "workflow_status": "completed",
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.post("/api/query/agent/runs/reset", json={"confirm": True})
+
+    assert response.status_code == 200
+    assert response.json() == {"removed_run_count": 2}
+    persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
+    assert persisted_runs == []
+
