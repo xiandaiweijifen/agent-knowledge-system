@@ -243,6 +243,22 @@ def _score_document_search_match(
     return score, f"{filename}: {snippet}", ", ".join(reasons)
 
 
+def _parse_max_results_argument(arguments: dict[str, str]) -> int | None:
+    raw_value = arguments.get("max_results", "").strip()
+    if not raw_value:
+        return None
+
+    try:
+        max_results = int(raw_value)
+    except ValueError:
+        return None
+
+    if max_results <= 0:
+        return None
+
+    return max_results
+
+
 def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     tickets = _load_ticket_store()
     target = request.target.strip()
@@ -425,6 +441,7 @@ def _build_system_status_output() -> dict[str, str]:
 def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     query = request.target.strip()
     filename_filter = request.arguments.get("filename", "").strip()
+    max_results = _parse_max_results_argument(request.arguments)
     trace_id = uuid.uuid4().hex
 
     documents = document_service.list_documents()
@@ -462,8 +479,9 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
         ranked_matches.append((score, item["filename"], snippet, reason))
 
     ranked_matches.sort(key=lambda item: (-item[0], item[1]))
-    matched_documents = [filename for _, filename, _, _ in ranked_matches]
-    preview_snippets = [snippet for _, _, snippet, _ in ranked_matches]
+    returned_matches = ranked_matches[:max_results] if max_results else ranked_matches
+    matched_documents = [filename for _, filename, _, _ in returned_matches]
+    preview_snippets = [snippet for _, _, snippet, _ in returned_matches]
 
     result_summary = (
         f"Found {len(matched_documents)} matching document(s) for '{query}'."
@@ -473,12 +491,15 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
 
     output: dict[str, str] = {
         "query": query,
-        "matched_count": str(len(matched_documents)),
+        "matched_count": str(len(ranked_matches)),
+        "returned_count": str(len(returned_matches)),
         "matched_documents": ", ".join(matched_documents),
         "skipped_documents": str(skipped_documents),
     }
     if filename_filter:
         output["filename_filter"] = filename_filter
+    if max_results:
+        output["max_results"] = str(max_results)
     if preview_snippets:
         output["snippets"] = " | ".join(preview_snippets[:3])
     if ranked_matches:

@@ -513,6 +513,34 @@ def test_execute_document_search_tool_ranks_more_specific_match_first(
     assert "full query match" in response.output["top_match_reason"]
 
 
+def test_execute_document_search_tool_honors_max_results(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text("RAG appears here first and most clearly.", encoding="utf-8")
+    (raw_dir / "notes.txt").write_text("RAG is mentioned in this note.", encoding="utf-8")
+    (raw_dir / "summary.md").write_text("This summary also mentions RAG in passing.", encoding="utf-8")
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="document_search",
+            action="query",
+            target="RAG",
+            arguments={"max_results": "2"},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.output["matched_count"] == "3"
+    assert response.output["returned_count"] == "2"
+    assert response.output["max_results"] == "2"
+    assert len(response.output["matched_documents"].split(", ")) == 2
+
+
 def test_query_tool_execute_endpoint_returns_structured_stub(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
     monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
