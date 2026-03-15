@@ -500,5 +500,207 @@
     "tool_plan": null,
     "tool_execution": null,
     "tool_chain": []
+  },
+  {
+    "run_id": "509eed4568dc4a42a520d708bc37d76c",
+    "question": "Please do that for production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "clarification_requested",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:34:04.452236+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:34:06.638078+00:00",
+    "step_count": 0,
+    "route": {
+      "route_type": "clarification_needed",
+      "route_reason": "The request refers to an action with an ambiguous reference, so the system should ask for clarification before proceeding.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:34:04.452284+00:00",
+        "detail": "Request routed to clarification_needed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:34:06.638078+00:00",
+        "detail": "Clarification requested for fields: action."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "I need to know what action you want to perform and which specific production environment you are referring to.",
+    "clarification_plan": {
+      "question": "Please do that for production",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "action"
+      ],
+      "follow_up_questions": [
+        "What action would you like to perform in production?"
+      ],
+      "clarification_summary": "I need to know what action you want to perform and which specific production environment you are referring to."
+    },
+    "tool_plan": null,
+    "tool_execution": null,
+    "tool_chain": []
+  },
+  {
+    "run_id": "564fec1c9fc848debb192929f07d79ca",
+    "question": "Restart payment-service in production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:34:22.481943+00:00",
+    "completed_at": "2026-03-15T19:34:25.878218+00:00",
+    "last_updated_at": "2026-03-15T19:34:25.878218+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:34:22.481984+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:34:25.854822+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:34:25.878218+00:00",
+        "detail": "Executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "description": "Restart payment-service in production",
+        "environment": "production",
+        "service_name": "payment-service"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0180 for payment-service.",
+      "trace_id": "f6b97f72313c4340a52408a81dcfd7c8",
+      "executed_at": "2026-03-15T19:34:25.872679+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0180",
+        "ticket_id": "TICKET-0180",
+        "status": "open",
+        "severity": "unspecified",
+        "environment": "production",
+        "created_at": "2026-03-15T19:34:25.872679+00:00",
+        "updated_at": "2026-03-15T19:34:25.872679+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T19:34:22.481998+00:00",
+        "completed_at": "2026-03-15T19:34:25.878218+00:00",
+        "question": "Restart payment-service in production",
+        "tool_plan": {
+          "question": "Restart payment-service in production",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "description": "Restart payment-service in production",
+            "environment": "production",
+            "service_name": "payment-service"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0180 for payment-service.",
+          "trace_id": "f6b97f72313c4340a52408a81dcfd7c8",
+          "executed_at": "2026-03-15T19:34:25.872679+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0180",
+            "ticket_id": "TICKET-0180",
+            "status": "open",
+            "severity": "unspecified",
+            "environment": "production",
+            "created_at": "2026-03-15T19:34:25.872679+00:00",
+            "updated_at": "2026-03-15T19:34:25.872679+00:00"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

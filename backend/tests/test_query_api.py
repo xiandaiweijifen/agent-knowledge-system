@@ -1257,6 +1257,51 @@ def test_plan_clarification_uses_llm_planner_when_available(monkeypatch):
     assert response.follow_up_questions
 
 
+def test_plan_clarification_normalizes_llm_missing_fields_against_explicit_context(monkeypatch):
+    monkeypatch.setattr(settings, "clarification_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.clarification_service.generate_llm_clarification_plan",
+        lambda **kwargs: (
+            "llm_gemini",
+            {
+                "missing_fields": ["environment", "action"],
+                "follow_up_questions": [
+                    "What specific action do you want to perform in production?",
+                    "Which environment are you referring to?",
+                ],
+                "clarification_summary": "To proceed, I need the action and environment.",
+            },
+        ),
+    )
+
+    response = plan_clarification("Please do that for production")
+
+    assert response.planning_mode == "llm_gemini"
+    assert response.missing_fields == ["action"]
+    assert response.follow_up_questions == ["What specific action do you want to perform in production?"]
+
+
+def test_plan_clarification_converges_to_task_details_when_llm_only_repeats_present_fields(monkeypatch):
+    monkeypatch.setattr(settings, "clarification_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.clarification_service.generate_llm_clarification_plan",
+        lambda **kwargs: (
+            "llm_gemini",
+            {
+                "missing_fields": ["environment"],
+                "follow_up_questions": ["Which environment are you referring to?"],
+                "clarification_summary": "I need the environment before proceeding.",
+            },
+        ),
+    )
+
+    response = plan_clarification("Restart payment-service in production")
+
+    assert response.planning_mode == "llm_gemini"
+    assert response.missing_fields == ["task_details"]
+    assert response.follow_up_questions == ["What exact action should the agent perform?"]
+
+
 def test_plan_search_miss_clarification_uses_llm_planner_when_available(monkeypatch):
     monkeypatch.setattr(settings, "clarification_planner_provider", "openai")
     monkeypatch.setattr(

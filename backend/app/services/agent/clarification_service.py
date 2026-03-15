@@ -2,6 +2,65 @@ from app.schemas.clarification import ClarificationPlanResponse
 from app.services.llm.clarification_planner_service import generate_llm_clarification_plan
 
 
+def _filter_follow_up_questions(
+    follow_up_questions: list[str],
+    removed_fields: set[str],
+) -> list[str]:
+    filtered_questions: list[str] = []
+    for question in follow_up_questions:
+        lowered = question.lower()
+        if "environment" in removed_fields and "environment" in lowered:
+            continue
+        if "priority" in removed_fields and ("priority" in lowered or "severity" in lowered):
+            continue
+        if "target" in removed_fields and any(
+            token in lowered for token in ("service", "system", "resource", "target")
+        ):
+            continue
+        filtered_questions.append(question)
+    return filtered_questions
+
+
+def _normalize_general_llm_clarification_plan(
+    question: str,
+    missing_fields: list[str],
+    follow_up_questions: list[str],
+    clarification_summary: str,
+) -> tuple[list[str], list[str], str]:
+    lowered = question.lower()
+    normalized_missing_fields = [field for field in missing_fields if field]
+    removed_fields: set[str] = set()
+
+    if any(env in lowered for env in ("production", "staging", "development", "dev")):
+        if "environment" in normalized_missing_fields:
+            normalized_missing_fields = [field for field in normalized_missing_fields if field != "environment"]
+            removed_fields.add("environment")
+
+    if any(priority in lowered for priority in ("high", "medium", "low", "severity", "priority")):
+        if "priority" in normalized_missing_fields:
+            normalized_missing_fields = [field for field in normalized_missing_fields if field != "priority"]
+            removed_fields.add("priority")
+
+    if any(token in lowered for token in ("service", "system", "database")) or "-" in lowered:
+        if "target" in normalized_missing_fields:
+            normalized_missing_fields = [field for field in normalized_missing_fields if field != "target"]
+            removed_fields.add("target")
+
+    filtered_questions = _filter_follow_up_questions(follow_up_questions, removed_fields)
+
+    if not normalized_missing_fields:
+        normalized_missing_fields = ["task_details"]
+        filtered_questions = ["What exact action should the agent perform?"]
+        clarification_summary = (
+            "The request still needs the exact action before the workflow can continue."
+        )
+
+    if not filtered_questions:
+        filtered_questions = ["What exact action should the agent perform?"]
+
+    return normalized_missing_fields, filtered_questions, clarification_summary
+
+
 def _heuristic_plan_clarification(
     question: str,
     planning_mode: str = "heuristic_stub",
@@ -116,12 +175,19 @@ def plan_clarification(question: str) -> ClarificationPlanResponse:
     if llm_plan is None:
         return _heuristic_plan_clarification(normalized_question, planning_mode=planning_mode)
 
+    missing_fields, follow_up_questions, clarification_summary = _normalize_general_llm_clarification_plan(
+        normalized_question,
+        llm_plan["missing_fields"],
+        llm_plan["follow_up_questions"],
+        llm_plan["clarification_summary"],
+    )
+
     return ClarificationPlanResponse(
         question=normalized_question,
         planning_mode=planning_mode,
-        missing_fields=llm_plan["missing_fields"],
-        follow_up_questions=llm_plan["follow_up_questions"],
-        clarification_summary=llm_plan["clarification_summary"],
+        missing_fields=missing_fields,
+        follow_up_questions=follow_up_questions,
+        clarification_summary=clarification_summary,
     )
 
 

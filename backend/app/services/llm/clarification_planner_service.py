@@ -42,6 +42,7 @@ def _build_clarification_prompt(
         "missing_fields must be an array of short snake_case field names.",
         "follow_up_questions must be an array of short user-facing questions.",
         "clarification_summary must be a one-sentence explanation.",
+        "Do not mark a field as missing if the user already provided it explicitly.",
     ]
 
     if mode == "general":
