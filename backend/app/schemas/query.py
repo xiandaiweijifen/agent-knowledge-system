@@ -123,3 +123,19 @@ class AgentWorkflowResponse(BaseModel):
     tool_plan: dict | None = None
     tool_execution: dict | None = None
     tool_chain: list[dict] = Field(default_factory=list)
+
+
+class AgentWorkflowRunSummary(BaseModel):
+    run_id: str
+    question: str
+    resumed_from_question: str | None = None
+    source_run_id: str | None = None
+    workflow_status: str
+    route_type: str
+    route_reason: str
+    filename: str | None = None
+    answered_at: str | None = None
+
+
+class AgentWorkflowRunListResponse(BaseModel):
+    runs: list[AgentWorkflowRunSummary] = Field(default_factory=list)

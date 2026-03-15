@@ -4,6 +4,7 @@ from app.schemas.query import (
     AgentQueryRequest,
     AgentResumeRequest,
     AgentWorkflowResponse,
+    AgentWorkflowRunListResponse,
     QueryDiagnosticsRequest,
     QueryDiagnosticsResponse,
     QueryRequest,
@@ -13,6 +14,7 @@ from app.schemas.query import (
 )
 from app.services.agent.orchestrator_service import (
     get_persisted_workflow_run,
+    list_persisted_workflow_runs,
     orchestrate_agent_request,
     resume_agent_request,
 )
@@ -78,6 +80,14 @@ def resume_agent_query(request: AgentResumeRequest) -> AgentWorkflowResponse:
             status_code=404,
             detail="Persisted embedding file not found. Generate embeddings first",
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/query/agent/runs", response_model=AgentWorkflowRunListResponse)
+def list_agent_workflow_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
+    try:
+        return list_persisted_workflow_runs(limit=limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

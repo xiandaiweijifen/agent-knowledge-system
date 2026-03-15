@@ -3,7 +3,12 @@ import re
 import uuid
 from pathlib import Path
 
-from app.schemas.query import AgentWorkflowResponse, WorkflowTraceEvent
+from app.schemas.query import (
+    AgentWorkflowResponse,
+    AgentWorkflowRunListResponse,
+    AgentWorkflowRunSummary,
+    WorkflowTraceEvent,
+)
 from app.schemas.tools import ToolExecutionRequest
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.agent.clarification_service import (
@@ -75,6 +80,34 @@ def get_persisted_workflow_run(run_id: str) -> AgentWorkflowResponse:
             return AgentWorkflowResponse.model_validate(run)
 
     raise FileNotFoundError(run_id)
+
+
+def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
+    if limit <= 0:
+        raise ValueError("limit_must_be_positive")
+
+    persisted_runs = [
+        AgentWorkflowResponse.model_validate(run)
+        for run in reversed(_load_workflow_runs())
+    ][:limit]
+
+    return AgentWorkflowRunListResponse(
+        runs=[
+            AgentWorkflowRunSummary(
+                run_id=run.run_id or "",
+                question=run.question,
+                resumed_from_question=run.resumed_from_question,
+                source_run_id=run.source_run_id,
+                workflow_status=run.workflow_status,
+                route_type=run.route.route_type,
+                route_reason=run.route.route_reason,
+                filename=run.filename,
+                answered_at=run.answered_at,
+            )
+            for run in persisted_runs
+            if run.run_id
+        ]
+    )
 
 
 def _match_search_then_ticket_workflow(question: str) -> tuple[str, str] | None:

@@ -24,7 +24,7 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T13:07:38.080823+00:00",
+    "updated_at": "2026-03-15T13:10:46.933439+00:00",
     "closed_at": "2026-03-14T17:15:20.287583+00:00"
   },
   {
@@ -34,7 +34,7 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T13:07:38.115012+00:00"
+    "updated_at": "2026-03-15T13:10:46.968888+00:00"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -61,8 +61,8 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T13:07:38.012839+00:00",
-    "closed_at": "2026-03-15T13:07:38.012839+00:00"
+    "updated_at": "2026-03-15T13:10:46.870714+00:00",
+    "closed_at": "2026-03-15T13:10:46.870714+00:00"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -80,7 +80,7 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T13:07:38.044789+00:00"
+    "updated_at": "2026-03-15T13:10:46.903129+00:00"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +89,7 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T13:07:38.148499+00:00"
+    "updated_at": "2026-03-15T13:10:47.002500+00:00"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -1232,5 +1232,64 @@
     "environment": "production",
     "created_at": "2026-03-15T13:07:38.345323+00:00",
     "updated_at": "2026-03-15T13:07:38.345323+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0115",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T13:10:46.810307+00:00",
+    "updated_at": "2026-03-15T13:10:46.810307+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0116",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T13:10:47.039295+00:00",
+    "updated_at": "2026-03-15T13:10:47.039295+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "sample.txt",
+    "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
+    "supporting_match_count": "1",
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+  },
+  {
+    "ticket_id": "TICKET-0117",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "production",
+    "created_at": "2026-03-15T13:10:47.191650+00:00",
+    "updated_at": "2026-03-15T13:10:47.191650+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0118",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T13:10:47.651945+00:00",
+    "updated_at": "2026-03-15T13:10:47.651945+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0119",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T13:10:48.390833+00:00",
+    "updated_at": "2026-03-15T13:10:48.390833+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0120",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T13:12:16.046372+00:00",
+    "updated_at": "2026-03-15T13:12:16.046372+00:00"
   }
 ]

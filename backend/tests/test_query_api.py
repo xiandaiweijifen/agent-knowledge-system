@@ -1501,3 +1501,50 @@ def test_resume_agent_endpoint_requires_original_question_or_run_id():
     assert response.status_code == 400
     assert response.json()["detail"] == "original_question_or_run_id_required"
 
+
+def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    first_response = client.post(
+        "/api/query/agent",
+        json={"question": "Check system status"},
+    )
+    second_response = client.post(
+        "/api/query/agent",
+        json={"question": "Create a ticket for the payment service outage"},
+    )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    first_run_id = first_response.json()["run_id"]
+    second_run_id = second_response.json()["run_id"]
+
+    list_response = client.get("/api/query/agent/runs?limit=1")
+
+    assert list_response.status_code == 200
+    payload = list_response.json()
+    assert len(payload["runs"]) == 1
+    assert payload["runs"][0]["run_id"] == second_run_id
+    assert payload["runs"][0]["question"] == "Create a ticket for the payment service outage"
+    assert payload["runs"][0]["route_type"] == "tool_execution"
+    assert payload["runs"][0]["resumed_from_question"] is None
+    assert payload["runs"][0]["source_run_id"] is None
+    assert payload["runs"][0]["run_id"] != first_run_id
+
+
+def test_list_agent_workflow_runs_endpoint_rejects_non_positive_limit():
+    client = TestClient(app)
+    response = client.get("/api/query/agent/runs?limit=0")
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "limit_must_be_positive"
+
