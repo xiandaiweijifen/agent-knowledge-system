@@ -767,6 +767,45 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     assert sum(1 for event in payload["workflow_trace"] if event["stage"] == "tool_execution") == 2
 
 
+def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text(
+        "This file only mentions deployment workflows.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "clarification_required"
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert len(payload["tool_chain"]) == 1
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_execution"]["tool_name"] == "document_search"
+    assert payload["tool_execution"]["output"]["matched_count"] == "0"
+    assert payload["clarification_message"]
+    assert any(
+        event["stage"] == "clarification_planning"
+        and "Search produced no supporting documents" in event["detail"]
+        for event in payload["workflow_trace"]
+    )
+
+
 def test_query_agent_endpoint_returns_clarification_result():
     client = TestClient(app)
     response = client.post(

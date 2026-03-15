@@ -130,6 +130,39 @@ def orchestrate_agent_request(
                     }
                 )
 
+                if (
+                    step_index == 1
+                    and tool_response.tool_name == "document_search"
+                    and tool_response.output.get("matched_count") == "0"
+                ):
+                    clarification_plan = plan_clarification(ticket_question)
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="clarification_planning",
+                            status="completed",
+                            timestamp=build_utc_timestamp(),
+                            detail=(
+                                "Search produced no supporting documents, so the workflow "
+                                "stopped before ticket creation and requested clarification."
+                            ),
+                        )
+                    )
+                    return AgentWorkflowResponse(
+                        question=question,
+                        workflow_status="clarification_required",
+                        route=route,
+                        workflow_trace=workflow_trace,
+                        filename=filename,
+                        clarification_message=(
+                            "No supporting documents matched the search step, so the system "
+                            "needs clarification before creating a ticket."
+                        ),
+                        clarification_plan=clarification_plan.model_dump(),
+                        tool_plan=tool_plan.model_dump(),
+                        tool_execution=tool_response.model_dump(),
+                        tool_chain=chained_steps,
+                    )
+
             final_step = chained_steps[-1]
             return AgentWorkflowResponse(
                 question=question,
