@@ -248,3 +248,25 @@ def plan_search_summary_miss_clarification(search_query: str) -> ClarificationPl
         follow_up_questions=llm_plan["follow_up_questions"],
         clarification_summary=llm_plan["clarification_summary"],
     )
+
+
+def plan_unsupported_action_clarification(question: str, target: str) -> ClarificationPlanResponse:
+    normalized_question = question.strip()
+    normalized_target = target.strip() or "the target system"
+
+    if not normalized_question:
+        raise ValueError("question_must_not_be_empty")
+
+    return ClarificationPlanResponse(
+        question=normalized_question,
+        planning_mode="guardrail_stub",
+        missing_fields=["execution_confirmation", "fallback_action"],
+        follow_up_questions=[
+            f"I cannot directly execute that action for {normalized_target} yet. Do you want me to create a ticket instead?",
+            "If you do not want a ticket, what supported action should I take instead?",
+        ],
+        clarification_summary=(
+            "The request asks for a direct operational action that this system does not execute yet, "
+            "so it should be clarified before continuing."
+        ),
+    )

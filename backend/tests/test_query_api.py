@@ -1437,6 +1437,73 @@ def test_query_agent_endpoint_returns_tool_workflow_result(workspace_tmp_path, m
     )
 
 
+def test_query_agent_endpoint_clarifies_unsupported_direct_action_instead_of_creating_ticket():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Restart payment-service in production",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "clarification_required"
+    assert payload["terminal_reason"] == "unsupported_action_clarification"
+    assert payload["step_count"] == 0
+    assert payload["tool_execution"] is None
+    assert payload["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_plan"]["action"] == "create"
+    assert payload["clarification_plan"]["planning_mode"] == "guardrail_stub"
+    assert payload["clarification_plan"]["missing_fields"] == [
+        "execution_confirmation",
+        "fallback_action",
+    ]
+    assert any(
+        event["stage"] == "clarification_planning"
+        and "unsupported direct operational action" in event["detail"]
+        for event in payload["workflow_trace"]
+    )
+
+
+def test_query_agent_endpoint_allows_explicit_ticket_creation_for_operational_issue(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket to restart payment-service in production",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
+    assert payload["tool_execution"]["tool_name"] == "ticketing"
+    assert payload["tool_execution"]["action"] == "create"
+
+
+def test_query_agent_endpoint_allows_search_requests_that_mention_operational_verbs():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for how to restart payment-service in production",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert payload["tool_plan"]["tool_name"] == "document_search"
+
+
 def test_query_agent_endpoint_returns_document_search_workflow_with_filename_hint():
     client = TestClient(app)
     response = client.post(

@@ -702,5 +702,439 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "616de89bfa5445a1ae198941292d9637",
+    "question": "Restart payment-service in production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "unsupported_action_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:44:17.765641+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:44:19.901923+00:00",
+    "step_count": 0,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:17.765687+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:19.901862+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:19.901923+00:00",
+        "detail": "The request requires an unsupported direct operational action, so the workflow requested clarification before falling back to ticket creation."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing.",
+    "clarification_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_stub",
+      "missing_fields": [
+        "execution_confirmation",
+        "fallback_action"
+      ],
+      "follow_up_questions": [
+        "I cannot directly execute that action for payment-service yet. Do you want me to create a ticket instead?",
+        "If you do not want a ticket, what supported action should I take instead?"
+      ],
+      "clarification_summary": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_ticket_fallback",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "description": "Restart payment-service in production",
+        "service_name": "payment-service",
+        "environment": "production"
+      },
+      "plan_summary": "Fallback to ticketing:create for payment-service because direct operational execution is not supported yet."
+    },
+    "tool_execution": null,
+    "tool_chain": []
+  },
+  {
+    "run_id": "c59dac7dc8194bc195a92287a01d8cf5",
+    "question": "Restart payment-service in production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "unsupported_action_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:44:21.841137+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:44:23.600010+00:00",
+    "step_count": 0,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:21.841174+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:23.599966+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:23.600010+00:00",
+        "detail": "The request requires an unsupported direct operational action, so the workflow requested clarification before falling back to ticket creation."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing.",
+    "clarification_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_stub",
+      "missing_fields": [
+        "execution_confirmation",
+        "fallback_action"
+      ],
+      "follow_up_questions": [
+        "I cannot directly execute that action for payment-service yet. Do you want me to create a ticket instead?",
+        "If you do not want a ticket, what supported action should I take instead?"
+      ],
+      "clarification_summary": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_ticket_fallback",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "description": "Restart payment-service in production",
+        "service_name": "payment-service",
+        "environment": "production"
+      },
+      "plan_summary": "Fallback to ticketing:create for payment-service because direct operational execution is not supported yet."
+    },
+    "tool_execution": null,
+    "tool_chain": []
+  },
+  {
+    "run_id": "bb04a608b90e44c38e8885586af3a64f",
+    "question": "Create a ticket to restart payment-service in production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:44:52.435719+00:00",
+    "completed_at": "2026-03-15T19:44:55.013453+00:00",
+    "last_updated_at": "2026-03-15T19:44:55.013453+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:52.435758+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:55.006793+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:44:55.013453+00:00",
+        "detail": "Executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a ticket to restart payment-service in production",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "description": "Restart payment-service in production",
+        "environment": "production"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0181 for payment-service.",
+      "trace_id": "c56d4663397a483fa5681c25c93f57f2",
+      "executed_at": "2026-03-15T19:44:55.009756+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0181",
+        "ticket_id": "TICKET-0181",
+        "status": "open",
+        "severity": "unspecified",
+        "environment": "production",
+        "created_at": "2026-03-15T19:44:55.009756+00:00",
+        "updated_at": "2026-03-15T19:44:55.009756+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T19:44:52.435771+00:00",
+        "completed_at": "2026-03-15T19:44:55.013453+00:00",
+        "question": "Create a ticket to restart payment-service in production",
+        "tool_plan": {
+          "question": "Create a ticket to restart payment-service in production",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "description": "Restart payment-service in production",
+            "environment": "production"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0181 for payment-service.",
+          "trace_id": "c56d4663397a483fa5681c25c93f57f2",
+          "executed_at": "2026-03-15T19:44:55.009756+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0181",
+            "ticket_id": "TICKET-0181",
+            "status": "open",
+            "severity": "unspecified",
+            "environment": "production",
+            "created_at": "2026-03-15T19:44:55.009756+00:00",
+            "updated_at": "2026-03-15T19:44:55.009756+00:00"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "91a0b8bc5c934a18bd0b8e267fd718cd",
+    "question": "Search docs for how to restart payment-service in production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:45:12.565867+00:00",
+    "completed_at": "2026-03-15T19:45:14.045581+00:00",
+    "last_updated_at": "2026-03-15T19:45:14.045581+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:45:12.565918+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:45:14.042386+00:00",
+        "detail": "Planned document_search:query for how to restart payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:45:14.045581+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search docs for how to restart payment-service in production",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "how to restart payment-service",
+      "arguments": {},
+      "plan_summary": "Plan document_search:query for how to restart payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "how to restart payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'how to restart payment-service'.",
+      "trace_id": "40fad694243d4f6184f5e8f2f1495864",
+      "executed_at": "2026-03-15T19:45:14.045549+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "how to restart payment-service",
+        "item_count": "0",
+        "query": "how to restart payment-service",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T19:45:12.565944+00:00",
+        "completed_at": "2026-03-15T19:45:14.045581+00:00",
+        "question": "Search docs for how to restart payment-service in production",
+        "tool_plan": {
+          "question": "Search docs for how to restart payment-service in production",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "how to restart payment-service",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for how to restart payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "how to restart payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'how to restart payment-service'.",
+          "trace_id": "40fad694243d4f6184f5e8f2f1495864",
+          "executed_at": "2026-03-15T19:45:14.045549+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "how to restart payment-service",
+            "item_count": "0",
+            "query": "how to restart payment-service",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

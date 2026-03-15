@@ -2611,5 +2611,18 @@
     "environment": "production",
     "created_at": "2026-03-15T19:34:25.872679+00:00",
     "updated_at": "2026-03-15T19:34:25.872679+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0181",
+    "ticket_id": "TICKET-0181",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "production",
+    "created_at": "2026-03-15T19:44:55.009756+00:00",
+    "updated_at": "2026-03-15T19:44:55.009756+00:00"
   }
 ]

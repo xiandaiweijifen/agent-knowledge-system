@@ -18,6 +18,7 @@ from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.agent.state_store import JsonListRepository
 from app.services.agent.clarification_service import (
     plan_clarification,
+    plan_unsupported_action_clarification,
     plan_search_miss_clarification,
     plan_search_summary_miss_clarification,
 )
@@ -37,6 +38,17 @@ SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
     r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<summarize>summari[sz]e.+)$",
     re.IGNORECASE,
 )
+UNSUPPORTED_DIRECT_ACTION_PATTERN = re.compile(
+    r"\b(restart|deploy|rollback|delete|remove|shutdown|stop|start)\b",
+    re.IGNORECASE,
+)
+EXPLICIT_TICKET_INTENT_PATTERN = re.compile(r"\b(ticket|incident)\b", re.IGNORECASE)
+SEARCH_STYLE_PREFIX_PATTERN = re.compile(
+    r"^\s*(search|find|lookup|look up|show|inspect|check|query|list)\b",
+    re.IGNORECASE,
+)
+ENVIRONMENT_HINT_PATTERN = re.compile(r"\b(production|staging|development|dev)\b", re.IGNORECASE)
+SEVERITY_HINT_PATTERN = re.compile(r"\b(high|medium|low)\b", re.IGNORECASE)
 
 
 def _load_workflow_runs() -> list[dict]:
@@ -764,6 +776,48 @@ def _resolve_resume_source(
     return persisted_run.question, persisted_run.filename, persisted_run.run_id, "run_id"
 
 
+def _requires_unsupported_action_clarification(question: str) -> bool:
+    normalized_question = question.strip()
+    if not UNSUPPORTED_DIRECT_ACTION_PATTERN.search(normalized_question):
+        return False
+    if SEARCH_STYLE_PREFIX_PATTERN.search(normalized_question):
+        return False
+    if EXPLICIT_TICKET_INTENT_PATTERN.search(normalized_question):
+        return False
+    return True
+
+
+def _build_unsupported_action_fallback_plan(question: str, target: str) -> dict:
+    normalized_question = question.strip()
+    normalized_target = target.strip() or "target-system"
+    arguments = {
+        "description": normalized_question,
+        "service_name": normalized_target,
+    }
+
+    environment_match = ENVIRONMENT_HINT_PATTERN.search(normalized_question)
+    if environment_match:
+        arguments["environment"] = environment_match.group(1).lower()
+
+    severity_match = SEVERITY_HINT_PATTERN.search(normalized_question)
+    if severity_match:
+        arguments["severity"] = severity_match.group(1).lower()
+
+    return {
+        "question": normalized_question,
+        "planning_mode": "guardrail_ticket_fallback",
+        "route_hint": "tool_execution",
+        "tool_name": "ticketing",
+        "action": "create",
+        "target": normalized_target,
+        "arguments": arguments,
+        "plan_summary": (
+            f"Fallback to ticketing:create for {normalized_target} because direct operational "
+            "execution is not supported yet."
+        ),
+    }
+
+
 def resume_agent_request(
     original_question: str | None,
     clarification_context: dict[str, str],
@@ -1477,6 +1531,40 @@ def orchestrate_agent_request(
                 ),
             )
         )
+        if _requires_unsupported_action_clarification(question):
+            clarification_plan = plan_unsupported_action_clarification(question, tool_plan.target)
+            fallback_tool_plan = _build_unsupported_action_fallback_plan(question, tool_plan.target)
+            clarification_timestamp = build_utc_timestamp()
+            workflow_trace.append(
+                WorkflowTraceEvent(
+                    stage="clarification_planning",
+                    status="completed",
+                    timestamp=clarification_timestamp,
+                    detail=(
+                        "The request requires an unsupported direct operational action, "
+                        "so the workflow requested clarification before falling back to ticket creation."
+                    ),
+                )
+            )
+            response = AgentWorkflowResponse(
+                question=question,
+                workflow_status="clarification_required",
+                step_count=0,
+                route=route,
+                workflow_trace=workflow_trace,
+                filename=filename,
+                clarification_message=clarification_plan.clarification_summary,
+                clarification_plan=clarification_plan.model_dump(),
+                tool_plan=fallback_tool_plan,
+                tool_chain=[],
+            )
+            response = _finalize_workflow_response(
+                response,
+                started_at=workflow_started_at,
+                terminal_reason="unsupported_action_clarification",
+                last_updated_at=clarification_timestamp,
+            )
+            return _persist_workflow_response(response) if persist_run else response
         try:
             tool_response = execute_tool_request(
                 ToolExecutionRequest(
