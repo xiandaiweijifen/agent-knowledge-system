@@ -171,14 +171,49 @@ def _load_ticket_store() -> list[dict[str, str]]:
     if not TICKET_STORE_PATH.exists():
         return []
 
-    return json.loads(TICKET_STORE_PATH.read_text(encoding="utf-8"))
+    tickets = json.loads(TICKET_STORE_PATH.read_text(encoding="utf-8"))
+    return [_normalize_ticket_record(ticket) for ticket in tickets]
 
 
 def _save_ticket_store(tickets: list[dict[str, str]]) -> None:
     TICKET_STORE_PATH.write_text(
-        json.dumps(tickets, ensure_ascii=False, indent=2),
+        json.dumps(
+            [_normalize_ticket_record(ticket) for ticket in tickets],
+            ensure_ascii=False,
+            indent=2,
+        ),
         encoding="utf-8",
     )
+
+
+def _normalize_ticket_record(ticket: dict[str, str]) -> dict[str, str]:
+    normalized = dict(ticket)
+    ticket_id = normalized.get("ticket_id", "").strip()
+    target = normalized.get("target", "").strip() or "ticket"
+    normalized.update(
+        _build_tool_output_metadata(
+            output_kind="record",
+            resource_type="ticket",
+            target=target,
+            resource_id=ticket_id or None,
+        )
+    )
+    return normalized
+
+
+def _serialize_ticket_collection(tickets: list[dict[str, str]]) -> str:
+    serialized_records: list[dict[str, str]] = []
+    for ticket in tickets:
+        serialized_records.append(
+            {
+                "ticket_id": ticket.get("ticket_id", ""),
+                "target": ticket.get("target", ""),
+                "status": ticket.get("status", ""),
+                "severity": ticket.get("severity", ""),
+                "environment": ticket.get("environment", ""),
+            }
+        )
+    return json.dumps(serialized_records, ensure_ascii=False)
 
 
 def _find_ticket(
@@ -503,6 +538,8 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             ),
             "ticket_count": str(len(filtered_tickets)),
             "tickets": ticket_summaries,
+            "ticket_ids": ", ".join(ticket["ticket_id"] for ticket in filtered_tickets),
+            "tickets_json": _serialize_ticket_collection(filtered_tickets),
         }
         if status_filter:
             output["status_filter"] = status_filter

@@ -377,6 +377,44 @@ def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
     assert queried.output["status"] == "open"
 
 
+def test_execute_ticketing_tool_normalizes_legacy_ticket_record_on_query(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    ticket_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "ticket_id": "TICKET-0001",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-15T00:00:00+00:00",
+                    "updated_at": "2026-03-15T00:00:00+00:00",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    queried = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="query",
+            target="payment-service",
+            arguments={"ticket_id": "TICKET-0001"},
+        )
+    )
+
+    assert queried.execution_status == "completed"
+    assert queried.output["schema_version"] == "tool-output-v1"
+    assert queried.output["resource_type"] == "ticket"
+    assert queried.output["resource_id"] == "TICKET-0001"
+
+
 def test_execute_ticketing_tool_supports_list(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
     monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
@@ -414,6 +452,11 @@ def test_execute_ticketing_tool_supports_list(workspace_tmp_path, monkeypatch):
     assert listed.output["resource_type"] == "ticket"
     assert listed.output["item_count"] == "2"
     assert listed.output["ticket_count"] == "2"
+    assert listed.output["ticket_ids"] == "TICKET-0001, TICKET-0002"
+    listed_records = json.loads(listed.output["tickets_json"])
+    assert len(listed_records) == 2
+    assert listed_records[0]["ticket_id"] == "TICKET-0001"
+    assert listed_records[0]["status"] == "open"
     assert listed.output["status_filter"] == "open"
     assert "TICKET-0001" in listed.output["tickets"]
 

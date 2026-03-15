@@ -6,7 +6,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:13:33.905877+00:00",
-    "updated_at": "2026-03-14T17:13:33.905877+00:00"
+    "updated_at": "2026-03-14T17:13:33.905877+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0001"
   },
   {
     "ticket_id": "TICKET-0002",
@@ -15,7 +19,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-14T17:14:37.961905+00:00",
-    "updated_at": "2026-03-14T17:14:37.961905+00:00"
+    "updated_at": "2026-03-14T17:14:37.961905+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0002"
   },
   {
     "ticket_id": "TICKET-0003",
@@ -24,8 +32,12 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T15:17:50.878011+00:00",
-    "closed_at": "2026-03-14T17:15:20.287583+00:00"
+    "updated_at": "2026-03-15T15:36:15.545486+00:00",
+    "closed_at": "2026-03-14T17:15:20.287583+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0003"
   },
   {
     "ticket_id": "TICKET-0004",
@@ -34,7 +46,11 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T15:17:50.901850+00:00"
+    "updated_at": "2026-03-15T15:36:15.579000+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0004"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -43,7 +59,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:28:14.346477+00:00",
-    "updated_at": "2026-03-14T17:28:14.346477+00:00"
+    "updated_at": "2026-03-14T17:28:14.346477+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0005"
   },
   {
     "ticket_id": "TICKET-0006",
@@ -52,7 +72,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:36:01.592612+00:00",
-    "updated_at": "2026-03-14T17:36:01.592612+00:00"
+    "updated_at": "2026-03-14T17:36:01.592612+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0006"
   },
   {
     "ticket_id": "TICKET-0007",
@@ -61,8 +85,12 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T15:17:50.837430+00:00",
-    "closed_at": "2026-03-15T15:17:50.837430+00:00"
+    "updated_at": "2026-03-15T15:36:15.478086+00:00",
+    "closed_at": "2026-03-15T15:36:15.478086+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0007"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -71,7 +99,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:53:40.575783+00:00",
-    "updated_at": "2026-03-14T17:53:40.575783+00:00"
+    "updated_at": "2026-03-14T17:53:40.575783+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0008"
   },
   {
     "ticket_id": "TICKET-0009",
@@ -80,7 +112,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T15:17:50.858024+00:00"
+    "updated_at": "2026-03-15T15:36:15.510871+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0009"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +125,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T15:17:50.925487+00:00"
+    "updated_at": "2026-03-15T15:36:15.609844+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0010"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -98,7 +138,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T18:00:11.917298+00:00",
-    "updated_at": "2026-03-14T18:00:11.917298+00:00"
+    "updated_at": "2026-03-14T18:00:11.917298+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0011"
   },
   {
     "ticket_id": "TICKET-0012",
@@ -107,7 +151,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T18:04:49.308267+00:00",
-    "updated_at": "2026-03-14T18:04:49.308267+00:00"
+    "updated_at": "2026-03-14T18:04:49.308267+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0012"
   },
   {
     "ticket_id": "TICKET-0013",
@@ -116,7 +164,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T18:05:12.138409+00:00",
-    "updated_at": "2026-03-14T18:05:12.138409+00:00"
+    "updated_at": "2026-03-14T18:05:12.138409+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0013"
   },
   {
     "ticket_id": "TICKET-0014",
@@ -125,7 +177,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T03:51:36.109906+00:00",
-    "updated_at": "2026-03-15T03:51:36.109906+00:00"
+    "updated_at": "2026-03-15T03:51:36.109906+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0014"
   },
   {
     "ticket_id": "TICKET-0015",
@@ -134,7 +190,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T03:52:47.961213+00:00",
-    "updated_at": "2026-03-15T03:52:47.961213+00:00"
+    "updated_at": "2026-03-15T03:52:47.961213+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0015"
   },
   {
     "ticket_id": "TICKET-0016",
@@ -143,7 +203,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T03:54:16.348195+00:00",
-    "updated_at": "2026-03-15T03:54:16.348195+00:00"
+    "updated_at": "2026-03-15T03:54:16.348195+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0016"
   },
   {
     "ticket_id": "TICKET-0017",
@@ -152,7 +216,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T03:56:49.344567+00:00",
-    "updated_at": "2026-03-15T03:56:49.344567+00:00"
+    "updated_at": "2026-03-15T03:56:49.344567+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0017"
   },
   {
     "ticket_id": "TICKET-0018",
@@ -161,7 +229,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T04:45:02.281128+00:00",
-    "updated_at": "2026-03-15T04:45:02.281128+00:00"
+    "updated_at": "2026-03-15T04:45:02.281128+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0018"
   },
   {
     "ticket_id": "TICKET-0019",
@@ -170,7 +242,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T04:49:32.070647+00:00",
-    "updated_at": "2026-03-15T04:49:32.070647+00:00"
+    "updated_at": "2026-03-15T04:49:32.070647+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0019"
   },
   {
     "ticket_id": "TICKET-0020",
@@ -179,7 +255,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T04:52:27.707148+00:00",
-    "updated_at": "2026-03-15T04:52:27.707148+00:00"
+    "updated_at": "2026-03-15T04:52:27.707148+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0020"
   },
   {
     "ticket_id": "TICKET-0021",
@@ -188,7 +268,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:00:29.129173+00:00",
-    "updated_at": "2026-03-15T05:00:29.129173+00:00"
+    "updated_at": "2026-03-15T05:00:29.129173+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0021"
   },
   {
     "ticket_id": "TICKET-0022",
@@ -197,7 +281,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:04:21.107466+00:00",
-    "updated_at": "2026-03-15T05:04:21.107466+00:00"
+    "updated_at": "2026-03-15T05:04:21.107466+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0022"
   },
   {
     "ticket_id": "TICKET-0023",
@@ -206,7 +294,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:04:25.814519+00:00",
-    "updated_at": "2026-03-15T05:04:25.814519+00:00"
+    "updated_at": "2026-03-15T05:04:25.814519+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0023"
   },
   {
     "ticket_id": "TICKET-0024",
@@ -215,7 +307,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:06:04.214082+00:00",
-    "updated_at": "2026-03-15T05:06:04.214082+00:00"
+    "updated_at": "2026-03-15T05:06:04.214082+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0024"
   },
   {
     "ticket_id": "TICKET-0025",
@@ -224,7 +320,11 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:06:04.286885+00:00",
-    "updated_at": "2026-03-15T05:06:04.286885+00:00"
+    "updated_at": "2026-03-15T05:06:04.286885+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0025"
   },
   {
     "ticket_id": "TICKET-0026",
@@ -233,7 +333,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:09:38.380015+00:00",
-    "updated_at": "2026-03-15T05:09:38.380015+00:00"
+    "updated_at": "2026-03-15T05:09:38.380015+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0026"
   },
   {
     "ticket_id": "TICKET-0027",
@@ -246,7 +350,11 @@
     "supporting_query": "RAG",
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
-    "supporting_match_count": "2"
+    "supporting_match_count": "2",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0027"
   },
   {
     "ticket_id": "TICKET-0028",
@@ -259,7 +367,11 @@
     "supporting_query": "RAG",
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
-    "supporting_match_count": "2"
+    "supporting_match_count": "2",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0028"
   },
   {
     "ticket_id": "TICKET-0029",
@@ -272,7 +384,11 @@
     "supporting_query": "RAG",
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
-    "supporting_match_count": "2"
+    "supporting_match_count": "2",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0029"
   },
   {
     "ticket_id": "TICKET-0030",
@@ -285,7 +401,11 @@
     "supporting_query": "RAG",
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
-    "supporting_match_count": "2"
+    "supporting_match_count": "2",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0030"
   },
   {
     "ticket_id": "TICKET-0031",
@@ -294,7 +414,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:22:24.789848+00:00",
-    "updated_at": "2026-03-15T05:22:24.789848+00:00"
+    "updated_at": "2026-03-15T05:22:24.789848+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0031"
   },
   {
     "ticket_id": "TICKET-0032",
@@ -308,7 +432,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0032"
   },
   {
     "ticket_id": "TICKET-0033",
@@ -322,7 +450,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0033"
   },
   {
     "ticket_id": "TICKET-0034",
@@ -331,7 +463,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:26:35.459578+00:00",
-    "updated_at": "2026-03-15T05:26:35.459578+00:00"
+    "updated_at": "2026-03-15T05:26:35.459578+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0034"
   },
   {
     "ticket_id": "TICKET-0035",
@@ -345,7 +481,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0035"
   },
   {
     "ticket_id": "TICKET-0036",
@@ -354,7 +494,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:29:15.497444+00:00",
-    "updated_at": "2026-03-15T05:29:15.497444+00:00"
+    "updated_at": "2026-03-15T05:29:15.497444+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0036"
   },
   {
     "ticket_id": "TICKET-0037",
@@ -368,7 +512,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0037"
   },
   {
     "ticket_id": "TICKET-0038",
@@ -377,7 +525,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T05:30:57.730738+00:00",
-    "updated_at": "2026-03-15T05:30:57.730738+00:00"
+    "updated_at": "2026-03-15T05:30:57.730738+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0038"
   },
   {
     "ticket_id": "TICKET-0039",
@@ -386,7 +538,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:33:23.911998+00:00",
-    "updated_at": "2026-03-15T05:33:23.911998+00:00"
+    "updated_at": "2026-03-15T05:33:23.911998+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0039"
   },
   {
     "ticket_id": "TICKET-0040",
@@ -395,7 +551,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:33:46.117442+00:00",
-    "updated_at": "2026-03-15T05:33:46.117442+00:00"
+    "updated_at": "2026-03-15T05:33:46.117442+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0040"
   },
   {
     "ticket_id": "TICKET-0041",
@@ -409,7 +569,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0041"
   },
   {
     "ticket_id": "TICKET-0042",
@@ -418,7 +582,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:35:51.615139+00:00",
-    "updated_at": "2026-03-15T05:35:51.615139+00:00"
+    "updated_at": "2026-03-15T05:35:51.615139+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0042"
   },
   {
     "ticket_id": "TICKET-0043",
@@ -432,7 +600,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0043"
   },
   {
     "ticket_id": "TICKET-0044",
@@ -441,7 +613,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:40:19.930091+00:00",
-    "updated_at": "2026-03-15T05:40:19.930091+00:00"
+    "updated_at": "2026-03-15T05:40:19.930091+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0044"
   },
   {
     "ticket_id": "TICKET-0045",
@@ -455,7 +631,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0045"
   },
   {
     "ticket_id": "TICKET-0046",
@@ -464,7 +644,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:45:08.504791+00:00",
-    "updated_at": "2026-03-15T05:45:08.504791+00:00"
+    "updated_at": "2026-03-15T05:45:08.504791+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0046"
   },
   {
     "ticket_id": "TICKET-0047",
@@ -478,7 +662,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0047"
   },
   {
     "ticket_id": "TICKET-0048",
@@ -487,7 +675,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:47:02.478606+00:00",
-    "updated_at": "2026-03-15T05:47:02.478606+00:00"
+    "updated_at": "2026-03-15T05:47:02.478606+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0048"
   },
   {
     "ticket_id": "TICKET-0049",
@@ -501,7 +693,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0049"
   },
   {
     "ticket_id": "TICKET-0050",
@@ -510,7 +706,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:54:12.366970+00:00",
-    "updated_at": "2026-03-15T05:54:12.366970+00:00"
+    "updated_at": "2026-03-15T05:54:12.366970+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0050"
   },
   {
     "ticket_id": "TICKET-0051",
@@ -524,7 +724,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0051"
   },
   {
     "ticket_id": "TICKET-0052",
@@ -533,7 +737,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T05:54:32.994836+00:00",
-    "updated_at": "2026-03-15T05:54:32.994836+00:00"
+    "updated_at": "2026-03-15T05:54:32.994836+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0052"
   },
   {
     "ticket_id": "TICKET-0053",
@@ -547,7 +755,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0053"
   },
   {
     "ticket_id": "TICKET-0054",
@@ -556,7 +768,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T06:05:06.932293+00:00",
-    "updated_at": "2026-03-15T06:05:06.932293+00:00"
+    "updated_at": "2026-03-15T06:05:06.932293+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0054"
   },
   {
     "ticket_id": "TICKET-0055",
@@ -570,7 +786,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0055"
   },
   {
     "ticket_id": "TICKET-0056",
@@ -579,7 +799,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T06:12:48.744214+00:00",
-    "updated_at": "2026-03-15T06:12:48.744214+00:00"
+    "updated_at": "2026-03-15T06:12:48.744214+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0056"
   },
   {
     "ticket_id": "TICKET-0057",
@@ -593,7 +817,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0057"
   },
   {
     "ticket_id": "TICKET-0058",
@@ -602,7 +830,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T06:28:42.147141+00:00",
-    "updated_at": "2026-03-15T06:28:42.147141+00:00"
+    "updated_at": "2026-03-15T06:28:42.147141+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0058"
   },
   {
     "ticket_id": "TICKET-0059",
@@ -616,7 +848,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0059"
   },
   {
     "ticket_id": "TICKET-0060",
@@ -625,7 +861,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T06:29:10.423672+00:00",
-    "updated_at": "2026-03-15T06:29:10.423672+00:00"
+    "updated_at": "2026-03-15T06:29:10.423672+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0060"
   },
   {
     "ticket_id": "TICKET-0061",
@@ -639,7 +879,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0061"
   },
   {
     "ticket_id": "TICKET-0062",
@@ -648,7 +892,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T09:34:45.070357+00:00",
-    "updated_at": "2026-03-15T09:34:45.070357+00:00"
+    "updated_at": "2026-03-15T09:34:45.070357+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0062"
   },
   {
     "ticket_id": "TICKET-0063",
@@ -662,7 +910,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: ## What RAG Means | test_chunk.txt: 0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: ## What RAG Means"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: ## What RAG Means",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0063"
   },
   {
     "ticket_id": "TICKET-0064",
@@ -671,7 +923,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T09:50:10.567015+00:00",
-    "updated_at": "2026-03-15T09:50:10.567015+00:00"
+    "updated_at": "2026-03-15T09:50:10.567015+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0064"
   },
   {
     "ticket_id": "TICKET-0065",
@@ -685,7 +941,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: ## What RAG Means | test_chunk.txt: Built a RAG assistant for internal engineering documentation.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: ## What RAG Means"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: ## What RAG Means",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0065"
   },
   {
     "ticket_id": "TICKET-0066",
@@ -694,7 +954,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T09:58:51.371559+00:00",
-    "updated_at": "2026-03-15T09:58:51.371559+00:00"
+    "updated_at": "2026-03-15T09:58:51.371559+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0066"
   },
   {
     "ticket_id": "TICKET-0067",
@@ -708,7 +972,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines | test_chunk.txt: Built a RAG assistant for internal engineering documentation.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0067"
   },
   {
     "ticket_id": "TICKET-0068",
@@ -717,7 +985,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T10:06:15.158966+00:00",
-    "updated_at": "2026-03-15T10:06:15.158966+00:00"
+    "updated_at": "2026-03-15T10:06:15.158966+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0068"
   },
   {
     "ticket_id": "TICKET-0069",
@@ -731,7 +1003,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines | test_chunk.txt: 2. RAG pipelines benefit from clean snippets that preserve sentence boundaries.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0069"
   },
   {
     "ticket_id": "TICKET-0070",
@@ -740,7 +1016,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T10:09:11.092422+00:00",
-    "updated_at": "2026-03-15T10:09:11.092422+00:00"
+    "updated_at": "2026-03-15T10:09:11.092422+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0070"
   },
   {
     "ticket_id": "TICKET-0071",
@@ -754,7 +1034,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines | test_chunk.txt: 2. RAG pipelines benefit from clean snippets that preserve sentence boundaries.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0071"
   },
   {
     "ticket_id": "TICKET-0072",
@@ -763,7 +1047,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T10:19:18.501228+00:00",
-    "updated_at": "2026-03-15T10:19:18.501228+00:00"
+    "updated_at": "2026-03-15T10:19:18.501228+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0072"
   },
   {
     "ticket_id": "TICKET-0073",
@@ -777,7 +1065,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines | test_chunk.txt: RAG pipelines benefit from clean snippets that preserve sentence boundaries.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0073"
   },
   {
     "ticket_id": "TICKET-0074",
@@ -786,7 +1078,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T10:58:12.043562+00:00",
-    "updated_at": "2026-03-15T10:58:12.043562+00:00"
+    "updated_at": "2026-03-15T10:58:12.043562+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0074"
   },
   {
     "ticket_id": "TICKET-0075",
@@ -800,7 +1096,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines | test_chunk.txt: RAG pipelines benefit from clean snippets that preserve sentence boundaries.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines"
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0075"
   },
   {
     "ticket_id": "TICKET-0076",
@@ -809,7 +1109,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T11:03:25.428624+00:00",
-    "updated_at": "2026-03-15T11:03:25.428624+00:00"
+    "updated_at": "2026-03-15T11:03:25.428624+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0076"
   },
   {
     "ticket_id": "TICKET-0077",
@@ -823,7 +1127,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0077"
   },
   {
     "ticket_id": "TICKET-0078",
@@ -832,7 +1140,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T11:07:31.182391+00:00",
-    "updated_at": "2026-03-15T11:07:31.182391+00:00"
+    "updated_at": "2026-03-15T11:07:31.182391+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0078"
   },
   {
     "ticket_id": "TICKET-0079",
@@ -846,7 +1158,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0079"
   },
   {
     "ticket_id": "TICKET-0080",
@@ -860,7 +1176,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0080"
   },
   {
     "ticket_id": "TICKET-0081",
@@ -869,7 +1189,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:25:23.251467+00:00",
-    "updated_at": "2026-03-15T12:25:23.251467+00:00"
+    "updated_at": "2026-03-15T12:25:23.251467+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0081"
   },
   {
     "ticket_id": "TICKET-0082",
@@ -883,7 +1207,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0082"
   },
   {
     "ticket_id": "TICKET-0083",
@@ -892,7 +1220,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:26:40.413957+00:00",
-    "updated_at": "2026-03-15T12:26:40.413957+00:00"
+    "updated_at": "2026-03-15T12:26:40.413957+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0083"
   },
   {
     "ticket_id": "TICKET-0084",
@@ -906,7 +1238,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0084"
   },
   {
     "ticket_id": "TICKET-0085",
@@ -915,7 +1251,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:26:54.719398+00:00",
-    "updated_at": "2026-03-15T12:26:54.719398+00:00"
+    "updated_at": "2026-03-15T12:26:54.719398+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0085"
   },
   {
     "ticket_id": "TICKET-0086",
@@ -929,7 +1269,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0086"
   },
   {
     "ticket_id": "TICKET-0087",
@@ -938,7 +1282,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:27:18.700081+00:00",
-    "updated_at": "2026-03-15T12:27:18.700081+00:00"
+    "updated_at": "2026-03-15T12:27:18.700081+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0087"
   },
   {
     "ticket_id": "TICKET-0088",
@@ -952,7 +1300,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0088"
   },
   {
     "ticket_id": "TICKET-0089",
@@ -961,7 +1313,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:30:57.580111+00:00",
-    "updated_at": "2026-03-15T12:30:57.580111+00:00"
+    "updated_at": "2026-03-15T12:30:57.580111+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0089"
   },
   {
     "ticket_id": "TICKET-0090",
@@ -975,7 +1331,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0090"
   },
   {
     "ticket_id": "TICKET-0091",
@@ -989,7 +1349,11 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
     "supporting_match_count": "2",
-    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0091"
   },
   {
     "ticket_id": "TICKET-0092",
@@ -998,7 +1362,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T12:33:47.856583+00:00",
-    "updated_at": "2026-03-15T12:33:47.856583+00:00"
+    "updated_at": "2026-03-15T12:33:47.856583+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0092"
   },
   {
     "ticket_id": "TICKET-0093",
@@ -1007,7 +1375,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:35:54.551974+00:00",
-    "updated_at": "2026-03-15T12:35:54.551974+00:00"
+    "updated_at": "2026-03-15T12:35:54.551974+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0093"
   },
   {
     "ticket_id": "TICKET-0094",
@@ -1021,7 +1393,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0094"
   },
   {
     "ticket_id": "TICKET-0095",
@@ -1030,7 +1406,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T12:35:54.649926+00:00",
-    "updated_at": "2026-03-15T12:35:54.649926+00:00"
+    "updated_at": "2026-03-15T12:35:54.649926+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0095"
   },
   {
     "ticket_id": "TICKET-0096",
@@ -1039,7 +1419,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:36:03.828319+00:00",
-    "updated_at": "2026-03-15T12:36:03.828319+00:00"
+    "updated_at": "2026-03-15T12:36:03.828319+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0096"
   },
   {
     "ticket_id": "TICKET-0097",
@@ -1053,7 +1437,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0097"
   },
   {
     "ticket_id": "TICKET-0098",
@@ -1062,7 +1450,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T12:36:03.980435+00:00",
-    "updated_at": "2026-03-15T12:36:03.980435+00:00"
+    "updated_at": "2026-03-15T12:36:03.980435+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0098"
   },
   {
     "ticket_id": "TICKET-0099",
@@ -1071,7 +1463,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:52:14.423172+00:00",
-    "updated_at": "2026-03-15T12:52:14.423172+00:00"
+    "updated_at": "2026-03-15T12:52:14.423172+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0099"
   },
   {
     "ticket_id": "TICKET-0100",
@@ -1080,7 +1476,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:52:37.821011+00:00",
-    "updated_at": "2026-03-15T12:52:37.821011+00:00"
+    "updated_at": "2026-03-15T12:52:37.821011+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0100"
   },
   {
     "ticket_id": "TICKET-0101",
@@ -1094,7 +1494,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0101"
   },
   {
     "ticket_id": "TICKET-0102",
@@ -1103,7 +1507,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T12:52:38.173643+00:00",
-    "updated_at": "2026-03-15T12:52:38.173643+00:00"
+    "updated_at": "2026-03-15T12:52:38.173643+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0102"
   },
   {
     "ticket_id": "TICKET-0103",
@@ -1112,7 +1520,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T12:58:29.475511+00:00",
-    "updated_at": "2026-03-15T12:58:29.475511+00:00"
+    "updated_at": "2026-03-15T12:58:29.475511+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0103"
   },
   {
     "ticket_id": "TICKET-0104",
@@ -1126,7 +1538,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0104"
   },
   {
     "ticket_id": "TICKET-0105",
@@ -1135,7 +1551,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T12:58:29.818103+00:00",
-    "updated_at": "2026-03-15T12:58:29.818103+00:00"
+    "updated_at": "2026-03-15T12:58:29.818103+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0105"
   },
   {
     "ticket_id": "TICKET-0106",
@@ -1144,7 +1564,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T13:05:17.508131+00:00",
-    "updated_at": "2026-03-15T13:05:17.508131+00:00"
+    "updated_at": "2026-03-15T13:05:17.508131+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0106"
   },
   {
     "ticket_id": "TICKET-0107",
@@ -1158,7 +1582,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0107"
   },
   {
     "ticket_id": "TICKET-0108",
@@ -1167,7 +1595,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T13:05:17.797911+00:00",
-    "updated_at": "2026-03-15T13:05:17.797911+00:00"
+    "updated_at": "2026-03-15T13:05:17.797911+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0108"
   },
   {
     "ticket_id": "TICKET-0109",
@@ -1176,7 +1608,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T13:05:18.111515+00:00",
-    "updated_at": "2026-03-15T13:05:18.111515+00:00"
+    "updated_at": "2026-03-15T13:05:18.111515+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0109"
   },
   {
     "ticket_id": "TICKET-0110",
@@ -1190,7 +1626,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0110"
   },
   {
     "ticket_id": "TICKET-0111",
@@ -1199,7 +1639,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T13:05:18.410904+00:00",
-    "updated_at": "2026-03-15T13:05:18.410904+00:00"
+    "updated_at": "2026-03-15T13:05:18.410904+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0111"
   },
   {
     "ticket_id": "TICKET-0112",
@@ -1208,7 +1652,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T13:07:37.948870+00:00",
-    "updated_at": "2026-03-15T13:07:37.948870+00:00"
+    "updated_at": "2026-03-15T13:07:37.948870+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0112"
   },
   {
     "ticket_id": "TICKET-0113",
@@ -1222,7 +1670,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0113"
   },
   {
     "ticket_id": "TICKET-0114",
@@ -1231,7 +1683,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T13:07:38.345323+00:00",
-    "updated_at": "2026-03-15T13:07:38.345323+00:00"
+    "updated_at": "2026-03-15T13:07:38.345323+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0114"
   },
   {
     "ticket_id": "TICKET-0115",
@@ -1240,7 +1696,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T13:10:46.810307+00:00",
-    "updated_at": "2026-03-15T13:10:46.810307+00:00"
+    "updated_at": "2026-03-15T13:10:46.810307+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0115"
   },
   {
     "ticket_id": "TICKET-0116",
@@ -1254,7 +1714,11 @@
     "supporting_documents": "sample.txt",
     "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
     "supporting_match_count": "1",
-    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation.",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0116"
   },
   {
     "ticket_id": "TICKET-0117",
@@ -1263,7 +1727,11 @@
     "severity": "high",
     "environment": "production",
     "created_at": "2026-03-15T13:10:47.191650+00:00",
-    "updated_at": "2026-03-15T13:10:47.191650+00:00"
+    "updated_at": "2026-03-15T13:10:47.191650+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0117"
   },
   {
     "ticket_id": "TICKET-0118",
@@ -1272,7 +1740,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T13:10:47.651945+00:00",
-    "updated_at": "2026-03-15T13:10:47.651945+00:00"
+    "updated_at": "2026-03-15T13:10:47.651945+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0118"
   },
   {
     "ticket_id": "TICKET-0119",
@@ -1281,7 +1753,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T13:10:48.390833+00:00",
-    "updated_at": "2026-03-15T13:10:48.390833+00:00"
+    "updated_at": "2026-03-15T13:10:48.390833+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0119"
   },
   {
     "ticket_id": "TICKET-0120",
@@ -1290,7 +1766,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T13:12:16.046372+00:00",
-    "updated_at": "2026-03-15T13:12:16.046372+00:00"
+    "updated_at": "2026-03-15T13:12:16.046372+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0120"
   },
   {
     "ticket_id": "TICKET-0121",
@@ -1299,7 +1779,11 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-15T14:14:14.459275+00:00",
-    "updated_at": "2026-03-15T14:14:14.459275+00:00"
+    "updated_at": "2026-03-15T14:14:14.459275+00:00",
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "resource_id": "TICKET-0121"
   },
   {
     "schema_version": "tool-output-v1",
@@ -1383,5 +1867,75 @@
     "environment": "production",
     "created_at": "2026-03-15T15:26:20.447975+00:00",
     "updated_at": "2026-03-15T15:26:20.447975+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "the payment service outage",
+    "resource_id": "TICKET-0128",
+    "ticket_id": "TICKET-0128",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:36:09.772694+00:00",
+    "updated_at": "2026-03-15T15:36:09.772694+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "the payment service outage",
+    "resource_id": "TICKET-0129",
+    "ticket_id": "TICKET-0129",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:36:15.414918+00:00",
+    "updated_at": "2026-03-15T15:36:15.414918+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0130",
+    "ticket_id": "TICKET-0130",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:36:15.640257+00:00",
+    "updated_at": "2026-03-15T15:36:15.640257+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "sample.txt",
+    "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
+    "supporting_match_count": "1",
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0131",
+    "ticket_id": "TICKET-0131",
+    "status": "open",
+    "severity": "high",
+    "environment": "production",
+    "created_at": "2026-03-15T15:36:15.769862+00:00",
+    "updated_at": "2026-03-15T15:36:15.769862+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "the payment service outage",
+    "resource_id": "TICKET-0132",
+    "ticket_id": "TICKET-0132",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T15:36:16.783943+00:00",
+    "updated_at": "2026-03-15T15:36:16.783943+00:00"
   }
 ]
