@@ -564,6 +564,70 @@ def test_execute_ticketing_tool_route_preserves_target_filter(
     assert payload["output"]["ticket_records"][0]["target"] == "payment-service"
 
 
+def test_execute_ticketing_tool_filters_list_by_combined_fields(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    ticket_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "ticket_id": "TICKET-0001",
+                    "target": "the payment service outage",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-15T00:00:00+00:00",
+                    "updated_at": "2026-03-15T00:00:00+00:00",
+                },
+                {
+                    "ticket_id": "TICKET-0002",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "staging",
+                    "created_at": "2026-03-15T00:00:00+00:00",
+                    "updated_at": "2026-03-15T00:00:00+00:00",
+                },
+                {
+                    "ticket_id": "TICKET-0003",
+                    "target": "checkout-api",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-15T00:00:00+00:00",
+                    "updated_at": "2026-03-15T00:00:00+00:00",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    listed = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="list",
+            target="tickets",
+            arguments={
+                "status": "open",
+                "target_filter": "payment-service",
+                "severity_filter": "high",
+                "environment_filter": "production",
+            },
+        )
+    )
+
+    assert listed.execution_status == "completed"
+    assert listed.output["ticket_count"] == "1"
+    assert listed.output["target_filter"] == "payment-service"
+    assert listed.output["severity_filter"] == "high"
+    assert listed.output["environment_filter"] == "production"
+    assert listed.output["ticket_records"][0]["ticket_id"] == "TICKET-0001"
+    assert listed.output["ticket_records"][0]["environment"] == "production"
+
+
 def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
     monkeypatch.setattr(settings, "app_env", "development")
     monkeypatch.setattr(settings, "embedding_provider", "gemini")
@@ -893,6 +957,20 @@ def test_plan_tool_request_extracts_ticket_target_filter_for_list_queries():
     assert response.target == "tickets"
     assert response.arguments["status"] == "open"
     assert response.arguments["target_filter"] == "payment-service"
+
+
+def test_plan_tool_request_extracts_combined_ticket_list_filters():
+    response = plan_tool_request(
+        "List high severity open tickets for payment service in production"
+    )
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "list"
+    assert response.target == "tickets"
+    assert response.arguments["status"] == "open"
+    assert response.arguments["target_filter"] == "payment-service"
+    assert response.arguments["severity_filter"] == "high"
+    assert response.arguments["environment_filter"] == "production"
 
 
 def test_plan_tool_request_extracts_ticket_id_for_close_requests():

@@ -139,9 +139,9 @@ def _extract_ticket_update_arguments(question: str) -> dict[str, str]:
         arguments["status"] = "closed"
     elif re.search(r"\bstatus\s+to\s+open\b", lowered):
         arguments["status"] = "open"
-    elif re.search(r"\blist\s+open\s+tickets?\b", lowered):
+    elif re.search(r"\blist\b.+\bopen\s+tickets?\b", lowered):
         arguments["status"] = "open"
-    elif re.search(r"\blist\s+closed\s+tickets?\b", lowered):
+    elif re.search(r"\blist\b.+\bclosed\s+tickets?\b", lowered):
         arguments["status"] = "closed"
 
     return arguments
@@ -175,7 +175,8 @@ def _extract_ticket_target_filter(question: str) -> str | None:
     match = TICKET_LIST_TARGET_PATTERN.search(question.strip())
     if not match:
         return None
-    return _canonicalize_ticket_target(match.group("target"))
+    target = ENVIRONMENT_SEGMENT_PATTERN.sub("", match.group("target")).strip(" .")
+    return _canonicalize_ticket_target(target)
 
 
 def _clean_ticket_target(question: str, target: str, action: str) -> str:
@@ -561,6 +562,8 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         target_filter = _canonicalize_ticket_target(
             request.arguments.get("target_filter", "").strip()
         ) if request.arguments.get("target_filter", "").strip() else ""
+        severity_filter = request.arguments.get("severity_filter", "").strip().lower()
+        environment_filter = request.arguments.get("environment_filter", "").strip().lower()
         filtered_tickets = tickets
         if status_filter:
             filtered_tickets = [
@@ -571,6 +574,18 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
                 ticket
                 for ticket in filtered_tickets
                 if _canonicalize_ticket_target(ticket.get("target", "")) == target_filter
+            ]
+        if severity_filter:
+            filtered_tickets = [
+                ticket
+                for ticket in filtered_tickets
+                if ticket.get("severity", "").lower() == severity_filter
+            ]
+        if environment_filter:
+            filtered_tickets = [
+                ticket
+                for ticket in filtered_tickets
+                if ticket.get("environment", "").lower() == environment_filter
             ]
 
         ticket_summaries = " | ".join(
@@ -595,6 +610,10 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             output["status_filter"] = status_filter
         if target_filter:
             output["target_filter"] = target_filter
+        if severity_filter:
+            output["severity_filter"] = severity_filter
+        if environment_filter:
+            output["environment_filter"] = environment_filter
 
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -1002,6 +1021,10 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
     if inferred_request.tool_name == "ticketing":
         arguments.update(_extract_ticket_update_arguments(question))
         if inferred_request.action == "list":
+            if "severity" in arguments:
+                arguments["severity_filter"] = arguments.pop("severity")
+            if "environment" in arguments:
+                arguments["environment_filter"] = arguments.pop("environment")
             target_filter = _extract_ticket_target_filter(question)
             if target_filter:
                 arguments["target_filter"] = target_filter

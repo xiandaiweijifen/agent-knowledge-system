@@ -60,6 +60,25 @@
       "expected_output_keys": ["ticket_records", "target_filter", "ticket_ids"]
     },
     {
+      "case_id": "tool_eval_4c",
+      "question": "List high severity open tickets for payment service in production",
+      "expected_tool_name": "ticketing",
+      "expected_action": "list",
+      "expected_execution_status": "completed",
+      "expected_arguments": {
+        "status": "open",
+        "target_filter": "payment-service",
+        "severity_filter": "high",
+        "environment_filter": "production"
+      },
+      "expected_output": {
+        "target_filter": "payment-service",
+        "severity_filter": "high",
+        "environment_filter": "production"
+      },
+      "expected_output_keys": ["ticket_records", "target_filter", "severity_filter", "environment_filter", "ticket_ids"]
+    },
+    {
       "case_id": "tool_eval_5",
       "question": "Search docs for RAG and show top 2 results",
       "expected_tool_name": "document_search",
