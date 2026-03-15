@@ -217,6 +217,15 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             "created_at": now,
             "updated_at": now,
         }
+        for context_key in (
+            "supporting_query",
+            "supporting_documents",
+            "supporting_snippets",
+            "supporting_match_count",
+        ):
+            context_value = request.arguments.get(context_key, "").strip()
+            if context_value:
+                ticket[context_key] = context_value
         tickets.append(ticket)
         _save_ticket_store(tickets)
 

@@ -25,6 +25,26 @@ def _match_search_then_ticket_workflow(question: str) -> tuple[str, str] | None:
     return match.group("search").strip(), match.group("ticket").strip()
 
 
+def _build_search_context_arguments(tool_output: dict[str, str]) -> dict[str, str]:
+    arguments: dict[str, str] = {}
+
+    query = tool_output.get("query", "").strip()
+    matched_documents = tool_output.get("matched_documents", "").strip()
+    snippets = tool_output.get("snippets", "").strip()
+    matched_count = tool_output.get("matched_count", "").strip()
+
+    if query:
+        arguments["supporting_query"] = query
+    if matched_documents:
+        arguments["supporting_documents"] = matched_documents
+    if snippets:
+        arguments["supporting_snippets"] = snippets
+    if matched_count:
+        arguments["supporting_match_count"] = matched_count
+
+    return arguments
+
+
 def orchestrate_agent_request(
     question: str,
     filename: str | None = None,
@@ -91,9 +111,31 @@ def orchestrate_agent_request(
 
         if search_then_ticket is not None:
             search_question, ticket_question = search_then_ticket
+            prior_search_context: dict[str, str] = {}
 
             for step_index, step_question in enumerate((search_question, ticket_question), start=1):
                 tool_plan = plan_tool_request(step_question)
+                if (
+                    step_index == 2
+                    and tool_plan.tool_name == "ticketing"
+                    and tool_plan.action == "create"
+                    and prior_search_context
+                ):
+                    tool_plan.arguments = {
+                        **prior_search_context,
+                        **tool_plan.arguments,
+                    }
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="tool_context",
+                            status="completed",
+                            timestamp=build_utc_timestamp(),
+                            detail=(
+                                "Step 2 inherited supporting search context from step 1 "
+                                "before ticket creation."
+                            ),
+                        )
+                    )
                 workflow_trace.append(
                     WorkflowTraceEvent(
                         stage="tool_planning",
@@ -168,6 +210,9 @@ def orchestrate_agent_request(
                         tool_execution=tool_response.model_dump(),
                         tool_chain=chained_steps,
                     )
+
+                if step_index == 1 and tool_response.tool_name == "document_search":
+                    prior_search_context = _build_search_context_arguments(tool_response.output)
 
             final_step = chained_steps[-1]
             return AgentWorkflowResponse(

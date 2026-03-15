@@ -763,8 +763,13 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     assert len(payload["tool_chain"]) == 2
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_query"] == "payment-service outage"
+    assert "notes.md" in payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_documents"]
     assert payload["tool_chain"][1]["tool_execution"]["output"]["ticket_id"].startswith("TICKET-")
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_query"] == "payment-service outage"
+    assert "notes.md" in payload["tool_chain"][1]["tool_execution"]["output"]["supporting_documents"]
     assert sum(1 for event in payload["workflow_trace"] if event["stage"] == "tool_execution") == 2
+    assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
 
 
 def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses(
