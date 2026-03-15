@@ -1074,8 +1074,10 @@ def test_query_agent_endpoint_supports_search_then_summarize_workflow(
     assert payload["tool_plan"]["arguments"]["max_results"] == "2"
     assert payload["answer_source"] == "local_search_summary"
     assert payload["chat_provider"] == "local"
-    assert "matched 2 document(s)" in payload["answer"]
-    assert "Top match:" in payload["answer"]
+    assert "I found 2 matching document(s)" in payload["answer"]
+    assert "The strongest supporting document is" in payload["answer"]
+    assert "Key evidence:" in payload["answer"]
+    assert "term coverage" not in payload["answer"]
     assert any(event["stage"] == "search_summary" for event in payload["workflow_trace"])
     assert len(payload["tool_chain"]) == 1
 

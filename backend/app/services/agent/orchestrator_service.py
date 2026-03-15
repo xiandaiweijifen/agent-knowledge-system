@@ -65,25 +65,23 @@ def _build_search_summary(tool_output: dict[str, str]) -> str:
     matched_documents = tool_output.get("matched_documents", "").strip()
     snippets = tool_output.get("snippets", "").strip()
     top_match_document = tool_output.get("top_match_document", "").strip()
-    top_match_reason = tool_output.get("top_match_reason", "").strip()
 
     summary_parts: list[str] = []
 
     if query:
         summary_parts.append(
-            f"Search for '{query}' matched {matched_count} document(s) and returned {returned_count} result(s)."
+            f"I found {matched_count} matching document(s) for '{query}' and returned {returned_count} result(s)."
         )
     if top_match_document:
-        top_match_clause = f"Top match: {top_match_document}"
-        if top_match_reason:
-            top_match_clause += f" ({top_match_reason})"
-        summary_parts.append(f"{top_match_clause}.")
+        summary_parts.append(f"The strongest supporting document is {top_match_document}.")
     if matched_documents:
         summary_parts.append(f"Returned documents: {matched_documents}.")
     if snippets:
         first_snippet = snippets.split(" | ", maxsplit=1)[0].strip()
         if first_snippet:
-            summary_parts.append(f"Top supporting snippet: {first_snippet}")
+            if ": " in first_snippet:
+                _, first_snippet = first_snippet.split(": ", maxsplit=1)
+            summary_parts.append(f"Key evidence: {first_snippet}")
 
     return " ".join(summary_parts).strip()
 
