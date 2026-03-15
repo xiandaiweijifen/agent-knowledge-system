@@ -636,6 +636,23 @@ def test_plan_tool_request_extracts_max_results_for_document_search():
     assert response.target == "RAG"
 
 
+def test_plan_tool_request_extracts_first_results_limit_for_document_search():
+    response = plan_tool_request("Search docs for RAG and show first 3 results")
+
+    assert response.tool_name == "document_search"
+    assert response.arguments["max_results"] == "3"
+    assert response.target == "RAG"
+
+
+def test_plan_tool_request_extracts_limit_results_for_document_search():
+    response = plan_tool_request("Search rag_overview.md for reranking limit to 1")
+
+    assert response.tool_name == "document_search"
+    assert response.arguments["filename"] == "rag_overview.md"
+    assert response.arguments["max_results"] == "1"
+    assert response.target == "reranking"
+
+
 def test_plan_tool_request_maps_status_queries_to_system_status():
     response = plan_tool_request("Check system status")
 
@@ -945,6 +962,43 @@ def test_query_agent_endpoint_supports_capped_document_search_workflow(
     assert len(payload["tool_execution"]["output"]["matched_documents"].split(", ")) == 2
     assert len(payload["tool_chain"]) == 1
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
+
+
+def test_query_agent_endpoint_supports_filename_scoped_limited_document_search(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "Reranking improves retrieval quality. Reranking also helps precision.",
+        encoding="utf-8",
+    )
+    (raw_dir / "notes.md").write_text(
+        "Reranking appears here too, but this should be filtered out.",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search rag_overview.md for reranking limit to 1",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
+    assert payload["tool_plan"]["arguments"]["max_results"] == "1"
+    assert payload["tool_execution"]["output"]["filename_filter"] == "rag_overview.md"
+    assert payload["tool_execution"]["output"]["max_results"] == "1"
+    assert payload["tool_execution"]["output"]["returned_count"] == "1"
+    assert payload["tool_execution"]["output"]["matched_documents"] == "rag_overview.md"
 
 
 def test_query_agent_endpoint_returns_clarification_result():

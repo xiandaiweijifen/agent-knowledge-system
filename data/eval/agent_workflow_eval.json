@@ -95,6 +95,16 @@
       "expected_final_output_keys": ["returned_count", "max_results", "top_match_document"]
     },
     {
+      "case_id": "workflow_tool_12",
+      "question": "Search rag_overview.md for reranking limit to 1",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "document_search",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["filename_filter", "max_results", "matched_documents"]
+    },
+    {
       "case_id": "workflow_guardrail_1",
       "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
       "expected_route_type": "tool_execution",

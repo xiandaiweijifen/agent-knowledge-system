@@ -57,6 +57,22 @@
         "max_results": "2"
       },
       "expected_output_keys": ["returned_count", "top_match_document", "top_match_reason"]
+    },
+    {
+      "case_id": "tool_eval_6",
+      "question": "Search rag_overview.md for reranking limit to 1",
+      "expected_tool_name": "document_search",
+      "expected_action": "query",
+      "expected_execution_status": "completed",
+      "expected_arguments": {
+        "filename": "rag_overview.md",
+        "max_results": "1"
+      },
+      "expected_output": {
+        "filename_filter": "rag_overview.md",
+        "max_results": "1"
+      },
+      "expected_output_keys": ["returned_count", "matched_documents", "top_match_document"]
     }
   ]
 }
