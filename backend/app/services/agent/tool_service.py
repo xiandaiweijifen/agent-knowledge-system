@@ -260,6 +260,12 @@ def _ensure_sentence_boundary_excerpt(text: str) -> str:
     if not cleaned:
         return cleaned
 
+    cleaned = re.sub(
+        r"^[A-Z][A-Za-z-]{2,40}\s+(?=(The|This|A|An|Many|In|When|RAG)\b)",
+        "",
+        cleaned,
+    ).strip()
+
     # If a snippet starts mid-word, drop the leading fragment up to the next space.
     if cleaned and cleaned[0].isalnum() and not cleaned.startswith(("RAG", "Retrieval", "Reranking")):
         first_space = cleaned.find(" ")

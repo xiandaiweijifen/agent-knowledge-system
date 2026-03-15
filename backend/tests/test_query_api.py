@@ -1129,6 +1129,7 @@ def test_query_agent_endpoint_supports_filename_scoped_search_summary(
     raw_dir.mkdir()
     (raw_dir / "rag_overview.md").write_text(
         "RAG combines retrieval with language model generation.\n"
+        "Reranking\n"
         "Reranking improves precision for the strongest chunks.",
         encoding="utf-8",
     )
@@ -1157,6 +1158,7 @@ def test_query_agent_endpoint_supports_filename_scoped_search_summary(
     assert "I searched 'rag_overview.md' for 'reranking'" in payload["answer"]
     assert "The strongest supporting document is rag_overview.md." in payload["answer"]
     assert "Key evidence from rag_overview.md: Reranking improves precision for the strongest chunks." in payload["answer"]
+    assert "Key evidence from rag_overview.md: Reranking The first" not in payload["answer"]
     assert "Returned documents:" not in payload["answer"]
 
 
