@@ -377,6 +377,30 @@ def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
     assert queried.output["status"] == "open"
 
 
+def test_execute_ticketing_tool_create_recovers_from_invalid_ticket_store(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    ticket_store_path.write_text("{invalid json", encoding="utf-8")
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    created = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="create",
+            target="payment-service",
+            arguments={"severity": "high"},
+        )
+    )
+
+    assert created.execution_status == "completed"
+    assert created.output["ticket_id"] == "TICKET-0001"
+    persisted_tickets = json.loads(ticket_store_path.read_text(encoding="utf-8"))
+    assert len(persisted_tickets) == 1
+    assert persisted_tickets[0]["ticket_id"] == "TICKET-0001"
+
+
 def test_execute_ticketing_tool_normalizes_legacy_ticket_record_on_query(
     workspace_tmp_path,
     monkeypatch,
@@ -2112,6 +2136,36 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["last_updated_at"] == payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["run_id"] != first_run_id
+
+
+def test_list_agent_workflow_runs_endpoint_recovers_from_invalid_store(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text("{invalid json", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    list_response = client.get("/api/query/agent/runs?limit=5")
+
+    assert list_response.status_code == 200
+    payload = list_response.json()
+    assert payload["runs"] == []
+
+    create_response = client.post(
+        "/api/query/agent",
+        json={"question": "Check system status"},
+    )
+
+    assert create_response.status_code == 200
+    persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
+    assert len(persisted_runs) == 1
+    assert persisted_runs[0]["question"] == "Check system status"
 
 
 def test_list_agent_workflow_runs_endpoint_includes_resume_metadata(

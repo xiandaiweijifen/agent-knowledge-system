@@ -11,7 +11,7 @@ from app.schemas.query import (
 )
 from app.schemas.tools import ToolExecutionRequest
 from app.services.ingestion.document_service import build_utc_timestamp
-from app.services.agent.state_store import atomic_write_json
+from app.services.agent.state_store import atomic_write_json, load_json_list
 from app.services.agent.clarification_service import (
     plan_clarification,
     plan_search_miss_clarification,
@@ -36,18 +36,7 @@ SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
 
 
 def _load_workflow_runs() -> list[dict]:
-    if not WORKFLOW_RUN_STORE_PATH.exists():
-        return []
-    raw_content = WORKFLOW_RUN_STORE_PATH.read_text(encoding="utf-8").strip()
-    if not raw_content:
-        return []
-    try:
-        loaded = json.loads(raw_content)
-    except json.JSONDecodeError:
-        return []
-    if not isinstance(loaded, list):
-        return []
-    return loaded
+    return load_json_list(WORKFLOW_RUN_STORE_PATH)
 
 
 def _save_workflow_runs(runs: list[dict]) -> None:

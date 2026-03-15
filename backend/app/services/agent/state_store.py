@@ -57,3 +57,22 @@ def atomic_write_json(path: Path, payload: Any) -> None:
             # single well-known temp file instead of accumulating UUID files.
             pass
     _cleanup_stale_temp_files(path)
+
+
+def load_json_list(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        return []
+
+    raw_content = path.read_text(encoding="utf-8").strip()
+    if not raw_content:
+        return []
+
+    try:
+        loaded = json.loads(raw_content)
+    except json.JSONDecodeError:
+        return []
+
+    if not isinstance(loaded, list):
+        return []
+
+    return [item for item in loaded if isinstance(item, dict)]
