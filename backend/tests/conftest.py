@@ -32,6 +32,9 @@ def _cleanup_state_tmp_files() -> None:
             temp_file.unlink(missing_ok=True)
         except PermissionError:
             pass
+    temp_dir = TOOL_STATE_DIR / ".tmp"
+    if temp_dir.exists():
+        shutil.rmtree(temp_dir, ignore_errors=True, onerror=_handle_remove_readonly)
 
 
 @pytest.fixture(scope="session", autouse=True)
