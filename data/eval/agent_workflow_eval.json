@@ -135,6 +135,36 @@
       "expected_final_output_keys": ["matched_count"]
     },
     {
+      "case_id": "workflow_resume_1",
+      "question": "Search docs for payment-service outage and summarize top 2 results",
+      "clarification_context": {
+        "search_query_refinement": "RAG",
+        "document_scope": "rag_overview.md"
+      },
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_question": "Search rag_overview.md for RAG and summarize top 2 results",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "document_search",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["filename_filter", "max_results", "returned_count"]
+    },
+    {
+      "case_id": "workflow_resume_2",
+      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+      "clarification_context": {
+        "search_query_refinement": "RAG",
+        "environment": "production"
+      },
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_question": "Search docs for RAG and create a high severity ticket for payment-service in production",
+      "expected_tool_chain_length": 2,
+      "expected_final_tool_name": "ticketing",
+      "expected_final_action": "create",
+      "expected_final_output_keys": ["ticket_id", "environment", "supporting_summary"]
+    },
+    {
       "case_id": "workflow_clarification_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed",

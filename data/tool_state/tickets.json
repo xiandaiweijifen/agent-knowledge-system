@@ -24,7 +24,7 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T11:07:31.272913+00:00",
+    "updated_at": "2026-03-15T12:27:18.743295+00:00",
     "closed_at": "2026-03-14T17:15:20.287583+00:00"
   },
   {
@@ -34,7 +34,7 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T11:07:31.296440+00:00"
+    "updated_at": "2026-03-15T12:27:18.756162+00:00"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -61,8 +61,8 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T11:07:31.220326+00:00",
-    "closed_at": "2026-03-15T11:07:31.220326+00:00"
+    "updated_at": "2026-03-15T12:27:18.716385+00:00",
+    "closed_at": "2026-03-15T12:27:18.716385+00:00"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -80,7 +80,7 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T11:07:31.246825+00:00"
+    "updated_at": "2026-03-15T12:27:18.729577+00:00"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +89,7 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T11:07:31.315996+00:00"
+    "updated_at": "2026-03-15T12:27:18.770519+00:00"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -861,5 +861,97 @@
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
     "supporting_match_count": "2",
     "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+  },
+  {
+    "ticket_id": "TICKET-0081",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:25:23.251467+00:00",
+    "updated_at": "2026-03-15T12:25:23.251467+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0082",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:25:23.328053+00:00",
+    "updated_at": "2026-03-15T12:25:23.328053+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "rag_overview.md, test_chunk.txt",
+    "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+    "supporting_match_count": "2",
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+  },
+  {
+    "ticket_id": "TICKET-0083",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:26:40.413957+00:00",
+    "updated_at": "2026-03-15T12:26:40.413957+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0084",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:26:40.518045+00:00",
+    "updated_at": "2026-03-15T12:26:40.518045+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "sample.txt",
+    "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
+    "supporting_match_count": "1",
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+  },
+  {
+    "ticket_id": "TICKET-0085",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:26:54.719398+00:00",
+    "updated_at": "2026-03-15T12:26:54.719398+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0086",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:26:54.802469+00:00",
+    "updated_at": "2026-03-15T12:26:54.802469+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "sample.txt",
+    "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
+    "supporting_match_count": "1",
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
+  },
+  {
+    "ticket_id": "TICKET-0087",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:27:18.700081+00:00",
+    "updated_at": "2026-03-15T12:27:18.700081+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0088",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T12:27:18.782868+00:00",
+    "updated_at": "2026-03-15T12:27:18.782868+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "sample.txt",
+    "supporting_snippets": "sample.txt: RAG systems combine retrieval and generation.",
+    "supporting_match_count": "1",
+    "supporting_summary": "Search for 'RAG' matched 1 supporting document(s). Primary supporting documents: sample.txt. Top supporting snippet: sample.txt: RAG systems combine retrieval and generation."
   }
 ]

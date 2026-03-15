@@ -62,8 +62,10 @@ class AgentWorkflowEvalCase(BaseModel):
     question: str
     filename: str | None = None
     top_k: int = 3
+    clarification_context: dict[str, str] = Field(default_factory=dict)
     expected_route_type: str
     expected_workflow_status: str
+    expected_question: str | None = None
     expected_tool_chain_length: int | None = None
     expected_final_tool_name: str | None = None
     expected_final_action: str | None = None
@@ -73,6 +75,7 @@ class AgentWorkflowEvalCase(BaseModel):
 class AgentWorkflowEvalCaseResult(BaseModel):
     case_id: str
     question: str
+    actual_question: str = ""
     filename: str | None = None
     expected_route_type: str
     actual_route_type: str
@@ -80,6 +83,8 @@ class AgentWorkflowEvalCaseResult(BaseModel):
     actual_workflow_status: str
     route_reason: str
     matched: bool
+    expected_question: str | None = None
+    resume_trace_present: bool = False
     expected_tool_chain_length: int | None = None
     actual_tool_chain_length: int = 0
     expected_final_tool_name: str | None = None

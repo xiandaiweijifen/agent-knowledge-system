@@ -8,7 +8,10 @@ from app.schemas.evaluation import (
     AgentWorkflowEvalSummary,
 )
 from app.schemas.evaluation_api import AgentWorkflowEvalDatasetInfo
-from app.services.agent.orchestrator_service import orchestrate_agent_request
+from app.services.agent.orchestrator_service import (
+    orchestrate_agent_request,
+    resume_agent_request,
+)
 
 EVAL_DATA_DIR = Path("../data/eval")
 
@@ -25,12 +28,21 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
     case_results = []
 
     for case in cases:
-        response = orchestrate_agent_request(
-            question=case.question,
-            filename=case.filename,
-            top_k=case.top_k,
-        )
+        if case.clarification_context:
+            response = resume_agent_request(
+                original_question=case.question,
+                clarification_context=case.clarification_context,
+                filename=case.filename,
+                top_k=case.top_k,
+            )
+        else:
+            response = orchestrate_agent_request(
+                question=case.question,
+                filename=case.filename,
+                top_k=case.top_k,
+            )
         actual_tool_chain_length = len(response.tool_chain)
+        resume_trace_present = any(event.stage == "workflow_resume" for event in response.workflow_trace)
         final_tool_execution = response.tool_execution or {}
         actual_final_tool_name = (
             final_tool_execution.get("tool_name")
@@ -56,6 +68,10 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
             response.route.route_type == case.expected_route_type
             and response.workflow_status == case.expected_workflow_status
             and (
+                case.expected_question is None
+                or response.question == case.expected_question
+            )
+            and (
                 case.expected_tool_chain_length is None
                 or actual_tool_chain_length == case.expected_tool_chain_length
             )
@@ -73,6 +89,7 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
             AgentWorkflowEvalCaseResult(
                 case_id=case.case_id,
                 question=case.question,
+                actual_question=response.question,
                 filename=case.filename,
                 expected_route_type=case.expected_route_type,
                 actual_route_type=response.route.route_type,
@@ -80,6 +97,8 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 actual_workflow_status=response.workflow_status,
                 route_reason=response.route.route_reason,
                 matched=matched,
+                expected_question=case.expected_question,
+                resume_trace_present=resume_trace_present,
                 expected_tool_chain_length=case.expected_tool_chain_length,
                 actual_tool_chain_length=actual_tool_chain_length,
                 expected_final_tool_name=case.expected_final_tool_name,
