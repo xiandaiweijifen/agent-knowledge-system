@@ -626,7 +626,14 @@ def test_plan_tool_request_extracts_filename_for_document_search():
 
     assert response.tool_name == "document_search"
     assert response.arguments["filename"] == "rag_overview.md"
-    assert response.target == "reranking"
+
+
+def test_plan_tool_request_extracts_max_results_for_document_search():
+    response = plan_tool_request("Search docs for RAG and show top 2 results")
+
+    assert response.tool_name == "document_search"
+    assert response.arguments["max_results"] == "2"
+    assert response.target == "RAG"
 
 
 def test_plan_tool_request_maps_status_queries_to_system_status():

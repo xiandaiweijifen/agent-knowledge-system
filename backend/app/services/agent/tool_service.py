@@ -49,6 +49,10 @@ GENERIC_SEARCH_PREFIX_PATTERN = re.compile(
     r"^(search|find|lookup|look up|show|inspect|query)\s+",
     re.IGNORECASE,
 )
+TOP_RESULTS_PATTERN = re.compile(
+    r"\b(?:and\s+show\s+)?top\s+(\d+)\s+results?\b",
+    re.IGNORECASE,
+)
 STATUS_PREFIX_PATTERN = re.compile(
     r"^(check|show|inspect|query)\s+",
     re.IGNORECASE,
@@ -257,6 +261,14 @@ def _parse_max_results_argument(arguments: dict[str, str]) -> int | None:
         return None
 
     return max_results
+
+
+def _extract_search_max_results_argument(question: str) -> str | None:
+    match = TOP_RESULTS_PATTERN.search(question)
+    if not match:
+        return None
+
+    return match.group(1)
 
 
 def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
@@ -679,6 +691,9 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
         filename = _extract_filename_argument(question)
         if filename:
             arguments["filename"] = filename
+        max_results = _extract_search_max_results_argument(question)
+        if max_results:
+            arguments["max_results"] = max_results
 
     cleaned_target = inferred_request.target
     cleaned_target = ENVIRONMENT_SEGMENT_PATTERN.sub("", cleaned_target).strip(" .")
@@ -690,6 +705,10 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
             cleaned_target,
             flags=re.IGNORECASE,
         ).strip(" .")
+        if not cleaned_target:
+            cleaned_target = "documents"
+    if inferred_request.tool_name == "document_search" and "max_results" in arguments:
+        cleaned_target = TOP_RESULTS_PATTERN.sub("", cleaned_target).strip(" .")
         if not cleaned_target:
             cleaned_target = "documents"
 
