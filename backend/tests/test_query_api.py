@@ -733,6 +733,40 @@ def test_query_agent_endpoint_returns_document_search_workflow_with_filename_hin
     assert payload["tool_plan"]["target"] == "reranking"
 
 
+def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text(
+        "The payment-service outage requires a high severity response.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert len(payload["tool_chain"]) == 2
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["ticket_id"].startswith("TICKET-")
+    assert sum(1 for event in payload["workflow_trace"] if event["stage"] == "tool_execution") == 2
+
+
 def test_query_agent_endpoint_returns_clarification_result():
     client = TestClient(app)
     response = client.post(

@@ -111,3 +111,4 @@ class AgentWorkflowResponse(BaseModel):
     clarification_plan: dict | None = None
     tool_plan: dict | None = None
     tool_execution: dict | None = None
+    tool_chain: list[dict] = Field(default_factory=list)

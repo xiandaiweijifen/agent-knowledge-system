@@ -1,3 +1,5 @@
+import re
+
 from app.schemas.query import AgentWorkflowResponse, WorkflowTraceEvent
 from app.schemas.tools import ToolExecutionRequest
 from app.services.ingestion.document_service import build_utc_timestamp
@@ -5,6 +7,19 @@ from app.services.agent.clarification_service import plan_clarification
 from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
+
+SEARCH_AND_TICKET_PATTERN = re.compile(
+    r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<ticket>(?:create|open).+\bticket\b.+)$",
+    re.IGNORECASE,
+)
+
+
+def _match_search_then_ticket_workflow(question: str) -> tuple[str, str] | None:
+    match = SEARCH_AND_TICKET_PATTERN.match(question.strip())
+    if not match:
+        return None
+
+    return match.group("search").strip(), match.group("ticket").strip()
 
 
 def orchestrate_agent_request(
@@ -68,6 +83,65 @@ def orchestrate_agent_request(
         )
 
     if route.route_type == "tool_execution":
+        chained_steps: list[dict] = []
+        search_then_ticket = _match_search_then_ticket_workflow(question)
+
+        if search_then_ticket is not None:
+            search_question, ticket_question = search_then_ticket
+
+            for step_index, step_question in enumerate((search_question, ticket_question), start=1):
+                tool_plan = plan_tool_request(step_question)
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="tool_planning",
+                        status="completed",
+                        timestamp=build_utc_timestamp(),
+                        detail=(
+                            f"Step {step_index}: planned {tool_plan.tool_name}:{tool_plan.action} "
+                            f"for {tool_plan.target}."
+                        ),
+                    )
+                )
+                tool_response = execute_tool_request(
+                    ToolExecutionRequest(
+                        tool_name=tool_plan.tool_name,
+                        action=tool_plan.action,
+                        target=tool_plan.target,
+                        arguments=tool_plan.arguments,
+                    )
+                )
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="tool_execution",
+                        status="completed",
+                        timestamp=build_utc_timestamp(),
+                        detail=(
+                            f"Step {step_index}: executed {tool_response.execution_mode} tool "
+                            f"{tool_response.tool_name}:{tool_response.action} "
+                            f"with status {tool_response.execution_status}."
+                        ),
+                    )
+                )
+                chained_steps.append(
+                    {
+                        "question": step_question,
+                        "tool_plan": tool_plan.model_dump(),
+                        "tool_execution": tool_response.model_dump(),
+                    }
+                )
+
+            final_step = chained_steps[-1]
+            return AgentWorkflowResponse(
+                question=question,
+                workflow_status="completed",
+                route=route,
+                workflow_trace=workflow_trace,
+                filename=filename,
+                tool_plan=final_step["tool_plan"],
+                tool_execution=final_step["tool_execution"],
+                tool_chain=chained_steps,
+            )
+
         tool_plan = plan_tool_request(question)
         workflow_trace.append(
             WorkflowTraceEvent(
@@ -108,6 +182,13 @@ def orchestrate_agent_request(
             filename=filename,
             tool_plan=tool_plan.model_dump(),
             tool_execution=tool_response.model_dump(),
+            tool_chain=[
+                {
+                    "question": question,
+                    "tool_plan": tool_plan.model_dump(),
+                    "tool_execution": tool_response.model_dump(),
+                }
+            ],
         )
 
     clarification_plan = plan_clarification(question)
@@ -130,4 +211,5 @@ def orchestrate_agent_request(
         filename=filename,
         clarification_message=clarification_plan.clarification_summary,
         clarification_plan=clarification_plan.model_dump(),
+        tool_chain=[],
     )
