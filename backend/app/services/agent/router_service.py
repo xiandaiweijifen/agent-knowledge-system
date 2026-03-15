@@ -4,7 +4,7 @@ from app.schemas.query import RouteDecision
 
 
 TOOL_ACTION_PATTERN = re.compile(
-    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|list|set|move)\b",
+    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|look\s+up|list|set|move)\b",
     re.IGNORECASE,
 )
 AMBIGUOUS_ACTION_PATTERN = re.compile(

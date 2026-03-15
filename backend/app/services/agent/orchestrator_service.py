@@ -22,6 +22,7 @@ from app.services.agent.clarification_service import (
     plan_search_miss_clarification,
     plan_search_summary_miss_clarification,
 )
+from app.services.llm.workflow_planner_service import generate_llm_workflow_plan
 from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
@@ -31,11 +32,11 @@ WORKFLOW_RUN_DATA_DIR.mkdir(parents=True, exist_ok=True)
 WORKFLOW_RUN_STORE_PATH = WORKFLOW_RUN_DATA_DIR / "workflow_runs.json"
 
 SEARCH_AND_TICKET_PATTERN = re.compile(
-    r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<ticket>(?:create|open).+\bticket\b.+)$",
+    r"(?P<search>^(?:search|find|lookup|look up).+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<ticket>(?:create|open).+\bticket\b.+)$",
     re.IGNORECASE,
 )
 SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
-    r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<summarize>summari[sz]e.+)$",
+    r"(?P<search>^(?:search|find|lookup|look up).+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<summarize>summari[sz]e.+)$",
     re.IGNORECASE,
 )
 UNSUPPORTED_DIRECT_ACTION_PATTERN = re.compile(
@@ -511,6 +512,33 @@ def _match_search_then_summarize_workflow(question: str) -> tuple[str, str] | No
     return match.group("search").strip(), match.group("summarize").strip()
 
 
+def _resolve_multistep_workflow(question: str) -> tuple[str | None, str | None, str | None, str | None]:
+    planning_mode, llm_plan = generate_llm_workflow_plan(question)
+
+    if llm_plan is not None:
+        workflow_kind = llm_plan["workflow_kind"]
+        if workflow_kind in {"search_then_ticket", "search_then_summarize"}:
+            return (
+                workflow_kind,
+                llm_plan["search_question"],
+                llm_plan["follow_up_question"],
+                planning_mode,
+            )
+        planning_mode = "heuristic_fallback_invalid_llm_workflow_plan"
+    elif planning_mode.startswith("llm_"):
+        planning_mode = "heuristic_fallback_invalid_llm_workflow_plan"
+
+    search_then_ticket = _match_search_then_ticket_workflow(question)
+    if search_then_ticket is not None:
+        return "search_then_ticket", search_then_ticket[0], search_then_ticket[1], planning_mode
+
+    search_then_summarize = _match_search_then_summarize_workflow(question)
+    if search_then_summarize is not None:
+        return "search_then_summarize", search_then_summarize[0], search_then_summarize[1], planning_mode
+
+    return None, None, None, planning_mode
+
+
 def _build_search_context_arguments(tool_output: dict[str, str]) -> dict[str, str]:
     arguments: dict[str, str] = {}
 
@@ -836,12 +864,13 @@ def resume_agent_request(
     overridden_plan_arguments = _extract_overridden_plan_arguments(clarification_context)
     resume_strategy = "generic_clarification_resume"
 
-    search_then_ticket = _match_search_then_ticket_workflow(resumed_question)
-    search_then_summarize = _match_search_then_summarize_workflow(resumed_question)
+    workflow_kind, workflow_search_question, workflow_follow_up_question, _ = _resolve_multistep_workflow(
+        resumed_question
+    )
 
-    if search_then_ticket is not None:
+    if workflow_kind == "search_then_ticket" and workflow_search_question and workflow_follow_up_question:
         resume_strategy = "search_then_ticket_resume"
-        search_question, ticket_question = search_then_ticket
+        search_question, ticket_question = workflow_search_question, workflow_follow_up_question
         resumed_search = _resume_search_question(search_question, clarification_context)
         resumed_ticket = _resume_ticket_question(ticket_question, clarification_context)
         execution_confirmed = _normalize_confirmation(
@@ -853,9 +882,13 @@ def resume_agent_request(
 
         resumed_question = f"{resumed_search} and {resumed_ticket}"
 
-    elif search_then_summarize is not None:
+    elif (
+        workflow_kind == "search_then_summarize"
+        and workflow_search_question
+        and workflow_follow_up_question
+    ):
         resume_strategy = "search_then_summarize_resume"
-        search_question, summarize_question = search_then_summarize
+        search_question, summarize_question = workflow_search_question, workflow_follow_up_question
         resumed_search = _resume_search_question(search_question, clarification_context)
         resumed_question = f"{resumed_search} and {summarize_question}"
 
@@ -995,12 +1028,30 @@ def orchestrate_agent_request(
 
     if route.route_type == "tool_execution":
         chained_steps: list[dict] = []
-        search_then_ticket = _match_search_then_ticket_workflow(question)
-        search_then_summarize = _match_search_then_summarize_workflow(question)
+        workflow_kind, workflow_search_question, workflow_follow_up_question, workflow_planning_mode = (
+            _resolve_multistep_workflow(question)
+        )
         resume_context = resume_context or {}
 
-        if search_then_ticket is not None:
-            search_question, ticket_question = search_then_ticket
+        if workflow_kind in {"search_then_ticket", "search_then_summarize"}:
+            planner_label = (
+                workflow_planning_mode
+                if workflow_planning_mode.startswith("llm_")
+                else "heuristic workflow matcher"
+            )
+            workflow_trace.append(
+                WorkflowTraceEvent(
+                    stage="workflow_planning",
+                    status="completed",
+                    timestamp=build_utc_timestamp(),
+                    detail=(
+                        f"Planned {workflow_kind} workflow via {planner_label}."
+                    ),
+                )
+            )
+
+        if workflow_kind == "search_then_ticket" and workflow_search_question and workflow_follow_up_question:
+            search_question, ticket_question = workflow_search_question, workflow_follow_up_question
             prior_search_context: dict[str, str] = {}
             ticket_resume_overrides = _extract_resume_ticket_overrides(resume_context)
             execution_confirmed = _normalize_confirmation(
@@ -1247,8 +1298,8 @@ def orchestrate_agent_request(
             )
             return _persist_workflow_response(response) if persist_run else response
 
-        if search_then_summarize is not None:
-            search_question, summarize_question = search_then_summarize
+        if workflow_kind == "search_then_summarize" and workflow_search_question and workflow_follow_up_question:
+            search_question, summarize_question = workflow_search_question, workflow_follow_up_question
             step_started_at = build_utc_timestamp()
             try:
                 tool_plan = plan_tool_request(search_question)

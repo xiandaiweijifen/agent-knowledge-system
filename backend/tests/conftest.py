@@ -66,3 +66,4 @@ def isolated_workflow_run_store(workspace_tmp_path, monkeypatch):
 def isolate_llm_planner_providers(monkeypatch):
     monkeypatch.setattr(settings, "tool_planner_provider", "fallback")
     monkeypatch.setattr(settings, "clarification_planner_provider", "fallback")
+    monkeypatch.setattr(settings, "workflow_planner_provider", "fallback")

@@ -238,6 +238,12 @@ def test_route_request_classifies_document_search_as_tool_execution():
     assert decision.route_type == "tool_execution"
 
 
+def test_route_request_classifies_look_up_document_search_as_tool_execution():
+    decision = route_request("Look up docs about RAG, then summarize the top 2 results")
+
+    assert decision.route_type == "tool_execution"
+
+
 def test_route_request_classifies_clarification_needed():
     decision = route_request("Please do that for production")
 
@@ -1327,6 +1333,117 @@ def test_plan_search_miss_clarification_uses_llm_planner_when_available(monkeypa
     assert response.planning_mode == "llm_openai"
     assert response.missing_fields == ["search_query_refinement", "execution_confirmation"]
     assert response.follow_up_questions
+
+
+def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_request(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text(
+        "The payment-service outage requires a high severity response.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr(settings, "workflow_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.generate_llm_workflow_plan",
+        lambda question: (
+            "llm_gemini",
+            {
+                "workflow_kind": "search_then_ticket",
+                "search_question": "Search docs for payment-service outage",
+                "follow_up_question": "create a high severity ticket for payment-service",
+            },
+        ),
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Look up docs about payment-service outage, then create a high severity ticket for payment-service",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["step_count"] == 2
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
+    assert any(
+        event["stage"] == "workflow_planning"
+        and "search_then_ticket workflow via llm_gemini" in event["detail"]
+        for event in payload["workflow_trace"]
+    )
+
+
+def test_query_agent_endpoint_falls_back_to_regex_multistep_when_llm_workflow_plan_is_invalid(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(settings, "workflow_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.generate_llm_workflow_plan",
+        lambda question: ("llm_gemini", {"workflow_kind": "not_real", "search_question": "", "follow_up_question": ""}),
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for RAG and summarize top 1 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["answer_source"] == "local_search_summary"
+    assert payload["tool_plan"]["tool_name"] == "document_search"
+
+
+def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow_planner(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Look up docs about RAG, then summarize top 1 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["answer_source"] == "local_search_summary"
+    assert any(
+        event["stage"] == "workflow_planning"
+        and "search_then_summarize workflow via heuristic workflow matcher" in event["detail"]
+        for event in payload["workflow_trace"]
+    )
 
 
 def test_plan_clarification_falls_back_when_provider_is_unavailable(monkeypatch):

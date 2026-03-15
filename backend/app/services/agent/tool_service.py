@@ -46,7 +46,7 @@ ENVIRONMENT_SEGMENT_PATTERN = re.compile(
     re.IGNORECASE,
 )
 SEARCH_PREFIX_PATTERN = re.compile(
-    r"^(search|find|lookup|look up|show|inspect|query)\s+(docs?|documents?)\s+(for\s+)?",
+    r"^(search|find|lookup|look up|show|inspect|query)\s+(docs?|documents?)\s+((for|about)\s+)?",
     re.IGNORECASE,
 )
 GENERIC_SEARCH_PREFIX_PATTERN = re.compile(
@@ -999,6 +999,7 @@ def infer_tool_request(question: str) -> InferredToolRequest:
     else:
         target = SEARCH_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
         target = GENERIC_SEARCH_PREFIX_PATTERN.sub("", target).strip(" ?.!")
+        target = re.sub(r"^about\s+", "", target, flags=re.IGNORECASE).strip(" ?.!")
         if not target:
             target = normalized_question.strip(" ?.!") or "documents"
 
