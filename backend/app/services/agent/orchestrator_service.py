@@ -151,6 +151,17 @@ def _normalize_confirmation(value: str) -> bool:
     return value.strip().lower() in {"yes", "y", "true", "confirmed", "continue"}
 
 
+def _extract_resume_ticket_overrides(clarification_context: dict[str, str]) -> dict[str, str]:
+    overrides: dict[str, str] = {}
+
+    for key in ("environment", "severity", "status", "ticket_id"):
+        value = clarification_context.get(key, "").strip()
+        if value:
+            overrides[key] = value
+
+    return overrides
+
+
 def _resume_search_question(
     search_question: str,
     clarification_context: dict[str, str],
@@ -222,10 +233,11 @@ def resume_agent_request(
         search_question, ticket_question = search_then_ticket
         resumed_search = _resume_search_question(search_question, clarification_context)
         resumed_ticket = _resume_ticket_question(ticket_question, clarification_context)
-
-        if not clarification_context.get("search_query_refinement", "").strip() and not _normalize_confirmation(
+        execution_confirmed = _normalize_confirmation(
             clarification_context.get("execution_confirmation", "")
-        ):
+        )
+
+        if not clarification_context.get("search_query_refinement", "").strip() and not execution_confirmed:
             raise ValueError("search_query_refinement_or_execution_confirmation_required")
 
         resumed_question = f"{resumed_search} and {resumed_ticket}"
@@ -242,6 +254,7 @@ def resume_agent_request(
         question=resumed_question,
         filename=filename,
         top_k=top_k,
+        resume_context=clarification_context,
     )
     response.workflow_trace.insert(
         0,
@@ -260,6 +273,7 @@ def orchestrate_agent_request(
     question: str,
     filename: str | None = None,
     top_k: int = 3,
+    resume_context: dict[str, str] | None = None,
 ) -> AgentWorkflowResponse:
     """Route and execute the next workflow step for an agent request."""
     route = route_request(question=question, filename=filename)
@@ -320,10 +334,15 @@ def orchestrate_agent_request(
         chained_steps: list[dict] = []
         search_then_ticket = _match_search_then_ticket_workflow(question)
         search_then_summarize = _match_search_then_summarize_workflow(question)
+        resume_context = resume_context or {}
 
         if search_then_ticket is not None:
             search_question, ticket_question = search_then_ticket
             prior_search_context: dict[str, str] = {}
+            ticket_resume_overrides = _extract_resume_ticket_overrides(resume_context)
+            execution_confirmed = _normalize_confirmation(
+                resume_context.get("execution_confirmation", "")
+            )
 
             for step_index, step_question in enumerate((search_question, ticket_question), start=1):
                 tool_plan = plan_tool_request(step_question)
@@ -346,6 +365,19 @@ def orchestrate_agent_request(
                                 "Step 2 inherited supporting search context from step 1 "
                                 "before ticket creation."
                             ),
+                        )
+                    )
+                if step_index == 2 and ticket_resume_overrides:
+                    tool_plan.arguments = {
+                        **tool_plan.arguments,
+                        **ticket_resume_overrides,
+                    }
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="resume_context",
+                            status="completed",
+                            timestamp=build_utc_timestamp(),
+                            detail="Applied structured clarification fields to ticket execution.",
                         )
                     )
                 workflow_trace.append(
@@ -392,6 +424,20 @@ def orchestrate_agent_request(
                     and tool_response.tool_name == "document_search"
                     and tool_response.output.get("matched_count") == "0"
                 ):
+                    if execution_confirmed:
+                        workflow_trace.append(
+                            WorkflowTraceEvent(
+                                stage="resume_context",
+                                status="completed",
+                                timestamp=build_utc_timestamp(),
+                                detail=(
+                                    "Search returned no supporting documents, but execution continued "
+                                    "because the clarified workflow explicitly confirmed proceeding."
+                                ),
+                            )
+                        )
+                        prior_search_context = {}
+                        continue
                     clarification_plan = plan_search_miss_clarification(
                         search_query=tool_plan.target,
                         next_action_question=ticket_question,

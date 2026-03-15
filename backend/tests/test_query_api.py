@@ -1258,4 +1258,83 @@ def test_resume_agent_endpoint_continues_search_then_ticket_workflow(
     assert payload["tool_chain"][-1]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][-1]["tool_execution"]["output"]["environment"] == "production"
     assert payload["workflow_trace"][0]["stage"] == "workflow_resume"
+    assert any(event["stage"] == "resume_context" for event in payload["workflow_trace"])
+
+
+def test_resume_agent_endpoint_applies_structured_ticket_overrides(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG reduces hallucinations and improves factual grounding.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "original_question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+            "clarification_context": {
+                "search_query_refinement": "RAG",
+                "environment": "staging",
+                "severity": "medium",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    final_plan = payload["tool_chain"][-1]["tool_plan"]
+    final_output = payload["tool_chain"][-1]["tool_execution"]["output"]
+    assert final_plan["arguments"]["environment"] == "staging"
+    assert final_plan["arguments"]["severity"] == "medium"
+    assert final_output["environment"] == "staging"
+    assert final_output["severity"] == "medium"
+
+
+def test_resume_agent_endpoint_can_continue_ticket_workflow_after_search_miss_when_confirmed(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.txt").write_text(
+        "This file only mentions deployment workflows.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "original_question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+            "clarification_context": {
+                "execution_confirmation": "yes",
+                "environment": "production",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["tool_chain"][0]["tool_execution"]["output"]["matched_count"] == "0"
+    assert payload["tool_chain"][-1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][-1]["tool_execution"]["output"]["environment"] == "production"
+    assert any(
+        "execution continued" in event["detail"]
+        for event in payload["workflow_trace"]
+        if event["stage"] == "resume_context"
+    )
 
