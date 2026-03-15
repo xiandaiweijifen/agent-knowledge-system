@@ -32,12 +32,13 @@ The current implementation is already beyond repository scaffolding. The system 
 
 ## Current Stage
 
-Phase 1 and the MVP of Phase 2/3 are complete.
+Phase 1, Phase 2, and Phase 3 are complete.
 
 Current focus:
 
 - stable ingestion and indexing workflow
 - retrieval quality diagnostics
+- agent workflow runtime and maintenance semantics
 - evaluation and observability
 - frontend console polish
 
@@ -58,8 +59,27 @@ Current focus:
 - `GET /api/documents/{filename}/embeddings/persisted`
 - `POST /api/query`
 - `POST /api/query/diagnostics`
+- `POST /api/query/route`
+- `POST /api/query/agent`
+- `POST /api/query/agent/resume`
+- `GET /api/query/agent/runs`
+- `GET /api/query/agent/runs/{run_id}`
+- `POST /api/query/agent/runs/migrate`
+- `GET /api/query/agent/runs/stats`
+- `POST /api/query/agent/runs/prune`
+- `POST /api/query/agent/runs/reset`
+- `GET /api/query/tools`
+- `POST /api/query/tools/plan`
+- `POST /api/query/tools/execute`
 - `GET /api/evaluation/retrieval/datasets`
 - `POST /api/evaluation/retrieval`
+
+### Agent Workflow Runtime
+
+- structured workflow runs with step-level metadata
+- terminal reasons, failure semantics, and resume semantics
+- persisted workflow run summaries and legacy migration support
+- workflow run maintenance endpoints for stats, pruning, and reset
 
 ### Frontend Console
 
