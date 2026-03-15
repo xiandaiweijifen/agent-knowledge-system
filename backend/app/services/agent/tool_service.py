@@ -241,7 +241,7 @@ def _candidate_search_segments(content: str) -> list[tuple[int, str]]:
     segments: list[tuple[int, str]] = []
     start = 0
 
-    for match in re.finditer(r"\n\s*\n|\n", content):
+    for match in re.finditer(r"\n\s*\n", content):
         end = match.start()
         segment = content[start:end].strip()
         if segment:
@@ -253,6 +253,77 @@ def _candidate_search_segments(content: str) -> list[tuple[int, str]]:
         segments.append((start, trailing))
 
     return segments
+
+
+def _split_search_sentences(text: str) -> list[str]:
+    normalized = _normalize_search_excerpt(text)
+    if not normalized:
+        return []
+    return [
+        sentence.strip()
+        for sentence in re.split(r"(?<=[.!?。！？])\s+(?=[A-Z0-9])", normalized)
+        if sentence.strip()
+    ]
+
+
+def _strip_heading_lines(segment: str) -> str:
+    cleaned_lines: list[str] = []
+    for raw_line in segment.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        if re.match(r"^#{1,6}\s+\S+", line):
+            continue
+        if len(line) < 28 and line == line.title() and "." not in line:
+            continue
+        cleaned_lines.append(line)
+
+    return "\n".join(cleaned_lines)
+
+
+def _select_segment_evidence_sentence(segment: str, query: str) -> str:
+    normalized_segment = _ensure_sentence_boundary_excerpt(_strip_heading_lines(segment))
+    if not normalized_segment or _is_heading_like_excerpt(normalized_segment):
+        return ""
+
+    sentences = _split_search_sentences(normalized_segment)
+    if not sentences:
+        return normalized_segment
+
+    lowered_query = query.lower()
+    query_terms = _tokenize_search_terms(query)
+
+    for sentence in sentences:
+        if lowered_query in sentence.lower():
+            return sentence
+
+    for sentence in sentences:
+        lowered_sentence = sentence.lower()
+        if any(term in lowered_sentence for term in query_terms):
+            return sentence
+
+    return sentences[0]
+
+
+def _find_segment_evidence_snippet(content: str, first_index: int, query: str) -> str:
+    for segment_start, segment in _candidate_search_segments(content):
+        segment_end = segment_start + len(segment)
+        if segment_end < first_index:
+            continue
+
+        evidence_sentence = _select_segment_evidence_sentence(segment, query)
+        if not evidence_sentence:
+            continue
+
+        lowered_sentence = evidence_sentence.lower()
+        lowered_query = query.lower()
+        if lowered_query in lowered_sentence:
+            return evidence_sentence
+
+        if any(term in lowered_sentence for term in _tokenize_search_terms(query)):
+            return evidence_sentence
+
+    return ""
 
 
 def _ensure_sentence_boundary_excerpt(text: str) -> str:
@@ -294,23 +365,21 @@ def _extract_search_snippet(content: str, first_index: int, query: str) -> str:
             break
 
     snippet = _ensure_sentence_boundary_excerpt(content[local_start:local_end])
-    lowered_query = query.lower()
+    min_length = max(36, len(query) + 8)
+    segment_evidence = _find_segment_evidence_snippet(content, first_index, query)
 
-    if _is_heading_like_excerpt(snippet) or len(snippet) < max(36, len(query) + 8):
-        for segment_start, segment in _candidate_search_segments(content):
-            normalized_segment = _ensure_sentence_boundary_excerpt(segment)
-            if not normalized_segment:
-                continue
-            if segment_start < first_index:
-                continue
-            if lowered_query not in normalized_segment.lower():
-                continue
-            if _is_heading_like_excerpt(normalized_segment):
-                continue
-            if len(normalized_segment) < max(36, len(query) + 8):
-                continue
-            snippet = normalized_segment
-            break
+    if segment_evidence and (
+        _is_heading_like_excerpt(snippet)
+        or len(snippet) < min_length
+        or "##" in snippet
+        or snippet.count(" ") < 5
+        or not re.search(r"[.!?。！？]$", snippet)
+    ):
+        snippet = segment_evidence
+
+    if segment_evidence and snippet != segment_evidence:
+        snippet = segment_evidence
+
     if len(snippet) > 220:
         snippet = f"{snippet[:217].rstrip()}..."
 

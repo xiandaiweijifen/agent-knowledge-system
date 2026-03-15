@@ -1128,9 +1128,11 @@ def test_query_agent_endpoint_supports_filename_scoped_search_summary(
     raw_dir = workspace_tmp_path / "raw"
     raw_dir.mkdir()
     (raw_dir / "rag_overview.md").write_text(
-        "RAG combines retrieval with language model generation.\n"
-        "Reranking\n"
-        "Reranking improves precision for the strongest chunks.",
+        "RAG combines retrieval with language model generation.\n\n"
+        "## Retrieval and Reranking\n\n"
+        "The first retrieval stage usually returns candidate chunks with vector similarity scores. "
+        "Many production systems then apply a reranker to reorder the candidates. "
+        "Reranking is useful when relevant chunks are present but not ranked highly enough.",
         encoding="utf-8",
     )
     (raw_dir / "notes.txt").write_text(
@@ -1157,7 +1159,10 @@ def test_query_agent_endpoint_supports_filename_scoped_search_summary(
     assert payload["tool_execution"]["output"]["returned_count"] == "1"
     assert "I searched 'rag_overview.md' for 'reranking'" in payload["answer"]
     assert "The strongest supporting document is rag_overview.md." in payload["answer"]
-    assert "Key evidence from rag_overview.md: Reranking improves precision for the strongest chunks." in payload["answer"]
+    assert (
+        "Key evidence from rag_overview.md: Reranking is useful when relevant chunks are present but not ranked highly enough."
+        in payload["answer"]
+    )
     assert "Key evidence from rag_overview.md: Reranking The first" not in payload["answer"]
     assert "Returned documents:" not in payload["answer"]
 

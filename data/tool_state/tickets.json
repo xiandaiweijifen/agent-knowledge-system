@@ -24,7 +24,7 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T10:58:12.089465+00:00",
+    "updated_at": "2026-03-15T11:03:25.476979+00:00",
     "closed_at": "2026-03-14T17:15:20.287583+00:00"
   },
   {
@@ -34,7 +34,7 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T10:58:12.104112+00:00"
+    "updated_at": "2026-03-15T11:03:25.491841+00:00"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -61,8 +61,8 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T10:58:12.060971+00:00",
-    "closed_at": "2026-03-15T10:58:12.060971+00:00"
+    "updated_at": "2026-03-15T11:03:25.447869+00:00",
+    "closed_at": "2026-03-15T11:03:25.447869+00:00"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -80,7 +80,7 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T10:58:12.075235+00:00"
+    "updated_at": "2026-03-15T11:03:25.462152+00:00"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +89,7 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T10:58:12.118782+00:00"
+    "updated_at": "2026-03-15T11:03:25.506371+00:00"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -801,5 +801,28 @@
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines | test_chunk.txt: RAG pipelines benefit from clean snippets that preserve sentence boundaries.",
     "supporting_match_count": "2",
     "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines"
+  },
+  {
+    "ticket_id": "TICKET-0076",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T11:03:25.428624+00:00",
+    "updated_at": "2026-03-15T11:03:25.428624+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0077",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T11:03:25.524426+00:00",
+    "updated_at": "2026-03-15T11:03:25.524426+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "rag_overview.md, test_chunk.txt",
+    "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+    "supporting_match_count": "2",
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
   }
 ]
