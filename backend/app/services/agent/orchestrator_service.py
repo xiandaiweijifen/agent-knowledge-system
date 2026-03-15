@@ -54,9 +54,11 @@ def _save_workflow_runs(runs: list[dict]) -> None:
 def _persist_workflow_response(
     response: AgentWorkflowResponse,
     resumed_from_question: str | None = None,
+    source_run_id: str | None = None,
 ) -> AgentWorkflowResponse:
     response.run_id = uuid.uuid4().hex
     response.resumed_from_question = resumed_from_question
+    response.source_run_id = source_run_id
     runs = _load_workflow_runs()
     runs.append(response.model_dump())
     _save_workflow_runs(runs)
@@ -271,18 +273,18 @@ def _resume_generic_question(
 def _resolve_resume_source(
     original_question: str | None,
     run_id: str | None,
-) -> tuple[str, str | None]:
+) -> tuple[str, str | None, str | None]:
     normalized_question = (original_question or "").strip()
     normalized_run_id = (run_id or "").strip()
 
     if normalized_question:
-        return normalized_question, None
+        return normalized_question, None, None
 
     if not normalized_run_id:
         raise ValueError("original_question_or_run_id_required")
 
     persisted_run = get_persisted_workflow_run(normalized_run_id)
-    return persisted_run.question, persisted_run.filename
+    return persisted_run.question, persisted_run.filename, persisted_run.run_id
 
 
 def resume_agent_request(
@@ -295,7 +297,7 @@ def resume_agent_request(
     if not clarification_context:
         raise ValueError("clarification_context_required")
 
-    source_question, source_filename = _resolve_resume_source(original_question, run_id)
+    source_question, source_filename, source_run_id = _resolve_resume_source(original_question, run_id)
     resumed_question = source_question.strip()
 
     search_then_ticket = _match_search_then_ticket_workflow(resumed_question)
@@ -342,6 +344,7 @@ def resume_agent_request(
     return _persist_workflow_response(
         response=response,
         resumed_from_question=source_question,
+        source_run_id=source_run_id,
     )
 
 

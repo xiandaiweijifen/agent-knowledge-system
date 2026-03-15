@@ -1413,6 +1413,7 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
         payload["resumed_from_question"]
         == "Search docs for payment-service outage and summarize top 2 results"
     )
+    assert payload["source_run_id"] is None
 
     lookup_response = client.get(f"/api/query/agent/runs/{payload['run_id']}")
 
@@ -1423,6 +1424,7 @@ def test_resume_agent_endpoint_persists_resumed_workflow_run_and_supports_lookup
         lookup_payload["resumed_from_question"]
         == "Search docs for payment-service outage and summarize top 2 results"
     )
+    assert lookup_payload["source_run_id"] is None
     assert lookup_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
     assert len(persisted_runs) == 1
@@ -1480,6 +1482,7 @@ def test_resume_agent_endpoint_supports_run_id_as_resume_source(
     assert resumed_payload["resumed_from_question"] == (
         "Search docs for payment-service outage and summarize top 2 results"
     )
+    assert resumed_payload["source_run_id"] == initial_payload["run_id"]
     assert resumed_payload["question"] == "Search rag_overview.md for RAG and summarize top 2 results"
     assert resumed_payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
 
