@@ -1188,10 +1188,16 @@ def test_query_agent_endpoint_returns_tool_workflow_result(workspace_tmp_path, m
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["step_count"] == 1
     assert payload["route"]["route_type"] == "tool_execution"
     assert len(payload["workflow_trace"]) >= 3
     assert payload["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_execution"]["execution_status"] == "completed"
+    assert payload["tool_chain"][0]["step_id"] == "step_1"
+    assert payload["tool_chain"][0]["step_index"] == 1
+    assert payload["tool_chain"][0]["step_status"] == "completed"
+    assert payload["tool_chain"][0]["started_at"]
+    assert payload["tool_chain"][0]["completed_at"]
     assert any(
         event["stage"] == "tool_execution"
         and "local_adapter tool ticketing:create" in event["detail"]
@@ -1242,8 +1248,16 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "completed"
+    assert payload["step_count"] == 2
     assert payload["route"]["route_type"] == "tool_execution"
     assert len(payload["tool_chain"]) == 2
+    assert payload["tool_chain"][0]["step_id"] == "step_1"
+    assert payload["tool_chain"][0]["step_index"] == 1
+    assert payload["tool_chain"][1]["step_id"] == "step_2"
+    assert payload["tool_chain"][1]["step_index"] == 2
+    assert payload["tool_chain"][1]["step_status"] == "completed"
+    assert payload["tool_chain"][1]["started_at"]
+    assert payload["tool_chain"][1]["completed_at"]
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_query"] == "payment-service outage"
@@ -1283,8 +1297,12 @@ def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
+    assert payload["step_count"] == 1
     assert payload["route"]["route_type"] == "tool_execution"
     assert len(payload["tool_chain"]) == 1
+    assert payload["tool_chain"][0]["step_id"] == "step_1"
+    assert payload["tool_chain"][0]["step_index"] == 1
+    assert payload["tool_chain"][0]["step_status"] == "completed"
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_execution"]["tool_name"] == "document_search"
     assert payload["tool_execution"]["output"]["matched_count"] == "0"
@@ -1508,6 +1526,7 @@ def test_query_agent_endpoint_returns_clarification_result():
     assert response.status_code == 200
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
+    assert payload["step_count"] == 0
     assert payload["route"]["route_type"] == "clarification_needed"
     assert len(payload["workflow_trace"]) >= 2
     assert payload["clarification_message"]

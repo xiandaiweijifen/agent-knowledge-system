@@ -33,6 +33,17 @@ class WorkflowTraceEvent(BaseModel):
     detail: str
 
 
+class WorkflowStepRecord(BaseModel):
+    step_id: str
+    step_index: int
+    step_status: str
+    started_at: str
+    completed_at: str
+    question: str
+    tool_plan: dict
+    tool_execution: dict
+
+
 class RouteDecision(BaseModel):
     route_type: str
     route_reason: str
@@ -107,6 +118,7 @@ class AgentWorkflowResponse(BaseModel):
     resumed_from_question: str | None = None
     source_run_id: str | None = None
     workflow_status: str
+    step_count: int = 0
     route: RouteDecision
     workflow_trace: list[WorkflowTraceEvent] = Field(default_factory=list)
     filename: str | None = None
@@ -122,7 +134,7 @@ class AgentWorkflowResponse(BaseModel):
     clarification_plan: dict | None = None
     tool_plan: dict | None = None
     tool_execution: dict | None = None
-    tool_chain: list[dict] = Field(default_factory=list)
+    tool_chain: list[WorkflowStepRecord] = Field(default_factory=list)
 
 
 class AgentWorkflowRunSummary(BaseModel):

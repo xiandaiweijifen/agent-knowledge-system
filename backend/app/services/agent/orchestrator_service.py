@@ -235,6 +235,27 @@ def _extract_summary_step_context(summarize_question: str) -> dict[str, str]:
     return context
 
 
+def _build_workflow_step_record(
+    *,
+    step_index: int,
+    step_question: str,
+    tool_plan: dict,
+    tool_execution: dict,
+    started_at: str,
+    completed_at: str,
+) -> dict:
+    return {
+        "step_id": f"step_{step_index}",
+        "step_index": step_index,
+        "step_status": tool_execution.get("execution_status", "completed"),
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "question": step_question,
+        "tool_plan": tool_plan,
+        "tool_execution": tool_execution,
+    }
+
+
 def _normalize_confirmation(value: str) -> bool:
     return value.strip().lower() in {"yes", "y", "true", "confirmed", "continue"}
 
@@ -459,6 +480,7 @@ def orchestrate_agent_request(
             )
 
             for step_index, step_question in enumerate((search_question, ticket_question), start=1):
+                step_started_at = build_utc_timestamp()
                 tool_plan = plan_tool_request(step_question)
                 if (
                     step_index == 2
@@ -513,11 +535,12 @@ def orchestrate_agent_request(
                         arguments=tool_plan.arguments,
                     )
                 )
+                step_completed_at = build_utc_timestamp()
                 workflow_trace.append(
                     WorkflowTraceEvent(
                         stage="tool_execution",
                         status="completed",
-                        timestamp=build_utc_timestamp(),
+                        timestamp=step_completed_at,
                         detail=(
                             f"Step {step_index}: executed {tool_response.execution_mode} tool "
                             f"{tool_response.tool_name}:{tool_response.action} "
@@ -526,11 +549,14 @@ def orchestrate_agent_request(
                     )
                 )
                 chained_steps.append(
-                    {
-                        "question": step_question,
-                        "tool_plan": tool_plan.model_dump(),
-                        "tool_execution": tool_response.model_dump(),
-                    }
+                    _build_workflow_step_record(
+                        step_index=step_index,
+                        step_question=step_question,
+                        tool_plan=tool_plan.model_dump(),
+                        tool_execution=tool_response.model_dump(),
+                        started_at=step_started_at,
+                        completed_at=step_completed_at,
+                    )
                 )
 
                 if (
@@ -580,6 +606,7 @@ def orchestrate_agent_request(
                         clarification_plan=clarification_plan.model_dump(),
                         tool_plan=tool_plan.model_dump(),
                         tool_execution=tool_response.model_dump(),
+                        step_count=len(chained_steps),
                         tool_chain=chained_steps,
                     )
                     return _persist_workflow_response(response) if persist_run else response
@@ -591,6 +618,7 @@ def orchestrate_agent_request(
             response = AgentWorkflowResponse(
                 question=question,
                 workflow_status="completed",
+                step_count=len(chained_steps),
                 route=route,
                 workflow_trace=workflow_trace,
                 filename=filename,
@@ -602,6 +630,7 @@ def orchestrate_agent_request(
 
         if search_then_summarize is not None:
             search_question, summarize_question = search_then_summarize
+            step_started_at = build_utc_timestamp()
             tool_plan = plan_tool_request(search_question)
             summary_context = _extract_summary_step_context(summarize_question)
             if summary_context:
@@ -628,11 +657,12 @@ def orchestrate_agent_request(
                     arguments=tool_plan.arguments,
                 )
             )
+            step_completed_at = build_utc_timestamp()
             workflow_trace.append(
                 WorkflowTraceEvent(
                     stage="tool_execution",
                     status="completed",
-                    timestamp=build_utc_timestamp(),
+                    timestamp=step_completed_at,
                     detail=(
                         f"Executed {tool_response.execution_mode} tool "
                         f"{tool_response.tool_name}:{tool_response.action} "
@@ -641,11 +671,14 @@ def orchestrate_agent_request(
                 )
             )
             chained_steps.append(
-                {
-                    "question": search_question,
-                    "tool_plan": tool_plan.model_dump(),
-                    "tool_execution": tool_response.model_dump(),
-                }
+                _build_workflow_step_record(
+                    step_index=1,
+                    step_question=search_question,
+                    tool_plan=tool_plan.model_dump(),
+                    tool_execution=tool_response.model_dump(),
+                    started_at=step_started_at,
+                    completed_at=step_completed_at,
+                )
             )
 
             if tool_response.output.get("matched_count") == "0":
@@ -674,6 +707,7 @@ def orchestrate_agent_request(
                     clarification_plan=clarification_plan.model_dump(),
                     tool_plan=tool_plan.model_dump(),
                     tool_execution=tool_response.model_dump(),
+                    step_count=len(chained_steps),
                     tool_chain=chained_steps,
                 )
                 return _persist_workflow_response(response) if persist_run else response
@@ -706,10 +740,12 @@ def orchestrate_agent_request(
                 chat_model="local-heuristic-summary",
                 tool_plan=tool_plan.model_dump(),
                 tool_execution=tool_response.model_dump(),
+                step_count=len(chained_steps),
                 tool_chain=chained_steps,
             )
             return _persist_workflow_response(response) if persist_run else response
 
+        step_started_at = build_utc_timestamp()
         tool_plan = plan_tool_request(question)
         workflow_trace.append(
             WorkflowTraceEvent(
@@ -730,11 +766,12 @@ def orchestrate_agent_request(
                 arguments=tool_plan.arguments,
             )
         )
+        step_completed_at = build_utc_timestamp()
         workflow_trace.append(
             WorkflowTraceEvent(
                 stage="tool_execution",
                 status="completed",
-                timestamp=build_utc_timestamp(),
+                timestamp=step_completed_at,
                 detail=(
                     f"Executed {tool_response.execution_mode} tool "
                     f"{tool_response.tool_name}:{tool_response.action} "
@@ -745,17 +782,21 @@ def orchestrate_agent_request(
         response = AgentWorkflowResponse(
             question=question,
             workflow_status="completed",
+            step_count=1,
             route=route,
             workflow_trace=workflow_trace,
             filename=filename,
             tool_plan=tool_plan.model_dump(),
             tool_execution=tool_response.model_dump(),
             tool_chain=[
-                {
-                    "question": question,
-                    "tool_plan": tool_plan.model_dump(),
-                    "tool_execution": tool_response.model_dump(),
-                }
+                _build_workflow_step_record(
+                    step_index=1,
+                    step_question=question,
+                    tool_plan=tool_plan.model_dump(),
+                    tool_execution=tool_response.model_dump(),
+                    started_at=step_started_at,
+                    completed_at=step_completed_at,
+                )
             ],
         )
         return _persist_workflow_response(response) if persist_run else response
@@ -775,6 +816,7 @@ def orchestrate_agent_request(
     response = AgentWorkflowResponse(
         question=question,
         workflow_status="clarification_required",
+        step_count=0,
         route=route,
         workflow_trace=workflow_trace,
         filename=filename,
