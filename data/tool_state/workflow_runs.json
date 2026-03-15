@@ -436,5 +436,69 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "bb32c22df1fe45ce9622d81aa662768a",
+    "question": "Please do that for production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "clarification_requested",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:28:15.585240+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:28:17.679452+00:00",
+    "step_count": 0,
+    "route": {
+      "route_type": "clarification_needed",
+      "route_reason": "The request refers to an action with an ambiguous reference, so the system should ask for clarification before proceeding.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:28:15.585285+00:00",
+        "detail": "Request routed to clarification_needed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:28:17.679452+00:00",
+        "detail": "Clarification requested for fields: environment, action."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "To proceed, I need to know the specific action you want to perform and confirm the target environment.",
+    "clarification_plan": {
+      "question": "Please do that for production",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "environment",
+        "action"
+      ],
+      "follow_up_questions": [
+        "What specific action do you want to perform in production?",
+        "Which environment are you referring to (e.g., production, staging, development)?"
+      ],
+      "clarification_summary": "To proceed, I need to know the specific action you want to perform and confirm the target environment."
+    },
+    "tool_plan": null,
+    "tool_execution": null,
+    "tool_chain": []
   }
 ]

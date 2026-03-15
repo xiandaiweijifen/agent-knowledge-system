@@ -2891,3 +2891,97 @@ def test_reset_agent_workflow_runs_endpoint_clears_runs_with_confirmation(
     persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
     assert persisted_runs == []
 
+
+def test_tool_planner_uses_dedicated_gemini_model_when_configured(monkeypatch):
+    import httpx
+
+    captured: dict[str, object] = {}
+
+    def fake_post(url, headers, json, timeout):
+        captured["url"] = url
+
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {
+                    "candidates": [
+                        {
+                            "content": {
+                                "parts": [
+                                    {
+                                        "text": __import__("json").dumps(
+                                            {
+                                                "tool_name": "document_search",
+                                                "action": "query",
+                                                "target": "RAG",
+                                                "arguments": {},
+                                            }
+                                        )
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+
+        return FakeResponse()
+
+    monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
+    monkeypatch.setattr(settings, "gemini_api_key", "configured")
+    monkeypatch.setattr(settings, "gemini_chat_model", "gemini-chat-default")
+    monkeypatch.setattr(settings, "gemini_tool_planner_model", "gemini-tool-planner")
+    monkeypatch.setattr(httpx, "post", fake_post)
+
+    response = plan_tool_request("Search docs for RAG")
+
+    assert response.planning_mode == "llm_gemini"
+    assert "gemini-tool-planner:generateContent" in captured["url"]
+
+
+def test_clarification_planner_uses_dedicated_openai_model_when_configured(monkeypatch):
+    import httpx
+
+    captured: dict[str, object] = {}
+
+    def fake_post(url, headers, json, timeout):
+        captured["payload"] = json
+
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": __import__("json").dumps(
+                                    {
+                                        "missing_fields": ["target", "priority"],
+                                        "follow_up_questions": [
+                                            "Which service should the agent act on?",
+                                            "What severity should the ticket use?",
+                                        ],
+                                        "clarification_summary": "The request needs more detail before execution.",
+                                    }
+                                )
+                            }
+                        }
+                    ]
+                }
+
+        return FakeResponse()
+
+    monkeypatch.setattr(settings, "clarification_planner_provider", "openai")
+    monkeypatch.setattr(settings, "openai_api_key", "configured")
+    monkeypatch.setattr(settings, "openai_chat_model", "gpt-chat-default")
+    monkeypatch.setattr(settings, "openai_clarification_planner_model", "gpt-clarification-planner")
+    monkeypatch.setattr(httpx, "post", fake_post)
+
+    response = plan_clarification("Please do that for production")
+
+    assert response.planning_mode == "llm_openai"
+    assert captured["payload"]["model"] == "gpt-clarification-planner"
+

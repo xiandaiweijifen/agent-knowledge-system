@@ -12,6 +12,14 @@ GEMINI_GENERATE_CONTENT_URL_TEMPLATE = (
 )
 
 
+def _resolve_openai_tool_planner_model() -> str:
+    return settings.openai_tool_planner_model.strip() or settings.openai_chat_model
+
+
+def _resolve_gemini_tool_planner_model() -> str:
+    return settings.gemini_tool_planner_model.strip() or settings.gemini_chat_model
+
+
 def _strip_json_fences(text: str) -> str:
     cleaned = text.strip()
     if cleaned.startswith("```"):
@@ -101,6 +109,7 @@ def _parse_llm_plan_response(raw_text: str) -> dict[str, str] | None:
 
 
 def _generate_openai_tool_plan(question: str, supported_tools: dict[str, dict[str, object]]) -> dict | None:
+    model_name = _resolve_openai_tool_planner_model()
     response = httpx.post(
         OPENAI_CHAT_COMPLETIONS_URL,
         headers={
@@ -108,7 +117,7 @@ def _generate_openai_tool_plan(question: str, supported_tools: dict[str, dict[st
             "Content-Type": "application/json",
         },
         json={
-            "model": settings.openai_chat_model,
+            "model": model_name,
             "temperature": 0,
             "response_format": {"type": "json_object"},
             "messages": [
@@ -133,8 +142,9 @@ def _generate_openai_tool_plan(question: str, supported_tools: dict[str, dict[st
 
 
 def _generate_gemini_tool_plan(question: str, supported_tools: dict[str, dict[str, object]]) -> dict | None:
+    model_name = _resolve_gemini_tool_planner_model()
     response = httpx.post(
-        GEMINI_GENERATE_CONTENT_URL_TEMPLATE.format(model_name=settings.gemini_chat_model),
+        GEMINI_GENERATE_CONTENT_URL_TEMPLATE.format(model_name=model_name),
         headers={
             "x-goog-api-key": settings.gemini_api_key,
             "Content-Type": "application/json",
