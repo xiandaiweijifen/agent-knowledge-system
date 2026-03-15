@@ -30,9 +30,44 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
             filename=case.filename,
             top_k=case.top_k,
         )
+        actual_tool_chain_length = len(response.tool_chain)
+        final_tool_execution = response.tool_execution or {}
+        actual_final_tool_name = (
+            final_tool_execution.get("tool_name")
+            if isinstance(final_tool_execution, dict)
+            else final_tool_execution.tool_name
+        )
+        actual_final_action = (
+            final_tool_execution.get("action")
+            if isinstance(final_tool_execution, dict)
+            else final_tool_execution.action
+        )
+        final_output = (
+            final_tool_execution.get("output", {})
+            if isinstance(final_tool_execution, dict)
+            else final_tool_execution.output
+        )
+        final_output_key_matches = {
+            key: key in final_output
+            for key in case.expected_final_output_keys
+        }
+
         matched = (
             response.route.route_type == case.expected_route_type
             and response.workflow_status == case.expected_workflow_status
+            and (
+                case.expected_tool_chain_length is None
+                or actual_tool_chain_length == case.expected_tool_chain_length
+            )
+            and (
+                case.expected_final_tool_name is None
+                or actual_final_tool_name == case.expected_final_tool_name
+            )
+            and (
+                case.expected_final_action is None
+                or actual_final_action == case.expected_final_action
+            )
+            and all(final_output_key_matches.values())
         )
         case_results.append(
             AgentWorkflowEvalCaseResult(
@@ -45,6 +80,13 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 actual_workflow_status=response.workflow_status,
                 route_reason=response.route.route_reason,
                 matched=matched,
+                expected_tool_chain_length=case.expected_tool_chain_length,
+                actual_tool_chain_length=actual_tool_chain_length,
+                expected_final_tool_name=case.expected_final_tool_name,
+                actual_final_tool_name=actual_final_tool_name,
+                expected_final_action=case.expected_final_action,
+                actual_final_action=actual_final_action,
+                final_output_key_matches=final_output_key_matches,
             )
         )
 

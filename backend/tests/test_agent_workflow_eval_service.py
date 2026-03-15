@@ -62,6 +62,10 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
                         "question": "Create a ticket for the payment service outage",
                         "expected_route_type": "tool_execution",
                         "expected_workflow_status": "completed",
+                        "expected_tool_chain_length": 1,
+                        "expected_final_tool_name": "ticketing",
+                        "expected_final_action": "create",
+                        "expected_final_output_keys": ["ticket_id", "status"],
                     },
                     {
                         "case_id": "case_3",
@@ -110,12 +114,20 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
                         "question": "Search docs for RAG and create a high severity ticket for payment-service",
                         "expected_route_type": "tool_execution",
                         "expected_workflow_status": "completed",
+                        "expected_tool_chain_length": 2,
+                        "expected_final_tool_name": "ticketing",
+                        "expected_final_action": "create",
+                        "expected_final_output_keys": ["ticket_id", "supporting_query", "supporting_summary"],
                     },
                     {
                         "case_id": "case_11",
                         "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
                         "expected_route_type": "tool_execution",
                         "expected_workflow_status": "clarification_required",
+                        "expected_tool_chain_length": 1,
+                        "expected_final_tool_name": "document_search",
+                        "expected_final_action": "query",
+                        "expected_final_output_keys": ["matched_count"],
                     },
                     {
                         "case_id": "case_12",
@@ -134,3 +146,7 @@ def test_evaluate_agent_workflow_dataset_computes_workflow_accuracy(
     assert report.summary.total_cases == 12
     assert report.summary.workflow_accuracy == 1.0
     assert all(case.matched for case in report.cases)
+    multistep_case = next(case for case in report.cases if case.case_id == "case_10")
+    assert multistep_case.actual_tool_chain_length == 2
+    assert multistep_case.actual_final_tool_name == "ticketing"
+    assert multistep_case.final_output_key_matches["supporting_summary"] is True

@@ -64,6 +64,10 @@ class AgentWorkflowEvalCase(BaseModel):
     top_k: int = 3
     expected_route_type: str
     expected_workflow_status: str
+    expected_tool_chain_length: int | None = None
+    expected_final_tool_name: str | None = None
+    expected_final_action: str | None = None
+    expected_final_output_keys: list[str] = Field(default_factory=list)
 
 
 class AgentWorkflowEvalCaseResult(BaseModel):
@@ -76,6 +80,13 @@ class AgentWorkflowEvalCaseResult(BaseModel):
     actual_workflow_status: str
     route_reason: str
     matched: bool
+    expected_tool_chain_length: int | None = None
+    actual_tool_chain_length: int = 0
+    expected_final_tool_name: str | None = None
+    actual_final_tool_name: str | None = None
+    expected_final_action: str | None = None
+    actual_final_action: str | None = None
+    final_output_key_matches: dict[str, bool] = Field(default_factory=dict)
 
 
 class AgentWorkflowEvalSummary(BaseModel):
