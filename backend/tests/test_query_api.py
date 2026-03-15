@@ -452,14 +452,17 @@ def test_execute_ticketing_tool_supports_list(workspace_tmp_path, monkeypatch):
     assert listed.output["resource_type"] == "ticket"
     assert listed.output["item_count"] == "2"
     assert listed.output["ticket_count"] == "2"
-    assert listed.output["ticket_ids"] == "TICKET-0001, TICKET-0002"
+    assert listed.output["matched_count"] == "2"
+    assert listed.output["sort_by"] == "updated_at"
+    assert listed.output["sort_order"] == "desc"
+    assert listed.output["ticket_ids"] == "TICKET-0002, TICKET-0001"
     listed_records = json.loads(listed.output["tickets_json"])
     assert len(listed_records) == 2
-    assert listed.output["ticket_records"][0]["ticket_id"] == "TICKET-0001"
+    assert listed.output["ticket_records"][0]["ticket_id"] == "TICKET-0002"
     assert listed.output["ticket_records"][0]["status"] == "open"
     assert listed.output["ticket_records"] == listed_records
     assert listed.output["status_filter"] == "open"
-    assert "TICKET-0001" in listed.output["tickets"]
+    assert listed.output["tickets"].startswith("TICKET-0002")
 
 
 def test_execute_ticketing_tool_filters_list_by_canonical_target(
@@ -626,6 +629,68 @@ def test_execute_ticketing_tool_filters_list_by_combined_fields(
     assert listed.output["environment_filter"] == "production"
     assert listed.output["ticket_records"][0]["ticket_id"] == "TICKET-0001"
     assert listed.output["ticket_records"][0]["environment"] == "production"
+
+
+def test_execute_ticketing_tool_list_honors_max_results_and_latest_order(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    ticket_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "ticket_id": "TICKET-0001",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-15T00:00:00+00:00",
+                    "updated_at": "2026-03-15T00:00:00+00:00",
+                },
+                {
+                    "ticket_id": "TICKET-0002",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-15T01:00:00+00:00",
+                    "updated_at": "2026-03-15T01:00:00+00:00",
+                },
+                {
+                    "ticket_id": "TICKET-0003",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-15T02:00:00+00:00",
+                    "updated_at": "2026-03-15T02:00:00+00:00",
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    listed = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="list",
+            target="tickets",
+            arguments={"status": "open", "max_results": "2"},
+        )
+    )
+
+    assert listed.execution_status == "completed"
+    assert listed.output["matched_count"] == "3"
+    assert listed.output["item_count"] == "2"
+    assert listed.output["ticket_count"] == "2"
+    assert listed.output["max_results"] == "2"
+    assert listed.output["ticket_ids"] == "TICKET-0003, TICKET-0002"
+    assert [ticket["ticket_id"] for ticket in listed.output["ticket_records"]] == [
+        "TICKET-0003",
+        "TICKET-0002",
+    ]
 
 
 def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
@@ -971,6 +1036,17 @@ def test_plan_tool_request_extracts_combined_ticket_list_filters():
     assert response.arguments["target_filter"] == "payment-service"
     assert response.arguments["severity_filter"] == "high"
     assert response.arguments["environment_filter"] == "production"
+
+
+def test_plan_tool_request_extracts_max_results_for_ticket_list_queries():
+    response = plan_tool_request("List open tickets for payment service and show top 2 results")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "list"
+    assert response.target == "tickets"
+    assert response.arguments["status"] == "open"
+    assert response.arguments["target_filter"] == "payment-service"
+    assert response.arguments["max_results"] == "2"
 
 
 def test_plan_tool_request_extracts_ticket_id_for_close_requests():

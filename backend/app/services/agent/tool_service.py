@@ -176,6 +176,8 @@ def _extract_ticket_target_filter(question: str) -> str | None:
     if not match:
         return None
     target = ENVIRONMENT_SEGMENT_PATTERN.sub("", match.group("target")).strip(" .")
+    target = RESULT_LIMIT_PATTERN.sub("", target).strip(" .")
+    target = re.sub(r"\band\s+show\b", "", target, flags=re.IGNORECASE).strip(" .")
     return _canonicalize_ticket_target(target)
 
 
@@ -254,6 +256,17 @@ def _build_ticket_collection_records(tickets: list[dict[str, Any]]) -> list[dict
             }
         )
     return serialized_records
+
+
+def _sort_tickets_by_latest(tickets: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(
+        tickets,
+        key=lambda ticket: (
+            ticket.get("updated_at", "") or ticket.get("created_at", ""),
+            ticket.get("ticket_id", ""),
+        ),
+        reverse=True,
+    )
 
 
 def _find_ticket(
@@ -564,6 +577,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         ) if request.arguments.get("target_filter", "").strip() else ""
         severity_filter = request.arguments.get("severity_filter", "").strip().lower()
         environment_filter = request.arguments.get("environment_filter", "").strip().lower()
+        max_results = _parse_max_results_argument(request.arguments)
         filtered_tickets = tickets
         if status_filter:
             filtered_tickets = [
@@ -587,24 +601,30 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
                 for ticket in filtered_tickets
                 if ticket.get("environment", "").lower() == environment_filter
             ]
+        filtered_count = len(filtered_tickets)
+        filtered_tickets = _sort_tickets_by_latest(filtered_tickets)
+        returned_tickets = filtered_tickets[:max_results] if max_results else filtered_tickets
 
         ticket_summaries = " | ".join(
             f"{ticket['ticket_id']} [{ticket['status']}] {ticket['target']}"
-            for ticket in filtered_tickets
+            for ticket in returned_tickets
         )
-        ticket_records = _build_ticket_collection_records(filtered_tickets)
+        ticket_records = _build_ticket_collection_records(returned_tickets)
         output: dict[str, Any] = {
             **_build_tool_output_metadata(
                 output_kind="collection",
                 resource_type="ticket",
                 target=target or "tickets",
-                item_count=len(filtered_tickets),
+                item_count=len(returned_tickets),
             ),
-            "ticket_count": str(len(filtered_tickets)),
+            "ticket_count": str(len(returned_tickets)),
+            "matched_count": str(filtered_count),
             "tickets": ticket_summaries,
-            "ticket_ids": ", ".join(ticket["ticket_id"] for ticket in filtered_tickets),
+            "ticket_ids": ", ".join(ticket["ticket_id"] for ticket in returned_tickets),
             "tickets_json": json.dumps(ticket_records, ensure_ascii=False),
             "ticket_records": ticket_records,
+            "sort_by": "updated_at",
+            "sort_order": "desc",
         }
         if status_filter:
             output["status_filter"] = status_filter
@@ -614,6 +634,8 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             output["severity_filter"] = severity_filter
         if environment_filter:
             output["environment_filter"] = environment_filter
+        if max_results:
+            output["max_results"] = str(max_results)
 
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -621,7 +643,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             target=target or "tickets",
             execution_status="completed",
             execution_mode="local_adapter",
-            result_summary=f"Loaded {len(filtered_tickets)} local ticket(s).",
+            result_summary=f"Loaded {len(returned_tickets)} local ticket(s).",
             trace_id=trace_id,
             executed_at=now,
             output=output,
@@ -1028,6 +1050,9 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
             target_filter = _extract_ticket_target_filter(question)
             if target_filter:
                 arguments["target_filter"] = target_filter
+            max_results = _extract_search_max_results_argument(question)
+            if max_results:
+                arguments["max_results"] = max_results
 
         inferred_request = InferredToolRequest(
             tool_name=inferred_request.tool_name,

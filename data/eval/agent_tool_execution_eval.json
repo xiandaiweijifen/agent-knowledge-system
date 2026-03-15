@@ -79,6 +79,25 @@
       "expected_output_keys": ["ticket_records", "target_filter", "severity_filter", "environment_filter", "ticket_ids"]
     },
     {
+      "case_id": "tool_eval_4d",
+      "question": "List open tickets for payment service and show top 2 results",
+      "expected_tool_name": "ticketing",
+      "expected_action": "list",
+      "expected_execution_status": "completed",
+      "expected_arguments": {
+        "status": "open",
+        "target_filter": "payment-service",
+        "max_results": "2"
+      },
+      "expected_output": {
+        "target_filter": "payment-service",
+        "max_results": "2",
+        "sort_by": "updated_at",
+        "sort_order": "desc"
+      },
+      "expected_output_keys": ["ticket_records", "ticket_ids", "matched_count", "sort_by", "sort_order", "max_results"]
+    },
+    {
       "case_id": "tool_eval_5",
       "question": "Search docs for RAG and show top 2 results",
       "expected_tool_name": "document_search",
