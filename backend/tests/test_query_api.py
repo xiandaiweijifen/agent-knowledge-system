@@ -2189,7 +2189,20 @@ def test_list_agent_workflow_runs_endpoint_normalizes_legacy_tool_chain(
                         "route_reason": "legacy route",
                         "filename": None,
                     },
-                    "workflow_trace": [],
+                    "workflow_trace": [
+                        {
+                            "stage": "routing",
+                            "status": "completed",
+                            "timestamp": "2026-03-15T16:12:37.485983+00:00",
+                            "detail": "Request routed to tool_execution.",
+                        },
+                        {
+                            "stage": "tool_execution",
+                            "status": "completed",
+                            "timestamp": "2026-03-15T16:12:37.487903+00:00",
+                            "detail": "Executed local_adapter tool document_search:query with status completed.",
+                        },
+                    ],
                     "tool_chain": [
                         {
                             "question": "Search docs for reranking",
@@ -2243,7 +2256,20 @@ def test_get_agent_workflow_run_endpoint_normalizes_legacy_tool_chain(
                         "route_reason": "legacy route",
                         "filename": None,
                     },
-                    "workflow_trace": [],
+                    "workflow_trace": [
+                        {
+                            "stage": "routing",
+                            "status": "completed",
+                            "timestamp": "2026-03-15T16:12:37.485983+00:00",
+                            "detail": "Request routed to tool_execution.",
+                        },
+                        {
+                            "stage": "tool_execution",
+                            "status": "completed",
+                            "timestamp": "2026-03-15T16:12:37.487903+00:00",
+                            "detail": "Executed local_adapter tool document_search:query with status completed.",
+                        },
+                    ],
                     "tool_chain": [
                         {
                             "question": "Search docs for reranking",
@@ -2274,6 +2300,11 @@ def test_get_agent_workflow_run_endpoint_normalizes_legacy_tool_chain(
     assert payload["tool_chain"][0]["step_index"] == 1
     assert payload["tool_chain"][0]["step_status"] == "completed"
     assert payload["tool_chain"][0]["started_at"] == "2026-03-15T16:12:37.487871+00:00"
+    assert payload["step_count"] == 1
+    assert payload["started_at"] == "2026-03-15T16:12:37.485983+00:00"
+    assert payload["completed_at"] == "2026-03-15T16:12:37.487903+00:00"
+    assert payload["last_updated_at"] == "2026-03-15T16:12:37.487903+00:00"
+    assert payload["terminal_reason"] == "tool_execution_completed"
 
 
 def test_migrate_agent_workflow_runs_endpoint_upgrades_legacy_tool_chain(
@@ -2293,7 +2324,20 @@ def test_migrate_agent_workflow_runs_endpoint_upgrades_legacy_tool_chain(
                         "route_reason": "legacy route",
                         "filename": None,
                     },
-                    "workflow_trace": [],
+                    "workflow_trace": [
+                        {
+                            "stage": "routing",
+                            "status": "completed",
+                            "timestamp": "2026-03-15T16:12:37.485983+00:00",
+                            "detail": "Request routed to tool_execution.",
+                        },
+                        {
+                            "stage": "tool_execution",
+                            "status": "completed",
+                            "timestamp": "2026-03-15T16:12:37.487903+00:00",
+                            "detail": "Executed local_adapter tool document_search:query with status completed.",
+                        },
+                    ],
                     "tool_chain": [
                         {
                             "question": "Search docs for reranking",
@@ -2326,6 +2370,11 @@ def test_migrate_agent_workflow_runs_endpoint_upgrades_legacy_tool_chain(
     persisted_runs = json.loads(workflow_run_store_path.read_text(encoding="utf-8"))
     assert persisted_runs[0]["tool_chain"][0]["step_id"] == "step_1"
     assert persisted_runs[0]["tool_chain"][0]["step_index"] == 1
+    assert persisted_runs[0]["step_count"] == 1
+    assert persisted_runs[0]["started_at"] == "2026-03-15T16:12:37.485983+00:00"
+    assert persisted_runs[0]["completed_at"] == "2026-03-15T16:12:37.487903+00:00"
+    assert persisted_runs[0]["last_updated_at"] == "2026-03-15T16:12:37.487903+00:00"
+    assert persisted_runs[0]["terminal_reason"] == "tool_execution_completed"
 
 
 def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(

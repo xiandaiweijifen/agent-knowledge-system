@@ -95,7 +95,153 @@ def _normalize_persisted_workflow_step_records(
 def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run = dict(run)
     normalized_run["tool_chain"] = _normalize_persisted_workflow_step_records(normalized_run)
+    normalized_run["step_count"] = _backfill_step_count(normalized_run)
+    normalized_run["started_at"] = _backfill_started_at(normalized_run)
+    normalized_run["completed_at"] = _backfill_completed_at(normalized_run)
+    normalized_run["last_updated_at"] = _backfill_last_updated_at(normalized_run)
+    normalized_run["terminal_reason"] = _backfill_terminal_reason(normalized_run)
     return normalized_run
+
+
+def _workflow_trace_timestamps(run: dict) -> list[str]:
+    trace = run.get("workflow_trace")
+    if not isinstance(trace, list):
+        return []
+    timestamps: list[str] = []
+    for event in trace:
+        if isinstance(event, dict):
+            timestamp = event.get("timestamp")
+            if isinstance(timestamp, str) and timestamp.strip():
+                timestamps.append(timestamp)
+    return timestamps
+
+
+def _tool_chain_step_records(run: dict) -> list[dict]:
+    tool_chain = run.get("tool_chain")
+    if not isinstance(tool_chain, list):
+        return []
+    return [step for step in tool_chain if isinstance(step, dict)]
+
+
+def _backfill_step_count(run: dict) -> int:
+    existing = run.get("step_count")
+    if isinstance(existing, int) and existing > 0:
+        return existing
+    return len(_tool_chain_step_records(run))
+
+
+def _backfill_started_at(run: dict) -> str | None:
+    existing = run.get("started_at")
+    if isinstance(existing, str) and existing.strip():
+        return existing
+
+    trace_timestamps = _workflow_trace_timestamps(run)
+    if trace_timestamps:
+        return trace_timestamps[0]
+
+    for step in _tool_chain_step_records(run):
+        started_at = step.get("started_at")
+        if isinstance(started_at, str) and started_at.strip():
+            return started_at
+
+    for step in _tool_chain_step_records(run):
+        completed_at = step.get("completed_at")
+        if isinstance(completed_at, str) and completed_at.strip():
+            return completed_at
+
+    return None
+
+
+def _backfill_completed_at(run: dict) -> str | None:
+    existing = run.get("completed_at")
+    if isinstance(existing, str) and existing.strip():
+        return existing
+
+    if run.get("workflow_status") != "completed":
+        return None
+
+    trace_timestamps = _workflow_trace_timestamps(run)
+    if trace_timestamps:
+        return trace_timestamps[-1]
+
+    step_records = _tool_chain_step_records(run)
+    if step_records:
+        completed_at = step_records[-1].get("completed_at")
+        if isinstance(completed_at, str) and completed_at.strip():
+            return completed_at
+
+    tool_execution = run.get("tool_execution")
+    if isinstance(tool_execution, dict):
+        executed_at = tool_execution.get("executed_at")
+        if isinstance(executed_at, str) and executed_at.strip():
+            return executed_at
+
+    answered_at = run.get("answered_at")
+    if isinstance(answered_at, str) and answered_at.strip():
+        return answered_at
+
+    return None
+
+
+def _backfill_last_updated_at(run: dict) -> str | None:
+    existing = run.get("last_updated_at")
+    if isinstance(existing, str) and existing.strip():
+        return existing
+
+    trace_timestamps = _workflow_trace_timestamps(run)
+    if trace_timestamps:
+        return trace_timestamps[-1]
+
+    completed_at = run.get("completed_at")
+    if isinstance(completed_at, str) and completed_at.strip():
+        return completed_at
+
+    started_at = run.get("started_at")
+    if isinstance(started_at, str) and started_at.strip():
+        return started_at
+
+    return None
+
+
+def _backfill_terminal_reason(run: dict) -> str | None:
+    existing = run.get("terminal_reason")
+    if isinstance(existing, str) and existing.strip():
+        return existing
+
+    workflow_status = run.get("workflow_status")
+    clarification_plan = run.get("clarification_plan")
+    answer_source = run.get("answer_source")
+    tool_execution = run.get("tool_execution")
+    step_records = _tool_chain_step_records(run)
+    final_step_execution = None
+    if step_records:
+        candidate_execution = step_records[-1].get("tool_execution")
+        if isinstance(candidate_execution, dict):
+            final_step_execution = candidate_execution
+
+    if workflow_status == "completed":
+        if answer_source == "local_search_summary":
+            return "search_summary_completed"
+        if answer_source:
+            return "knowledge_answer_generated"
+        if isinstance(tool_execution, dict):
+            return "tool_execution_completed"
+        if isinstance(final_step_execution, dict):
+            return "tool_execution_completed"
+
+    if workflow_status == "clarification_required":
+        if isinstance(clarification_plan, dict):
+            missing_fields = clarification_plan.get("missing_fields")
+            if isinstance(missing_fields, list):
+                missing_field_set = {field for field in missing_fields if isinstance(field, str)}
+                if {"search_query_refinement", "document_scope"}.issubset(missing_field_set):
+                    question = run.get("question", "")
+                    if isinstance(question, str) and re.search(r"\bsummari[sz]e\b", question, re.IGNORECASE):
+                        return "search_summary_miss_clarification"
+                    return "search_miss_clarification"
+        return "clarification_requested"
+
+    return None
 
 
 def _workflow_run_requires_migration(run: dict) -> bool:
