@@ -1413,6 +1413,47 @@ def test_query_agent_endpoint_falls_back_to_regex_multistep_when_llm_workflow_pl
     assert payload["workflow_status"] == "completed"
     assert payload["answer_source"] == "local_search_summary"
     assert payload["tool_plan"]["tool_name"] == "document_search"
+    assert any(
+        event["stage"] == "workflow_planning"
+        and "search_then_summarize workflow via heuristic workflow matcher after invalid llm workflow plan"
+        in event["detail"]
+        for event in payload["workflow_trace"]
+    )
+
+
+def test_query_agent_endpoint_reports_clean_workflow_planner_fallback_reason(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(settings, "workflow_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.generate_llm_workflow_plan",
+        lambda question: ("heuristic_fallback_after_gemini_error", None),
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Look up docs about RAG, then summarize top 1 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert any(
+        event["stage"] == "workflow_planning"
+        and "search_then_summarize workflow via heuristic workflow matcher after gemini error"
+        in event["detail"]
+        for event in payload["workflow_trace"]
+    )
 
 
 def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow_planner(

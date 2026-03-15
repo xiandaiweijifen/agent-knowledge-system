@@ -1890,5 +1890,317 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "cc1dab8adb9b48868f96830eab76d41b",
+    "question": "Look up docs about RAG, then summarize top 1 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T20:04:51.236768+00:00",
+    "completed_at": "2026-03-15T20:04:54.538219+00:00",
+    "last_updated_at": "2026-03-15T20:04:54.538219+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:04:51.236806+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:04:52.521252+00:00",
+        "detail": "Planned search_then_summarize workflow via heuristic workflow matcher after after gemini error."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:04:54.534299+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:04:54.538146+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:04:54.538211+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 2 matching document(s) for 'RAG' and returned 1 result(s). Showing the top 1 result(s) out of 2 total matches. The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-15T20:04:54.538219+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Look up docs about RAG",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "b265684d61a54c3887c58a449514ff3c",
+      "executed_at": "2026-03-15T20:04:54.538119+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "1",
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "1",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T20:04:52.521308+00:00",
+        "completed_at": "2026-03-15T20:04:54.538146+00:00",
+        "question": "Look up docs about RAG",
+        "tool_plan": {
+          "question": "Look up docs about RAG",
+          "planning_mode": "heuristic_fallback_after_gemini_error",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "b265684d61a54c3887c58a449514ff3c",
+          "executed_at": "2026-03-15T20:04:54.538119+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "1",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "1",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "d8f287413f4e4dd5a8f7538158fce9bb",
+    "question": "Look up docs about RAG, then summarize top 1 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T20:05:58.405820+00:00",
+    "completed_at": "2026-03-15T20:06:04.125460+00:00",
+    "last_updated_at": "2026-03-15T20:06:04.125460+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:05:58.405856+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:05:58.405881+00:00",
+        "detail": "Planned search_then_summarize workflow via heuristic workflow matcher after gemini error."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:06:04.119974+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:06:04.125399+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-15T20:06:04.125454+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 1 matching document(s) for 'RAG' and returned 1 result(s). The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: RAG combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-15T20:06:04.125460+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Look up docs about RAG",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "ca0e8034c63b4c4a8dbb486bf124cec2",
+      "executed_at": "2026-03-15T20:06:04.125378+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "1",
+        "query": "RAG",
+        "matched_count": "1",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "0",
+        "max_results": "1",
+        "snippets": "rag_overview.md: RAG combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.500",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T20:05:58.405887+00:00",
+        "completed_at": "2026-03-15T20:06:04.125399+00:00",
+        "question": "Look up docs about RAG",
+        "tool_plan": {
+          "question": "Look up docs about RAG",
+          "planning_mode": "heuristic_fallback_after_gemini_error",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "ca0e8034c63b4c4a8dbb486bf124cec2",
+          "executed_at": "2026-03-15T20:06:04.125378+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "1",
+            "query": "RAG",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "max_results": "1",
+            "snippets": "rag_overview.md: RAG combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.500",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

@@ -539,6 +539,20 @@ def _resolve_multistep_workflow(question: str) -> tuple[str | None, str | None, 
     return None, None, None, planning_mode
 
 
+def _describe_workflow_planning_mode(planning_mode: str) -> str:
+    normalized_mode = planning_mode.strip()
+    if normalized_mode.startswith("llm_"):
+        return normalized_mode
+    if normalized_mode == "heuristic_stub":
+        return "heuristic workflow matcher"
+    if normalized_mode.startswith("heuristic_fallback_"):
+        reason = normalized_mode.removeprefix("heuristic_fallback_").replace("_", " ")
+        if reason.startswith("after "):
+            return f"heuristic workflow matcher {reason}"
+        return f"heuristic workflow matcher after {reason}"
+    return "heuristic workflow matcher"
+
+
 def _build_search_context_arguments(tool_output: dict[str, str]) -> dict[str, str]:
     arguments: dict[str, str] = {}
 
@@ -1034,11 +1048,7 @@ def orchestrate_agent_request(
         resume_context = resume_context or {}
 
         if workflow_kind in {"search_then_ticket", "search_then_summarize"}:
-            planner_label = (
-                workflow_planning_mode
-                if workflow_planning_mode.startswith("llm_")
-                else "heuristic workflow matcher"
-            )
+            planner_label = _describe_workflow_planning_mode(workflow_planning_mode)
             workflow_trace.append(
                 WorkflowTraceEvent(
                     stage="workflow_planning",
