@@ -97,6 +97,26 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
     return normalized_run
 
 
+def _extract_final_tool_identity(run: AgentWorkflowResponse) -> tuple[str | None, str | None]:
+    if run.tool_execution:
+        return run.tool_execution.get("tool_name"), run.tool_execution.get("action")
+
+    if run.tool_chain:
+        final_step = run.tool_chain[-1]
+        if final_step.tool_execution:
+            return (
+                final_step.tool_execution.get("tool_name"),
+                final_step.tool_execution.get("action"),
+            )
+        if final_step.tool_plan:
+            return final_step.tool_plan.get("tool_name"), final_step.tool_plan.get("action")
+
+    if run.tool_plan:
+        return run.tool_plan.get("tool_name"), run.tool_plan.get("action")
+
+    return None, None
+
+
 def _persist_workflow_response(
     response: AgentWorkflowResponse,
     resumed_from_question: str | None = None,
@@ -211,10 +231,14 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 started_at=run.started_at,
                 completed_at=run.completed_at,
                 last_updated_at=run.last_updated_at,
+                step_count=run.step_count,
                 route_type=run.route.route_type,
                 route_reason=run.route.route_reason,
                 filename=run.filename,
                 answered_at=run.answered_at,
+                answer_source=run.answer_source,
+                final_tool_name=_extract_final_tool_identity(run)[0],
+                final_tool_action=_extract_final_tool_identity(run)[1],
             )
             for run in persisted_runs
             if run.run_id

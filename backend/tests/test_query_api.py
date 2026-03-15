@@ -2132,9 +2132,13 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["applied_clarification_fields"] == []
     assert payload["runs"][0]["question_rewritten"] is False
     assert payload["runs"][0]["overridden_plan_arguments"] == []
+    assert payload["runs"][0]["step_count"] == 1
     assert payload["runs"][0]["started_at"]
     assert payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["last_updated_at"] == payload["runs"][0]["completed_at"]
+    assert payload["runs"][0]["answer_source"] is None
+    assert payload["runs"][0]["final_tool_name"] == "ticketing"
+    assert payload["runs"][0]["final_tool_action"] == "create"
     assert payload["runs"][0]["run_id"] != first_run_id
 
 
@@ -2317,6 +2321,10 @@ def test_list_agent_workflow_runs_endpoint_includes_resume_metadata(
     ]
     assert payload["runs"][0]["question_rewritten"] is True
     assert payload["runs"][0]["overridden_plan_arguments"] == ["filename", "target"]
+    assert payload["runs"][0]["step_count"] == 1
+    assert payload["runs"][0]["answer_source"] == "local_search_summary"
+    assert payload["runs"][0]["final_tool_name"] == "document_search"
+    assert payload["runs"][0]["final_tool_action"] == "query"
 
 
 def test_list_agent_workflow_runs_endpoint_rejects_non_positive_limit():

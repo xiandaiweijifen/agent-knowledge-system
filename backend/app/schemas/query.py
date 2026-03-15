@@ -166,10 +166,14 @@ class AgentWorkflowRunSummary(BaseModel):
     started_at: str | None = None
     completed_at: str | None = None
     last_updated_at: str | None = None
+    step_count: int = 0
     route_type: str
     route_reason: str
     filename: str | None = None
     answered_at: str | None = None
+    answer_source: str | None = None
+    final_tool_name: str | None = None
+    final_tool_action: str | None = None
 
 
 class AgentWorkflowRunListResponse(BaseModel):
