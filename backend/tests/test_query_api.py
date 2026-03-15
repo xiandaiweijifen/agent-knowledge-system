@@ -2389,6 +2389,11 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
                     "run_id": "current-run",
                     "question": "Check system status",
                     "workflow_status": "completed",
+                    "terminal_reason": "tool_execution_completed",
+                    "started_at": "2026-03-15T16:12:37.485983+00:00",
+                    "completed_at": "2026-03-15T16:12:37.487903+00:00",
+                    "last_updated_at": "2026-03-15T16:12:37.487903+00:00",
+                    "step_count": 1,
                     "route": {
                         "route_type": "tool_execution",
                         "route_reason": "current route",

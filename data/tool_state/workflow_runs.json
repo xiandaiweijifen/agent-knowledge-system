@@ -129,7 +129,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.485983+00:00",
+    "completed_at": "2026-03-15T16:12:37.487903+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.487903+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "5f5b59ec49414cc09aa10dd5db535db9",
@@ -334,7 +339,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:12:37.525557+00:00",
+    "completed_at": "2026-03-15T16:12:37.528113+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.528113+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "751f0383087c4c65aa71b0f870ad272b",
@@ -472,7 +482,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.547473+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:12:37.549267+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "88e5980971964ec9afd3830e6961ccfc",
@@ -604,7 +619,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.569584+00:00",
+    "completed_at": "2026-03-15T16:12:37.574422+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.574422+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "4a301303c53445b5803d7f6ea6f8036f",
@@ -740,7 +760,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.596592+00:00",
+    "completed_at": "2026-03-15T16:12:37.598333+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.598333+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "8ab89a8fb1314de6b6a4697da44b1762",
@@ -878,7 +903,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.617022+00:00",
+    "completed_at": "2026-03-15T16:12:37.620141+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.620141+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "08cfbfd22ade41d3a0924c2d1a5027ff",
@@ -1020,7 +1050,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.638463+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:12:37.640288+00:00",
+    "terminal_reason": "search_summary_miss_clarification"
   },
   {
     "run_id": "94250ac80b2f4bb1b07f7c8d38d16982",
@@ -1162,7 +1197,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.661809+00:00",
+    "completed_at": "2026-03-15T16:12:37.664359+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.664359+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "86a4fb6ae25a4ba79bd682813e4ccbe8",
@@ -1214,7 +1254,12 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "step_count": 0,
+    "started_at": "2026-03-15T16:12:37.683411+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:12:37.683452+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "581d4f9dfb0b44f4aee72e190acaeb7a",
@@ -1362,7 +1407,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:12:37.708102+00:00",
+    "completed_at": "2026-03-15T16:12:37.708021+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.708021+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "6db4d07bb5d745c68bb10482358c12bf",
@@ -1581,7 +1631,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:12:37.738877+00:00",
+    "completed_at": "2026-03-15T16:12:37.738801+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.738801+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "f0a9fc077c0e428dbc5a0822deca106a",
@@ -1800,7 +1855,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:12:37.767108+00:00",
+    "completed_at": "2026-03-15T16:12:37.767040+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.767040+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "cfbf082fa9094aeb89174291b8f4f334",
@@ -1997,7 +2057,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:12:37.798655+00:00",
+    "completed_at": "2026-03-15T16:12:37.798552+00:00",
+    "last_updated_at": "2026-03-15T16:12:37.798552+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "4304687a438c4d0aa40694bc338c5235",
@@ -2067,7 +2132,12 @@
     "clarification_plan": null,
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "step_count": 0,
+    "started_at": "2026-03-15T16:16:28.440901+00:00",
+    "completed_at": "2026-03-15T16:16:28.442859+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.442859+00:00",
+    "terminal_reason": "knowledge_answer_generated"
   },
   {
     "run_id": "ada1331bc407420686094e5f9f54f56a",
@@ -2187,7 +2257,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.455777+00:00",
+    "completed_at": "2026-03-15T16:16:28.456794+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.456794+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "236f1cb0c2b34e6291165ef18417e175",
@@ -2319,7 +2394,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.483225+00:00",
+    "completed_at": "2026-03-15T16:16:28.485378+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.485378+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "10599c5868a342378433afa4bab4a7f9",
@@ -2524,7 +2604,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:28.514748+00:00",
+    "completed_at": "2026-03-15T16:16:28.518489+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.518489+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "cd6aa80359b14110910456a6a8003cb1",
@@ -2662,7 +2747,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.553281+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:16:28.555703+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "58a2a9d95f1a4d7da65f0ae984b81096",
@@ -2794,7 +2884,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.587951+00:00",
+    "completed_at": "2026-03-15T16:16:28.595164+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.595164+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "6e0e2085ac734b2ebe4ae74471f35541",
@@ -2930,7 +3025,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.632032+00:00",
+    "completed_at": "2026-03-15T16:16:28.635373+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.635373+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "3b06207d17fc4612b71bc3ec700d25bd",
@@ -3068,7 +3168,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.675733+00:00",
+    "completed_at": "2026-03-15T16:16:28.681536+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.681536+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "05dd89035fea4330a12bf9cc02555e22",
@@ -3210,7 +3315,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.721301+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:16:28.723758+00:00",
+    "terminal_reason": "search_summary_miss_clarification"
   },
   {
     "run_id": "5c575498fc0340aebce5f810dc64d9aa",
@@ -3352,7 +3462,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.760158+00:00",
+    "completed_at": "2026-03-15T16:16:28.762942+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.762942+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "8e99ac8c0177434e87f083bab0d55925",
@@ -3404,7 +3519,12 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "step_count": 0,
+    "started_at": "2026-03-15T16:16:28.794799+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:16:28.794853+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "181b4489797648beaecf37f107b76069",
@@ -3552,7 +3672,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:28.836287+00:00",
+    "completed_at": "2026-03-15T16:16:28.836208+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.836208+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "6aba76a4987c40be9ab8850d49967a3d",
@@ -3771,7 +3896,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:28.880293+00:00",
+    "completed_at": "2026-03-15T16:16:28.880194+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.880194+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "2279d16f84d742bcb9092b8b7546b68d",
@@ -3990,7 +4120,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:28.918551+00:00",
+    "completed_at": "2026-03-15T16:16:28.918478+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.918478+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "9d45827e4db44e67ba7928d32568c9c8",
@@ -4187,7 +4322,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:28.961900+00:00",
+    "completed_at": "2026-03-15T16:16:28.961826+00:00",
+    "last_updated_at": "2026-03-15T16:16:28.961826+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "504ad2445b4341f69b79f71c9911f93c",
@@ -4257,7 +4397,12 @@
     "clarification_plan": null,
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "step_count": 0,
+    "started_at": "2026-03-15T16:16:29.319831+00:00",
+    "completed_at": "2026-03-15T16:16:29.321744+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.321744+00:00",
+    "terminal_reason": "knowledge_answer_generated"
   },
   {
     "run_id": "7f1f2d451399432f8f64d4ade9a09fd1",
@@ -4377,7 +4522,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.348106+00:00",
+    "completed_at": "2026-03-15T16:16:29.349482+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.349482+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "05bc6c5645da4ed7bf851459df2ff7e8",
@@ -4509,7 +4659,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.376695+00:00",
+    "completed_at": "2026-03-15T16:16:29.378665+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.378665+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "b68df281463a43dbbbacdf8c60e796bb",
@@ -4714,7 +4869,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:29.406823+00:00",
+    "completed_at": "2026-03-15T16:16:29.410066+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.410066+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "1dc0e70a3fd04658ac5d407fe7473384",
@@ -4852,7 +5012,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.437517+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:16:29.439563+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "9ca598624a5d4e5784d796f1e61e4888",
@@ -4984,7 +5149,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.465143+00:00",
+    "completed_at": "2026-03-15T16:16:29.470018+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.470018+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "35ebaf93231d41e5babca29b53b2c4a2",
@@ -5120,7 +5290,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.496713+00:00",
+    "completed_at": "2026-03-15T16:16:29.498772+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.498772+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "1ab4d4a1daa2468d820762d5d4bfdc9c",
@@ -5258,7 +5433,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.524965+00:00",
+    "completed_at": "2026-03-15T16:16:29.528377+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.528377+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "76f89ae8a217412794689e6fd57b2056",
@@ -5400,7 +5580,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.561398+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:16:29.563699+00:00",
+    "terminal_reason": "search_summary_miss_clarification"
   },
   {
     "run_id": "20d57a7882244c398b3543b190928a20",
@@ -5542,7 +5727,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.600379+00:00",
+    "completed_at": "2026-03-15T16:16:29.614543+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.614543+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "2f275c982a094066a7885e06e371d4a3",
@@ -5594,7 +5784,12 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "step_count": 0,
+    "started_at": "2026-03-15T16:16:29.652343+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:16:29.652409+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "f646ffe1fc3849799307c0fce192f026",
@@ -5742,7 +5937,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 1,
+    "started_at": "2026-03-15T16:16:29.714576+00:00",
+    "completed_at": "2026-03-15T16:16:29.714478+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.714478+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "b9006927ca7143d391ed4a38e2fee1a7",
@@ -5961,7 +6161,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:29.760220+00:00",
+    "completed_at": "2026-03-15T16:16:29.760133+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.760133+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "6e126ecb28a3424ca6eb8bcbb715422b",
@@ -6180,7 +6385,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:29.798432+00:00",
+    "completed_at": "2026-03-15T16:16:29.798314+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.798314+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "4550e8941884411386ff888f0822316c",
@@ -6377,7 +6587,12 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "step_count": 2,
+    "started_at": "2026-03-15T16:16:29.838529+00:00",
+    "completed_at": "2026-03-15T16:16:29.838433+00:00",
+    "last_updated_at": "2026-03-15T16:16:29.838433+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "8da1b940170d4462afd942db9cf126d6",
@@ -6498,7 +6713,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:02.882776+00:00",
+    "completed_at": "2026-03-15T16:22:02.886295+00:00",
+    "last_updated_at": "2026-03-15T16:22:02.886295+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "5c15490d1c5f48f690b8b52a51b459c4",
@@ -6704,7 +6923,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:02.901810+00:00",
+    "completed_at": "2026-03-15T16:22:02.906307+00:00",
+    "last_updated_at": "2026-03-15T16:22:02.906307+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "254ee65d5ae9457b8241b6af134967d9",
@@ -6843,7 +7066,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:02.936495+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:02.938380+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "3634a8734c43445d8395773bb8028eec",
@@ -6896,7 +7123,11 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "started_at": "2026-03-15T16:22:02.965820+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:02.965864+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "59d7622e5cc648d3b14e1b70387e8cb0",
@@ -6967,7 +7198,11 @@
     "clarification_plan": null,
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "started_at": "2026-03-15T16:22:11.190344+00:00",
+    "completed_at": "2026-03-15T16:22:11.192276+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.192276+00:00",
+    "terminal_reason": "knowledge_answer_generated"
   },
   {
     "run_id": "faeb6097fae346ca943908e2525983f9",
@@ -7088,7 +7323,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.223601+00:00",
+    "completed_at": "2026-03-15T16:22:11.224474+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.224474+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "49cbd7f441d74e13af19ae660c46c70b",
@@ -7221,7 +7460,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.254751+00:00",
+    "completed_at": "2026-03-15T16:22:11.256709+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.256709+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "b12e09aa7458440c805119f974a0da7f",
@@ -7427,7 +7670,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.288681+00:00",
+    "completed_at": "2026-03-15T16:22:11.291839+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.291839+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "0709337c680b41dda9dcedf5039977b5",
@@ -7566,7 +7813,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.322701+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:11.324699+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "dae360709e8145f1a749262403c70c07",
@@ -7699,7 +7950,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.360411+00:00",
+    "completed_at": "2026-03-15T16:22:11.366520+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.366520+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "347cc1d33f28458d8fa0b9b6072e923e",
@@ -7836,7 +8091,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.403880+00:00",
+    "completed_at": "2026-03-15T16:22:11.406305+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.406305+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "10bf4cc8426b483fa8dd7cfd4dc8944e",
@@ -7975,7 +8234,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.439442+00:00",
+    "completed_at": "2026-03-15T16:22:11.444401+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.444401+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "114ce31dbbef4a4bba11e88638458366",
@@ -8118,7 +8381,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.480527+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:11.483438+00:00",
+    "terminal_reason": "search_summary_miss_clarification"
   },
   {
     "run_id": "083fd382b240422a9df61fae6662e63a",
@@ -8261,7 +8528,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.520861+00:00",
+    "completed_at": "2026-03-15T16:22:11.523389+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.523389+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "b3573f00ef994e3c92fe0f958286e1f1",
@@ -8314,7 +8585,11 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "started_at": "2026-03-15T16:22:11.559957+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:11.560003+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "2f9cc5aaa2d44e109db33c4e4eea3343",
@@ -8463,7 +8738,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.613383+00:00",
+    "completed_at": "2026-03-15T16:22:11.613295+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.613295+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "9a87d6b6d6e942e1929e36ff07d11ff0",
@@ -8683,7 +8962,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.652035+00:00",
+    "completed_at": "2026-03-15T16:22:11.651849+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.651849+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "602c386119ce4c91a2fdfca05b4df83f",
@@ -8903,7 +9186,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.695123+00:00",
+    "completed_at": "2026-03-15T16:22:11.694968+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.694968+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "6dad3b4357364324b09b9e8b82ef5f32",
@@ -9101,7 +9388,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:11.736059+00:00",
+    "completed_at": "2026-03-15T16:22:11.735964+00:00",
+    "last_updated_at": "2026-03-15T16:22:11.735964+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "c7e72a2609674f9b94527a91cc5889a9",
@@ -9172,7 +9463,11 @@
     "clarification_plan": null,
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "started_at": "2026-03-15T16:22:12.066747+00:00",
+    "completed_at": "2026-03-15T16:22:12.068504+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.068504+00:00",
+    "terminal_reason": "knowledge_answer_generated"
   },
   {
     "run_id": "2fd65b2ae2f54a389349c23c196220ad",
@@ -9293,7 +9588,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.100503+00:00",
+    "completed_at": "2026-03-15T16:22:12.101700+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.101700+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "35f72b258b0f45efbb6ada4b08dc0f87",
@@ -9426,7 +9725,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.135178+00:00",
+    "completed_at": "2026-03-15T16:22:12.136992+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.136992+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "62fb0e803afb4208afeb1d30882c87ae",
@@ -9632,7 +9935,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.172420+00:00",
+    "completed_at": "2026-03-15T16:22:12.176008+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.176008+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "2f37cd0810ad41fd81c153f8b67851a6",
@@ -9771,7 +10078,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.206160+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:12.208375+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "fec9a5ade5db4c64a5c071c0a2b3e502",
@@ -9904,7 +10215,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.244377+00:00",
+    "completed_at": "2026-03-15T16:22:12.249466+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.249466+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "108e20d0d5914b2687f0a65e0bef8353",
@@ -10041,7 +10356,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.283453+00:00",
+    "completed_at": "2026-03-15T16:22:12.285454+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.285454+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "a70fbf4f5155441ab3090ba768508768",
@@ -10180,7 +10499,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.323744+00:00",
+    "completed_at": "2026-03-15T16:22:12.328194+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.328194+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "76b53cf8044d44698ee00babd874989f",
@@ -10323,7 +10646,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.363378+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:12.366059+00:00",
+    "terminal_reason": "search_summary_miss_clarification"
   },
   {
     "run_id": "990fd32bc5dd48b7ad2dc063e1851435",
@@ -10466,7 +10793,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.405252+00:00",
+    "completed_at": "2026-03-15T16:22:12.408193+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.408193+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "42a02ffe38cb488e9e4792ed53aceb25",
@@ -10519,7 +10850,11 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "started_at": "2026-03-15T16:22:12.444510+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T16:22:12.444559+00:00",
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "1f11fbde031f49068971521991060c3e",
@@ -10668,7 +11003,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.488378+00:00",
+    "completed_at": "2026-03-15T16:22:12.488281+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.488281+00:00",
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "537b51699db9430098144df168e01643",
@@ -10888,7 +11227,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.528549+00:00",
+    "completed_at": "2026-03-15T16:22:12.528448+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.528448+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "8a031fc95f264287936f490f51764a2f",
@@ -11108,7 +11451,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.573771+00:00",
+    "completed_at": "2026-03-15T16:22:12.573602+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.573602+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "98b4c3753e7248f093ebd929521319ef",
@@ -11306,7 +11653,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:22:12.619873+00:00",
+    "completed_at": "2026-03-15T16:22:12.619773+00:00",
+    "last_updated_at": "2026-03-15T16:22:12.619773+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "5cb9b2803f444befabfef4392bc11d64",
@@ -11427,7 +11778,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:23:23.324843+00:00",
+    "completed_at": "2026-03-15T16:23:23.349698+00:00",
+    "last_updated_at": "2026-03-15T16:23:23.349698+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "8467a793677d42e0b7e4ede200a4d11e",
@@ -11633,7 +11988,11 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "started_at": "2026-03-15T16:23:52.497706+00:00",
+    "completed_at": "2026-03-15T16:23:52.532201+00:00",
+    "last_updated_at": "2026-03-15T16:23:52.532201+00:00",
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "3fdaba82f7af44de8b22d4c557be0096",
@@ -11757,7 +12116,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "91c526e104654b1c941c9806f7204d9e",
@@ -11966,7 +12326,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "a1e6d4c913184b84a8abfa99dcc5e7a2",
@@ -12108,7 +12469,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "cb8684e05da54d3c8c0a288c92d146fd",
@@ -12164,7 +12526,8 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "0b543919817d4891b79c49102bb516e0",
@@ -12238,7 +12601,8 @@
     "clarification_plan": null,
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "terminal_reason": "knowledge_answer_generated"
   },
   {
     "run_id": "0437239cd4164ed396ef36f93cbba710",
@@ -12362,7 +12726,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "3411e04a9882434cabced9c1c3f207e0",
@@ -12498,7 +12863,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "2d5d7e23d8f2447b80173c82a4b01ad4",
@@ -12707,7 +13073,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "d59373bfe7a645c392fbaf57d8c3b5be",
@@ -12849,7 +13216,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "102ffd335213444ba7d3ec1df4d4cc06",
@@ -12985,7 +13353,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "19a9558b6e9745abbff0597af257652c",
@@ -13125,7 +13494,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "6cf314b7e9a84985b7a9925ab06d6f85",
@@ -13267,7 +13637,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "c7324d6f72f1426587bfa2cf4f3ecd9f",
@@ -13413,7 +13784,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_miss_clarification"
   },
   {
     "run_id": "18392dcbdee74563865c7d21b0f217de",
@@ -13559,7 +13931,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "f71aff0283cc43d99f71ed0df56044c7",
@@ -13615,7 +13988,8 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "2f49aaeb557744b5b77255cd7cc1b398",
@@ -13767,7 +14141,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "2652dcb18aed4767bf7f78f84c10e867",
@@ -13990,7 +14365,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "70c13ed4299649f4a731309ab7a0080c",
@@ -14213,7 +14589,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "b77add9bf7314096b6ec8ed7de536352",
@@ -14414,7 +14791,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "029d1f5d3f1d419fb4d10b2843e0ffde",
@@ -14488,7 +14866,8 @@
     "clarification_plan": null,
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "terminal_reason": "knowledge_answer_generated"
   },
   {
     "run_id": "95c2c40320ab4865b25fe90be30b69ba",
@@ -14612,7 +14991,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "712f469deed94fd9b194c05a3771584c",
@@ -14748,7 +15128,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "66e9e96c0bec46fdbde83a291bf81931",
@@ -14957,7 +15338,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "285d17c132e040efaa3a3bd55f52ab33",
@@ -15099,7 +15481,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "575f1d80e00645eda7a69bd46d31ec00",
@@ -15235,7 +15618,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "6df3d2f983e94901b32363577e013d4c",
@@ -15375,7 +15759,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "26c216c85330466f98dfbc6a76bbad91",
@@ -15517,7 +15902,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "d6f357f9c05447188a6538c88f2e130d",
@@ -15663,7 +16049,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_miss_clarification"
   },
   {
     "run_id": "30b21901745743a2981ec1ea7100a634",
@@ -15809,7 +16196,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "1059609b83ae458288ce2260467899d8",
@@ -15865,7 +16253,8 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "ce0db4de160c4430a48edf67e5631c43",
@@ -16017,7 +16406,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "search_summary_completed"
   },
   {
     "run_id": "afb54e5f2f554f5bad3bd572b312da05",
@@ -16240,7 +16630,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "84d8515af6be4c9588823c09efd7f961",
@@ -16463,7 +16854,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "2be82e88c32d4e169b11be20640637de",
@@ -16664,7 +17056,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "1dd92fb02d2e433c84dfa23c9e41ac2c",
@@ -16788,7 +17181,8 @@
         },
         "failure_message": null
       }
-    ]
+    ],
+    "terminal_reason": "tool_execution_completed"
   },
   {
     "run_id": "3aaf43bdd25b47658b85ff1549d8051c",
@@ -16844,7 +17238,8 @@
     },
     "tool_plan": null,
     "tool_execution": null,
-    "tool_chain": []
+    "tool_chain": [],
+    "terminal_reason": "clarification_requested"
   },
   {
     "run_id": "d812c155190547d0a88c3651ef43f443",

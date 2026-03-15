@@ -245,17 +245,16 @@ def _backfill_terminal_reason(run: dict) -> str | None:
 
 
 def _workflow_run_requires_migration(run: dict) -> bool:
-    tool_chain = run.get("tool_chain")
-    if not isinstance(tool_chain, list):
-        return False
-
-    for step in tool_chain:
-        if not isinstance(step, dict):
-            return True
-        if not {"step_id", "step_index", "step_status", "started_at"}.issubset(step):
-            return True
-
-    return False
+    normalized_run = _normalize_persisted_workflow_run(run)
+    migration_fields = (
+        "tool_chain",
+        "step_count",
+        "started_at",
+        "completed_at",
+        "last_updated_at",
+        "terminal_reason",
+    )
+    return any(run.get(field) != normalized_run.get(field) for field in migration_fields)
 
 
 def _extract_final_tool_identity(run: AgentWorkflowResponse) -> tuple[str | None, str | None]:
