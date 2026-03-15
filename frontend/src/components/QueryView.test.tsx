@@ -259,6 +259,165 @@ describe("QueryView", () => {
     expect(screen.queryByText("Ticket Id")).not.toBeInTheDocument();
   });
 
+  it("surfaces supporting search context for multistep ticket creation", () => {
+    render(
+      <QueryView
+        documents={[
+          {
+            filename: "rag_overview.md",
+            size_bytes: 1024,
+            suffix: ".md",
+          },
+        ]}
+        queryFilename=""
+        question="Search docs for RAG and create a high severity ticket for payment-service"
+        topK={3}
+        activePresetQuestions={["Search docs for RAG and create a high severity ticket for payment-service"]}
+        queryResult={null}
+        agentQueryResult={{
+          question: "Search docs for RAG and create a high severity ticket for payment-service",
+          workflow_status: "completed",
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Search and execution requests should go through tool execution.",
+            filename: null,
+          },
+          workflow_trace: [
+            {
+              stage: "routing",
+              status: "completed",
+              timestamp: "2026-03-15T00:00:00+00:00",
+              detail: "Request routed to tool_execution.",
+            },
+          ],
+          tool_chain: [
+            {
+              question: "Search docs for RAG",
+              tool_plan: {
+                question: "Search docs for RAG",
+                planning_mode: "heuristic_stub",
+                route_hint: "tool_execution",
+                tool_name: "document_search",
+                action: "query",
+                target: "RAG",
+                arguments: {},
+                plan_summary: "Plan document_search:query for RAG using a local heuristic planner.",
+              },
+              tool_execution: {
+                tool_name: "document_search",
+                action: "query",
+                target: "RAG",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Found 2 matching document(s) for 'RAG'.",
+                trace_id: "trace-step-1",
+                executed_at: "2026-03-15T00:00:00+00:00",
+                output: {
+                  query: "RAG",
+                  matched_count: "2",
+                  matched_documents: "rag_overview.md, test_chunk.txt",
+                  snippets: "rag_overview.md: Retrieval-augmented generation, or RAG, is ...",
+                },
+              },
+            },
+            {
+              question: "create a high severity ticket for payment-service",
+              tool_plan: {
+                question: "create a high severity ticket for payment-service",
+                planning_mode: "heuristic_stub",
+                route_hint: "tool_execution",
+                tool_name: "ticketing",
+                action: "create",
+                target: "payment-service",
+                arguments: {
+                  severity: "high",
+                  supporting_query: "RAG",
+                  supporting_documents: "rag_overview.md, test_chunk.txt",
+                  supporting_snippets: "rag_overview.md: Retrieval-augmented generation, or RAG, is ...",
+                  supporting_match_count: "2",
+                },
+                plan_summary: "Plan ticketing:create for payment-service using a local heuristic planner.",
+              },
+              tool_execution: {
+                tool_name: "ticketing",
+                action: "create",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Created local ticket TICKET-0003 for payment-service.",
+                trace_id: "trace-step-2",
+                executed_at: "2026-03-15T00:00:00+00:00",
+                output: {
+                  ticket_id: "TICKET-0003",
+                  status: "open",
+                  severity: "high",
+                  environment: "unspecified",
+                  supporting_query: "RAG",
+                  supporting_documents: "rag_overview.md, test_chunk.txt",
+                  supporting_snippets: "rag_overview.md: Retrieval-augmented generation, or RAG, is ...",
+                  supporting_match_count: "2",
+                },
+              },
+            },
+          ],
+          tool_plan: {
+            question: "create a high severity ticket for payment-service",
+            planning_mode: "heuristic_stub",
+            route_hint: "tool_execution",
+            tool_name: "ticketing",
+            action: "create",
+            target: "payment-service",
+            arguments: {
+              severity: "high",
+              supporting_query: "RAG",
+              supporting_documents: "rag_overview.md, test_chunk.txt",
+              supporting_snippets: "rag_overview.md: Retrieval-augmented generation, or RAG, is ...",
+              supporting_match_count: "2",
+            },
+            plan_summary: "Plan ticketing:create for payment-service using a local heuristic planner.",
+          },
+          tool_execution: {
+            tool_name: "ticketing",
+            action: "create",
+            target: "payment-service",
+            execution_status: "completed",
+            execution_mode: "local_adapter",
+            result_summary: "Created local ticket TICKET-0003 for payment-service.",
+            trace_id: "trace-final",
+            executed_at: "2026-03-15T00:00:00+00:00",
+            output: {
+              ticket_id: "TICKET-0003",
+              status: "open",
+              severity: "high",
+              environment: "unspecified",
+              supporting_query: "RAG",
+              supporting_documents: "rag_overview.md, test_chunk.txt",
+              supporting_snippets: "rag_overview.md: Retrieval-augmented generation, or RAG, is ...",
+              supporting_match_count: "2",
+            },
+          },
+        }}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Supporting Context").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Search Query").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("RAG").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("rag_overview.md, test_chunk.txt").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Search Snippets").length).toBeGreaterThan(0);
+    expect(screen.queryByText("supporting_query")).not.toBeInTheDocument();
+  });
+
   it("allows agent workflows without document context while keeping retrieval actions disabled", () => {
     render(
       <QueryView

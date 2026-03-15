@@ -974,6 +974,29 @@ textarea {
   background: rgba(255, 248, 240, 0.88);
 }
 
+.supporting-context-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(92, 140, 108, 0.18);
+  border-radius: 18px;
+  background: rgba(245, 251, 246, 0.9);
+}
+
+.supporting-block {
+  display: grid;
+  gap: 6px;
+}
+
+.supporting-block p {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .tool-output-card {
   display: grid;
   gap: 8px;

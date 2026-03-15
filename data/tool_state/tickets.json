@@ -260,5 +260,18 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2"
+  },
+  {
+    "ticket_id": "TICKET-0029",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T05:14:58.001674+00:00",
+    "updated_at": "2026-03-15T05:14:58.001674+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "rag_overview.md, test_chunk.txt",
+    "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
+    "supporting_match_count": "2"
   }
 ]

@@ -47,6 +47,56 @@ export function QueryView({
   onRunAgent,
   onRunDiagnostics,
 }: QueryViewProps) {
+  function renderSupportingContext(
+    output: Record<string, string>,
+  ) {
+    const supportingQuery = output.supporting_query;
+    const supportingDocuments = output.supporting_documents;
+    const supportingSnippets = output.supporting_snippets;
+    const supportingMatchCount = output.supporting_match_count;
+
+    if (
+      !supportingQuery &&
+      !supportingDocuments &&
+      !supportingSnippets &&
+      !supportingMatchCount
+    ) {
+      return null;
+    }
+
+    return (
+      <article className="supporting-context-card">
+        <span className="section-label">Supporting Context</span>
+        <div className="trace-grid">
+          {supportingQuery && (
+            <div>
+              <span className="trace-label">Search Query</span>
+              <strong>{supportingQuery}</strong>
+            </div>
+          )}
+          {supportingMatchCount && (
+            <div>
+              <span className="trace-label">Matched Documents</span>
+              <strong>{supportingMatchCount}</strong>
+            </div>
+          )}
+        </div>
+        {supportingDocuments && (
+          <div className="supporting-block">
+            <span className="trace-label">Documents</span>
+            <p>{supportingDocuments}</p>
+          </div>
+        )}
+        {supportingSnippets && (
+          <div className="supporting-block">
+            <span className="trace-label">Search Snippets</span>
+            <p>{supportingSnippets}</p>
+          </div>
+        )}
+      </article>
+    );
+  }
+
   function renderToolExecutionDetails(
     toolExecution: AgentWorkflowResponse["tool_execution"] | ToolChainStep["tool_execution"],
   ) {
@@ -101,6 +151,7 @@ export function QueryView({
             </div>
           </div>
         )}
+        {toolExecution.tool_name === "ticketing" && renderSupportingContext(toolExecution.output)}
         {toolExecution.tool_name === "ticketing" && toolExecution.action === "list" && (
           <div className="ticketing-highlight">
             <div className="trace-grid">
@@ -129,12 +180,22 @@ export function QueryView({
             <>
               <span className="section-label">Tool Output</span>
               <div className="tool-output-grid">
-                {Object.entries(toolExecution.output).map(([key, value]) => (
+                {Object.entries(toolExecution.output)
+                  .filter(
+                    ([key]) =>
+                      ![
+                        "supporting_query",
+                        "supporting_documents",
+                        "supporting_snippets",
+                        "supporting_match_count",
+                      ].includes(key),
+                  )
+                  .map(([key, value]) => (
                   <article key={key} className="tool-output-card">
                     <span className="trace-label">{key}</span>
                     <strong>{value}</strong>
                   </article>
-                ))}
+                  ))}
               </div>
             </>
           )}
