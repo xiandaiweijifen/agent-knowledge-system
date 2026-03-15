@@ -315,6 +315,32 @@ def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path,
     assert closed.output["status"] == "closed"
 
 
+def test_execute_ticketing_tool_builds_supporting_summary_from_search_context(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    created = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="create",
+            target="payment-service",
+            arguments={
+                "severity": "high",
+                "supporting_query": "RAG",
+                "supporting_documents": "rag_overview.md, test_chunk.txt",
+                "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is ...",
+                "supporting_match_count": "2",
+            },
+        )
+    )
+
+    assert created.output["supporting_summary"].startswith("Search for 'RAG' matched 2 supporting document")
+    assert "rag_overview.md" in created.output["supporting_summary"]
+
+
 def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
     monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
@@ -768,6 +794,8 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     assert payload["tool_chain"][1]["tool_execution"]["output"]["ticket_id"].startswith("TICKET-")
     assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_query"] == "payment-service outage"
     assert "notes.md" in payload["tool_chain"][1]["tool_execution"]["output"]["supporting_documents"]
+    assert "supporting_summary" in payload["tool_chain"][1]["tool_execution"]["output"]
+    assert "payment-service outage" in payload["tool_chain"][1]["tool_execution"]["output"]["supporting_summary"]
     assert sum(1 for event in payload["workflow_trace"] if event["stage"] == "tool_execution") == 2
     assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
 

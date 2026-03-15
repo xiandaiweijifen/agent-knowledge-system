@@ -24,7 +24,7 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T05:09:38.411506+00:00",
+    "updated_at": "2026-03-15T05:22:24.830470+00:00",
     "closed_at": "2026-03-14T17:15:20.287583+00:00"
   },
   {
@@ -34,7 +34,7 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T05:09:38.421598+00:00"
+    "updated_at": "2026-03-15T05:22:24.844069+00:00"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -61,8 +61,8 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T05:09:38.392577+00:00",
-    "closed_at": "2026-03-15T05:09:38.392577+00:00"
+    "updated_at": "2026-03-15T05:22:24.804137+00:00",
+    "closed_at": "2026-03-15T05:22:24.804137+00:00"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -80,7 +80,7 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T05:09:38.401520+00:00"
+    "updated_at": "2026-03-15T05:22:24.817095+00:00"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +89,7 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T05:09:38.429916+00:00"
+    "updated_at": "2026-03-15T05:22:24.856845+00:00"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -286,5 +286,42 @@
     "supporting_documents": "rag_overview.md, test_chunk.txt",
     "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
     "supporting_match_count": "2"
+  },
+  {
+    "ticket_id": "TICKET-0031",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T05:22:24.789848+00:00",
+    "updated_at": "2026-03-15T05:22:24.789848+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0032",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T05:22:24.873043+00:00",
+    "updated_at": "2026-03-15T05:22:24.873043+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "rag_overview.md, test_chunk.txt",
+    "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
+    "supporting_match_count": "2",
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
+  },
+  {
+    "ticket_id": "TICKET-0033",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T05:23:41.073918+00:00",
+    "updated_at": "2026-03-15T05:23:41.073918+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "rag_overview.md, test_chunk.txt",
+    "supporting_snippets": "rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine | test_chunk.txt: 6 名成员组成的团队开发基于 ChatGPT-4.0 的 AI 聊天机器人 和 RAG 系统，以提升上下文准确性。 构建了基于 MongoDB 和 Docker 的 Milvus 数据管道，实现高性能文档检索。 设计并开发了核心问答功能，同时",
+    "supporting_match_count": "2",
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: -Augmented Generation Overview  ## What RAG Means  Retrieval-augmented generation, or RAG, is a system pattern that combine"
   }
 ]

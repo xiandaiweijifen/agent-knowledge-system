@@ -168,6 +168,36 @@ def _find_ticket(
     return None
 
 
+def _build_supporting_summary(arguments: dict[str, str]) -> str:
+    query = arguments.get("supporting_query", "").strip()
+    matched_documents = arguments.get("supporting_documents", "").strip()
+    matched_count = arguments.get("supporting_match_count", "").strip()
+    snippets = arguments.get("supporting_snippets", "").strip()
+
+    summary_parts: list[str] = []
+
+    if matched_count and query:
+        summary_parts.append(
+            f"Search for '{query}' matched {matched_count} supporting document(s)."
+        )
+    elif query:
+        summary_parts.append(f"Search context came from query '{query}'.")
+
+    if matched_documents:
+        primary_documents = ", ".join(
+            item.strip() for item in matched_documents.split(",")[:2] if item.strip()
+        )
+        if primary_documents:
+            summary_parts.append(f"Primary supporting documents: {primary_documents}.")
+
+    if snippets:
+        first_snippet = snippets.split(" | ", maxsplit=1)[0].strip()
+        if first_snippet:
+            summary_parts.append(f"Top supporting snippet: {first_snippet}")
+
+    return " ".join(summary_parts).strip()
+
+
 def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     tickets = _load_ticket_store()
     target = request.target.strip()
@@ -226,6 +256,9 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             context_value = request.arguments.get(context_key, "").strip()
             if context_value:
                 ticket[context_key] = context_value
+        supporting_summary = _build_supporting_summary(request.arguments)
+        if supporting_summary:
+            ticket["supporting_summary"] = supporting_summary
         tickets.append(ticket)
         _save_ticket_store(tickets)
 
