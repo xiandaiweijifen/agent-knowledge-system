@@ -58,6 +58,16 @@
       "expected_route_type": "tool_execution"
     },
     {
+      "case_id": "tool_route_10",
+      "question": "Search docs for RAG and create a high severity ticket for payment-service",
+      "expected_route_type": "tool_execution"
+    },
+    {
+      "case_id": "tool_route_11",
+      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+      "expected_route_type": "tool_execution"
+    },
+    {
       "case_id": "clarification_route_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed"

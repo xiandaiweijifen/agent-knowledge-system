@@ -71,6 +71,18 @@
       "expected_workflow_status": "completed"
     },
     {
+      "case_id": "workflow_tool_10",
+      "question": "Search docs for RAG and create a high severity ticket for payment-service",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed"
+    },
+    {
+      "case_id": "workflow_guardrail_1",
+      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "clarification_required"
+    },
+    {
       "case_id": "workflow_clarification_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed",
