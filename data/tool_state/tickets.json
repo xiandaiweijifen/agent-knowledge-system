@@ -24,7 +24,7 @@
     "severity": "medium",
     "environment": "production",
     "created_at": "2026-03-14T17:14:39.076452+00:00",
-    "updated_at": "2026-03-15T09:50:10.618071+00:00",
+    "updated_at": "2026-03-15T09:58:51.416366+00:00",
     "closed_at": "2026-03-14T17:15:20.287583+00:00"
   },
   {
@@ -34,7 +34,7 @@
     "severity": "unspecified",
     "environment": "staging",
     "created_at": "2026-03-14T17:24:02.999281+00:00",
-    "updated_at": "2026-03-15T09:50:10.632956+00:00"
+    "updated_at": "2026-03-15T09:58:51.430028+00:00"
   },
   {
     "ticket_id": "TICKET-0005",
@@ -61,8 +61,8 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:50:13.620962+00:00",
-    "updated_at": "2026-03-15T09:50:10.586176+00:00",
-    "closed_at": "2026-03-15T09:50:10.586176+00:00"
+    "updated_at": "2026-03-15T09:58:51.389819+00:00",
+    "closed_at": "2026-03-15T09:58:51.389819+00:00"
   },
   {
     "ticket_id": "TICKET-0008",
@@ -80,7 +80,7 @@
     "severity": "high",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:55:29.239082+00:00",
-    "updated_at": "2026-03-15T09:50:10.601985+00:00"
+    "updated_at": "2026-03-15T09:58:51.401918+00:00"
   },
   {
     "ticket_id": "TICKET-0010",
@@ -89,7 +89,7 @@
     "severity": "unspecified",
     "environment": "unspecified",
     "created_at": "2026-03-14T17:59:42.830000+00:00",
-    "updated_at": "2026-03-15T09:50:10.649855+00:00"
+    "updated_at": "2026-03-15T09:58:51.443804+00:00"
   },
   {
     "ticket_id": "TICKET-0011",
@@ -686,5 +686,28 @@
     "supporting_snippets": "rag_overview.md: ## What RAG Means | test_chunk.txt: Built a RAG assistant for internal engineering documentation.",
     "supporting_match_count": "2",
     "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: ## What RAG Means"
+  },
+  {
+    "ticket_id": "TICKET-0066",
+    "target": "the payment service outage",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T09:58:51.371559+00:00",
+    "updated_at": "2026-03-15T09:58:51.371559+00:00"
+  },
+  {
+    "ticket_id": "TICKET-0067",
+    "target": "payment-service",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-15T09:58:51.460599+00:00",
+    "updated_at": "2026-03-15T09:58:51.460599+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "rag_overview.md, test_chunk.txt",
+    "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines | test_chunk.txt: Built a RAG assistant for internal engineering documentation.",
+    "supporting_match_count": "2",
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines"
   }
 ]

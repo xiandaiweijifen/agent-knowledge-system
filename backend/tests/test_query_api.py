@@ -520,7 +520,8 @@ def test_execute_document_search_tool_returns_clean_sentence_snippets(
     raw_dir = workspace_tmp_path / "raw"
     raw_dir.mkdir()
     (raw_dir / "rag_overview.md").write_text(
-        "Intro line.\n"
+        "# Retrieval-Augmented Generation Overview\n"
+        "## What RAG Means\n"
         "RAG combines retrieval with generation to improve factual grounding.\n"
         "Extra trailing details follow after the main statement.\n",
         encoding="utf-8",
@@ -549,6 +550,7 @@ def test_execute_document_search_tool_returns_clean_sentence_snippets(
     assert first_snippet == (
         "rag_overview.md: RAG combines retrieval with generation to improve factual grounding."
     )
+    assert "## What RAG Means" not in first_snippet
     assert "•" not in second_snippet
     assert "  " not in second_snippet
 
@@ -1048,6 +1050,8 @@ def test_query_agent_endpoint_supports_search_then_summarize_workflow(
     raw_dir = workspace_tmp_path / "raw"
     raw_dir.mkdir()
     (raw_dir / "rag_overview.md").write_text(
+        "# Retrieval-Augmented Generation Overview\n"
+        "## What RAG Means\n"
         "RAG combines document retrieval with language model generation.",
         encoding="utf-8",
     )
@@ -1077,6 +1081,7 @@ def test_query_agent_endpoint_supports_search_then_summarize_workflow(
     assert "I found 2 matching document(s)" in payload["answer"]
     assert "The strongest supporting document is" in payload["answer"]
     assert "Key evidence:" in payload["answer"]
+    assert "## What RAG Means" not in payload["answer"]
     assert "term coverage" not in payload["answer"]
     assert any(event["stage"] == "search_summary" for event in payload["workflow_trace"])
     assert len(payload["tool_chain"]) == 1

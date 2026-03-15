@@ -216,6 +216,38 @@ def _normalize_search_excerpt(text: str) -> str:
     return cleaned.strip(" -|")
 
 
+def _is_heading_like_excerpt(text: str) -> bool:
+    stripped = text.strip()
+    if not stripped:
+        return True
+
+    if re.match(r"^#{1,6}\s+\S+", stripped):
+        return True
+
+    if len(stripped) < 28 and stripped == stripped.title() and "." not in stripped:
+        return True
+
+    return False
+
+
+def _candidate_search_segments(content: str) -> list[tuple[int, str]]:
+    segments: list[tuple[int, str]] = []
+    start = 0
+
+    for match in re.finditer(r"\n\s*\n|\n", content):
+        end = match.start()
+        segment = content[start:end].strip()
+        if segment:
+            segments.append((start, segment))
+        start = match.end()
+
+    trailing = content[start:].strip()
+    if trailing:
+        segments.append((start, trailing))
+
+    return segments
+
+
 def _extract_search_snippet(content: str, first_index: int, query: str) -> str:
     snippet_start = max(0, first_index - 120)
     snippet_end = min(len(content), first_index + len(query) + 180)
@@ -233,6 +265,23 @@ def _extract_search_snippet(content: str, first_index: int, query: str) -> str:
             break
 
     snippet = _normalize_search_excerpt(content[local_start:local_end])
+    lowered_query = query.lower()
+
+    if _is_heading_like_excerpt(snippet) or len(snippet) < max(36, len(query) + 8):
+        for segment_start, segment in _candidate_search_segments(content):
+            normalized_segment = _normalize_search_excerpt(segment)
+            if not normalized_segment:
+                continue
+            if segment_start < first_index:
+                continue
+            if lowered_query not in normalized_segment.lower():
+                continue
+            if _is_heading_like_excerpt(normalized_segment):
+                continue
+            if len(normalized_segment) < max(36, len(query) + 8):
+                continue
+            snippet = normalized_segment
+            break
     if len(snippet) > 220:
         snippet = f"{snippet[:217].rstrip()}..."
 
