@@ -508,6 +508,9 @@ def test_execute_document_search_tool_ranks_more_specific_match_first(
     assert response.execution_status == "completed"
     assert response.output["matched_documents"].split(", ")[0] == "rag_overview.md"
     assert response.output["snippets"].split(" | ")[0].startswith("rag_overview.md:")
+    assert response.output["top_match_document"] == "rag_overview.md"
+    assert float(response.output["top_match_score"]) > 0
+    assert "full query match" in response.output["top_match_reason"]
 
 
 def test_query_tool_execute_endpoint_returns_structured_stub(workspace_tmp_path, monkeypatch):

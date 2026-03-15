@@ -207,31 +207,40 @@ def _score_document_search_match(
     content: str,
     query: str,
     first_index: int,
-) -> tuple[float, str]:
+) -> tuple[float, str, str]:
     lowered_filename = filename.lower()
     lowered_content = content.lower()
     lowered_query = query.lower()
     query_terms = _tokenize_search_terms(query)
 
     score = 0.0
+    reasons: list[str] = []
 
     if lowered_query in lowered_filename:
         score += 4.0
+        reasons.append("filename match")
 
     if lowered_query in lowered_content:
         score += 3.0
+        reasons.append("full query match")
 
-    score += max(0.0, 1.5 - min(first_index, 600) / 400)
+    early_occurrence_bonus = max(0.0, 1.5 - min(first_index, 600) / 400)
+    score += early_occurrence_bonus
+    if early_occurrence_bonus > 0:
+        reasons.append("early occurrence")
 
     if query_terms:
         matched_terms = sum(1 for term in query_terms if term in lowered_content)
-        score += matched_terms / len(query_terms)
+        term_coverage_bonus = matched_terms / len(query_terms)
+        score += term_coverage_bonus
+        if matched_terms:
+            reasons.append(f"term coverage {matched_terms}/{len(query_terms)}")
 
     snippet_start = max(0, first_index - 40)
     snippet_end = min(len(content), first_index + len(query) + 80)
     snippet = content[snippet_start:snippet_end].replace("\n", " ").strip()
 
-    return score, f"{filename}: {snippet}"
+    return score, f"{filename}: {snippet}", ", ".join(reasons)
 
 
 def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
@@ -422,7 +431,7 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
     if filename_filter:
         documents = [item for item in documents if item["filename"] == filename_filter]
 
-    ranked_matches: list[tuple[float, str, str]] = []
+    ranked_matches: list[tuple[float, str, str, str]] = []
     skipped_documents = 0
 
     for item in documents:
@@ -444,17 +453,17 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
             continue
 
         first_index = lowered_content.index(lowered_query)
-        score, snippet = _score_document_search_match(
+        score, snippet, reason = _score_document_search_match(
             filename=item["filename"],
             content=content,
             query=query,
             first_index=first_index,
         )
-        ranked_matches.append((score, item["filename"], snippet))
+        ranked_matches.append((score, item["filename"], snippet, reason))
 
     ranked_matches.sort(key=lambda item: (-item[0], item[1]))
-    matched_documents = [filename for _, filename, _ in ranked_matches]
-    preview_snippets = [snippet for _, _, snippet in ranked_matches]
+    matched_documents = [filename for _, filename, _, _ in ranked_matches]
+    preview_snippets = [snippet for _, _, snippet, _ in ranked_matches]
 
     result_summary = (
         f"Found {len(matched_documents)} matching document(s) for '{query}'."
@@ -472,6 +481,11 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
         output["filename_filter"] = filename_filter
     if preview_snippets:
         output["snippets"] = " | ".join(preview_snippets[:3])
+    if ranked_matches:
+        top_score, top_filename, _, top_reason = ranked_matches[0]
+        output["top_match_document"] = top_filename
+        output["top_match_score"] = f"{top_score:.3f}"
+        output["top_match_reason"] = top_reason or "content match"
 
     return ToolExecutionResponse(
         tool_name="document_search",
