@@ -1001,6 +1001,78 @@ def test_query_agent_endpoint_supports_filename_scoped_limited_document_search(
     assert payload["tool_execution"]["output"]["matched_documents"] == "rag_overview.md"
 
 
+def test_query_agent_endpoint_supports_search_then_summarize_workflow(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    (raw_dir / "notes.txt").write_text(
+        "RAG improves factual grounding and retrieval quality.",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for RAG and summarize top 2 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert payload["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_plan"]["arguments"]["max_results"] == "2"
+    assert payload["answer_source"] == "local_search_summary"
+    assert payload["chat_provider"] == "local"
+    assert "matched 2 document(s)" in payload["answer"]
+    assert "Top match:" in payload["answer"]
+    assert any(event["stage"] == "search_summary" for event in payload["workflow_trace"])
+    assert len(payload["tool_chain"]) == 1
+
+
+def test_query_agent_endpoint_stops_search_then_summarize_when_search_misses(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text(
+        "This file only mentions deployment workflows.",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for payment-service outage and summarize top 2 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "clarification_required"
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert payload["tool_execution"]["tool_name"] == "document_search"
+    assert payload["tool_execution"]["output"]["matched_count"] == "0"
+    assert "generating a summary" in payload["clarification_message"]
+    assert "search_query_refinement" in payload["clarification_plan"]["missing_fields"]
+    assert "document_scope" in payload["clarification_plan"]["missing_fields"]
+    assert any(event["stage"] == "clarification_planning" for event in payload["workflow_trace"])
+
+
 def test_query_agent_endpoint_returns_clarification_result():
     client = TestClient(app)
     response = client.post(

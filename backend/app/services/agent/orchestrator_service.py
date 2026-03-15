@@ -6,6 +6,7 @@ from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.agent.clarification_service import (
     plan_clarification,
     plan_search_miss_clarification,
+    plan_search_summary_miss_clarification,
 )
 from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
@@ -13,6 +14,10 @@ from app.services.agent.tool_service import execute_tool_request, plan_tool_requ
 
 SEARCH_AND_TICKET_PATTERN = re.compile(
     r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<ticket>(?:create|open).+\bticket\b.+)$",
+    re.IGNORECASE,
+)
+SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
+    r"(?P<search>^(?:search|find|lookup).+?)\s+and\s+(?P<summarize>summari[sz]e.+)$",
     re.IGNORECASE,
 )
 
@@ -23,6 +28,14 @@ def _match_search_then_ticket_workflow(question: str) -> tuple[str, str] | None:
         return None
 
     return match.group("search").strip(), match.group("ticket").strip()
+
+
+def _match_search_then_summarize_workflow(question: str) -> tuple[str, str] | None:
+    match = SEARCH_AND_SUMMARIZE_PATTERN.match(question.strip())
+    if not match:
+        return None
+
+    return match.group("search").strip(), match.group("summarize").strip()
 
 
 def _build_search_context_arguments(tool_output: dict[str, str]) -> dict[str, str]:
@@ -43,6 +56,49 @@ def _build_search_context_arguments(tool_output: dict[str, str]) -> dict[str, st
         arguments["supporting_match_count"] = matched_count
 
     return arguments
+
+
+def _build_search_summary(tool_output: dict[str, str]) -> str:
+    query = tool_output.get("query", "").strip()
+    matched_count = tool_output.get("matched_count", "0").strip()
+    returned_count = tool_output.get("returned_count", matched_count).strip()
+    matched_documents = tool_output.get("matched_documents", "").strip()
+    snippets = tool_output.get("snippets", "").strip()
+    top_match_document = tool_output.get("top_match_document", "").strip()
+    top_match_reason = tool_output.get("top_match_reason", "").strip()
+
+    summary_parts: list[str] = []
+
+    if query:
+        summary_parts.append(
+            f"Search for '{query}' matched {matched_count} document(s) and returned {returned_count} result(s)."
+        )
+    if top_match_document:
+        top_match_clause = f"Top match: {top_match_document}"
+        if top_match_reason:
+            top_match_clause += f" ({top_match_reason})"
+        summary_parts.append(f"{top_match_clause}.")
+    if matched_documents:
+        summary_parts.append(f"Returned documents: {matched_documents}.")
+    if snippets:
+        first_snippet = snippets.split(" | ", maxsplit=1)[0].strip()
+        if first_snippet:
+            summary_parts.append(f"Top supporting snippet: {first_snippet}")
+
+    return " ".join(summary_parts).strip()
+
+
+def _extract_summary_step_context(summarize_question: str) -> dict[str, str]:
+    summary_plan = plan_tool_request(
+        re.sub(r"^summari[sz]e\s+", "Search ", summarize_question.strip(), flags=re.IGNORECASE)
+    )
+    if summary_plan.tool_name != "document_search":
+        return {}
+
+    context: dict[str, str] = {}
+    if "max_results" in summary_plan.arguments:
+        context["max_results"] = summary_plan.arguments["max_results"]
+    return context
 
 
 def orchestrate_agent_request(
@@ -108,6 +164,7 @@ def orchestrate_agent_request(
     if route.route_type == "tool_execution":
         chained_steps: list[dict] = []
         search_then_ticket = _match_search_then_ticket_workflow(question)
+        search_then_summarize = _match_search_then_summarize_workflow(question)
 
         if search_then_ticket is not None:
             search_question, ticket_question = search_then_ticket
@@ -223,6 +280,114 @@ def orchestrate_agent_request(
                 filename=filename,
                 tool_plan=final_step["tool_plan"],
                 tool_execution=final_step["tool_execution"],
+                tool_chain=chained_steps,
+            )
+
+        if search_then_summarize is not None:
+            search_question, summarize_question = search_then_summarize
+            tool_plan = plan_tool_request(search_question)
+            summary_context = _extract_summary_step_context(summarize_question)
+            if summary_context:
+                tool_plan.arguments = {
+                    **tool_plan.arguments,
+                    **summary_context,
+                }
+            workflow_trace.append(
+                WorkflowTraceEvent(
+                    stage="tool_planning",
+                    status="completed",
+                    timestamp=build_utc_timestamp(),
+                    detail=(
+                        f"Planned {tool_plan.tool_name}:{tool_plan.action} for "
+                        f"{tool_plan.target}."
+                    ),
+                )
+            )
+            tool_response = execute_tool_request(
+                ToolExecutionRequest(
+                    tool_name=tool_plan.tool_name,
+                    action=tool_plan.action,
+                    target=tool_plan.target,
+                    arguments=tool_plan.arguments,
+                )
+            )
+            workflow_trace.append(
+                WorkflowTraceEvent(
+                    stage="tool_execution",
+                    status="completed",
+                    timestamp=build_utc_timestamp(),
+                    detail=(
+                        f"Executed {tool_response.execution_mode} tool "
+                        f"{tool_response.tool_name}:{tool_response.action} "
+                        f"with status {tool_response.execution_status}."
+                    ),
+                )
+            )
+            chained_steps.append(
+                {
+                    "question": search_question,
+                    "tool_plan": tool_plan.model_dump(),
+                    "tool_execution": tool_response.model_dump(),
+                }
+            )
+
+            if tool_response.output.get("matched_count") == "0":
+                clarification_plan = plan_search_summary_miss_clarification(tool_plan.target)
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="clarification_planning",
+                        status="completed",
+                        timestamp=build_utc_timestamp(),
+                        detail=(
+                            "Search produced no supporting documents, so the workflow "
+                            "stopped before summary generation and requested clarification."
+                        ),
+                    )
+                )
+                return AgentWorkflowResponse(
+                    question=question,
+                    workflow_status="clarification_required",
+                    route=route,
+                    workflow_trace=workflow_trace,
+                    filename=filename,
+                    clarification_message=(
+                        "No supporting documents matched the search step, so the system "
+                        "needs clarification before generating a summary."
+                    ),
+                    clarification_plan=clarification_plan.model_dump(),
+                    tool_plan=tool_plan.model_dump(),
+                    tool_execution=tool_response.model_dump(),
+                    tool_chain=chained_steps,
+                )
+
+            summary_answer = _build_search_summary(tool_response.output)
+            workflow_trace.append(
+                WorkflowTraceEvent(
+                    stage="search_summary",
+                    status="completed",
+                    timestamp=build_utc_timestamp(),
+                    detail=(
+                        f"Generated a local summary for search results in response to "
+                        f"'{summarize_question}'."
+                    ),
+                )
+            )
+            answered_at = build_utc_timestamp()
+            return AgentWorkflowResponse(
+                question=question,
+                workflow_status="completed",
+                route=route,
+                workflow_trace=workflow_trace,
+                filename=filename,
+                answer=summary_answer,
+                answer_source="local_search_summary",
+                model="local-heuristic-summary",
+                answered_at=answered_at,
+                answer_latency_ms=0.0,
+                chat_provider="local",
+                chat_model="local-heuristic-summary",
+                tool_plan=tool_plan.model_dump(),
+                tool_execution=tool_response.model_dump(),
                 tool_chain=chained_steps,
             )
 

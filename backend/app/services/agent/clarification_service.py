@@ -74,3 +74,25 @@ def plan_search_miss_clarification(
             "be clarified before continuing to execution."
         ),
     )
+
+
+def plan_search_summary_miss_clarification(search_query: str) -> ClarificationPlanResponse:
+    """Return a targeted clarification plan when a search-to-summary step finds no support."""
+    normalized_search_query = search_query.strip()
+
+    if not normalized_search_query:
+        raise ValueError("search_query_must_not_be_empty")
+
+    return ClarificationPlanResponse(
+        question=normalized_search_query,
+        planning_mode="heuristic_stub",
+        missing_fields=["search_query_refinement", "document_scope"],
+        follow_up_questions=[
+            f"I could not find supporting documents for '{normalized_search_query}'. Should I search a different phrase?",
+            "Should I narrow the search to a specific document or file?",
+        ],
+        clarification_summary=(
+            "The workflow could not find supporting documents to summarize, so it should be "
+            "clarified before continuing."
+        ),
+    )
