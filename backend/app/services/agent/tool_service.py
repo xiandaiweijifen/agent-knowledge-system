@@ -3,6 +3,7 @@ import uuid
 import json
 import unicodedata
 from pathlib import Path
+from typing import Any
 
 from app.core.config import settings
 from app.schemas.tools import (
@@ -167,7 +168,7 @@ def _clean_ticket_target(question: str, target: str, action: str) -> str:
     return cleaned_target or "ticket"
 
 
-def _load_ticket_store() -> list[dict[str, str]]:
+def _load_ticket_store() -> list[dict[str, Any]]:
     if not TICKET_STORE_PATH.exists():
         return []
 
@@ -175,7 +176,7 @@ def _load_ticket_store() -> list[dict[str, str]]:
     return [_normalize_ticket_record(ticket) for ticket in tickets]
 
 
-def _save_ticket_store(tickets: list[dict[str, str]]) -> None:
+def _save_ticket_store(tickets: list[dict[str, Any]]) -> None:
     TICKET_STORE_PATH.write_text(
         json.dumps(
             [_normalize_ticket_record(ticket) for ticket in tickets],
@@ -186,7 +187,7 @@ def _save_ticket_store(tickets: list[dict[str, str]]) -> None:
     )
 
 
-def _normalize_ticket_record(ticket: dict[str, str]) -> dict[str, str]:
+def _normalize_ticket_record(ticket: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(ticket)
     ticket_id = normalized.get("ticket_id", "").strip()
     target = normalized.get("target", "").strip() or "ticket"
@@ -201,7 +202,7 @@ def _normalize_ticket_record(ticket: dict[str, str]) -> dict[str, str]:
     return normalized
 
 
-def _serialize_ticket_collection(tickets: list[dict[str, str]]) -> str:
+def _build_ticket_collection_records(tickets: list[dict[str, Any]]) -> list[dict[str, str]]:
     serialized_records: list[dict[str, str]] = []
     for ticket in tickets:
         serialized_records.append(
@@ -213,14 +214,14 @@ def _serialize_ticket_collection(tickets: list[dict[str, str]]) -> str:
                 "environment": ticket.get("environment", ""),
             }
         )
-    return json.dumps(serialized_records, ensure_ascii=False)
+    return serialized_records
 
 
 def _find_ticket(
-    tickets: list[dict[str, str]],
+    tickets: list[dict[str, Any]],
     target: str,
     ticket_id: str,
-) -> dict[str, str] | None:
+) -> dict[str, Any] | None:
     if ticket_id:
         for ticket in tickets:
             if ticket["ticket_id"] == ticket_id:
@@ -529,7 +530,8 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             f"{ticket['ticket_id']} [{ticket['status']}] {ticket['target']}"
             for ticket in filtered_tickets
         )
-        output = {
+        ticket_records = _build_ticket_collection_records(filtered_tickets)
+        output: dict[str, Any] = {
             **_build_tool_output_metadata(
                 output_kind="collection",
                 resource_type="ticket",
@@ -539,7 +541,8 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             "ticket_count": str(len(filtered_tickets)),
             "tickets": ticket_summaries,
             "ticket_ids": ", ".join(ticket["ticket_id"] for ticket in filtered_tickets),
-            "tickets_json": _serialize_ticket_collection(filtered_tickets),
+            "tickets_json": json.dumps(ticket_records, ensure_ascii=False),
+            "ticket_records": ticket_records,
         }
         if status_filter:
             output["status_filter"] = status_filter
@@ -764,7 +767,7 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
         else f"No documents matched '{query}'."
     )
 
-    output: dict[str, str] = {
+    output: dict[str, Any] = {
         **_build_tool_output_metadata(
             output_kind="search_results",
             resource_type="document_match",

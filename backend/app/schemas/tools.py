@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -17,7 +19,7 @@ class ToolExecutionResponse(BaseModel):
     result_summary: str
     trace_id: str
     executed_at: str
-    output: dict[str, str] = Field(default_factory=dict)
+    output: dict[str, Any] = Field(default_factory=dict)
 
 
 class InferredToolRequest(BaseModel):

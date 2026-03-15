@@ -455,8 +455,9 @@ def test_execute_ticketing_tool_supports_list(workspace_tmp_path, monkeypatch):
     assert listed.output["ticket_ids"] == "TICKET-0001, TICKET-0002"
     listed_records = json.loads(listed.output["tickets_json"])
     assert len(listed_records) == 2
-    assert listed_records[0]["ticket_id"] == "TICKET-0001"
-    assert listed_records[0]["status"] == "open"
+    assert listed.output["ticket_records"][0]["ticket_id"] == "TICKET-0001"
+    assert listed.output["ticket_records"][0]["status"] == "open"
+    assert listed.output["ticket_records"] == listed_records
     assert listed.output["status_filter"] == "open"
     assert "TICKET-0001" in listed.output["tickets"]
 

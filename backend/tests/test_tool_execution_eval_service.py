@@ -47,6 +47,20 @@ def test_evaluate_tool_execution_dataset_computes_tool_accuracy(
                         "expected_output_keys": ["ticket_id", "created_at"],
                     },
                     {
+                        "case_id": "case_2b",
+                        "question": "List open tickets",
+                        "expected_tool_name": "ticketing",
+                        "expected_action": "list",
+                        "expected_execution_status": "completed",
+                        "expected_arguments": {
+                            "status": "open",
+                        },
+                        "expected_output": {
+                            "output_kind": "collection",
+                        },
+                        "expected_output_keys": ["ticket_records", "ticket_ids", "tickets_json"],
+                    },
+                    {
                         "case_id": "case_3",
                         "question": "Search docs for RAG and show top 1 results",
                         "expected_tool_name": "document_search",
@@ -84,6 +98,6 @@ def test_evaluate_tool_execution_dataset_computes_tool_accuracy(
 
     report = evaluate_tool_execution_dataset(dataset_path=dataset_path)
 
-    assert report.summary.total_cases == 4
+    assert report.summary.total_cases == 5
     assert report.summary.tool_accuracy == 1.0
     assert all(case.matched for case in report.cases)

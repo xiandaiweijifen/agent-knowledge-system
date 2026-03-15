@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
@@ -114,7 +116,7 @@ class ToolExecutionEvalCase(BaseModel):
     expected_action: str
     expected_execution_status: str = "completed"
     expected_arguments: dict[str, str] = Field(default_factory=dict)
-    expected_output: dict[str, str] = Field(default_factory=dict)
+    expected_output: dict[str, Any] = Field(default_factory=dict)
     expected_output_keys: list[str] = Field(default_factory=list)
 
 

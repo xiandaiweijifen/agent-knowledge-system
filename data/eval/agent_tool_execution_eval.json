@@ -42,7 +42,7 @@
       "expected_arguments": {
         "status": "open"
       },
-      "expected_output_keys": ["schema_version", "output_kind", "resource_type", "item_count", "ticket_count", "tickets", "ticket_ids", "tickets_json", "status_filter"]
+      "expected_output_keys": ["schema_version", "output_kind", "resource_type", "item_count", "ticket_count", "tickets", "ticket_ids", "tickets_json", "ticket_records", "status_filter"]
     },
     {
       "case_id": "tool_eval_5",
