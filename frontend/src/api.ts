@@ -1,5 +1,6 @@
 import type {
   AgentWorkflowResponse,
+  AgentWorkflowRunListResponse,
   AgentEvalDatasetListResponse,
   AgentRouteEvalReportResponse,
   AgentWorkflowEvalReportResponse,
@@ -134,6 +135,14 @@ export function runAgentQuery(filename: string, question: string, topK: number) 
       top_k: topK,
     }),
   });
+}
+
+export function fetchAgentWorkflowRuns(limit = 10) {
+  return apiFetch<AgentWorkflowRunListResponse>(`/api/query/agent/runs?limit=${limit}`);
+}
+
+export function fetchAgentWorkflowRun(runId: string) {
+  return apiFetch<AgentWorkflowResponse>(`/api/query/agent/runs/${encodeURIComponent(runId)}`);
 }
 
 export function fetchEvaluationDatasets() {

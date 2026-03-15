@@ -13298,5 +13298,705 @@
         }
       }
     ]
+  },
+  {
+    "run_id": "d16a11125a6c471a863d68d22fc92714",
+    "question": "Check system status",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:27:12.157556+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:27:12.157632+00:00",
+        "detail": "Planned system_status:query for system status."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T13:27:12.157723+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for system status.",
+      "trace_id": "6305b86e95604cb589c5a61651a46e78",
+      "executed_at": "2026-03-15T13:27:12.157706+00:00",
+      "output": {
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash-lite",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Check system status",
+        "tool_plan": {
+          "question": "Check system status",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for system status.",
+          "trace_id": "6305b86e95604cb589c5a61651a46e78",
+          "executed_at": "2026-03-15T13:27:12.157706+00:00",
+          "output": {
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash-lite",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "45c11d3e3a8d4f9ba29636ac957c1088",
+    "question": "Check system status",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:13:53.253137+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:13:53.253290+00:00",
+        "detail": "Planned system_status:query for system status."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:13:53.253514+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for system status.",
+      "trace_id": "b070b012406c4326bce3bec196e2ecba",
+      "executed_at": "2026-03-15T14:13:53.253497+00:00",
+      "output": {
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash-lite",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Check system status",
+        "tool_plan": {
+          "question": "Check system status",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for system status.",
+          "trace_id": "b070b012406c4326bce3bec196e2ecba",
+          "executed_at": "2026-03-15T14:13:53.253497+00:00",
+          "output": {
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash-lite",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "dfea7549c9e34674b25d2676f0c1113b",
+    "question": "Create a ticket for the payment service outage",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:14:14.449211+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:14:14.449476+00:00",
+        "detail": "Planned ticketing:create for the payment service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:14:14.460594+00:00",
+        "detail": "Executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a ticket for the payment service outage",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "the payment service outage",
+      "arguments": {},
+      "plan_summary": "Plan ticketing:create for the payment service outage using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "the payment service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0121 for the payment service outage.",
+      "trace_id": "7c72ece3498e471dbbb03b00214dc378",
+      "executed_at": "2026-03-15T14:14:14.459275+00:00",
+      "output": {
+        "ticket_id": "TICKET-0121",
+        "target": "the payment service outage",
+        "status": "open",
+        "severity": "unspecified",
+        "environment": "unspecified",
+        "created_at": "2026-03-15T14:14:14.459275+00:00",
+        "updated_at": "2026-03-15T14:14:14.459275+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Create a ticket for the payment service outage",
+        "tool_plan": {
+          "question": "Create a ticket for the payment service outage",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "the payment service outage",
+          "arguments": {},
+          "plan_summary": "Plan ticketing:create for the payment service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "the payment service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0121 for the payment service outage.",
+          "trace_id": "7c72ece3498e471dbbb03b00214dc378",
+          "executed_at": "2026-03-15T14:14:14.459275+00:00",
+          "output": {
+            "ticket_id": "TICKET-0121",
+            "target": "the payment service outage",
+            "status": "open",
+            "severity": "unspecified",
+            "environment": "unspecified",
+            "created_at": "2026-03-15T14:14:14.459275+00:00",
+            "updated_at": "2026-03-15T14:14:14.459275+00:00"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "e1ebdecfd5bb4338a74fda8f0d4732b4",
+    "question": "Search docs for payment-service outage and summarize top 2 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "workflow_status": "clarification_required",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:35:51.059008+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:35:51.060979+00:00",
+        "detail": "Planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:35:51.167844+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:35:51.168267+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before summary generation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before generating a summary.",
+    "clarification_plan": {
+      "question": "payment-service outage",
+      "planning_mode": "heuristic_stub",
+      "missing_fields": [
+        "search_query_refinement",
+        "document_scope"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'payment-service outage'. Should I search a different phrase?",
+        "Should I narrow the search to a specific document or file?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents to summarize, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Search docs for payment-service outage",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "arguments": {
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'payment-service outage'.",
+      "trace_id": "db6a9aacc5f549f8a9b4d280bde36ff7",
+      "executed_at": "2026-03-15T14:35:51.167782+00:00",
+      "output": {
+        "query": "payment-service outage",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "1",
+        "max_results": "2"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "db6a9aacc5f549f8a9b4d280bde36ff7",
+          "executed_at": "2026-03-15T14:35:51.167782+00:00",
+          "output": {
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "1",
+            "max_results": "2"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "45681214750945c58641b75779d966dd",
+    "question": "Search rag_overview.md for RAG and summarize top 2 results",
+    "resumed_from_question": "Search docs for payment-service outage and summarize top 2 results",
+    "source_run_id": "e1ebdecfd5bb4338a74fda8f0d4732b4",
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:36:55.722014+00:00",
+        "detail": "Resumed workflow from 'Search docs for payment-service outage and summarize top 2 results' using clarification context."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:36:55.715804+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:36:55.716174+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:36:55.721841+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:36:55.721923+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 2 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I searched 'rag_overview.md' for 'RAG' and found 1 matching result(s). The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-15T14:36:55.721938+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search rag_overview.md for RAG",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "filename": "rag_overview.md",
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "dee41fb5bd884bbf8fdefb0fdebaa906",
+      "executed_at": "2026-03-15T14:36:55.721790+00:00",
+      "output": {
+        "query": "RAG",
+        "matched_count": "1",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "0",
+        "filename_filter": "rag_overview.md",
+        "max_results": "2",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Search rag_overview.md for RAG",
+        "tool_plan": {
+          "question": "Search rag_overview.md for RAG",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "filename": "rag_overview.md",
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "dee41fb5bd884bbf8fdefb0fdebaa906",
+          "executed_at": "2026-03-15T14:36:55.721790+00:00",
+          "output": {
+            "query": "RAG",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "filename_filter": "rag_overview.md",
+            "max_results": "2",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "run_id": "2b4b2bbe987444edb14bc7772b7c393d",
+    "question": "Check system status\n",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "workflow_status": "completed",
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:37:29.575534+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:37:29.575598+00:00",
+        "detail": "Planned system_status:query for system status."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T14:37:29.575674+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status",
+      "planning_mode": "heuristic_stub",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "system status",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for system status.",
+      "trace_id": "911a866359404c3bb3ae33effeec1fd0",
+      "executed_at": "2026-03-15T14:37:29.575653+00:00",
+      "output": {
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash-lite",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "question": "Check system status\n",
+        "tool_plan": {
+          "question": "Check system status",
+          "planning_mode": "heuristic_stub",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for system status using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "system status",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for system status.",
+          "trace_id": "911a866359404c3bb3ae33effeec1fd0",
+          "executed_at": "2026-03-15T14:37:29.575653+00:00",
+          "output": {
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash-lite",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        }
+      }
+    ]
   }
 ]

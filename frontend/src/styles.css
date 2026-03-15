@@ -918,6 +918,33 @@ textarea {
   gap: 12px;
 }
 
+.run-list {
+  display: grid;
+  gap: 12px;
+}
+
+.run-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  cursor: pointer;
+  transition:
+    transform var(--motion-fast),
+    background var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast);
+}
+
+.run-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(76, 47, 34, 0.07);
+}
+
 .tool-chain-card {
   display: grid;
   gap: 12px;

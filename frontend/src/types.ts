@@ -158,7 +158,10 @@ export type ToolChainStep = {
 };
 
 export type AgentWorkflowResponse = {
+  run_id?: string | null;
   question: string;
+  resumed_from_question?: string | null;
+  source_run_id?: string | null;
   workflow_status: string;
   route: RouteDecision;
   workflow_trace: WorkflowTraceEvent[];
@@ -176,6 +179,22 @@ export type AgentWorkflowResponse = {
   tool_plan?: ToolPlan | null;
   tool_execution?: ToolExecution | null;
   tool_chain: ToolChainStep[];
+};
+
+export type AgentWorkflowRunSummary = {
+  run_id: string;
+  question: string;
+  resumed_from_question?: string | null;
+  source_run_id?: string | null;
+  workflow_status: string;
+  route_type: string;
+  route_reason: string;
+  filename?: string | null;
+  answered_at?: string | null;
+};
+
+export type AgentWorkflowRunListResponse = {
+  runs: AgentWorkflowRunSummary[];
 };
 
 export type DiagnosticsResponse = {

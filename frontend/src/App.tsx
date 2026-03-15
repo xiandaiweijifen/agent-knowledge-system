@@ -1,6 +1,8 @@
 ﻿import { FormEvent, useEffect, useState } from "react";
 import {
   deleteDocument as deleteDocumentRequest,
+  fetchAgentWorkflowRun,
+  fetchAgentWorkflowRuns,
   fetchDocumentPreview,
   fetchAgentRouteEvaluationDatasets,
   fetchAgentWorkflowEvaluationDatasets,
@@ -25,6 +27,7 @@ import { QueryView } from "./components/QueryView";
 import { presetQuestions, views } from "./constants";
 import type {
   AgentWorkflowResponse,
+  AgentWorkflowRunSummary,
   AgentEvalDatasetInfo,
   AgentRouteEvalReportResponse,
   AgentWorkflowEvalReportResponse,
@@ -64,6 +67,7 @@ function App() {
   const [topK, setTopK] = useState(3);
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
   const [agentQueryResult, setAgentQueryResult] = useState<AgentWorkflowResponse | null>(null);
+  const [agentWorkflowRuns, setAgentWorkflowRuns] = useState<AgentWorkflowRunSummary[]>([]);
   const [diagnosticsResult, setDiagnosticsResult] = useState<DiagnosticsResponse | null>(null);
   const [queryError, setQueryError] = useState("");
   const [queryBusy, setQueryBusy] = useState(false);
@@ -134,6 +138,7 @@ function App() {
     void loadSystemHealth();
     void loadDocuments();
     void loadEvaluationDatasets();
+    void loadAgentWorkflowRuns();
   }, []);
 
   useEffect(() => {
@@ -156,6 +161,15 @@ function App() {
     setAgentQueryResult(null);
     setDiagnosticsResult(null);
     setQueryError("");
+  }
+
+  async function loadAgentWorkflowRuns() {
+    try {
+      const payload = await fetchAgentWorkflowRuns(8);
+      setAgentWorkflowRuns(payload.runs);
+    } catch {
+      setAgentWorkflowRuns([]);
+    }
   }
 
   function handleSelectDocument(filename: string) {
@@ -432,8 +446,24 @@ function App() {
     try {
       const payload = await runAgentQueryRequest(queryFilename, question, topK);
       setAgentQueryResult(payload);
+      await loadAgentWorkflowRuns();
     } catch (error) {
       setQueryError(error instanceof Error ? error.message : "Failed to run agent workflow");
+    } finally {
+      setQueryBusy(false);
+    }
+  }
+
+  async function loadAgentWorkflowRun(runId: string) {
+    setQueryBusy(true);
+    setQueryError("");
+    setAgentQueryResult(null);
+
+    try {
+      const payload = await fetchAgentWorkflowRun(runId);
+      setAgentQueryResult(payload);
+    } catch (error) {
+      setQueryError(error instanceof Error ? error.message : "Failed to load workflow run");
     } finally {
       setQueryBusy(false);
     }
@@ -605,6 +635,7 @@ function App() {
           activePresetQuestions={activePresetQuestions}
           queryResult={queryResult}
           agentQueryResult={agentQueryResult}
+          agentWorkflowRuns={agentWorkflowRuns}
           diagnosticsResult={diagnosticsResult}
           queryError={queryError}
           queryBusy={queryBusy}
@@ -614,6 +645,7 @@ function App() {
           onClearDiagnostics={() => setDiagnosticsResult(null)}
           onSubmitQuery={submitQuery}
           onRunAgent={() => void runAgentQuery()}
+          onLoadAgentWorkflowRun={(runId) => void loadAgentWorkflowRun(runId)}
           onRunDiagnostics={() => void runDiagnostics()}
         />
       )}

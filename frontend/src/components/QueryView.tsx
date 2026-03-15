@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 
 import type {
   AgentWorkflowResponse,
+  AgentWorkflowRunSummary,
   DiagnosticsResponse,
   DocumentItem,
   QueryResponse,
@@ -16,6 +17,7 @@ type QueryViewProps = {
   activePresetQuestions: string[];
   queryResult: QueryResponse | null;
   agentQueryResult: AgentWorkflowResponse | null;
+  agentWorkflowRuns: AgentWorkflowRunSummary[];
   diagnosticsResult: DiagnosticsResponse | null;
   queryError: string;
   queryBusy: boolean;
@@ -25,6 +27,7 @@ type QueryViewProps = {
   onClearDiagnostics: () => void;
   onSubmitQuery: (event: FormEvent<HTMLFormElement>) => void;
   onRunAgent: () => void;
+  onLoadAgentWorkflowRun: (runId: string) => void;
   onRunDiagnostics: () => void;
 };
 
@@ -36,6 +39,7 @@ export function QueryView({
   activePresetQuestions,
   queryResult,
   agentQueryResult,
+  agentWorkflowRuns,
   diagnosticsResult,
   queryError,
   queryBusy,
@@ -45,6 +49,7 @@ export function QueryView({
   onClearDiagnostics,
   onSubmitQuery,
   onRunAgent,
+  onLoadAgentWorkflowRun,
   onRunDiagnostics,
 }: QueryViewProps) {
   function renderSupportingContext(
@@ -371,6 +376,24 @@ export function QueryView({
                 </div>
               </article>
 
+              <article className="subsection-card">
+                <span className="section-label">Workflow Record</span>
+                <div className="trace-grid">
+                  <div>
+                    <span className="trace-label">Run Id</span>
+                    <strong>{agentQueryResult.run_id ?? "not persisted"}</strong>
+                  </div>
+                  <div>
+                    <span className="trace-label">Resumed From</span>
+                    <strong>{agentQueryResult.resumed_from_question ?? "not resumed"}</strong>
+                  </div>
+                  <div>
+                    <span className="trace-label">Source Run</span>
+                    <strong>{agentQueryResult.source_run_id ?? "not linked"}</strong>
+                  </div>
+                </div>
+              </article>
+
               {agentQueryResult.answer && (
                 <article className="subsection-card">
                   <span className="section-label">Knowledge Result</span>
@@ -530,6 +553,41 @@ export function QueryView({
               <p>
                 Run Agent to inspect route selection, workflow trace, and tool or clarification output.
               </p>
+            </div>
+          )}
+        </article>
+
+        <article className="panel">
+          <div className="panel-heading">
+            <h2>Recent Workflow Runs</h2>
+          </div>
+          {agentWorkflowRuns.length > 0 ? (
+            <div className="run-list">
+              {agentWorkflowRuns.map((run) => (
+                <button
+                  key={run.run_id}
+                  type="button"
+                  className="run-card"
+                  onClick={() => onLoadAgentWorkflowRun(run.run_id)}
+                >
+                  <div className="card-title-row">
+                    <strong>{run.question}</strong>
+                    <span className="status-chip">{run.workflow_status}</span>
+                  </div>
+                  <div className="meta-row">
+                    <span>route {run.route_type}</span>
+                    <span>run {run.run_id}</span>
+                  </div>
+                  {run.resumed_from_question && (
+                    <p className="subsection-copy">resumed from: {run.resumed_from_question}</p>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <strong>No workflow history yet</strong>
+              <p>Run Agent to persist workflow runs, then load a recent run from this panel.</p>
             </div>
           )}
         </article>
