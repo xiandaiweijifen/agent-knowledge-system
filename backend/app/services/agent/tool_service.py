@@ -1,6 +1,7 @@
-import re
+﻿import re
 import uuid
 import json
+import unicodedata
 from pathlib import Path
 
 from app.core.config import settings
@@ -210,8 +211,14 @@ def _tokenize_search_terms(query: str) -> list[str]:
 
 
 def _normalize_search_excerpt(text: str) -> str:
-    cleaned = text.replace("\r", " ").replace("\n", " ")
-    cleaned = re.sub(r"[•▪◦]+", " ", cleaned)
+    cleaned = unicodedata.normalize("NFKC", text)
+    cleaned = cleaned.replace("\ufffd", " ")
+    cleaned = "".join(
+        " " if unicodedata.category(char).startswith("C") and char not in {" ", "\t"} else char
+        for char in cleaned
+    )
+    cleaned = cleaned.replace("\r", " ").replace("\n", " ")
+    cleaned = re.sub(r"[•●▪◦■□◆◇►▸▹▶]+", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     return cleaned.strip(" -|")
 
@@ -254,13 +261,13 @@ def _extract_search_snippet(content: str, first_index: int, query: str) -> str:
 
     local_start = first_index
     for index in range(first_index, snippet_start, -1):
-        if content[index - 1] in ".!?。\n":
+        if content[index - 1] in ".!?銆俓n":
             local_start = index
             break
 
     local_end = snippet_end
     for index in range(first_index + len(query), snippet_end):
-        if content[index] in ".!?。\n":
+        if content[index] in ".!?銆俓n":
             local_end = index + 1
             break
 
@@ -810,3 +817,4 @@ def plan_tool_request(question: str) -> ToolPlanResponse:
             f"{cleaned_target} using a local heuristic planner."
         ),
     )
+

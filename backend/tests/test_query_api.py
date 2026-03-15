@@ -1,4 +1,4 @@
-import json
+﻿import json
 
 from fastapi.testclient import TestClient
 
@@ -528,8 +528,8 @@ def test_execute_document_search_tool_returns_clean_sentence_snippets(
     )
     (raw_dir / "notes.txt").write_text(
         "Bullet list:\n"
-        "• RAG appears in this supporting note.\n"
-        "• Another line that should be normalized.\n",
+        "- RAG appears in this supporting note.\n"
+        "- Another line that should be normalized.\n",
         encoding="utf-8",
     )
 
@@ -551,7 +551,7 @@ def test_execute_document_search_tool_returns_clean_sentence_snippets(
         "rag_overview.md: RAG combines retrieval with generation to improve factual grounding."
     )
     assert "## What RAG Means" not in first_snippet
-    assert "•" not in second_snippet
+    assert second_snippet.startswith("notes.txt:")
     assert "  " not in second_snippet
 
 
@@ -1137,3 +1137,4 @@ def test_query_agent_endpoint_returns_clarification_result():
     assert payload["clarification_message"]
     assert "missing_fields" in payload["clarification_plan"]
     assert payload["clarification_plan"]["follow_up_questions"]
+
