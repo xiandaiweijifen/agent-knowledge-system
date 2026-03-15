@@ -4,6 +4,7 @@ from app.schemas.evaluation import (
     AgentRouteEvalReport,
     AgentWorkflowEvalReport,
     RetrievalEvalReport,
+    ToolExecutionEvalReport,
 )
 
 
@@ -61,3 +62,21 @@ class AgentWorkflowEvalResponse(BaseModel):
 
 class AgentWorkflowEvalDatasetListResponse(BaseModel):
     datasets: list[AgentWorkflowEvalDatasetInfo]
+
+
+class ToolExecutionEvalDatasetInfo(BaseModel):
+    dataset_name: str
+    case_count: int
+
+
+class ToolExecutionEvalRequest(BaseModel):
+    dataset_name: str
+
+
+class ToolExecutionEvalResponse(BaseModel):
+    dataset_name: str
+    report: ToolExecutionEvalReport
+
+
+class ToolExecutionEvalDatasetListResponse(BaseModel):
+    datasets: list[ToolExecutionEvalDatasetInfo]

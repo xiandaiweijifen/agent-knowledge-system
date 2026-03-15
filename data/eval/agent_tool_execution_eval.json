@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "case_id": "tool_eval_1",
+      "question": "Search docs for RAG",
+      "expected_tool_name": "document_search",
+      "expected_action": "query",
+      "expected_execution_status": "completed",
+      "expected_output_keys": ["query", "matched_count", "matched_documents"]
+    },
+    {
+      "case_id": "tool_eval_2",
+      "question": "Check system status",
+      "expected_tool_name": "system_status",
+      "expected_action": "query",
+      "expected_execution_status": "completed",
+      "expected_output_keys": ["status", "embedding_provider", "chat_provider"]
+    },
+    {
+      "case_id": "tool_eval_3",
+      "question": "Create a high severity ticket for payment-service in production",
+      "expected_tool_name": "ticketing",
+      "expected_action": "create",
+      "expected_execution_status": "completed",
+      "expected_arguments": {
+        "severity": "high",
+        "environment": "production"
+      },
+      "expected_output": {
+        "status": "open",
+        "severity": "high",
+        "environment": "production"
+      },
+      "expected_output_keys": ["ticket_id", "created_at"]
+    },
+    {
+      "case_id": "tool_eval_4",
+      "question": "List open tickets",
+      "expected_tool_name": "ticketing",
+      "expected_action": "list",
+      "expected_execution_status": "completed",
+      "expected_arguments": {
+        "status": "open"
+      },
+      "expected_output_keys": ["ticket_count", "tickets", "status_filter"]
+    }
+  ]
+}

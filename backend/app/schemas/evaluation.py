@@ -86,3 +86,39 @@ class AgentWorkflowEvalSummary(BaseModel):
 class AgentWorkflowEvalReport(BaseModel):
     summary: AgentWorkflowEvalSummary
     cases: list[AgentWorkflowEvalCaseResult] = Field(default_factory=list)
+
+
+class ToolExecutionEvalCase(BaseModel):
+    case_id: str
+    question: str
+    expected_tool_name: str
+    expected_action: str
+    expected_execution_status: str = "completed"
+    expected_arguments: dict[str, str] = Field(default_factory=dict)
+    expected_output: dict[str, str] = Field(default_factory=dict)
+    expected_output_keys: list[str] = Field(default_factory=list)
+
+
+class ToolExecutionEvalCaseResult(BaseModel):
+    case_id: str
+    question: str
+    expected_tool_name: str
+    actual_tool_name: str
+    expected_action: str
+    actual_action: str
+    expected_execution_status: str
+    actual_execution_status: str
+    matched: bool
+    argument_matches: dict[str, bool] = Field(default_factory=dict)
+    output_matches: dict[str, bool] = Field(default_factory=dict)
+    output_key_matches: dict[str, bool] = Field(default_factory=dict)
+
+
+class ToolExecutionEvalSummary(BaseModel):
+    total_cases: int
+    tool_accuracy: float
+
+
+class ToolExecutionEvalReport(BaseModel):
+    summary: ToolExecutionEvalSummary
+    cases: list[ToolExecutionEvalCaseResult] = Field(default_factory=list)

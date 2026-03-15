@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.services.evaluation import (
     agent_route_eval_service,
+    tool_execution_eval_service,
     agent_workflow_eval_service,
     retrieval_eval_service,
 )
@@ -242,3 +243,77 @@ def test_agent_workflow_evaluation_dataset_list_endpoint_returns_datasets(monkey
     payload = response.json()
     assert len(payload["datasets"]) == 1
     assert payload["datasets"][0]["dataset_name"] == "agent_workflow_eval.json"
+
+
+def test_tool_execution_evaluation_endpoint_returns_report(monkeypatch):
+    client = TestClient(app)
+
+    def fake_eval(dataset_name: str):
+        assert dataset_name == "agent_tool_execution_eval.json"
+        return {
+            "summary": {
+                "total_cases": 2,
+                "tool_accuracy": 1.0,
+            },
+            "cases": [
+                {
+                    "case_id": "case_1",
+                    "question": "Search docs for RAG",
+                    "expected_tool_name": "document_search",
+                    "actual_tool_name": "document_search",
+                    "expected_action": "query",
+                    "actual_action": "query",
+                    "expected_execution_status": "completed",
+                    "actual_execution_status": "completed",
+                    "matched": True,
+                    "argument_matches": {},
+                    "output_matches": {},
+                    "output_key_matches": {
+                        "query": True,
+                    },
+                }
+            ],
+        }
+
+    monkeypatch.setattr(
+        tool_execution_eval_service,
+        "evaluate_named_tool_execution_dataset",
+        fake_eval,
+    )
+
+    response = client.post(
+        "/api/evaluation/tool-execution",
+        json={
+            "dataset_name": "agent_tool_execution_eval.json",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["dataset_name"] == "agent_tool_execution_eval.json"
+    assert payload["report"]["summary"]["tool_accuracy"] == 1.0
+
+
+def test_tool_execution_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):
+    client = TestClient(app)
+
+    def fake_list():
+        return [
+            {
+                "dataset_name": "agent_tool_execution_eval.json",
+                "case_count": 4,
+            }
+        ]
+
+    monkeypatch.setattr(
+        tool_execution_eval_service,
+        "list_tool_execution_datasets",
+        fake_list,
+    )
+
+    response = client.get("/api/evaluation/tool-execution/datasets")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["datasets"]) == 1
+    assert payload["datasets"][0]["dataset_name"] == "agent_tool_execution_eval.json"
