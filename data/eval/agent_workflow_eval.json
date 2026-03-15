@@ -85,6 +85,16 @@
       "expected_final_output_keys": ["ticket_id", "supporting_query", "supporting_summary"]
     },
     {
+      "case_id": "workflow_tool_11",
+      "question": "Search docs for RAG and show top 2 results",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "document_search",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["returned_count", "max_results", "top_match_document"]
+    },
+    {
       "case_id": "workflow_guardrail_1",
       "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
       "expected_route_type": "tool_execution",

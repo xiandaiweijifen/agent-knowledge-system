@@ -43,6 +43,20 @@
         "status": "open"
       },
       "expected_output_keys": ["ticket_count", "tickets", "status_filter"]
+    },
+    {
+      "case_id": "tool_eval_5",
+      "question": "Search docs for RAG and show top 2 results",
+      "expected_tool_name": "document_search",
+      "expected_action": "query",
+      "expected_execution_status": "completed",
+      "expected_arguments": {
+        "max_results": "2"
+      },
+      "expected_output": {
+        "max_results": "2"
+      },
+      "expected_output_keys": ["returned_count", "top_match_document", "top_match_reason"]
     }
   ]
 }

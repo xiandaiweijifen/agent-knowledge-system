@@ -914,6 +914,39 @@ def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses
     )
 
 
+def test_query_agent_endpoint_supports_capped_document_search_workflow(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text("RAG appears here first and most clearly.", encoding="utf-8")
+    (raw_dir / "notes.txt").write_text("RAG is mentioned in this note.", encoding="utf-8")
+    (raw_dir / "summary.md").write_text("This summary also mentions RAG in passing.", encoding="utf-8")
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for RAG and show top 2 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["route"]["route_type"] == "tool_execution"
+    assert payload["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_plan"]["arguments"]["max_results"] == "2"
+    assert payload["tool_execution"]["output"]["max_results"] == "2"
+    assert payload["tool_execution"]["output"]["returned_count"] == "2"
+    assert len(payload["tool_execution"]["output"]["matched_documents"].split(", ")) == 2
+    assert len(payload["tool_chain"]) == 1
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
+
+
 def test_query_agent_endpoint_returns_clarification_result():
     client = TestClient(app)
     response = client.post(
