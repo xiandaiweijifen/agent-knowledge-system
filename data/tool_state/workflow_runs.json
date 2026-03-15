@@ -1,1 +1,286 @@
-[]
+[
+  {
+    "run_id": "e4983b02ddda4d34b578dd45ee913b66",
+    "question": "Please do that for production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "clarification_requested",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:11:05.944893+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:11:07.824884+00:00",
+    "step_count": 0,
+    "route": {
+      "route_type": "clarification_needed",
+      "route_reason": "The request refers to an action with an ambiguous reference, so the system should ask for clarification before proceeding.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:11:05.944958+00:00",
+        "detail": "Request routed to clarification_needed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:11:07.824884+00:00",
+        "detail": "Clarification requested for fields: environment, action."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "To proceed, I need to know the specific action you want to perform and confirm the target environment.",
+    "clarification_plan": {
+      "question": "Please do that for production",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "environment",
+        "action"
+      ],
+      "follow_up_questions": [
+        "What specific action do you want to perform in production?",
+        "Which environment are you referring to (e.g., production, staging, development)?"
+      ],
+      "clarification_summary": "To proceed, I need to know the specific action you want to perform and confirm the target environment."
+    },
+    "tool_plan": null,
+    "tool_execution": null,
+    "tool_chain": []
+  },
+  {
+    "run_id": "2627d339969942099e82fad8e2c1074f",
+    "question": "Search docs for payment-service outage and summarize top 2 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "search_summary_miss_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:11:32.105669+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:11:37.521666+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:11:32.105727+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:11:35.613488+00:00",
+        "detail": "Planned document_search:query for docs."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:11:35.618265+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:11:37.521666+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before summary generation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before generating a summary.",
+    "clarification_plan": {
+      "question": "docs",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "search_query_refinement",
+        "document_scope"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'docs'. Should I search a different phrase?",
+        "Should I narrow the search to a specific document or file?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents to summarize, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Search docs for payment-service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "docs",
+      "arguments": {
+        "query": "payment-service outage",
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for docs using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "docs",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'docs'.",
+      "trace_id": "71da7b65483d42c8929d778a7b21a030",
+      "executed_at": "2026-03-15T19:11:35.618202+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "docs",
+        "item_count": "0",
+        "query": "docs",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "1",
+        "max_results": "2"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-15T19:11:32.105764+00:00",
+        "completed_at": "2026-03-15T19:11:35.618265+00:00",
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "docs",
+          "arguments": {
+            "query": "payment-service outage",
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for docs using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "docs",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'docs'.",
+          "trace_id": "71da7b65483d42c8929d778a7b21a030",
+          "executed_at": "2026-03-15T19:11:35.618202+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "docs",
+            "item_count": "0",
+            "query": "docs",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "1",
+            "max_results": "2"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "ec2a2a7779b74c9b8b285439340bdc3c",
+    "question": "Please do that for production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "clarification_requested",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-15T19:12:26.713913+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-15T19:12:28.533442+00:00",
+    "step_count": 0,
+    "route": {
+      "route_type": "clarification_needed",
+      "route_reason": "The request refers to an action with an ambiguous reference, so the system should ask for clarification before proceeding.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:12:26.713975+00:00",
+        "detail": "Request routed to clarification_needed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-15T19:12:28.533442+00:00",
+        "detail": "Clarification requested for fields: target, priority."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "The request is underspecified and should be clarified before the workflow continues.",
+    "clarification_plan": {
+      "question": "Please do that for production",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "missing_fields": [
+        "target",
+        "priority"
+      ],
+      "follow_up_questions": [
+        "Which service, system, or resource should the agent act on?",
+        "What priority or severity should the action use?"
+      ],
+      "clarification_summary": "The request is underspecified and should be clarified before the workflow continues."
+    },
+    "tool_plan": null,
+    "tool_execution": null,
+    "tool_chain": []
+  }
+]

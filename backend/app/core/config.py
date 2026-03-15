@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     embedding_provider: str = "mock"
     chat_provider: str = "fallback"
     tool_planner_provider: str = "fallback"
+    clarification_planner_provider: str = "fallback"
     openai_api_key: str = ""
     openai_chat_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"

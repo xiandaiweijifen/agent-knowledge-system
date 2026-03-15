@@ -10,6 +10,10 @@ from app.services.agent.tool_service import (
     list_registered_tools,
     plan_tool_request,
 )
+from app.services.agent.clarification_service import (
+    plan_clarification,
+    plan_search_miss_clarification,
+)
 from app.services.ingestion import document_service
 from app.services.indexing import embedding_service
 from app.services.retrieval.retrieval_service import compute_rerank_bonus
@@ -1199,6 +1203,70 @@ def test_query_tool_plan_endpoint_returns_plan():
     assert payload["action"] == "create"
     assert payload["target"] == "payment-service"
     assert payload["arguments"]["severity"] == "high"
+
+
+def test_plan_clarification_uses_llm_planner_when_available(monkeypatch):
+    monkeypatch.setattr(settings, "clarification_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.clarification_service.generate_llm_clarification_plan",
+        lambda **kwargs: (
+            "llm_gemini",
+            {
+                "missing_fields": ["target", "priority"],
+                "follow_up_questions": [
+                    "Which service should the agent act on?",
+                    "What severity should the ticket use?",
+                ],
+                "clarification_summary": "The request needs more detail before execution.",
+            },
+        ),
+    )
+
+    response = plan_clarification("Please do that for production")
+
+    assert response.planning_mode == "llm_gemini"
+    assert response.missing_fields == ["target", "priority"]
+    assert response.follow_up_questions
+
+
+def test_plan_search_miss_clarification_uses_llm_planner_when_available(monkeypatch):
+    monkeypatch.setattr(settings, "clarification_planner_provider", "openai")
+    monkeypatch.setattr(
+        "app.services.agent.clarification_service.generate_llm_clarification_plan",
+        lambda **kwargs: (
+            "llm_openai",
+            {
+                "missing_fields": ["search_query_refinement", "execution_confirmation"],
+                "follow_up_questions": [
+                    "Should I refine the search phrase?",
+                    "Do you want to continue without supporting documents?",
+                ],
+                "clarification_summary": "The workflow needs clarification before action can continue.",
+            },
+        ),
+    )
+
+    response = plan_search_miss_clarification(
+        "payment-service outage",
+        "create a high severity ticket for payment-service",
+    )
+
+    assert response.planning_mode == "llm_openai"
+    assert response.missing_fields == ["search_query_refinement", "execution_confirmation"]
+    assert response.follow_up_questions
+
+
+def test_plan_clarification_falls_back_when_provider_is_unavailable(monkeypatch):
+    monkeypatch.setattr(settings, "clarification_planner_provider", "gemini")
+    monkeypatch.setattr(
+        "app.services.agent.clarification_service.generate_llm_clarification_plan",
+        lambda **kwargs: ("heuristic_fallback_missing_gemini_key", None),
+    )
+
+    response = plan_clarification("Please do that for production")
+
+    assert response.planning_mode == "heuristic_fallback_missing_gemini_key"
+    assert "target" in response.missing_fields
 
 
 def test_query_agent_endpoint_returns_knowledge_workflow_result(
