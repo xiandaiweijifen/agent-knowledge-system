@@ -1442,20 +1442,34 @@ def _extract_resume_ticket_overrides(clarification_context: dict[str, str]) -> d
 def _can_resume_from_failed_step(source_run: AgentWorkflowResponse) -> bool:
     if source_run.workflow_status != "failed":
         return False
-    if source_run.failure_stage != "tool_execution":
-        return False
-    if len(source_run.tool_chain) < 2:
-        return False
-
-    reusable_step = source_run.tool_chain[0]
-    failed_step = source_run.tool_chain[-1]
-    if reusable_step.step_index != 1 or reusable_step.step_status != "completed":
-        return False
-    if failed_step.step_index != 2 or failed_step.step_status != "failed":
-        return False
 
     workflow_kind, _, _, _ = _resolve_multistep_workflow(source_run.question)
-    return workflow_kind in {"search_then_ticket", "status_then_ticket"}
+    if workflow_kind in {"search_then_ticket", "status_then_ticket"}:
+        if source_run.failure_stage != "tool_execution":
+            return False
+        if len(source_run.tool_chain) < 2:
+            return False
+        reusable_step = source_run.tool_chain[0]
+        failed_step = source_run.tool_chain[-1]
+        if reusable_step.step_index != 1 or reusable_step.step_status != "completed":
+            return False
+        if failed_step.step_index != 2 or failed_step.step_status != "failed":
+            return False
+        return True
+
+    if workflow_kind in {"search_then_summarize", "status_then_summarize"}:
+        if source_run.failure_stage not in {"search_summary", "status_summary"}:
+            return False
+        if not source_run.tool_chain:
+            return False
+        reusable_step = source_run.tool_chain[0]
+        return reusable_step.step_index == 1 and reusable_step.step_status == "completed"
+
+    return False
+
+
+def _copy_workflow_step_record(step) -> dict:
+    return step.model_dump() if hasattr(step, "model_dump") else dict(step)
 
 
 def _resume_failed_step_run(
@@ -1675,6 +1689,127 @@ def _resume_failed_step_run(
     )
 
 
+def _resume_failed_summary_run(
+    *,
+    source_run: AgentWorkflowResponse,
+) -> AgentWorkflowResponse:
+    workflow_started_at = build_utc_timestamp()
+    workflow_kind, _, workflow_follow_up_question, _ = _resolve_multistep_workflow(source_run.question)
+    if workflow_kind not in {"search_then_summarize", "status_then_summarize"}:
+        raise ValueError("failed_step_resume_not_supported")
+    if not workflow_follow_up_question:
+        raise ValueError("failed_step_resume_not_supported")
+
+    reusable_step = source_run.tool_chain[0]
+    reusable_step_dump = _copy_workflow_step_record(reusable_step)
+    reusable_tool_execution = reusable_step_dump.get("tool_execution")
+    reusable_output = (
+        reusable_tool_execution.get("output", {})
+        if isinstance(reusable_tool_execution, dict)
+        else {}
+    )
+
+    if workflow_kind == "search_then_summarize":
+        reuse_detail = (
+            "Reused completed search step from the source workflow run and continued "
+            "with local summary generation."
+        )
+        summary_stage = "search_summary"
+        summary_terminal_reason = "search_summary_completed"
+        failure_terminal_reason = "search_summary_failed"
+        failure_stage = "search_summary"
+        summary_builder = _build_search_summary
+        answer_source = "local_search_summary"
+    else:
+        reuse_detail = (
+            "Reused completed system status step from the source workflow run and continued "
+            "with local summary generation."
+        )
+        summary_stage = "status_summary"
+        summary_terminal_reason = "status_summary_completed"
+        failure_terminal_reason = "status_summary_failed"
+        failure_stage = "status_summary"
+        summary_builder = _build_status_summary
+        answer_source = "local_status_summary"
+
+    workflow_trace = [
+        WorkflowTraceEvent(
+            stage="resume_reuse",
+            status="completed",
+            timestamp=build_utc_timestamp(),
+            detail=reuse_detail,
+        )
+    ]
+
+    try:
+        summary_answer = summary_builder(reusable_output)
+    except Exception as exc:
+        failed_at = build_utc_timestamp()
+        failure_message = _format_failure_message(exc)
+        workflow_trace.append(
+            WorkflowTraceEvent(
+                stage=summary_stage,
+                status="failed",
+                timestamp=failed_at,
+                detail=f"{summary_stage.replace('_', ' ').title()} failed during failed-step resume: {failure_message}.",
+            )
+        )
+        response = _build_failed_workflow_response(
+            question=source_run.question,
+            route=source_run.route,
+            workflow_trace=workflow_trace,
+            filename=source_run.filename,
+            started_at=workflow_started_at,
+            failed_at=failed_at,
+            terminal_reason=failure_terminal_reason,
+            failure_stage=failure_stage,
+            failure_message=failure_message,
+            step_count=2,
+            tool_plan=source_run.tool_plan,
+            tool_execution=source_run.tool_execution,
+            tool_chain=[reusable_step_dump],
+        )
+        response.resumed_from_step_index = 2
+        response.reused_step_indices = [1]
+        return response
+
+    answered_at = build_utc_timestamp()
+    workflow_trace.append(
+        WorkflowTraceEvent(
+            stage=summary_stage,
+            status="completed",
+            timestamp=answered_at,
+            detail=f"Generated a local summary from the reused step 1 output for '{workflow_follow_up_question}'.",
+        )
+    )
+    response = AgentWorkflowResponse(
+        question=source_run.question,
+        workflow_status="completed",
+        step_count=2,
+        route=source_run.route,
+        workflow_trace=workflow_trace,
+        filename=source_run.filename,
+        answer=summary_answer,
+        answer_source=answer_source,
+        model="local-heuristic-summary",
+        answered_at=answered_at,
+        answer_latency_ms=0.0,
+        chat_provider="local",
+        chat_model="local-heuristic-summary",
+        tool_plan=source_run.tool_plan,
+        tool_execution=source_run.tool_execution,
+        tool_chain=[reusable_step_dump],
+        resumed_from_step_index=2,
+        reused_step_indices=[1],
+    )
+    return _finalize_workflow_response(
+        response,
+        started_at=workflow_started_at,
+        terminal_reason=summary_terminal_reason,
+        completed_at=answered_at,
+    )
+
+
 def _extract_applied_clarification_fields(
     clarification_context: dict[str, str],
 ) -> list[str]:
@@ -1850,13 +1985,19 @@ def resume_agent_request(
     ):
         applied_clarification_fields = _extract_applied_clarification_fields(clarification_context)
         overridden_plan_arguments = _extract_overridden_plan_arguments(clarification_context)
-        resume_strategy = f"{_resolve_multistep_workflow(source_run.question)[0]}_failed_step_resume"
-        response = _resume_failed_step_run(
-            source_run=source_run,
-            clarification_context=clarification_context,
-            top_k=top_k,
-            debug_fault_injection=debug_fault_injection,
-        )
+        workflow_kind = _resolve_multistep_workflow(source_run.question)[0]
+        resume_strategy = f"{workflow_kind}_failed_step_resume"
+        if workflow_kind in {"search_then_ticket", "status_then_ticket"}:
+            response = _resume_failed_step_run(
+                source_run=source_run,
+                clarification_context=clarification_context,
+                top_k=top_k,
+                debug_fault_injection=debug_fault_injection,
+            )
+        else:
+            response = _resume_failed_summary_run(
+                source_run=source_run,
+            )
         response.workflow_trace.insert(
             0,
             WorkflowTraceEvent(

@@ -3621,6 +3621,140 @@ def test_resume_agent_endpoint_can_resume_failed_status_then_ticket_from_step_tw
     assert any(event["stage"] == "tool_context" for event in resumed_payload["workflow_trace"])
 
 
+def test_resume_agent_endpoint_can_resume_failed_search_then_summarize_from_step_two(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    real_build_search_summary = (
+        __import__("app.services.agent.orchestrator_service", fromlist=["_build_search_summary"])
+        ._build_search_summary
+    )
+
+    def fail_search_summary(*args, **kwargs):
+        raise RuntimeError("simulated search summary failure")
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service._build_search_summary",
+        fail_search_summary,
+    )
+
+    client = TestClient(app)
+    initial_response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for RAG and summarize top 1 results",
+        },
+    )
+
+    assert initial_response.status_code == 200
+    initial_payload = initial_response.json()
+    assert initial_payload["workflow_status"] == "failed"
+    assert initial_payload["terminal_reason"] == "search_summary_failed"
+    assert initial_payload["failure_stage"] == "search_summary"
+    assert initial_payload["tool_chain"][0]["step_status"] == "completed"
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service._build_search_summary",
+        real_build_search_summary,
+    )
+
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "run_id": initial_payload["run_id"],
+            "clarification_context": {},
+        },
+    )
+
+    assert resumed_response.status_code == 200
+    resumed_payload = resumed_response.json()
+    assert resumed_payload["workflow_status"] == "completed"
+    assert resumed_payload["resume_strategy"] == "search_then_summarize_failed_step_resume"
+    assert resumed_payload["resumed_from_step_index"] == 2
+    assert resumed_payload["reused_step_indices"] == [1]
+    assert resumed_payload["answer_source"] == "local_search_summary"
+    assert resumed_payload["question_rewritten"] is False
+    assert resumed_payload["tool_chain"][0]["step_index"] == 1
+    assert any(event["stage"] == "resume_reuse" for event in resumed_payload["workflow_trace"])
+    assert any(event["stage"] == "search_summary" for event in resumed_payload["workflow_trace"])
+
+
+def test_resume_agent_endpoint_can_resume_failed_status_then_summarize_from_step_two(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    real_build_status_summary = (
+        __import__("app.services.agent.orchestrator_service", fromlist=["_build_status_summary"])
+        ._build_status_summary
+    )
+
+    def fail_status_summary(*args, **kwargs):
+        raise RuntimeError("simulated status summary failure")
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service._build_status_summary",
+        fail_status_summary,
+    )
+
+    client = TestClient(app)
+    initial_response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Check system status for payment-service and summarize the result",
+        },
+    )
+
+    assert initial_response.status_code == 200
+    initial_payload = initial_response.json()
+    assert initial_payload["workflow_status"] == "failed"
+    assert initial_payload["terminal_reason"] == "status_summary_failed"
+    assert initial_payload["failure_stage"] == "status_summary"
+    assert initial_payload["tool_chain"][0]["step_status"] == "completed"
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service._build_status_summary",
+        real_build_status_summary,
+    )
+
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "run_id": initial_payload["run_id"],
+            "clarification_context": {},
+        },
+    )
+
+    assert resumed_response.status_code == 200
+    resumed_payload = resumed_response.json()
+    assert resumed_payload["workflow_status"] == "completed"
+    assert resumed_payload["resume_strategy"] == "status_then_summarize_failed_step_resume"
+    assert resumed_payload["resumed_from_step_index"] == 2
+    assert resumed_payload["reused_step_indices"] == [1]
+    assert resumed_payload["answer_source"] == "local_status_summary"
+    assert resumed_payload["tool_chain"][0]["step_index"] == 1
+    assert any(event["stage"] == "resume_reuse" for event in resumed_payload["workflow_trace"])
+    assert any(event["stage"] == "status_summary" for event in resumed_payload["workflow_trace"])
+
+
 def test_resume_agent_endpoint_requires_original_question_or_run_id():
     client = TestClient(app)
     response = client.post(

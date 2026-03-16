@@ -2755,5 +2755,23 @@
     "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
     "supporting_match_count": "2",
     "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0190",
+    "ticket_id": "TICKET-0190",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-16T12:58:51.438686+00:00",
+    "updated_at": "2026-03-16T12:58:51.438686+00:00",
+    "supporting_query": "RAG",
+    "supporting_documents": "rag_overview.md, test_chunk.txt",
+    "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+    "supporting_match_count": "2",
+    "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation."
   }
 ]
