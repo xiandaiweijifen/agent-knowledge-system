@@ -394,6 +394,7 @@ export type AgentWorkflowEvalReportResponse = {
 
 export type EvaluationOverviewResponse = {
   generated_at: string;
+  cache_status: string;
   retrieval: {
     dataset_count: number;
     total_cases: number;

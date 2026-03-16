@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-03-16T17:42:33.747956+00:00",
+  "cache_status": "fresh",
+  "retrieval": {
+    "dataset_count": 2,
+    "total_cases": 14,
+    "mean_hit_rate_at_k": 1.0,
+    "mean_reciprocal_rank": 1.0,
+    "best_dataset_name": "agent_workflow_retrieval_eval.json",
+    "best_hit_rate_at_k": 1.0
+  },
+  "workflow": {
+    "total_run_count": 90,
+    "completed_run_count": 50,
+    "clarification_required_run_count": 18,
+    "failed_run_count": 22,
+    "completion_rate": 0.5555555555555556,
+    "clarification_rate": 0.2,
+    "failed_rate": 0.24444444444444444
+  },
+  "recovery": {
+    "recovered_run_count": 13,
+    "recovered_completed_run_count": 13,
+    "recovery_success_rate": 1.0,
+    "average_recovery_depth": 1.0,
+    "resume_from_failed_step_count": 4,
+    "manual_retrigger_count": 1,
+    "clarification_recovery_count": 1
+  }
+}

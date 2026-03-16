@@ -11,6 +11,7 @@ describe("EvaluationView", () => {
         evaluationMode="retrieval"
         evaluationOverview={{
           generated_at: "2026-03-17T00:00:00+00:00",
+          cache_status: "cached",
           retrieval: {
             dataset_count: 2,
             total_cases: 12,
@@ -74,6 +75,7 @@ describe("EvaluationView", () => {
     expect(screen.getByText("Mean Hit@K")).toBeInTheDocument();
     expect(screen.getByText("Recovery Success Rate")).toBeInTheDocument();
     expect(screen.getByText("rag_overview_retrieval_eval.json (1.000)")).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes("Cache Status: Cached"))).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("failed-step 3"))).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("manual 2"))).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("clarification 1"))).toBeInTheDocument();

@@ -430,14 +430,14 @@ function App() {
     }
   }
 
-  async function loadEvaluationDatasets() {
+  async function loadEvaluationDatasets(refreshOverview = false) {
     setEvalError("");
 
     const [retrievalPayload, routePayload, workflowPayload, overviewPayload] = await Promise.allSettled([
       fetchEvaluationDatasets(),
       fetchAgentRouteEvaluationDatasets(),
       fetchAgentWorkflowEvaluationDatasets(),
-      fetchEvaluationOverview(),
+      fetchEvaluationOverview(refreshOverview),
     ]);
 
     setDatasets(retrievalPayload.status === "fulfilled" ? retrievalPayload.value.datasets : []);
@@ -786,7 +786,7 @@ function App() {
           filteredEvalCases={filteredEvalCases}
           filteredAgentRouteCases={filteredAgentRouteCases}
           filteredAgentWorkflowCases={filteredAgentWorkflowCases}
-          onRefreshDatasets={() => void loadEvaluationDatasets()}
+          onRefreshDatasets={() => void loadEvaluationDatasets(true)}
           onChangeEvaluationMode={setEvaluationMode}
           onChangeDatasetName={setDatasetName}
           onChangeEvalTopK={setEvalTopK}

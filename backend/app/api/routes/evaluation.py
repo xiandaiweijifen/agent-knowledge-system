@@ -27,8 +27,8 @@ router = APIRouter(tags=["evaluation"])
 
 
 @router.get("/evaluation/overview", response_model=EvaluationOverviewResponse)
-def get_evaluation_overview() -> EvaluationOverviewResponse:
-    return overview_service.get_evaluation_overview()
+def get_evaluation_overview(refresh: bool = False) -> EvaluationOverviewResponse:
+    return overview_service.get_evaluation_overview(refresh=refresh)
 
 
 @router.get("/evaluation/retrieval/datasets", response_model=RetrievalEvalDatasetListResponse)

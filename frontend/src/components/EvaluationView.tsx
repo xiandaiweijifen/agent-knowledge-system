@@ -90,6 +90,9 @@ export function EvaluationView({
           averageRecoveryDepth: "平均恢复深度",
           recoveryMix: "恢复动作分布",
           generatedAt: "生成时间",
+          cacheStatus: "缓存状态",
+          cached: "已缓存",
+          fresh: "刚刚重算",
           unavailableMetric: "暂无数据",
           retrievalCopy: "运行预设检索基准并检查逐条 case 的排序结果。",
           routeCopy: "评估路由器是否选择了正确的工作流路径。",
@@ -162,6 +165,9 @@ export function EvaluationView({
           averageRecoveryDepth: "Average Recovery Depth",
           recoveryMix: "Recovery Action Mix",
           generatedAt: "Generated At",
+          cacheStatus: "Cache Status",
+          cached: "Cached",
+          fresh: "Freshly Computed",
           unavailableMetric: "Unavailable",
           retrievalCopy: "Run curated retrieval benchmarks and inspect per-case ranking outcomes.",
           routeCopy: "Evaluate whether the router selects the correct workflow path.",
@@ -244,6 +250,11 @@ export function EvaluationView({
     : copy.unavailableMetric;
   const overviewGeneratedAt = evaluationOverview?.generated_at
     ? new Date(evaluationOverview.generated_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")
+    : copy.unavailableMetric;
+  const overviewCacheStatus = evaluationOverview
+    ? evaluationOverview.cache_status === "cached"
+      ? copy.cached
+      : copy.fresh
     : copy.unavailableMetric;
 
   return (
@@ -349,6 +360,9 @@ export function EvaluationView({
                 </div>
               </div>
               <div className="pill-strip">
+                <span className="meta-pill muted-pill">
+                  {copy.cacheStatus}: {overviewCacheStatus}
+                </span>
                 <span className="meta-pill">
                   {copy.recoveryMix}: failed-step {evaluationOverview.recovery.resume_from_failed_step_count}
                 </span>

@@ -201,6 +201,11 @@ export function runAgentWorkflowEvaluation(datasetName: string) {
   });
 }
 
-export function fetchEvaluationOverview() {
-  return apiFetch<EvaluationOverviewResponse>("/api/evaluation/overview");
+export function fetchEvaluationOverview(refresh = false) {
+  const searchParams = new URLSearchParams();
+  if (refresh) {
+    searchParams.set("refresh", "true");
+  }
+  const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
+  return apiFetch<EvaluationOverviewResponse>(`/api/evaluation/overview${suffix}`);
 }

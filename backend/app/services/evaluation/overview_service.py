@@ -1,5 +1,7 @@
+import json
 from datetime import datetime, timezone
 
+from app.core.config import DATA_ROOT
 from app.schemas.evaluation_api import (
     EvaluationOverviewRecoverySummary,
     EvaluationOverviewResponse,
@@ -9,6 +11,8 @@ from app.schemas.evaluation_api import (
 from app.services.agent.orchestrator_service import get_all_persisted_workflow_runs
 from app.services.evaluation import retrieval_eval_service
 
+OVERVIEW_CACHE_PATH = DATA_ROOT / "tool_state" / "evaluation_overview_cache.json"
+
 
 def _safe_rate(numerator: int, denominator: int) -> float:
     if denominator <= 0:
@@ -16,7 +20,7 @@ def _safe_rate(numerator: int, denominator: int) -> float:
     return numerator / denominator
 
 
-def get_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
+def _build_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
     retrieval_datasets = retrieval_eval_service.list_retrieval_datasets()
     retrieval_reports = [
         retrieval_eval_service.evaluate_named_retrieval_dataset(dataset.dataset_name, top_k)
@@ -53,6 +57,7 @@ def get_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
 
     return EvaluationOverviewResponse(
         generated_at=datetime.now(timezone.utc).isoformat(),
+        cache_status="fresh",
         retrieval=EvaluationOverviewRetrievalSummary(
             dataset_count=len(retrieval_datasets),
             total_cases=total_retrieval_cases,
@@ -90,3 +95,32 @@ def get_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
             ),
         ),
     )
+
+
+def _load_cached_evaluation_overview() -> EvaluationOverviewResponse | None:
+    if not OVERVIEW_CACHE_PATH.exists():
+        return None
+
+    payload = json.loads(OVERVIEW_CACHE_PATH.read_text(encoding="utf-8"))
+    cached = EvaluationOverviewResponse.model_validate(payload)
+    cached.cache_status = "cached"
+    return cached
+
+
+def _persist_evaluation_overview(overview: EvaluationOverviewResponse) -> None:
+    OVERVIEW_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OVERVIEW_CACHE_PATH.write_text(
+        overview.model_dump_json(indent=2),
+        encoding="utf-8",
+    )
+
+
+def get_evaluation_overview(top_k: int = 3, refresh: bool = False) -> EvaluationOverviewResponse:
+    if not refresh:
+        cached = _load_cached_evaluation_overview()
+        if cached is not None:
+            return cached
+
+    overview = _build_evaluation_overview(top_k=top_k)
+    _persist_evaluation_overview(overview)
+    return overview

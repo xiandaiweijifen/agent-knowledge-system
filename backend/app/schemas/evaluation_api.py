@@ -113,6 +113,7 @@ class EvaluationOverviewRecoverySummary(BaseModel):
 
 class EvaluationOverviewResponse(BaseModel):
     generated_at: str
+    cache_status: str = "fresh"
     retrieval: EvaluationOverviewRetrievalSummary
     workflow: EvaluationOverviewWorkflowSummary
     recovery: EvaluationOverviewRecoverySummary

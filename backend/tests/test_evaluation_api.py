@@ -323,9 +323,12 @@ def test_tool_execution_evaluation_dataset_list_endpoint_returns_datasets(monkey
 def test_evaluation_overview_endpoint_returns_aggregated_metrics(monkeypatch):
     client = TestClient(app)
 
-    def fake_overview():
+    def fake_overview(top_k: int = 3, refresh: bool = False):
+        assert top_k == 3
+        assert refresh is False
         return {
             "generated_at": "2026-03-17T00:00:00+00:00",
+            "cache_status": "cached",
             "retrieval": {
                 "dataset_count": 2,
                 "total_cases": 12,
@@ -363,3 +366,4 @@ def test_evaluation_overview_endpoint_returns_aggregated_metrics(monkeypatch):
     assert payload["retrieval"]["dataset_count"] == 2
     assert payload["workflow"]["completion_rate"] == 0.6
     assert payload["recovery"]["resume_from_failed_step_count"] == 3
+    assert payload["cache_status"] == "cached"
