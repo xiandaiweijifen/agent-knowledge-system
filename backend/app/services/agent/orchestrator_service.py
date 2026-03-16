@@ -1117,6 +1117,14 @@ def _resume_ticket_question(
     return updated_question
 
 
+def _resume_status_question(
+    status_question: str,
+    clarification_context: dict[str, str],
+) -> str:
+    del clarification_context
+    return status_question.strip()
+
+
 def _resume_generic_question(
     original_question: str,
     clarification_context: dict[str, str],
@@ -1238,6 +1246,13 @@ def resume_agent_request(
         search_question, summarize_question = workflow_search_question, workflow_follow_up_question
         resumed_search = _resume_search_question(search_question, clarification_context)
         resumed_question = f"{resumed_search} and {summarize_question}"
+
+    elif workflow_kind == "status_then_ticket" and workflow_search_question and workflow_follow_up_question:
+        resume_strategy = "status_then_ticket_resume"
+        status_question, ticket_question = workflow_search_question, workflow_follow_up_question
+        resumed_status = _resume_status_question(status_question, clarification_context)
+        resumed_ticket = _resume_ticket_question(ticket_question, clarification_context)
+        resumed_question = f"{resumed_status} and {resumed_ticket}"
 
     else:
         resumed_question = _resume_generic_question(original_question, clarification_context)

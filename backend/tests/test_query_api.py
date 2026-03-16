@@ -2856,6 +2856,77 @@ def test_resume_agent_endpoint_applies_structured_ticket_overrides(
     assert final_output["severity"] == "medium"
 
 
+def test_resume_agent_endpoint_applies_structured_ticket_overrides_for_ticket_update(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG reduces hallucinations and improves factual grounding.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    ticket_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "ticket_id": "TICKET-0001",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-16T00:00:00+00:00",
+                    "updated_at": "2026-03-16T00:00:00+00:00",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "original_question": (
+                "Search docs for payment-service outage and update ticket TICKET-0001 "
+                "for payment-service status to open"
+            ),
+            "clarification_context": {
+                "search_query_refinement": "RAG",
+                "status": "closed",
+                "environment": "staging",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["resume_strategy"] == "search_then_ticket_resume"
+    assert payload["resume_source_type"] == "original_question"
+    assert payload["applied_clarification_fields"] == [
+        "environment",
+        "search_query_refinement",
+        "status",
+    ]
+    assert payload["question_rewritten"] is True
+    assert payload["overridden_plan_arguments"] == ["environment", "status", "target"]
+    final_plan = payload["tool_chain"][-1]["tool_plan"]
+    final_output = payload["tool_chain"][-1]["tool_execution"]["output"]
+    assert final_plan["action"] == "update"
+    assert final_plan["arguments"]["ticket_id"] == "TICKET-0001"
+    assert final_plan["arguments"]["status"] == "closed"
+    assert final_plan["arguments"]["environment"] == "staging"
+    assert final_output["ticket_id"] == "TICKET-0001"
+    assert final_output["status"] == "closed"
+    assert final_output["environment"] == "staging"
+    assert final_output["supporting_query"] == "RAG"
+
+
 def test_resume_agent_endpoint_can_continue_ticket_workflow_after_search_miss_when_confirmed(
     workspace_tmp_path,
     monkeypatch,
@@ -2902,6 +2973,46 @@ def test_resume_agent_endpoint_can_continue_ticket_workflow_after_search_miss_wh
         for event in payload["workflow_trace"]
         if event["stage"] == "resume_context"
     )
+
+
+def test_resume_agent_endpoint_continues_status_then_ticket_workflow(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "original_question": (
+                "Check system status for payment-service and create a high severity ticket "
+                "for payment-service"
+            ),
+            "clarification_context": {
+                "environment": "production",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["resume_source_type"] == "original_question"
+    assert payload["resume_strategy"] == "status_then_ticket_resume"
+    assert payload["applied_clarification_fields"] == ["environment"]
+    assert payload["question_rewritten"] is True
+    assert payload["overridden_plan_arguments"] == ["environment"]
+    assert payload["question"] == (
+        "Check system status for payment-service and create a high severity ticket "
+        "for payment-service in production"
+    )
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
+    assert payload["tool_chain"][-1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][-1]["tool_execution"]["output"]["environment"] == "production"
+    assert payload["workflow_trace"][0]["stage"] == "workflow_resume"
+    assert "status_then_ticket_resume" in payload["workflow_trace"][0]["detail"]
 
 
 def test_query_agent_endpoint_persists_workflow_run_and_supports_lookup(
