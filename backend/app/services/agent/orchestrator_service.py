@@ -129,8 +129,11 @@ def _normalize_persisted_workflow_step_records(
 def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run = dict(run)
     normalized_run["tool_chain"] = _normalize_persisted_workflow_step_records(normalized_run)
-    normalized_run["resumed_from_step_index"] = _coerce_non_negative_int(
-        normalized_run.get("resumed_from_step_index")
+    resumed_from_step_index = normalized_run.get("resumed_from_step_index")
+    normalized_run["resumed_from_step_index"] = (
+        resumed_from_step_index
+        if isinstance(resumed_from_step_index, int) and resumed_from_step_index > 0
+        else None
     )
     existing_reused_step_indices = normalized_run.get("reused_step_indices")
     if isinstance(existing_reused_step_indices, list):

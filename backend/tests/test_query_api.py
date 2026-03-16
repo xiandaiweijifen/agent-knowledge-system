@@ -3898,6 +3898,8 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["source_run_id"] is None
     assert payload["runs"][0]["resume_source_type"] is None
     assert payload["runs"][0]["resume_strategy"] is None
+    assert payload["runs"][0]["resumed_from_step_index"] is None
+    assert payload["runs"][0]["reused_step_indices"] == []
     assert payload["runs"][0]["applied_clarification_fields"] == []
     assert payload["runs"][0]["question_rewritten"] is False
     assert payload["runs"][0]["overridden_plan_arguments"] == []
@@ -3969,6 +3971,8 @@ def test_list_agent_workflow_runs_endpoint_marks_failed_step_resume_eligible_run
     assert list_response.status_code == 200
     payload = list_response.json()
     assert payload["runs"][0]["workflow_status"] == "failed"
+    assert payload["runs"][0]["resumed_from_step_index"] is None
+    assert payload["runs"][0]["reused_step_indices"] == []
     assert payload["runs"][0]["retry_state"] == "retry_exhausted"
     assert payload["runs"][0]["recommended_recovery_action"] == "resume_from_failed_step"
 
