@@ -7887,5 +7887,327 @@
         "failure_message": "RuntimeError: debug injected persistent failure"
       }
     ]
+  },
+  {
+    "run_id": "c982c0c117e84a3da6682fae6cfbb8c4",
+    "question": "Create a ticket for the payment service outage",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": false,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T12:37:52.492894+00:00",
+    "completed_at": "2026-03-16T12:37:55.960910+00:00",
+    "last_updated_at": "2026-03-16T12:37:55.960910+00:00",
+    "workflow_planning_mode": null,
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 1,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 1961,
+    "tool_planning_latency_ms": 1499,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 3460,
+    "llm_planner_layers": [
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 1,
+    "retried_step_indices": [
+      1
+    ],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:37:52.492984+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:37:55.953170+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "fault_injection",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:37:55.953215+00:00",
+        "detail": "Step 1: injected a debug tool execution failure for ticketing:create. Remaining injected failures: 0."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-03-16T12:37:55.953225+00:00",
+        "detail": "Step 1: tool execution attempt 1 failed for ticketing:create: RuntimeError: debug injected transient failure."
+      },
+      {
+        "stage": "retry",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:37:55.953237+00:00",
+        "detail": "Step 1: retrying tool execution after attempt 1 failed."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:37:55.960910+00:00",
+        "detail": "Executed local_adapter tool ticketing:create with status completed after 2 attempt(s)."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a ticket for the payment service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {},
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0188 for payment-service.",
+      "trace_id": "f0845e0981cf422e9ba0880f53bad447",
+      "executed_at": "2026-03-16T12:37:55.956195+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0188",
+        "ticket_id": "TICKET-0188",
+        "status": "open",
+        "severity": "unspecified",
+        "environment": "unspecified",
+        "created_at": "2026-03-16T12:37:55.956195+00:00",
+        "updated_at": "2026-03-16T12:37:55.956195+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 2,
+        "retried": true,
+        "started_at": "2026-03-16T12:37:54.454247+00:00",
+        "completed_at": "2026-03-16T12:37:55.960910+00:00",
+        "question": "Create a ticket for the payment service outage",
+        "tool_plan": {
+          "question": "Create a ticket for the payment service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {},
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0188 for payment-service.",
+          "trace_id": "f0845e0981cf422e9ba0880f53bad447",
+          "executed_at": "2026-03-16T12:37:55.956195+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0188",
+            "ticket_id": "TICKET-0188",
+            "status": "open",
+            "severity": "unspecified",
+            "environment": "unspecified",
+            "created_at": "2026-03-16T12:37:55.956195+00:00",
+            "updated_at": "2026-03-16T12:37:55.956195+00:00"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "f6d4b5b9eff74b2e98cbf8f62d820dc4",
+    "question": "Create a ticket for the payment service outage",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "failed",
+    "terminal_reason": "tool_execution_failed",
+    "outcome_category": "recoverable_failure",
+    "is_recoverable": true,
+    "retry_state": "retry_exhausted",
+    "recommended_recovery_action": "manual_retrigger",
+    "failure_stage": "tool_execution",
+    "failure_message": "RuntimeError: debug injected persistent failure",
+    "started_at": "2026-03-16T12:38:18.039267+00:00",
+    "completed_at": "2026-03-16T12:38:18.041437+00:00",
+    "last_updated_at": "2026-03-16T12:38:18.041437+00:00",
+    "workflow_planning_mode": null,
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 1,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 2,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 2,
+    "llm_planner_layers": [
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 1,
+    "retried_step_indices": [
+      1
+    ],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:38:18.039317+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:38:18.041344+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "fault_injection",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:38:18.041386+00:00",
+        "detail": "Step 1: injected a debug tool execution failure for ticketing:create. Remaining injected failures: 1."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-03-16T12:38:18.041400+00:00",
+        "detail": "Step 1: tool execution attempt 1 failed for ticketing:create: RuntimeError: debug injected persistent failure."
+      },
+      {
+        "stage": "retry",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:38:18.041415+00:00",
+        "detail": "Step 1: retrying tool execution after attempt 1 failed."
+      },
+      {
+        "stage": "fault_injection",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:38:18.041427+00:00",
+        "detail": "Step 1: injected a debug tool execution failure for ticketing:create. Remaining injected failures: 0."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-03-16T12:38:18.041437+00:00",
+        "detail": "Step 1: tool execution failed for ticketing:create after 2 attempt(s): RuntimeError: debug injected persistent failure."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a ticket for the payment service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {},
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": null,
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "failed",
+        "attempt_count": 2,
+        "retried": true,
+        "started_at": "2026-03-16T12:38:18.041149+00:00",
+        "completed_at": "2026-03-16T12:38:18.041437+00:00",
+        "question": "Create a ticket for the payment service outage",
+        "tool_plan": {
+          "question": "Create a ticket for the payment service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {},
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": null,
+        "failure_message": "RuntimeError: debug injected persistent failure"
+      }
+    ]
   }
 ]

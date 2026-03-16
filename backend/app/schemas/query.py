@@ -131,6 +131,7 @@ class AgentWorkflowResponse(BaseModel):
     terminal_reason: str | None = None
     outcome_category: str | None = None
     is_recoverable: bool | None = None
+    retry_state: str | None = None
     recommended_recovery_action: str | None = None
     failure_stage: str | None = None
     failure_message: str | None = None
@@ -186,6 +187,7 @@ class AgentWorkflowRunSummary(BaseModel):
     terminal_reason: str | None = None
     outcome_category: str | None = None
     is_recoverable: bool | None = None
+    retry_state: str | None = None
     recommended_recovery_action: str | None = None
     failure_stage: str | None = None
     failure_message: str | None = None
