@@ -66,6 +66,7 @@ export function QueryView({
   const [runSearch, setRunSearch] = useState("");
   const [runStatusFilter, setRunStatusFilter] = useState("all");
   const [runRecoveryFilter, setRunRecoveryFilter] = useState("all");
+  const [focusedChainRootRunId, setFocusedChainRootRunId] = useState<string | null>(null);
   const queryCopy =
     locale === "zh"
       ? {
@@ -109,6 +110,8 @@ export function QueryView({
           rootRunBadge: "根运行",
           sourceRunBadge: "源运行",
           loadChainRun: "加载链上运行",
+          previousChainRun: "上一链路运行",
+          nextChainRun: "下一链路运行",
           runId: "Run Id",
           rootRun: "根 Run",
           loadRootRun: "加载根 Run",
@@ -158,6 +161,10 @@ export function QueryView({
           runSearchPlaceholder: "按问题或 run id 搜索",
           runStatusFilter: "状态筛选",
           runRecoveryFilter: "恢复筛选",
+          chainScope: "链路聚焦",
+          focusCurrentChain: "仅看当前链",
+          clearChainFocus: "查看全部链路",
+          chainScopeActive: "当前只显示同一恢复链上的运行记录。",
           allRuns: "全部",
           noMatchingRuns: "没有匹配的工作流运行",
           noMatchingRunsCopy: "调整搜索词或筛选条件后再试。",
@@ -270,6 +277,8 @@ export function QueryView({
           rootRunBadge: "Root Run",
           sourceRunBadge: "Source Run",
           loadChainRun: "Load Chain Run",
+          previousChainRun: "Previous Chain Run",
+          nextChainRun: "Next Chain Run",
           runId: "Run Id",
           rootRun: "Root Run",
           loadRootRun: "Load Root Run",
@@ -322,6 +331,10 @@ export function QueryView({
           runSearchPlaceholder: "Search by question or run id",
           runStatusFilter: "Status Filter",
           runRecoveryFilter: "Recovery Filter",
+          chainScope: "Chain Scope",
+          focusCurrentChain: "Focus Current Chain",
+          clearChainFocus: "Show All Chains",
+          chainScopeActive: "Only runs from the current recovery chain are visible.",
           allRuns: "All",
           noMatchingRuns: "No matching workflow runs",
           noMatchingRunsCopy: "Try a different search term or filter.",
@@ -846,7 +859,21 @@ export function QueryView({
           return leftTime.localeCompare(rightTime);
         })
     : [];
+  const currentChainIndex = relatedWorkflowRuns.findIndex((run) => run.run_id === currentRunId);
+  const previousChainRun =
+    currentChainIndex > 0 ? relatedWorkflowRuns[currentChainIndex - 1] : null;
+  const nextChainRun =
+    currentChainIndex >= 0 && currentChainIndex < relatedWorkflowRuns.length - 1
+      ? relatedWorkflowRuns[currentChainIndex + 1]
+      : null;
   const filteredWorkflowRuns = agentWorkflowRuns.filter((run) => {
+    if (focusedChainRootRunId) {
+      const runRootId = run.root_run_id ?? run.run_id ?? null;
+      if (runRootId !== focusedChainRootRunId) {
+        return false;
+      }
+    }
+
     if (runStatusFilter !== "all" && run.workflow_status !== runStatusFilter) {
       return false;
     }
@@ -1104,6 +1131,30 @@ export function QueryView({
                 <article className="subsection-card">
                   <span className="section-label">{queryCopy.recoveryChain}</span>
                   <p className="subsection-copy">{queryCopy.recoveryChainCopy}</p>
+                  {(previousChainRun || nextChainRun) && (
+                    <div className="button-row">
+                      {previousChainRun?.run_id && (
+                        <button
+                          type="button"
+                          className="ghost-button"
+                          disabled={queryBusy}
+                          onClick={() => onLoadAgentWorkflowRun(previousChainRun.run_id!)}
+                        >
+                          {queryCopy.previousChainRun}
+                        </button>
+                      )}
+                      {nextChainRun?.run_id && (
+                        <button
+                          type="button"
+                          className="ghost-button"
+                          disabled={queryBusy}
+                          onClick={() => onLoadAgentWorkflowRun(nextChainRun.run_id!)}
+                        >
+                          {queryCopy.nextChainRun}
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="recovery-chain-list">
                     {relatedWorkflowRuns.map((run) => {
                       const runId = run.run_id ?? queryCopy.notPersisted;
@@ -1407,7 +1458,31 @@ export function QueryView({
                     <option value="retry">retry</option>
                   </select>
                 </label>
+                <label>
+                  {queryCopy.chainScope}
+                  <div className="filter-toggle-row">
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      disabled={queryBusy || !currentRootRunId}
+                      onClick={() => setFocusedChainRootRunId(currentRootRunId)}
+                    >
+                      {queryCopy.focusCurrentChain}
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      disabled={queryBusy || !focusedChainRootRunId}
+                      onClick={() => setFocusedChainRootRunId(null)}
+                    >
+                      {queryCopy.clearChainFocus}
+                    </button>
+                  </div>
+                </label>
               </div>
+              {focusedChainRootRunId && (
+                <p className="subsection-copy">{queryCopy.chainScopeActive}</p>
+              )}
               {filteredWorkflowRuns.length > 0 ? (
             <div className="run-list">
               {filteredWorkflowRuns.map((run) => (

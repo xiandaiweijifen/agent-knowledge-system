@@ -879,15 +879,18 @@ describe("QueryView", () => {
     expect(screen.getAllByText("Current Run").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Root Run").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Source Run").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Previous Chain Run" })).toBeInTheDocument();
 
     const chainButtons = screen.getAllByRole("button", { name: "Load Chain Run" });
     expect(chainButtons).toHaveLength(2);
 
+    await user.click(screen.getByRole("button", { name: "Previous Chain Run" }));
     await user.click(chainButtons[0]);
     await user.click(chainButtons[1]);
 
-    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(1, "run-root");
-    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(2, "run-depth-1");
+    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(1, "run-depth-1");
+    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(2, "run-root");
+    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(3, "run-depth-1");
   });
 
   it("runs recovery actions for current and recent workflow runs", async () => {
@@ -1022,6 +1025,127 @@ describe("QueryView", () => {
     await user.clear(recentRuns.getByLabelText("Run Search"));
     await user.type(recentRuns.getByLabelText("Run Search"), "alpha");
     expect(recentRuns.getByText("No matching workflow runs")).toBeInTheDocument();
+  });
+
+  it("focuses recent workflow runs on the current recovery chain", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Search docs for RAG and create a high severity ticket for payment-service"
+        topK={3}
+        activePresetQuestions={["Search docs for RAG and create a high severity ticket for payment-service"]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-depth-1",
+          root_run_id: "run-root",
+          recovery_depth: 1,
+          question: "Search docs for RAG and create a high severity ticket for payment-service",
+          resumed_from_question:
+            "Search docs for RAG and create a high severity ticket for payment-service",
+          source_run_id: "run-root",
+          recovered_via_action: "resume_from_failed_step",
+          resume_source_type: "run_id",
+          resume_strategy: "search_then_ticket_failed_step_resume",
+          workflow_status: "completed",
+          recommended_recovery_action: "none",
+          available_recovery_actions: [],
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            filename: null,
+          },
+          workflow_trace: [],
+          tool_chain: [],
+        }}
+        agentWorkflowRuns={[
+          {
+            run_id: "run-root",
+            root_run_id: "run-root",
+            recovery_depth: 0,
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "resume_from_failed_step",
+            available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+          },
+          {
+            run_id: "run-depth-1",
+            root_run_id: "run-root",
+            recovery_depth: 1,
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            resumed_from_question:
+              "Search docs for RAG and create a high severity ticket for payment-service",
+            source_run_id: "run-root",
+            recovered_via_action: "resume_from_failed_step",
+            resume_strategy: "search_then_ticket_failed_step_resume",
+            workflow_status: "completed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "none",
+            available_recovery_actions: [],
+          },
+          {
+            run_id: "run-other",
+            root_run_id: "run-other",
+            recovery_depth: 0,
+            question: "Create a ticket for the payment service outage",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "manual_retrigger",
+            available_recovery_actions: ["manual_retrigger"],
+          },
+        ]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    const recentRunsPanel = screen
+      .getAllByRole("heading", { name: "Recent Workflow Runs" })
+      .at(-1)
+      ?.closest("article");
+    expect(recentRunsPanel).not.toBeNull();
+    const recentRuns = within(recentRunsPanel!);
+
+    expect(
+      recentRuns.getAllByText("Create a ticket for the payment service outage").length,
+    ).toBeGreaterThan(0);
+
+    await user.click(
+      recentRuns
+        .getAllByRole("button")
+        .find((button) => button.textContent?.includes("Focus Current Chain"))!,
+    );
+
+    expect(screen.getByText("Only runs from the current recovery chain are visible.")).toBeInTheDocument();
+    expect(
+      recentRuns.queryAllByText("Create a ticket for the payment service outage").length,
+    ).toBe(0);
+
+    await user.click(
+      recentRuns
+        .getAllByRole("button")
+        .find((button) => button.textContent?.includes("Show All Chains"))!,
+    );
+
+    expect(
+      recentRuns.getAllByText("Create a ticket for the payment service outage").length,
+    ).toBeGreaterThan(0);
   });
 
   it("submits clarification recovery fields from the current workflow view", async () => {

@@ -1126,6 +1126,16 @@ textarea {
   color: var(--text);
 }
 
+.filter-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-toggle-row .ghost-button {
+  min-height: 40px;
+}
+
 .run-card {
   display: grid;
   gap: 8px;
