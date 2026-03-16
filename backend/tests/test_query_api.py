@@ -2018,6 +2018,54 @@ def test_query_agent_endpoint_supports_search_then_summarize_workflow(
     assert len(payload["tool_chain"]) == 1
 
 
+def test_query_agent_endpoint_avoids_extra_llm_tool_planner_call_for_summary_limit(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
+
+    planned_questions: list[str] = []
+
+    def _fake_generate_llm_tool_plan(question, supported_tools):
+        del supported_tools
+        planned_questions.append(question)
+        return (
+            "llm_gemini",
+            {
+                "tool_name": "document_search",
+                "action": "query",
+                "target": "RAG",
+                "arguments": {},
+            },
+        )
+
+    monkeypatch.setattr(
+        "app.services.agent.tool_service.generate_llm_tool_plan",
+        _fake_generate_llm_tool_plan,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for RAG and summarize top 2 results",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["tool_plan"]["arguments"]["max_results"] == "2"
+    assert planned_questions == ["Search docs for RAG"]
+
+
 def test_query_agent_endpoint_stops_search_then_summarize_when_search_misses(
     workspace_tmp_path,
     monkeypatch,

@@ -25,7 +25,11 @@ from app.services.agent.clarification_service import (
 from app.services.llm.workflow_planner_service import generate_llm_workflow_plan
 from app.services.agent.query_service import run_query
 from app.services.agent.router_service import route_request
-from app.services.agent.tool_service import execute_tool_request, plan_tool_request
+from app.services.agent.tool_service import (
+    _extract_search_max_results_argument,
+    execute_tool_request,
+    plan_tool_request,
+)
 
 WORKFLOW_RUN_DATA_DIR = Path("../data/tool_state")
 WORKFLOW_RUN_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -650,15 +654,10 @@ def _build_search_summary(tool_output: dict[str, str]) -> str:
 
 
 def _extract_summary_step_context(summarize_question: str) -> dict[str, str]:
-    summary_plan = plan_tool_request(
-        re.sub(r"^summari[sz]e\s+", "Search ", summarize_question.strip(), flags=re.IGNORECASE)
-    )
-    if summary_plan.tool_name != "document_search":
-        return {}
-
     context: dict[str, str] = {}
-    if "max_results" in summary_plan.arguments:
-        context["max_results"] = summary_plan.arguments["max_results"]
+    max_results = _extract_search_max_results_argument(summarize_question)
+    if max_results:
+        context["max_results"] = max_results
     return context
 
 

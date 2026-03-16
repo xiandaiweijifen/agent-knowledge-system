@@ -2826,5 +2826,473 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "542c61ee4fb34bb69081d1a0764150c1",
+    "question": "Look up docs about RAG, then summarize top 1 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T04:26:35.949260+00:00",
+    "completed_at": "2026-03-16T04:26:38.324508+00:00",
+    "last_updated_at": "2026-03-16T04:26:38.324508+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:26:35.949288+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:26:37.237724+00:00",
+        "detail": "Planned search_then_summarize workflow via heuristic workflow matcher after gemini error."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:26:38.320385+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:26:38.324442+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:26:38.324502+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 2 matching document(s) for 'RAG' and returned 1 result(s). Showing the top 1 result(s) out of 2 total matches. The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T04:26:38.324508+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Look up docs about RAG",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "ece25e4f04974cb3b0889f7a7bbbd39c",
+      "executed_at": "2026-03-16T04:26:38.324413+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "1",
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "1",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T04:26:37.237750+00:00",
+        "completed_at": "2026-03-16T04:26:38.324442+00:00",
+        "question": "Look up docs about RAG",
+        "tool_plan": {
+          "question": "Look up docs about RAG",
+          "planning_mode": "heuristic_fallback_after_gemini_error",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "ece25e4f04974cb3b0889f7a7bbbd39c",
+          "executed_at": "2026-03-16T04:26:38.324413+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "1",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "1",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "74069aae6f374f03823a7b9cb5c42496",
+    "question": "Look up docs about RAG, then summarize top 1 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T04:38:36.490758+00:00",
+    "completed_at": "2026-03-16T04:38:39.828898+00:00",
+    "last_updated_at": "2026-03-16T04:38:39.828898+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:38:36.490806+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:38:38.150903+00:00",
+        "detail": "Planned search_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:38:39.825517+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:38:39.828834+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:38:39.828890+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 2 matching document(s) for 'RAG' and returned 1 result(s). Showing the top 1 result(s) out of 2 total matches. The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T04:38:39.828898+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Look up docs about RAG",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "77342c0d168845beb5b32745fdf316e5",
+      "executed_at": "2026-03-16T04:38:39.828806+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "1",
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "1",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T04:38:38.150924+00:00",
+        "completed_at": "2026-03-16T04:38:39.828834+00:00",
+        "question": "Look up docs about RAG",
+        "tool_plan": {
+          "question": "Look up docs about RAG",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "77342c0d168845beb5b32745fdf316e5",
+          "executed_at": "2026-03-16T04:38:39.828806+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "1",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "1",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "8aed0f9b54314ca7a2d13187ebcdccf9",
+    "question": "Look up docs about payment-service outage, then create a high severity ticket for payment-service",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "search_miss_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T04:39:33.748131+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-16T04:39:39.018979+00:00",
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:39:33.748160+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:39:35.270911+00:00",
+        "detail": "Planned search_then_ticket workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:39:37.149001+00:00",
+        "detail": "Step 1: planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:39:37.153167+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T04:39:39.018979+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before ticket creation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before creating a ticket.",
+    "clarification_plan": {
+      "question": "create a high severity ticket for payment-service",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "search_query_refinement",
+        "execution_confirmation",
+        "environment"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'payment-service outage'. Should I search a different phrase or document set?",
+        "Do you still want me to continue with the action even without supporting documentation?",
+        "Which environment should the action apply to?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents for the search step, so it should be clarified before continuing to execution."
+    },
+    "tool_plan": {
+      "question": "Look up docs about payment-service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "arguments": {},
+      "plan_summary": "Plan document_search:query for payment-service outage using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'payment-service outage'.",
+      "trace_id": "2a7a089cefb945f78a2a9951198565f7",
+      "executed_at": "2026-03-16T04:39:37.153123+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "payment-service outage",
+        "item_count": "0",
+        "query": "payment-service outage",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T04:39:35.270953+00:00",
+        "completed_at": "2026-03-16T04:39:37.153167+00:00",
+        "question": "Look up docs about payment-service outage",
+        "tool_plan": {
+          "question": "Look up docs about payment-service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for payment-service outage using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "2a7a089cefb945f78a2a9951198565f7",
+          "executed_at": "2026-03-16T04:39:37.153123+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "payment-service outage",
+            "item_count": "0",
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]
