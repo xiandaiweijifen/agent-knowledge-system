@@ -10477,5 +10477,174 @@
         "failure_message": "RuntimeError: debug injected persistent failure"
       }
     ]
+  },
+  {
+    "run_id": "0850ecc081414c65a6a0f3c074fd04bd",
+    "question": "{\n  \"question\": \"Search docs for RAG and create a high severity ticket for payment-service\",\n  \"debug_fault_injection\": {\n    \"tool_execution_failures\": [\n      {\n        \"tool_name\": \"ticketing\",\n        \"action\": \"create\",\n        \"fail_count\": 2,\n        \"message\": \"debug injected persistent failure\"\n      }\n    ]\n  }\n}",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": false,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T13:29:09.891962+00:00",
+    "completed_at": "2026-03-16T13:29:16.704433+00:00",
+    "last_updated_at": "2026-03-16T13:29:16.704433+00:00",
+    "workflow_planning_mode": null,
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 1,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 5423,
+    "tool_planning_latency_ms": 1383,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 6806,
+    "llm_planner_layers": [
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T13:29:09.892041+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T13:29:16.697598+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T13:29:16.704433+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "{\n  \"question\": \"Search docs for RAG and create a high severity ticket for payment-service\",\n  \"debug_fault_injection\": {\n    \"tool_execution_failures\": [\n      {\n        \"tool_name\": \"ticketing\",\n        \"action\": \"create\",\n        \"fail_count\": 2,\n        \"message\": \"debug injected persistent failure\"\n      }\n    ]\n  }\n}",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {},
+      "plan_summary": "Plan document_search:query for RAG using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 2 matching document(s) for 'RAG'.",
+      "trace_id": "61a76dba2d664f63beb1aab41d46444c",
+      "executed_at": "2026-03-16T13:29:16.704339+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "2",
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "2",
+        "matched_documents": "rag_overview.md, test_chunk.txt",
+        "skipped_documents": "1",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-03-16T13:29:15.314653+00:00",
+        "completed_at": "2026-03-16T13:29:16.704433+00:00",
+        "question": "{\n  \"question\": \"Search docs for RAG and create a high severity ticket for payment-service\",\n  \"debug_fault_injection\": {\n    \"tool_execution_failures\": [\n      {\n        \"tool_name\": \"ticketing\",\n        \"action\": \"create\",\n        \"fail_count\": 2,\n        \"message\": \"debug injected persistent failure\"\n      }\n    ]\n  }\n}",
+        "tool_plan": {
+          "question": "{\n  \"question\": \"Search docs for RAG and create a high severity ticket for payment-service\",\n  \"debug_fault_injection\": {\n    \"tool_execution_failures\": [\n      {\n        \"tool_name\": \"ticketing\",\n        \"action\": \"create\",\n        \"fail_count\": 2,\n        \"message\": \"debug injected persistent failure\"\n      }\n    ]\n  }\n}",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for RAG using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 2 matching document(s) for 'RAG'.",
+          "trace_id": "61a76dba2d664f63beb1aab41d46444c",
+          "executed_at": "2026-03-16T13:29:16.704339+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "2",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "2",
+            "matched_documents": "rag_overview.md, test_chunk.txt",
+            "skipped_documents": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

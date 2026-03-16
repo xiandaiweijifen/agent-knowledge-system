@@ -52,6 +52,41 @@ export function QueryView({
   onLoadAgentWorkflowRun,
   onRunDiagnostics,
 }: QueryViewProps) {
+  function formatRecoveryActionLabel(action: string) {
+    switch (action) {
+      case "resume_from_failed_step":
+        return "从失败步骤继续";
+      case "manual_retrigger":
+        return "人工重新触发";
+      case "resume_with_clarification":
+        return "补充澄清后继续";
+      case "retry":
+        return "重试";
+      case "manual_investigation":
+        return "人工排查";
+      case "none":
+        return "无需恢复";
+      default:
+        return action;
+    }
+  }
+
+  function renderRecoveryActions(actions: string[] | undefined, mutedWhenEmpty = false) {
+    if (!actions || actions.length === 0) {
+      return (
+        <span className={`meta-pill${mutedWhenEmpty ? " muted-pill" : ""}`}>
+          无可用恢复入口
+        </span>
+      );
+    }
+
+    return actions.map((action) => (
+      <span key={action} className="meta-pill">
+        {formatRecoveryActionLabel(action)} ({action})
+      </span>
+    ));
+  }
+
   function renderSupportingContext(
     output: Record<string, string>,
   ) {
@@ -391,7 +426,66 @@ export function QueryView({
                     <span className="trace-label">Source Run</span>
                     <strong>{agentQueryResult.source_run_id ?? "not linked"}</strong>
                   </div>
+                  <div>
+                    <span className="trace-label">Resume Type</span>
+                    <strong>{agentQueryResult.resume_strategy ?? "not resumed"}</strong>
+                  </div>
+                  <div>
+                    <span className="trace-label">Resumed Step</span>
+                    <strong>
+                      {agentQueryResult.resumed_from_step_index ?? "not resumed from step"}
+                    </strong>
+                  </div>
                 </div>
+                <div className="pill-strip">
+                  <span
+                    className={`meta-pill${
+                      (agentQueryResult.reused_step_indices?.length ?? 0) > 0 ? "" : " muted-pill"
+                    }`}
+                  >
+                    reused steps{" "}
+                    {(agentQueryResult.reused_step_indices?.length ?? 0) > 0
+                      ? agentQueryResult.reused_step_indices?.join(", ")
+                      : "none"}
+                  </span>
+                  <span className="meta-pill">
+                    question rewritten {agentQueryResult.question_rewritten ? "yes" : "no"}
+                  </span>
+                </div>
+              </article>
+
+              <article className="subsection-card">
+                <span className="section-label">Recovery Semantics</span>
+                <div className="trace-grid">
+                  <div>
+                    <span className="trace-label">Outcome</span>
+                    <strong>{agentQueryResult.outcome_category ?? "unknown"}</strong>
+                  </div>
+                  <div>
+                    <span className="trace-label">Retry State</span>
+                    <strong>{agentQueryResult.retry_state ?? "unknown"}</strong>
+                  </div>
+                  <div>
+                    <span className="trace-label">Recommended</span>
+                    <strong>
+                      {formatRecoveryActionLabel(
+                        agentQueryResult.recommended_recovery_action ?? "none",
+                      )}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="trace-label">Failure Stage</span>
+                    <strong>{agentQueryResult.failure_stage ?? "n/a"}</strong>
+                  </div>
+                </div>
+                <div className="pill-strip">
+                  {renderRecoveryActions(agentQueryResult.available_recovery_actions, true)}
+                </div>
+                {agentQueryResult.failure_message && (
+                  <p className="subsection-copy">
+                    <strong>Failure:</strong> {agentQueryResult.failure_message}
+                  </p>
+                )}
               </article>
 
               {agentQueryResult.answer && (
@@ -437,7 +531,7 @@ export function QueryView({
                           </div>
                           <div>
                             <span className="trace-label">Execution Mode</span>
-                            <strong>{step.tool_execution.execution_mode}</strong>
+                            <strong>{step.tool_execution?.execution_mode ?? "not executed"}</strong>
                           </div>
                         </div>
                         {Object.keys(step.tool_plan.arguments).length > 0 && (
@@ -578,8 +672,20 @@ export function QueryView({
                     <span>route {run.route_type}</span>
                     <span>run {run.run_id}</span>
                   </div>
+                  <div className="meta-row">
+                    <span>retry {run.retry_state ?? "unknown"}</span>
+                    <span>recommended {run.recommended_recovery_action ?? "none"}</span>
+                  </div>
+                  <div className="pill-strip">
+                    {renderRecoveryActions(run.available_recovery_actions, true)}
+                  </div>
                   {run.resumed_from_question && (
                     <p className="subsection-copy">resumed from: {run.resumed_from_question}</p>
+                  )}
+                  {(run.reused_step_indices?.length ?? 0) > 0 && (
+                    <p className="subsection-copy">
+                      reused steps: {run.reused_step_indices?.join(", ")}
+                    </p>
                   )}
                 </button>
               ))}

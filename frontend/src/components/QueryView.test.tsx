@@ -186,6 +186,13 @@ describe("QueryView", () => {
           ],
           tool_chain: [
             {
+              step_id: "step_1",
+              step_index: 1,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-03-14T00:00:00+00:00",
+              completed_at: "2026-03-14T00:00:00+00:00",
               question: "List open tickets",
               tool_plan: {
                 question: "List open tickets",
@@ -298,6 +305,13 @@ describe("QueryView", () => {
           ],
           tool_chain: [
             {
+              step_id: "step_1",
+              step_index: 1,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-03-15T00:00:00+00:00",
+              completed_at: "2026-03-15T00:00:00+00:00",
               question: "Search docs for RAG",
               tool_plan: {
                 question: "Search docs for RAG",
@@ -327,6 +341,13 @@ describe("QueryView", () => {
               },
             },
             {
+              step_id: "step_2",
+              step_index: 2,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-03-15T00:00:00+00:00",
+              completed_at: "2026-03-15T00:00:00+00:00",
               question: "create a high severity ticket for payment-service",
               tool_plan: {
                 question: "create a high severity ticket for payment-service",
@@ -511,5 +532,105 @@ describe("QueryView", () => {
     await user.click(screen.getByRole("button", { name: /Create a ticket for the payment service outage/i }));
 
     expect(onLoadAgentWorkflowRun).toHaveBeenCalledWith("run-2");
+  });
+
+  it("renders workflow recovery semantics for current and recent runs", () => {
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Search docs for RAG and create a high severity ticket for payment-service"
+        topK={3}
+        activePresetQuestions={["Search docs for RAG and create a high severity ticket for payment-service"]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-recovery",
+          question: "Search docs for RAG and create a high severity ticket for payment-service",
+          workflow_status: "failed",
+          outcome_category: "recoverable_failure",
+          retry_state: "retry_exhausted",
+          recommended_recovery_action: "resume_from_failed_step",
+          available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+          resumed_from_step_index: null,
+          reused_step_indices: [],
+          failure_stage: "tool_execution",
+          failure_message: "RuntimeError: debug injected persistent failure",
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Search and execution requests should go through tool execution.",
+            filename: null,
+          },
+          workflow_trace: [],
+          tool_chain: [],
+        }}
+        agentWorkflowRuns={[
+          {
+            run_id: "run-2",
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            resumed_from_question: null,
+            source_run_id: null,
+            resume_source_type: null,
+            resume_strategy: null,
+            resumed_from_step_index: null,
+            reused_step_indices: [],
+            applied_clarification_fields: [],
+            question_rewritten: false,
+            overridden_plan_arguments: [],
+            workflow_status: "failed",
+            terminal_reason: "tool_execution_failed",
+            outcome_category: "recoverable_failure",
+            is_recoverable: true,
+            retry_state: "retry_exhausted",
+            recommended_recovery_action: "resume_from_failed_step",
+            available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+            failure_stage: "tool_execution",
+            failure_message: "RuntimeError: debug injected persistent failure",
+            started_at: "2026-03-16T00:00:00+00:00",
+            completed_at: "2026-03-16T00:00:01+00:00",
+            last_updated_at: "2026-03-16T00:00:01+00:00",
+            workflow_planning_mode: "llm_gemini",
+            tool_planning_mode: "llm_gemini",
+            tool_planning_modes: ["llm_gemini", "llm_gemini"],
+            clarification_planning_mode: null,
+            planner_call_count: 3,
+            tool_planner_call_count: 2,
+            workflow_planning_latency_ms: 10,
+            tool_planning_latency_ms: 20,
+            clarification_planning_latency_ms: 0,
+            planner_latency_ms_total: 30,
+            llm_planner_layers: ["workflow", "tool"],
+            fallback_planner_layers: [],
+            llm_tool_planner_steps: [1, 2],
+            fallback_tool_planner_steps: [],
+            retry_count: 1,
+            retried_step_indices: [2],
+            step_count: 2,
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            filename: null,
+            answered_at: null,
+            answer_source: null,
+            final_tool_name: "ticketing",
+            final_tool_action: "create",
+          },
+        ]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Recovery Semantics").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("从失败步骤继续 (resume_from_failed_step)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("人工重新触发 (manual_retrigger)").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Failure:/)).toBeInTheDocument();
   });
 });
