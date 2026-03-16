@@ -128,6 +128,26 @@ def _normalize_persisted_workflow_step_records(
 
 def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run = dict(run)
+    run_id = normalized_run.get("run_id")
+    source_run_id = normalized_run.get("source_run_id")
+    root_run_id = normalized_run.get("root_run_id")
+    normalized_run["root_run_id"] = (
+        root_run_id.strip()
+        if isinstance(root_run_id, str) and root_run_id.strip()
+        else source_run_id.strip()
+        if isinstance(source_run_id, str) and source_run_id.strip()
+        else run_id.strip()
+        if isinstance(run_id, str) and run_id.strip()
+        else None
+    )
+    recovery_depth = normalized_run.get("recovery_depth")
+    normalized_run["recovery_depth"] = (
+        recovery_depth
+        if isinstance(recovery_depth, int) and recovery_depth >= 0
+        else 1
+        if isinstance(source_run_id, str) and source_run_id.strip()
+        else 0
+    )
     recovered_via_action = normalized_run.get("recovered_via_action")
     normalized_run["recovered_via_action"] = (
         recovered_via_action.strip()
@@ -706,6 +726,8 @@ def _elapsed_ms(started_at: float) -> int:
 def _workflow_run_requires_migration(run: dict) -> bool:
     normalized_run = _normalize_persisted_workflow_run(run)
     migration_fields = (
+        "root_run_id",
+        "recovery_depth",
         "tool_chain",
         "step_count",
         "started_at",
@@ -932,6 +954,24 @@ def _persist_workflow_response(
     response.resumed_from_question = resumed_from_question
     response.source_run_id = source_run_id
     runs = _load_workflow_runs()
+    if source_run_id:
+        source_run = next(
+            (
+                AgentWorkflowResponse.model_validate(_normalize_persisted_workflow_run(run))
+                for run in reversed(runs)
+                if run.get("run_id") == source_run_id
+            ),
+            None,
+        )
+        if source_run:
+            response.root_run_id = source_run.root_run_id or source_run.run_id
+            response.recovery_depth = source_run.recovery_depth + 1
+        else:
+            response.root_run_id = source_run_id
+            response.recovery_depth = 1
+    else:
+        response.root_run_id = response.run_id
+        response.recovery_depth = 0
     runs.append(response.model_dump())
     _save_workflow_runs(runs)
     return response
@@ -1028,6 +1068,8 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
         runs=[
             AgentWorkflowRunSummary(
                 run_id=run.run_id or "",
+                root_run_id=run.root_run_id,
+                recovery_depth=run.recovery_depth,
                 question=run.question,
                 resumed_from_question=run.resumed_from_question,
                 source_run_id=run.source_run_id,

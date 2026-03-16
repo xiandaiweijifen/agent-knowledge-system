@@ -3942,6 +3942,8 @@ def test_recover_agent_endpoint_uses_recommended_failed_step_resume(
 
     assert initial_response.status_code == 200
     initial_payload = initial_response.json()
+    assert initial_payload["root_run_id"] == initial_payload["run_id"]
+    assert initial_payload["recovery_depth"] == 0
     assert initial_payload["recommended_recovery_action"] == "resume_from_failed_step"
 
     recovered_response = client.post(
@@ -3957,6 +3959,8 @@ def test_recover_agent_endpoint_uses_recommended_failed_step_resume(
     assert recovered_payload["recovered_via_action"] == "resume_from_failed_step"
     assert recovered_payload["resume_strategy"] == "search_then_ticket_failed_step_resume"
     assert recovered_payload["source_run_id"] == initial_payload["run_id"]
+    assert recovered_payload["root_run_id"] == initial_payload["run_id"]
+    assert recovered_payload["recovery_depth"] == 1
     assert recovered_payload["resume_source_type"] == "run_id"
 
 
@@ -3993,6 +3997,8 @@ def test_recover_agent_endpoint_manual_retriggers_single_step_failures(
 
     assert initial_response.status_code == 200
     initial_payload = initial_response.json()
+    assert initial_payload["root_run_id"] == initial_payload["run_id"]
+    assert initial_payload["recovery_depth"] == 0
     assert initial_payload["recommended_recovery_action"] == "manual_retrigger"
 
     recovered_response = client.post(
@@ -4008,6 +4014,8 @@ def test_recover_agent_endpoint_manual_retriggers_single_step_failures(
     assert recovered_payload["recovered_via_action"] == "manual_retrigger"
     assert recovered_payload["resume_strategy"] == "manual_retrigger_recovery"
     assert recovered_payload["source_run_id"] == initial_payload["run_id"]
+    assert recovered_payload["root_run_id"] == initial_payload["run_id"]
+    assert recovered_payload["recovery_depth"] == 1
     assert recovered_payload["resume_source_type"] == "run_id"
     assert any(event["stage"] == "workflow_recovery" for event in recovered_payload["workflow_trace"])
 
@@ -4115,6 +4123,8 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["retry_state"] == "not_applicable"
     assert payload["runs"][0]["recommended_recovery_action"] == "none"
     assert payload["runs"][0]["available_recovery_actions"] == []
+    assert payload["runs"][0]["root_run_id"] == second_run_id
+    assert payload["runs"][0]["recovery_depth"] == 0
     assert payload["runs"][0]["resumed_from_question"] is None
     assert payload["runs"][0]["source_run_id"] is None
     assert payload["runs"][0]["resume_source_type"] is None
@@ -4192,6 +4202,8 @@ def test_list_agent_workflow_runs_endpoint_marks_failed_step_resume_eligible_run
     assert list_response.status_code == 200
     payload = list_response.json()
     assert payload["runs"][0]["workflow_status"] == "failed"
+    assert payload["runs"][0]["root_run_id"] == payload["runs"][0]["run_id"]
+    assert payload["runs"][0]["recovery_depth"] == 0
     assert payload["runs"][0]["resumed_from_step_index"] is None
     assert payload["runs"][0]["reused_step_indices"] == []
     assert payload["runs"][0]["retry_state"] == "retry_exhausted"
@@ -4457,6 +4469,8 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
             [
                     {
                         "run_id": "current-run",
+                        "root_run_id": "current-run",
+                        "recovery_depth": 0,
                         "question": "Check system status",
                         "workflow_status": "completed",
                         "terminal_reason": "tool_execution_completed",

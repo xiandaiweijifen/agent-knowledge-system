@@ -550,6 +550,8 @@ describe("QueryView", () => {
         queryResult={null}
         agentQueryResult={{
           run_id: "run-recovery",
+          root_run_id: "run-recovery",
+          recovery_depth: 0,
           question: "Search docs for RAG and create a high severity ticket for payment-service",
           workflow_status: "failed",
           outcome_category: "recoverable_failure",
@@ -578,6 +580,8 @@ describe("QueryView", () => {
         agentWorkflowRuns={[
           {
             run_id: "run-2",
+            root_run_id: "run-2",
+            recovery_depth: 0,
             question: "Search docs for RAG and create a high severity ticket for payment-service",
             resumed_from_question: null,
             source_run_id: null,
@@ -644,6 +648,9 @@ describe("QueryView", () => {
     expect(screen.getAllByText("Recovery Semantics").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Resume From Failed Step (resume_from_failed_step)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Manual Retrigger (manual_retrigger)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Root Run").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Recovery Depth").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("run-recovery").length).toBeGreaterThan(0);
     expect(screen.getByText(/Failure:/)).toBeInTheDocument();
     expect(screen.getByText("Recovery Details")).toBeInTheDocument();
   });
@@ -659,6 +666,8 @@ describe("QueryView", () => {
         queryResult={null}
         agentQueryResult={{
           run_id: "run-resumed",
+          root_run_id: "source-run",
+          recovery_depth: 1,
           question: "Search docs for RAG and create a high severity ticket for payment-service",
           resumed_from_question:
             "Search docs for RAG and create a high severity ticket for payment-service",
@@ -771,7 +780,8 @@ describe("QueryView", () => {
     expect(screen.getAllByText("Recovered Via").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Resume From Failed Step").length).toBeGreaterThan(0);
     expect(screen.getByText("search_then_ticket_failed_step_resume")).toBeInTheDocument();
-    expect(screen.getByText("source-run")).toBeInTheDocument();
+    expect(screen.getAllByText("source-run").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("1").length).toBeGreaterThan(0);
   });
 
   it("runs recovery actions for current and recent workflow runs", async () => {

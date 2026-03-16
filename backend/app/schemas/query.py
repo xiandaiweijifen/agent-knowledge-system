@@ -128,6 +128,8 @@ class QueryDiagnosticsResponse(BaseModel):
 
 class AgentWorkflowResponse(BaseModel):
     run_id: str | None = None
+    root_run_id: str | None = None
+    recovery_depth: int = 0
     question: str
     resumed_from_question: str | None = None
     source_run_id: str | None = None
@@ -189,6 +191,8 @@ class AgentWorkflowResponse(BaseModel):
 
 class AgentWorkflowRunSummary(BaseModel):
     run_id: str
+    root_run_id: str | None = None
+    recovery_depth: int = 0
     question: str
     resumed_from_question: str | None = None
     source_run_id: str | None = None

@@ -95,6 +95,8 @@ export function QueryView({
           notUsed: "未使用",
           workflowRecord: "工作流记录",
           runId: "Run Id",
+          rootRun: "根 Run",
+          recoveryDepth: "恢复深度",
           resumedFrom: "恢复来源",
           sourceRun: "源 Run",
           recoveredVia: "恢复动作",
@@ -235,6 +237,8 @@ export function QueryView({
           notUsed: "not used",
           workflowRecord: "Workflow Record",
           runId: "Run Id",
+          rootRun: "Root Run",
+          recoveryDepth: "Recovery Depth",
           resumedFrom: "Resumed From",
           sourceRun: "Source Run",
           recoveredVia: "Recovered Via",
@@ -785,6 +789,14 @@ export function QueryView({
                     <strong>{agentQueryResult.run_id ?? queryCopy.notPersisted}</strong>
                   </div>
                   <div>
+                    <span className="trace-label">{queryCopy.rootRun}</span>
+                    <strong>{agentQueryResult.root_run_id ?? queryCopy.notLinked}</strong>
+                  </div>
+                  <div>
+                    <span className="trace-label">{queryCopy.recoveryDepth}</span>
+                    <strong>{agentQueryResult.recovery_depth ?? 0}</strong>
+                  </div>
+                  <div>
                     <span className="trace-label">{queryCopy.resumedFrom}</span>
                     <strong>{agentQueryResult.resumed_from_question ?? queryCopy.notResumed}</strong>
                   </div>
@@ -1041,6 +1053,10 @@ export function QueryView({
                   <div className="meta-row">
                     <span>{queryCopy.routeMeta} {run.route_type}</span>
                     <span>{queryCopy.runMeta} {run.run_id}</span>
+                  </div>
+                  <div className="meta-row">
+                    <span>{queryCopy.rootRun}: {run.root_run_id ?? queryCopy.notLinked}</span>
+                    <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
                   </div>
                   <div className="meta-row">
                     <span>{queryCopy.retryMeta} {run.retry_state ?? queryCopy.unknown}</span>

@@ -179,6 +179,8 @@ export type RecoveryActionDetails = Record<string, Record<string, RecoveryAction
 
 export type AgentWorkflowResponse = {
   run_id?: string | null;
+  root_run_id?: string | null;
+  recovery_depth?: number;
   question: string;
   resumed_from_question?: string | null;
   source_run_id?: string | null;
@@ -240,6 +242,8 @@ export type AgentWorkflowResponse = {
 
 export type AgentWorkflowRunSummary = {
   run_id: string;
+  root_run_id?: string | null;
+  recovery_depth?: number;
   question: string;
   resumed_from_question?: string | null;
   source_run_id?: string | null;
