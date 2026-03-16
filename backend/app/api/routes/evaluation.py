@@ -20,6 +20,7 @@ from app.services.evaluation import (
     tool_execution_eval_service,
     agent_workflow_eval_service,
     overview_service,
+    report_store_service,
     retrieval_eval_service,
 )
 
@@ -38,11 +39,32 @@ def get_retrieval_datasets() -> RetrievalEvalDatasetListResponse:
     )
 
 
+@router.get("/evaluation/retrieval/latest", response_model=RetrievalEvalResponse)
+def get_latest_retrieval_report(dataset_name: str, top_k: int = 3) -> RetrievalEvalResponse:
+    payload = report_store_service.load_latest_retrieval_report(
+        dataset_name=dataset_name,
+        top_k=top_k,
+    )
+    if payload is None:
+        raise HTTPException(status_code=404, detail="evaluation_report_not_found")
+
+    return RetrievalEvalResponse.model_validate(payload)
+
+
 @router.get("/evaluation/agent-route/datasets", response_model=AgentRouteEvalDatasetListResponse)
 def get_agent_route_datasets() -> AgentRouteEvalDatasetListResponse:
     return AgentRouteEvalDatasetListResponse(
         datasets=agent_route_eval_service.list_agent_route_datasets(),
     )
+
+
+@router.get("/evaluation/agent-route/latest", response_model=AgentRouteEvalResponse)
+def get_latest_agent_route_report(dataset_name: str) -> AgentRouteEvalResponse:
+    payload = report_store_service.load_latest_agent_route_report(dataset_name=dataset_name)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="evaluation_report_not_found")
+
+    return AgentRouteEvalResponse.model_validate(payload)
 
 
 @router.get(
@@ -53,6 +75,15 @@ def get_agent_workflow_datasets() -> AgentWorkflowEvalDatasetListResponse:
     return AgentWorkflowEvalDatasetListResponse(
         datasets=agent_workflow_eval_service.list_agent_workflow_datasets(),
     )
+
+
+@router.get("/evaluation/agent-workflow/latest", response_model=AgentWorkflowEvalResponse)
+def get_latest_agent_workflow_report(dataset_name: str) -> AgentWorkflowEvalResponse:
+    payload = report_store_service.load_latest_agent_workflow_report(dataset_name=dataset_name)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="evaluation_report_not_found")
+
+    return AgentWorkflowEvalResponse.model_validate(payload)
 
 
 @router.get(
@@ -77,9 +108,17 @@ def evaluate_retrieval(request: RetrievalEvalRequest) -> RetrievalEvalResponse:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+    persisted = report_store_service.persist_retrieval_report(
+        dataset_name=request.dataset_name,
+        top_k=request.top_k,
+        report=report,
+    )
+
     return RetrievalEvalResponse(
         dataset_name=request.dataset_name,
         report=report,
+        saved_at=persisted["saved_at"],
+        report_source=persisted["report_source"],
     )
 
 
@@ -94,9 +133,16 @@ def evaluate_agent_route(request: AgentRouteEvalRequest) -> AgentRouteEvalRespon
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+    persisted = report_store_service.persist_agent_route_report(
+        dataset_name=request.dataset_name,
+        report=report,
+    )
+
     return AgentRouteEvalResponse(
         dataset_name=request.dataset_name,
         report=report,
+        saved_at=persisted["saved_at"],
+        report_source=persisted["report_source"],
     )
 
 
@@ -111,9 +157,16 @@ def evaluate_agent_workflow(request: AgentWorkflowEvalRequest) -> AgentWorkflowE
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+    persisted = report_store_service.persist_agent_workflow_report(
+        dataset_name=request.dataset_name,
+        report=report,
+    )
+
     return AgentWorkflowEvalResponse(
         dataset_name=request.dataset_name,
         report=report,
+        saved_at=persisted["saved_at"],
+        report_source=persisted["report_source"],
     )
 
 

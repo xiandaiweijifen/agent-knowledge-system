@@ -50,7 +50,20 @@ describe("EvaluationView", () => {
         agentWorkflowDatasets={[]}
         datasetName="rag_overview_retrieval_eval.json"
         evalTopK={3}
-        evalResult={null}
+        evalResult={{
+          dataset_name: "rag_overview_retrieval_eval.json",
+          saved_at: "2026-03-17T01:30:00+00:00",
+          report_source: "saved",
+          report: {
+            top_k: 3,
+            summary: {
+              total_cases: 6,
+              hit_rate_at_k: 0.875,
+              mean_reciprocal_rank: 0.71,
+            },
+            cases: [],
+          },
+        }}
         agentRouteEvalResult={null}
         agentWorkflowEvalResult={null}
         evalError=""
@@ -79,5 +92,7 @@ describe("EvaluationView", () => {
     expect(screen.getByText((content) => content.includes("failed-step 3"))).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("manual 2"))).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("clarification 1"))).toBeInTheDocument();
+    expect(screen.getByText("Latest Saved Result")).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes("Report Source: Saved"))).toBeInTheDocument();
   });
 });

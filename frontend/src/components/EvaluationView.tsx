@@ -142,6 +142,11 @@ export function EvaluationView({
           noCases: "当前过滤条件下没有 case。",
           noReport: "暂无评测报告",
           noReportCopy: "选择数据集并运行评测后，可查看汇总指标和逐条 case 结果。",
+          latestResult: "最近保存结果",
+          reportSavedAt: "保存时间",
+          reportSource: "结果来源",
+          reportSourceSaved: "本地已保存",
+          reportSourceFresh: "刚刚运行",
         }
       : {
           workspace: "Evaluation Workspace",
@@ -218,6 +223,11 @@ export function EvaluationView({
           noReport: "No evaluation report yet",
           noReportCopy:
             "Select a dataset and run evaluation to view benchmark summaries and per-case outcomes.",
+          latestResult: "Latest Saved Result",
+          reportSavedAt: "Saved At",
+          reportSource: "Report Source",
+          reportSourceSaved: "Saved",
+          reportSourceFresh: "Fresh Run",
         };
   const visibleDatasets =
     evaluationMode === "retrieval"
@@ -256,6 +266,14 @@ export function EvaluationView({
       ? copy.cached
       : copy.fresh
     : copy.unavailableMetric;
+  const activeReportSavedAt = activeReport?.saved_at
+    ? new Date(activeReport.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")
+    : null;
+  const activeReportSource = activeReport?.report_source
+    ? activeReport.report_source === "saved"
+      ? copy.reportSourceSaved
+      : copy.reportSourceFresh
+    : null;
 
   return (
     <section className="panel-grid">
@@ -469,6 +487,21 @@ export function EvaluationView({
             <h2>{copy.report}</h2>
             <p className="panel-intro">{copy.reportCopy}</p>
           </div>
+          {activeReportSavedAt || activeReportSource ? (
+            <div className="pill-strip">
+              <span className="meta-pill muted-pill">{copy.latestResult}</span>
+              {activeReportSavedAt ? (
+                <span className="meta-pill">
+                  {copy.reportSavedAt}: {activeReportSavedAt}
+                </span>
+              ) : null}
+              {activeReportSource ? (
+                <span className="meta-pill">
+                  {copy.reportSource}: {activeReportSource}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         {evaluationMode === "retrieval" && evalResult ? (
           <>

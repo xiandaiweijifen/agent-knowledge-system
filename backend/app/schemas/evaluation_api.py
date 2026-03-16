@@ -8,6 +8,11 @@ from app.schemas.evaluation import (
 )
 
 
+class EvaluationReportMetadata(BaseModel):
+    saved_at: str | None = None
+    report_source: str | None = None
+
+
 class RetrievalEvalDatasetInfo(BaseModel):
     dataset_name: str
     case_count: int
@@ -19,7 +24,7 @@ class RetrievalEvalRequest(BaseModel):
     top_k: int = 3
 
 
-class RetrievalEvalResponse(BaseModel):
+class RetrievalEvalResponse(EvaluationReportMetadata):
     dataset_name: str
     report: RetrievalEvalReport
 
@@ -37,7 +42,7 @@ class AgentRouteEvalRequest(BaseModel):
     dataset_name: str
 
 
-class AgentRouteEvalResponse(BaseModel):
+class AgentRouteEvalResponse(EvaluationReportMetadata):
     dataset_name: str
     report: AgentRouteEvalReport
 
@@ -55,7 +60,7 @@ class AgentWorkflowEvalRequest(BaseModel):
     dataset_name: str
 
 
-class AgentWorkflowEvalResponse(BaseModel):
+class AgentWorkflowEvalResponse(EvaluationReportMetadata):
     dataset_name: str
     report: AgentWorkflowEvalReport
 
@@ -73,7 +78,7 @@ class ToolExecutionEvalRequest(BaseModel):
     dataset_name: str
 
 
-class ToolExecutionEvalResponse(BaseModel):
+class ToolExecutionEvalResponse(EvaluationReportMetadata):
     dataset_name: str
     report: ToolExecutionEvalReport
 

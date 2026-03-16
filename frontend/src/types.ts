@@ -333,6 +333,8 @@ export type AgentEvalDatasetListResponse = {
 
 export type EvalReportResponse = {
   dataset_name: string;
+  saved_at?: string | null;
+  report_source?: string | null;
   report: {
     top_k: number;
     summary: {
@@ -354,6 +356,8 @@ export type EvalReportResponse = {
 
 export type AgentRouteEvalReportResponse = {
   dataset_name: string;
+  saved_at?: string | null;
+  report_source?: string | null;
   report: {
     summary: {
       total_cases: number;
@@ -373,6 +377,8 @@ export type AgentRouteEvalReportResponse = {
 
 export type AgentWorkflowEvalReportResponse = {
   dataset_name: string;
+  saved_at?: string | null;
+  report_source?: string | null;
   report: {
     summary: {
       total_cases: number;

@@ -1,14 +1,17 @@
 ﻿import { FormEvent, useEffect, useState } from "react";
 import {
   deleteDocument as deleteDocumentRequest,
+  fetchAgentRouteEvaluationDatasets,
+  fetchAgentWorkflowEvaluationDatasets,
   fetchAgentWorkflowRun,
   fetchAgentWorkflowRuns,
   fetchDocumentPreview,
-  fetchAgentRouteEvaluationDatasets,
-  fetchAgentWorkflowEvaluationDatasets,
   fetchDocuments,
   fetchEvaluationDatasets,
   fetchEvaluationOverview,
+  fetchLatestAgentRouteEvaluation,
+  fetchLatestAgentWorkflowEvaluation,
+  fetchLatestEvaluation,
   fetchPersistedChunks,
   fetchPersistedEmbeddings,
   fetchSystemHealth,
@@ -91,6 +94,7 @@ function App() {
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
   const [evalCaseFilter, setEvalCaseFilter] = useState<EvalCaseFilter>("all");
+  const [latestEvalRevision, setLatestEvalRevision] = useState(0);
 
   const activePresetQuestions =
     presetQuestions[queryFilename] ?? [
@@ -457,6 +461,8 @@ function App() {
     if (failures.length > 0) {
       setEvalError(`Some evaluation datasets failed to load: ${failures.join(", ")}`);
     }
+
+    setLatestEvalRevision((current) => current + 1);
   }
 
   useEffect(() => {
@@ -470,6 +476,57 @@ function App() {
       setDatasetName(currentOptions[0].dataset_name);
     }
   }, [evaluationMode, datasetName, visibleDatasetOptions]);
+
+  useEffect(() => {
+    if (!datasetName) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadLatestEvaluationReport() {
+      try {
+        if (evaluationMode === "retrieval") {
+          const payload = await fetchLatestEvaluation(datasetName, evalTopK);
+          if (!cancelled) {
+            setEvalResult(payload);
+          }
+          return;
+        }
+
+        if (evaluationMode === "agent-route") {
+          const payload = await fetchLatestAgentRouteEvaluation(datasetName);
+          if (!cancelled) {
+            setAgentRouteEvalResult(payload);
+          }
+          return;
+        }
+
+        const payload = await fetchLatestAgentWorkflowEvaluation(datasetName);
+        if (!cancelled) {
+          setAgentWorkflowEvalResult(payload);
+        }
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        if (evaluationMode === "retrieval") {
+          setEvalResult(null);
+        } else if (evaluationMode === "agent-route") {
+          setAgentRouteEvalResult(null);
+        } else {
+          setAgentWorkflowEvalResult(null);
+        }
+      }
+    }
+
+    void loadLatestEvaluationReport();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [datasetName, evalTopK, evaluationMode, latestEvalRevision]);
 
   async function submitQuery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

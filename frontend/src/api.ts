@@ -175,6 +175,14 @@ export function runEvaluation(datasetName: string, topK: number) {
   });
 }
 
+export function fetchLatestEvaluation(datasetName: string, topK: number) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+    top_k: String(topK),
+  });
+  return apiFetch<EvalReportResponse>(`/api/evaluation/retrieval/latest?${searchParams.toString()}`);
+}
+
 export function fetchAgentRouteEvaluationDatasets() {
   return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/agent-route/datasets");
 }
@@ -188,6 +196,15 @@ export function runAgentRouteEvaluation(datasetName: string) {
   });
 }
 
+export function fetchLatestAgentRouteEvaluation(datasetName: string) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+  });
+  return apiFetch<AgentRouteEvalReportResponse>(
+    `/api/evaluation/agent-route/latest?${searchParams.toString()}`,
+  );
+}
+
 export function fetchAgentWorkflowEvaluationDatasets() {
   return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/agent-workflow/datasets");
 }
@@ -199,6 +216,15 @@ export function runAgentWorkflowEvaluation(datasetName: string) {
       dataset_name: datasetName,
     }),
   });
+}
+
+export function fetchLatestAgentWorkflowEvaluation(datasetName: string) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+  });
+  return apiFetch<AgentWorkflowEvalReportResponse>(
+    `/api/evaluation/agent-workflow/latest?${searchParams.toString()}`,
+  );
 }
 
 export function fetchEvaluationOverview(refresh = false) {

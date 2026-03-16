@@ -6,6 +6,7 @@ from app.services.evaluation import (
     tool_execution_eval_service,
     agent_workflow_eval_service,
     overview_service,
+    report_store_service,
     retrieval_eval_service,
 )
 
@@ -41,6 +42,17 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
         "evaluate_named_retrieval_dataset",
         fake_eval,
     )
+    monkeypatch.setattr(
+        report_store_service,
+        "persist_retrieval_report",
+        lambda dataset_name, top_k, report: {
+            "dataset_name": dataset_name,
+            "top_k": top_k,
+            "saved_at": "2026-03-17T01:00:00+00:00",
+            "report_source": "fresh",
+            "report": report,
+        },
+    )
 
     response = client.post(
         "/api/evaluation/retrieval",
@@ -54,6 +66,8 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
     payload = response.json()
     assert payload["dataset_name"] == "rag_overview_retrieval_eval.json"
     assert payload["report"]["summary"]["hit_rate_at_k"] == 1.0
+    assert payload["report_source"] == "fresh"
+    assert payload["saved_at"] == "2026-03-17T01:00:00+00:00"
 
 
 def test_retrieval_evaluation_endpoint_returns_404_for_missing_dataset(monkeypatch):
@@ -138,6 +152,16 @@ def test_agent_route_evaluation_endpoint_returns_report(monkeypatch):
         "evaluate_named_agent_route_dataset",
         fake_eval,
     )
+    monkeypatch.setattr(
+        report_store_service,
+        "persist_agent_route_report",
+        lambda dataset_name, report: {
+            "dataset_name": dataset_name,
+            "saved_at": "2026-03-17T01:05:00+00:00",
+            "report_source": "fresh",
+            "report": report,
+        },
+    )
 
     response = client.post(
         "/api/evaluation/agent-route",
@@ -150,6 +174,7 @@ def test_agent_route_evaluation_endpoint_returns_report(monkeypatch):
     payload = response.json()
     assert payload["dataset_name"] == "agent_route_eval.json"
     assert payload["report"]["summary"]["route_accuracy"] == 1.0
+    assert payload["report_source"] == "fresh"
 
 
 def test_agent_route_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):
@@ -207,6 +232,16 @@ def test_agent_workflow_evaluation_endpoint_returns_report(monkeypatch):
         "evaluate_named_agent_workflow_dataset",
         fake_eval,
     )
+    monkeypatch.setattr(
+        report_store_service,
+        "persist_agent_workflow_report",
+        lambda dataset_name, report: {
+            "dataset_name": dataset_name,
+            "saved_at": "2026-03-17T01:10:00+00:00",
+            "report_source": "fresh",
+            "report": report,
+        },
+    )
 
     response = client.post(
         "/api/evaluation/agent-workflow",
@@ -219,6 +254,7 @@ def test_agent_workflow_evaluation_endpoint_returns_report(monkeypatch):
     payload = response.json()
     assert payload["dataset_name"] == "agent_workflow_eval.json"
     assert payload["report"]["summary"]["workflow_accuracy"] == 1.0
+    assert payload["report_source"] == "fresh"
 
 
 def test_agent_workflow_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):
@@ -367,3 +403,80 @@ def test_evaluation_overview_endpoint_returns_aggregated_metrics(monkeypatch):
     assert payload["workflow"]["completion_rate"] == 0.6
     assert payload["recovery"]["resume_from_failed_step_count"] == 3
     assert payload["cache_status"] == "cached"
+
+
+def test_latest_retrieval_evaluation_endpoint_returns_saved_report(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "load_latest_retrieval_report",
+        lambda dataset_name, top_k: {
+            "dataset_name": dataset_name,
+            "saved_at": "2026-03-17T02:00:00+00:00",
+            "report_source": "saved",
+            "report": {
+                "top_k": top_k,
+                "summary": {
+                    "total_cases": 2,
+                    "hit_rate_at_k": 0.5,
+                    "mean_reciprocal_rank": 0.5,
+                },
+                "cases": [],
+            },
+        },
+    )
+
+    response = client.get(
+        "/api/evaluation/retrieval/latest?dataset_name=rag_overview_retrieval_eval.json&top_k=3",
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["report_source"] == "saved"
+    assert payload["saved_at"] == "2026-03-17T02:00:00+00:00"
+
+
+def test_latest_agent_route_evaluation_endpoint_returns_404_when_missing(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "load_latest_agent_route_report",
+        lambda dataset_name: None,
+    )
+
+    response = client.get("/api/evaluation/agent-route/latest?dataset_name=agent_route_eval.json")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "evaluation_report_not_found"
+
+
+def test_latest_agent_workflow_evaluation_endpoint_returns_saved_report(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "load_latest_agent_workflow_report",
+        lambda dataset_name: {
+            "dataset_name": dataset_name,
+            "saved_at": "2026-03-17T02:10:00+00:00",
+            "report_source": "saved",
+            "report": {
+                "summary": {
+                    "total_cases": 1,
+                    "workflow_accuracy": 1.0,
+                },
+                "cases": [],
+            },
+        },
+    )
+
+    response = client.get(
+        "/api/evaluation/agent-workflow/latest?dataset_name=agent_workflow_eval.json",
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["report_source"] == "saved"
+    assert payload["saved_at"] == "2026-03-17T02:10:00+00:00"
