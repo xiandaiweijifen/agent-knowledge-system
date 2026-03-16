@@ -910,6 +910,7 @@ def _build_status_context_arguments(tool_output: dict[str, str]) -> dict[str, st
     status = tool_output.get("status", "").strip()
     target = tool_output.get("target", "").strip()
     app_env = tool_output.get("app_env", "").strip()
+    requested_environment = tool_output.get("requested_environment", "").strip()
 
     if status:
         arguments["supporting_status"] = status
@@ -917,12 +918,16 @@ def _build_status_context_arguments(tool_output: dict[str, str]) -> dict[str, st
         arguments["supporting_status_target"] = target
     if app_env:
         arguments["supporting_status_app_env"] = app_env
+    if requested_environment:
+        arguments["supporting_status_requested_env"] = requested_environment
 
     if status:
         status_subject = target or "the requested target"
         summary = f"System status snapshot for {status_subject} reported status {status}"
         if app_env:
             summary += f" in {app_env}"
+        if requested_environment:
+            summary += f" for requested {requested_environment}"
         arguments["supporting_summary"] = f"{summary}."
 
     return arguments
@@ -1012,10 +1017,14 @@ def _build_status_summary(tool_output: dict[str, str]) -> str:
     target = tool_output.get("target", "").strip() or "the requested target"
     status = tool_output.get("status", "").strip() or "unknown"
     app_env = tool_output.get("app_env", "").strip()
+    requested_environment = tool_output.get("requested_environment", "").strip()
     chat_provider = tool_output.get("chat_provider", "").strip()
     chat_model = tool_output.get("chat_model", "").strip()
 
-    summary_parts = [f"System status for {target} is {status}"]
+    if requested_environment:
+        summary_parts = [f"System status for {target} was requested for {requested_environment} and is {status}"]
+    else:
+        summary_parts = [f"System status for {target} is {status}"]
     if app_env:
         summary_parts[0] += f" in {app_env}"
     summary_parts[0] += "."

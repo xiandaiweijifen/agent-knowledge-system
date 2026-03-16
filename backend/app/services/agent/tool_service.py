@@ -42,7 +42,12 @@ ACTION_PATTERN = re.compile(
     re.IGNORECASE,
 )
 ENVIRONMENT_SEGMENT_PATTERN = re.compile(
-    r"\s+\b(in|for)\s+(production|staging)\b",
+    r"\s+\b(in|for)\s+(production|staging|development|dev)\b",
+    re.IGNORECASE,
+)
+ENVIRONMENT_ARGUMENT_PATTERN = re.compile(
+    r"\b(?:in|for|to)\s+(production|staging|development|dev)\b"
+    r"|\benvironment\s+to\s+(production|staging|development|dev)\b",
     re.IGNORECASE,
 )
 SEARCH_PREFIX_PATTERN = re.compile(
@@ -136,10 +141,9 @@ def _extract_ticket_update_arguments(question: str) -> dict[str, str]:
     elif "unspecified" in lowered:
         arguments["severity"] = "unspecified"
 
-    if "production" in lowered:
-        arguments["environment"] = "production"
-    elif "staging" in lowered:
-        arguments["environment"] = "staging"
+    normalized_environment = _extract_environment_argument(question)
+    if normalized_environment:
+        arguments["environment"] = normalized_environment
 
     if re.search(r"\bstatus\s+to\s+closed\b", lowered):
         arguments["status"] = "closed"
@@ -185,6 +189,23 @@ def _extract_ticket_target_filter(question: str) -> str | None:
     target = RESULT_LIMIT_PATTERN.sub("", target).strip(" .")
     target = re.sub(r"\band\s+show\b", "", target, flags=re.IGNORECASE).strip(" .")
     return _canonicalize_ticket_target(target)
+
+
+def _normalize_environment_value(value: str) -> str:
+    normalized = value.strip().lower()
+    if normalized == "dev":
+        return "development"
+    return normalized
+
+
+def _extract_environment_argument(question: str) -> str | None:
+    match = ENVIRONMENT_ARGUMENT_PATTERN.search(question)
+    if not match:
+        return None
+    for group in match.groups():
+        if group:
+            return _normalize_environment_value(group)
+    return None
 
 
 def _is_generic_ticket_target(target: str) -> bool:
@@ -308,6 +329,7 @@ def _build_supporting_summary(arguments: dict[str, str]) -> str:
     supporting_status = arguments.get("supporting_status", "").strip()
     supporting_status_target = arguments.get("supporting_status_target", "").strip()
     supporting_status_app_env = arguments.get("supporting_status_app_env", "").strip()
+    supporting_status_requested_env = arguments.get("supporting_status_requested_env", "").strip()
 
     summary_parts: list[str] = []
 
@@ -337,6 +359,8 @@ def _build_supporting_summary(arguments: dict[str, str]) -> str:
         )
         if supporting_status_app_env:
             status_sentence += f" in {supporting_status_app_env}"
+        if supporting_status_requested_env:
+            status_sentence += f" for requested {supporting_status_requested_env}"
         summary_parts.append(f"{status_sentence}.")
 
     return " ".join(summary_parts).strip()
@@ -824,7 +848,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     raise ValueError("unsupported_ticket_action")
 
 
-def _build_system_status_output(target: str) -> dict[str, str]:
+def _build_system_status_output(target: str, requested_environment: str = "") -> dict[str, str]:
     embedding_model = (
         settings.gemini_embedding_model
         if settings.embedding_provider == "gemini"
@@ -840,7 +864,7 @@ def _build_system_status_output(target: str) -> dict[str, str]:
         else "local-fallback"
     )
 
-    return {
+    output = {
         **_build_tool_output_metadata(
             output_kind="status_snapshot",
             resource_type="system_status",
@@ -857,6 +881,9 @@ def _build_system_status_output(target: str) -> dict[str, str]:
         "database_configured": str(bool(settings.database_url)).lower(),
         "redis_configured": str(bool(settings.redis_url)).lower(),
     }
+    if requested_environment:
+        output["requested_environment"] = requested_environment
+    return output
 
 
 def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
@@ -961,7 +988,10 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
         raise ValueError("unsupported_tool_name")
 
     if tool_name == "system_status":
-        output = _build_system_status_output(target)
+        requested_environment = _normalize_environment_value(
+            request.arguments.get("environment", "").strip()
+        )
+        output = _build_system_status_output(target, requested_environment=requested_environment)
         return ToolExecutionResponse(
             tool_name=tool_name,
             action=action,
@@ -969,7 +999,12 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
             execution_status="completed",
             execution_mode="local_adapter",
             result_summary=(
-                f"Collected local system status for {target or 'agent-knowledge-system'}."
+                f"Collected local system status for {target or 'agent-knowledge-system'}"
+                + (
+                    f" with requested environment {requested_environment}."
+                    if requested_environment
+                    else "."
+                )
             ),
             trace_id=uuid.uuid4().hex,
             executed_at=build_utc_timestamp(),
@@ -1051,6 +1086,7 @@ def infer_tool_request(question: str) -> InferredToolRequest:
     elif tool_name == "system_status":
         target = STATUS_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
         target = SYSTEM_STATUS_FOR_PATTERN.sub("", target).strip(" ?.!")
+        target = ENVIRONMENT_SEGMENT_PATTERN.sub("", target).strip(" ?.!")
         if not target:
             target = "agent-knowledge-system"
     else:
@@ -1168,6 +1204,15 @@ def _normalize_planned_request(
             action=inferred_request.action,
             target=cleaned_ticket_target,
         )
+
+    if inferred_request.tool_name == "system_status":
+        requested_environment = normalized_arguments.get("environment", "").strip()
+        if not requested_environment:
+            extracted_environment = _extract_environment_argument(question)
+            if extracted_environment:
+                normalized_arguments["environment"] = extracted_environment
+        elif requested_environment:
+            normalized_arguments["environment"] = _normalize_environment_value(requested_environment)
 
     if inferred_request.tool_name == "document_search":
         llm_query = normalized_arguments.pop("query", "").strip()

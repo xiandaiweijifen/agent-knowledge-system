@@ -791,6 +791,25 @@ def test_execute_system_status_tool_preserves_requested_target(monkeypatch):
     assert response.output["status"] == "ok"
 
 
+def test_execute_system_status_tool_preserves_requested_environment(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "development")
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="system_status",
+            action="query",
+            target="payment-service",
+            arguments={"environment": "production"},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.output["target"] == "payment-service"
+    assert response.output["app_env"] == "development"
+    assert response.output["requested_environment"] == "production"
+    assert "requested environment production" in response.result_summary
+
+
 def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, monkeypatch):
     raw_dir = workspace_tmp_path / "raw"
     raw_dir.mkdir()
@@ -1067,6 +1086,15 @@ def test_plan_tool_request_maps_status_queries_to_system_status():
     assert response.tool_name == "system_status"
     assert response.action == "query"
     assert response.target == "system status"
+
+
+def test_plan_tool_request_extracts_environment_for_system_status():
+    response = plan_tool_request("Check system status for payment-service in production")
+
+    assert response.tool_name == "system_status"
+    assert response.action == "query"
+    assert response.target == "payment-service"
+    assert response.arguments["environment"] == "production"
 
 
 def test_plan_tool_request_maps_ticket_status_queries_to_ticketing_query():
@@ -2251,6 +2279,26 @@ def test_query_agent_endpoint_supports_status_then_summarize_workflow():
         and "system status results" in event["detail"]
         for event in payload["workflow_trace"]
     )
+
+
+def test_query_agent_endpoint_supports_environment_aware_status_then_summarize_workflow():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Check system status for payment-service in production and summarize the result",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "status_summary_completed"
+    assert payload["tool_plan"]["tool_name"] == "system_status"
+    assert payload["tool_plan"]["arguments"]["environment"] == "production"
+    assert payload["tool_execution"]["output"]["requested_environment"] == "production"
+    assert "requested for production" in payload["answer"]
+    assert "in development" in payload["answer"]
 
 
 def test_query_agent_endpoint_supports_status_then_ticket_close_workflow(
