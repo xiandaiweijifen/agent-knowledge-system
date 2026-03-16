@@ -3,12 +3,13 @@ from datetime import datetime, UTC
 import re
 import json
 
+from app.core.config import DATA_ROOT
 from app.services.ingestion.text_extractor import extract_text_from_file
 from app.services.ingestion.chunker import chunk_text
 
-RAW_DATA_DIR = Path("../data/raw")
+RAW_DATA_DIR = DATA_ROOT / "raw"
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
-CHUNK_DATA_DIR = Path("../data/chunks")
+CHUNK_DATA_DIR = DATA_ROOT / "chunks"
 CHUNK_DATA_DIR.mkdir(parents=True, exist_ok=True)
 LISTABLE_DOCUMENT_SUFFIXES = {".txt", ".md", ".pdf", ".docx"}
 CHUNK_PIPELINE_VERSION = "ingestion-v1"

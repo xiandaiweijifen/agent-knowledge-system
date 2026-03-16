@@ -4,6 +4,7 @@ from pathlib import Path
 
 import httpx
 
+from app.core.config import DATA_ROOT
 from app.core.config import settings
 from app.schemas.indexing import (
     EmbeddingRecord,
@@ -16,7 +17,7 @@ from app.services.ingestion.document_service import (
     load_persisted_chunks,
 )
 
-EMBEDDING_DATA_DIR = Path("../data/embeddings")
+EMBEDDING_DATA_DIR = DATA_ROOT / "embeddings"
 EMBEDDING_DATA_DIR.mkdir(parents=True, exist_ok=True)
 MOCK_EMBEDDING_MODEL = "mock-embedding-v1"
 MOCK_VECTOR_DIM = 8

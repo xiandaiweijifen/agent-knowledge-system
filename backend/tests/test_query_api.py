@@ -2742,7 +2742,10 @@ def test_query_agent_endpoint_returns_structured_failure_for_knowledge_errors(
 def test_query_agent_endpoint_returns_structured_failure_for_single_tool_errors(
     monkeypatch,
 ):
+    attempt_counter = {"count": 0}
+
     def raise_tool_failure(*args, **kwargs):
+        attempt_counter["count"] += 1
         raise RuntimeError("simulated tool failure")
 
     monkeypatch.setattr(
@@ -2765,19 +2768,25 @@ def test_query_agent_endpoint_returns_structured_failure_for_single_tool_errors(
     assert payload["outcome_category"] == "recoverable_failure"
     assert payload["is_recoverable"] is True
     assert payload["recommended_recovery_action"] == "retry"
+    assert payload["retry_count"] == 1
+    assert payload["retried_step_indices"] == [1]
     assert payload["failure_stage"] == "tool_execution"
     assert "simulated tool failure" in payload["failure_message"]
     assert payload["step_count"] == 1
     assert payload["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_execution"] is None
     assert payload["tool_chain"][0]["step_status"] == "failed"
+    assert payload["tool_chain"][0]["attempt_count"] == 2
+    assert payload["tool_chain"][0]["retried"] is True
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][0]["tool_execution"] is None
     assert "simulated tool failure" in payload["tool_chain"][0]["failure_message"]
+    assert attempt_counter["count"] == 2
     assert any(
         event["stage"] == "tool_execution" and event["status"] == "failed"
         for event in payload["workflow_trace"]
     )
+    assert any(event["stage"] == "retry" for event in payload["workflow_trace"])
 
 
 def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure(
@@ -2797,8 +2806,11 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
 
     real_execute_tool_request = execute_tool_request
 
+    attempt_counter = {"count": 0}
+
     def fail_ticket_step(request):
         if request.tool_name == "ticketing":
+            attempt_counter["count"] += 1
             raise RuntimeError("simulated ticket failure")
         return real_execute_tool_request(request)
 
@@ -2822,6 +2834,8 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
     assert payload["outcome_category"] == "recoverable_failure"
     assert payload["is_recoverable"] is True
     assert payload["recommended_recovery_action"] == "retry"
+    assert payload["retry_count"] == 1
+    assert payload["retried_step_indices"] == [2]
     assert payload["failure_stage"] == "tool_execution"
     assert "simulated ticket failure" in payload["failure_message"]
     assert payload["step_count"] == 2
@@ -2829,6 +2843,8 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
     assert payload["tool_chain"][0]["step_status"] == "completed"
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_chain"][1]["step_status"] == "failed"
+    assert payload["tool_chain"][1]["attempt_count"] == 2
+    assert payload["tool_chain"][1]["retried"] is True
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][1]["tool_execution"] is None
     assert "simulated ticket failure" in payload["tool_chain"][1]["failure_message"]
@@ -2837,7 +2853,53 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
     failed_execution_events = [
         event for event in payload["workflow_trace"] if event["stage"] == "tool_execution"
     ]
+    assert attempt_counter["count"] == 2
     assert any(event["status"] == "failed" for event in failed_execution_events)
+    assert any(event["stage"] == "retry" for event in payload["workflow_trace"])
+
+
+def test_query_agent_endpoint_retries_single_tool_execution_once_and_recovers(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    real_execute_tool_request = execute_tool_request
+    attempt_counter = {"count": 0}
+
+    def flaky_tool_execution(request):
+        if request.tool_name == "ticketing":
+            attempt_counter["count"] += 1
+            if attempt_counter["count"] == 1:
+                raise RuntimeError("transient ticket failure")
+        return real_execute_tool_request(request)
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.execute_tool_request",
+        flaky_tool_execution,
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket for the payment service outage",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
+    assert payload["retry_count"] == 1
+    assert payload["retried_step_indices"] == [1]
+    assert payload["tool_execution"]["execution_status"] == "completed"
+    assert payload["tool_chain"][0]["step_status"] == "completed"
+    assert payload["tool_chain"][0]["attempt_count"] == 2
+    assert payload["tool_chain"][0]["retried"] is True
+    assert attempt_counter["count"] == 2
+    assert any(event["stage"] == "retry" for event in payload["workflow_trace"])
 
 
 def test_resume_agent_endpoint_continues_search_then_summarize_workflow(
@@ -3678,6 +3740,9 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
                         "question": "Check system status",
                         "workflow_status": "completed",
                         "terminal_reason": "tool_execution_completed",
+                        "outcome_category": "completed",
+                        "is_recoverable": False,
+                        "recommended_recovery_action": "none",
                     "started_at": "2026-03-15T16:12:37.485983+00:00",
                         "completed_at": "2026-03-15T16:12:37.487903+00:00",
                         "last_updated_at": "2026-03-15T16:12:37.487903+00:00",
@@ -3695,6 +3760,8 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
                         "fallback_planner_layers": [],
                         "llm_tool_planner_steps": [],
                         "fallback_tool_planner_steps": [],
+                        "retry_count": 0,
+                        "retried_step_indices": [],
                         "step_count": 1,
                     "route": {
                         "route_type": "tool_execution",
@@ -3704,12 +3771,14 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
                     "workflow_trace": [],
                     "tool_chain": [
                         {
-                            "step_id": "step_1",
-                            "step_index": 1,
-                            "step_status": "completed",
-                            "started_at": "2026-03-15T16:12:37.487871+00:00",
-                            "completed_at": "2026-03-15T16:12:37.487871+00:00",
-                            "question": "Check system status",
+                                "step_id": "step_1",
+                                "step_index": 1,
+                                "step_status": "completed",
+                                "attempt_count": 1,
+                                "retried": False,
+                                "started_at": "2026-03-15T16:12:37.487871+00:00",
+                                "completed_at": "2026-03-15T16:12:37.487871+00:00",
+                                "question": "Check system status",
                             "tool_plan": {"tool_name": "system_status"},
                             "tool_execution": {
                                 "execution_status": "completed",

@@ -2,8 +2,8 @@ import json
 import re
 import time
 import uuid
-from pathlib import Path
 
+from app.core.config import DATA_ROOT
 from app.schemas.query import (
     AgentWorkflowMigrationResponse,
     AgentWorkflowRunPruneResponse,
@@ -32,7 +32,7 @@ from app.services.agent.tool_service import (
     plan_tool_request,
 )
 
-WORKFLOW_RUN_DATA_DIR = Path("../data/tool_state")
+WORKFLOW_RUN_DATA_DIR = DATA_ROOT / "tool_state"
 WORKFLOW_RUN_DATA_DIR.mkdir(parents=True, exist_ok=True)
 WORKFLOW_RUN_STORE_PATH = WORKFLOW_RUN_DATA_DIR / "workflow_runs.json"
 
@@ -63,6 +63,7 @@ SEARCH_STYLE_PREFIX_PATTERN = re.compile(
 )
 ENVIRONMENT_HINT_PATTERN = re.compile(r"\b(production|staging|development|dev)\b", re.IGNORECASE)
 SEVERITY_HINT_PATTERN = re.compile(r"\b(high|medium|low)\b", re.IGNORECASE)
+MAX_TOOL_EXECUTION_RETRIES = 1
 
 
 def _load_workflow_runs() -> list[dict]:
@@ -91,6 +92,8 @@ def _normalize_persisted_workflow_step_records(
         if {"step_id", "step_index", "step_status", "started_at"}.issubset(raw_step):
             normalized_step = dict(raw_step)
             normalized_step.setdefault("failure_message", None)
+            normalized_step.setdefault("attempt_count", 1)
+            normalized_step.setdefault("retried", False)
             normalized_steps.append(normalized_step)
             continue
 
@@ -109,6 +112,8 @@ def _normalize_persisted_workflow_step_records(
                 "step_id": f"step_{index}",
                 "step_index": index,
                 "step_status": execution_status,
+                "attempt_count": 1,
+                "retried": False,
                 "started_at": started_at,
                 "completed_at": completed_at,
                 "question": raw_step.get("question", run.get("question", "")),
@@ -138,6 +143,8 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
         normalized_run.get("recommended_recovery_action")
         or _derive_recommended_recovery_action(normalized_run)
     )
+    normalized_run["retry_count"] = _backfill_retry_count(normalized_run)
+    normalized_run["retried_step_indices"] = _backfill_retried_step_indices(normalized_run)
     normalized_run["workflow_planning_mode"] = (
         normalized_run.get("workflow_planning_mode")
         or _extract_workflow_planning_mode_from_trace(normalized_run.get("workflow_trace", []))
@@ -450,6 +457,32 @@ def _coerce_non_negative_int(value: object) -> int:
     return value if isinstance(value, int) and value >= 0 else 0
 
 
+def _step_attempt_count(step: dict) -> int:
+    value = step.get("attempt_count")
+    return value if isinstance(value, int) and value > 0 else 1
+
+
+def _backfill_retry_count(run: dict) -> int:
+    existing = run.get("retry_count")
+    if isinstance(existing, int) and existing >= 0:
+        return existing
+    return sum(max(0, _step_attempt_count(step) - 1) for step in _tool_chain_step_records(run))
+
+
+def _backfill_retried_step_indices(run: dict) -> list[int]:
+    existing = run.get("retried_step_indices")
+    if isinstance(existing, list):
+        return [value for value in existing if isinstance(value, int) and value > 0]
+
+    retried_steps: list[int] = []
+    for step in _tool_chain_step_records(run):
+        if _step_attempt_count(step) > 1:
+            step_index = step.get("step_index")
+            if isinstance(step_index, int) and step_index > 0:
+                retried_steps.append(step_index)
+    return retried_steps
+
+
 def _elapsed_ms(started_at: float) -> int:
     return max(0, round((time.perf_counter() - started_at) * 1000))
 
@@ -466,6 +499,8 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "outcome_category",
         "is_recoverable",
         "recommended_recovery_action",
+        "retry_count",
+        "retried_step_indices",
         "workflow_planning_mode",
         "tool_planning_mode",
         "tool_planning_modes",
@@ -577,6 +612,12 @@ def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowRes
     response.outcome_category = _derive_outcome_category(response)
     response.is_recoverable = _derive_is_recoverable(response)
     response.recommended_recovery_action = _derive_recommended_recovery_action(response)
+    response.retry_count = sum(
+        max(0, getattr(step, "attempt_count", 1) - 1) for step in response.tool_chain
+    )
+    response.retried_step_indices = [
+        step.step_index for step in response.tool_chain if getattr(step, "attempt_count", 1) > 1
+    ]
     response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
     response.tool_planning_modes = _extract_tool_planning_modes(response)
     response.tool_planning_mode = _extract_tool_planning_mode(response)
@@ -796,6 +837,8 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 fallback_planner_layers=run.fallback_planner_layers,
                 llm_tool_planner_steps=run.llm_tool_planner_steps,
                 fallback_tool_planner_steps=run.fallback_tool_planner_steps,
+                retry_count=run.retry_count,
+                retried_step_indices=run.retried_step_indices,
                 step_count=run.step_count,
                 route_type=run.route.route_type,
                 route_reason=run.route.route_reason,
@@ -1143,11 +1186,14 @@ def _build_workflow_step_record(
     tool_execution: dict,
     started_at: str,
     completed_at: str,
+    attempt_count: int = 1,
 ) -> dict:
     return {
         "step_id": f"step_{step_index}",
         "step_index": step_index,
         "step_status": tool_execution.get("execution_status", "completed"),
+        "attempt_count": max(1, attempt_count),
+        "retried": attempt_count > 1,
         "started_at": started_at,
         "completed_at": completed_at,
         "question": step_question,
@@ -1165,11 +1211,14 @@ def _build_failed_workflow_step_record(
     failure_message: str,
     tool_plan: dict | None = None,
     tool_execution: dict | None = None,
+    attempt_count: int = 1,
 ) -> dict:
     return {
         "step_id": f"step_{step_index}",
         "step_index": step_index,
         "step_status": "failed",
+        "attempt_count": max(1, attempt_count),
+        "retried": attempt_count > 1,
         "started_at": started_at,
         "completed_at": completed_at,
         "question": step_question,
@@ -1177,6 +1226,71 @@ def _build_failed_workflow_step_record(
         "tool_execution": tool_execution,
         "failure_message": failure_message,
     }
+
+
+def _tool_execution_detail_prefix(step_index: int | None) -> str:
+    return f"Step {step_index}: " if step_index is not None else ""
+
+
+def _execute_tool_request_with_retry(
+    *,
+    tool_request: ToolExecutionRequest,
+    workflow_trace: list[WorkflowTraceEvent],
+    step_index: int | None = None,
+) -> tuple[dict | None, str | None, str | None, int]:
+    attempt_count = 0
+
+    while attempt_count < MAX_TOOL_EXECUTION_RETRIES + 1:
+        attempt_count += 1
+        try:
+            tool_response = execute_tool_request(tool_request)
+            return tool_response.model_dump(), None, None, attempt_count
+        except ValueError:
+            raise
+        except Exception as exc:
+            failed_at = build_utc_timestamp()
+            failure_message = _format_failure_message(exc)
+            prefix = _tool_execution_detail_prefix(step_index)
+
+            if attempt_count <= MAX_TOOL_EXECUTION_RETRIES:
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="tool_execution",
+                        status="failed",
+                        timestamp=failed_at,
+                        detail=(
+                            f"{prefix}tool execution attempt {attempt_count} failed for "
+                            f"{tool_request.tool_name}:{tool_request.action}: {failure_message}."
+                        ),
+                    )
+                )
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="retry",
+                        status="completed",
+                        timestamp=build_utc_timestamp(),
+                        detail=(
+                            f"{prefix}retrying tool execution after attempt {attempt_count} "
+                            f"failed."
+                        ),
+                    )
+                )
+                continue
+
+            workflow_trace.append(
+                WorkflowTraceEvent(
+                    stage="tool_execution",
+                    status="failed",
+                    timestamp=failed_at,
+                    detail=(
+                        f"{prefix}tool execution failed for {tool_request.tool_name}:{tool_request.action} "
+                        f"after {attempt_count} attempt(s): {failure_message}."
+                    ),
+                )
+            )
+            return None, failed_at, failure_message, attempt_count
+
+    return None, None, "unreachable_retry_state", attempt_count
 
 
 def _normalize_confirmation(value: str) -> bool:
@@ -1667,31 +1781,17 @@ def orchestrate_agent_request(
                         ),
                     )
                 )
-                try:
-                    tool_response = execute_tool_request(
-                        ToolExecutionRequest(
-                            tool_name=tool_plan.tool_name,
-                            action=tool_plan.action,
-                            target=tool_plan.target,
-                            arguments=tool_plan.arguments,
-                        )
-                    )
-                except ValueError:
-                    raise
-                except Exception as exc:
-                    failed_at = build_utc_timestamp()
-                    failure_message = _format_failure_message(exc)
-                    workflow_trace.append(
-                        WorkflowTraceEvent(
-                            stage="tool_execution",
-                            status="failed",
-                            timestamp=failed_at,
-                            detail=(
-                                f"Step {step_index}: tool execution failed for "
-                                f"{tool_plan.tool_name}:{tool_plan.action}: {failure_message}."
-                            ),
-                        )
-                    )
+                tool_response, failed_at, failure_message, attempt_count = _execute_tool_request_with_retry(
+                    tool_request=ToolExecutionRequest(
+                        tool_name=tool_plan.tool_name,
+                        action=tool_plan.action,
+                        target=tool_plan.target,
+                        arguments=tool_plan.arguments,
+                    ),
+                    workflow_trace=workflow_trace,
+                    step_index=step_index,
+                )
+                if tool_response is None:
                     chained_steps.append(
                         _build_failed_workflow_step_record(
                             step_index=step_index,
@@ -1700,6 +1800,7 @@ def orchestrate_agent_request(
                             completed_at=failed_at,
                             failure_message=failure_message,
                             tool_plan=tool_plan.model_dump(),
+                            attempt_count=attempt_count,
                         )
                     )
                     response = _build_failed_workflow_response(
@@ -1727,9 +1828,10 @@ def orchestrate_agent_request(
                         status="completed",
                         timestamp=step_completed_at,
                         detail=(
-                            f"Step {step_index}: executed {tool_response.execution_mode} tool "
-                            f"{tool_response.tool_name}:{tool_response.action} "
-                            f"with status {tool_response.execution_status}."
+                            f"Step {step_index}: executed {tool_response['execution_mode']} tool "
+                            f"{tool_response['tool_name']}:{tool_response['action']} "
+                            f"with status {tool_response['execution_status']}"
+                            + (f" after {attempt_count} attempt(s)." if attempt_count > 1 else ".")
                         ),
                     )
                 )
@@ -1738,16 +1840,17 @@ def orchestrate_agent_request(
                         step_index=step_index,
                         step_question=step_question,
                         tool_plan=tool_plan.model_dump(),
-                        tool_execution=tool_response.model_dump(),
+                        tool_execution=tool_response,
                         started_at=step_started_at,
                         completed_at=step_completed_at,
+                        attempt_count=attempt_count,
                     )
                 )
 
                 if (
                     step_index == 1
-                    and tool_response.tool_name == "document_search"
-                    and tool_response.output.get("matched_count") == "0"
+                    and tool_response["tool_name"] == "document_search"
+                    and tool_response["output"].get("matched_count") == "0"
                 ):
                     if execution_confirmed:
                         workflow_trace.append(
@@ -1792,7 +1895,7 @@ def orchestrate_agent_request(
                         ),
                         clarification_plan=clarification_plan.model_dump(),
                         tool_plan=tool_plan.model_dump(),
-                        tool_execution=tool_response.model_dump(),
+                        tool_execution=tool_response,
                         step_count=len(chained_steps),
                         tool_chain=chained_steps,
                         workflow_planning_latency_ms=workflow_planning_latency_ms,
@@ -1807,8 +1910,8 @@ def orchestrate_agent_request(
                     )
                     return _persist_workflow_response(response) if persist_run else response
 
-                if step_index == 1 and tool_response.tool_name == "document_search":
-                    prior_search_context = _build_search_context_arguments(tool_response.output)
+                if step_index == 1 and tool_response["tool_name"] == "document_search":
+                    prior_search_context = _build_search_context_arguments(tool_response["output"])
 
             final_step = chained_steps[-1]
             response = AgentWorkflowResponse(
@@ -1915,31 +2018,17 @@ def orchestrate_agent_request(
                         ),
                     )
                 )
-                try:
-                    tool_response = execute_tool_request(
-                        ToolExecutionRequest(
-                            tool_name=tool_plan.tool_name,
-                            action=tool_plan.action,
-                            target=tool_plan.target,
-                            arguments=tool_plan.arguments,
-                        )
-                    )
-                except ValueError:
-                    raise
-                except Exception as exc:
-                    failed_at = build_utc_timestamp()
-                    failure_message = _format_failure_message(exc)
-                    workflow_trace.append(
-                        WorkflowTraceEvent(
-                            stage="tool_execution",
-                            status="failed",
-                            timestamp=failed_at,
-                            detail=(
-                                f"Step {step_index}: tool execution failed for "
-                                f"{tool_plan.tool_name}:{tool_plan.action}: {failure_message}."
-                            ),
-                        )
-                    )
+                tool_response, failed_at, failure_message, attempt_count = _execute_tool_request_with_retry(
+                    tool_request=ToolExecutionRequest(
+                        tool_name=tool_plan.tool_name,
+                        action=tool_plan.action,
+                        target=tool_plan.target,
+                        arguments=tool_plan.arguments,
+                    ),
+                    workflow_trace=workflow_trace,
+                    step_index=step_index,
+                )
+                if tool_response is None:
                     chained_steps.append(
                         _build_failed_workflow_step_record(
                             step_index=step_index,
@@ -1948,6 +2037,7 @@ def orchestrate_agent_request(
                             completed_at=failed_at,
                             failure_message=failure_message,
                             tool_plan=tool_plan.model_dump(),
+                            attempt_count=attempt_count,
                         )
                     )
                     response = _build_failed_workflow_response(
@@ -1975,9 +2065,10 @@ def orchestrate_agent_request(
                         status="completed",
                         timestamp=step_completed_at,
                         detail=(
-                            f"Step {step_index}: executed {tool_response.execution_mode} tool "
-                            f"{tool_response.tool_name}:{tool_response.action} "
-                            f"with status {tool_response.execution_status}."
+                            f"Step {step_index}: executed {tool_response['execution_mode']} tool "
+                            f"{tool_response['tool_name']}:{tool_response['action']} "
+                            f"with status {tool_response['execution_status']}"
+                            + (f" after {attempt_count} attempt(s)." if attempt_count > 1 else ".")
                         ),
                     )
                 )
@@ -1986,14 +2077,15 @@ def orchestrate_agent_request(
                         step_index=step_index,
                         step_question=step_question,
                         tool_plan=tool_plan.model_dump(),
-                        tool_execution=tool_response.model_dump(),
+                        tool_execution=tool_response,
                         started_at=step_started_at,
                         completed_at=step_completed_at,
+                        attempt_count=attempt_count,
                     )
                 )
 
-                if step_index == 1 and tool_response.tool_name == "system_status":
-                    prior_status_context = _build_status_context_arguments(tool_response.output)
+                if step_index == 1 and tool_response["tool_name"] == "system_status":
+                    prior_status_context = _build_status_context_arguments(tool_response["output"])
 
             final_step = chained_steps[-1]
             response = AgentWorkflowResponse(
@@ -2083,31 +2175,17 @@ def orchestrate_agent_request(
                     ),
                 )
             )
-            try:
-                tool_response = execute_tool_request(
-                    ToolExecutionRequest(
-                        tool_name=tool_plan.tool_name,
-                        action=tool_plan.action,
-                        target=tool_plan.target,
-                        arguments=tool_plan.arguments,
-                    )
-                )
-            except ValueError:
-                raise
-            except Exception as exc:
-                failed_at = build_utc_timestamp()
-                failure_message = _format_failure_message(exc)
-                workflow_trace.append(
-                    WorkflowTraceEvent(
-                        stage="tool_execution",
-                        status="failed",
-                        timestamp=failed_at,
-                        detail=(
-                            f"Tool execution failed for {tool_plan.tool_name}:{tool_plan.action}: "
-                            f"{failure_message}."
-                        ),
-                    )
-                )
+            tool_response, failed_at, failure_message, attempt_count = _execute_tool_request_with_retry(
+                tool_request=ToolExecutionRequest(
+                    tool_name=tool_plan.tool_name,
+                    action=tool_plan.action,
+                    target=tool_plan.target,
+                    arguments=tool_plan.arguments,
+                ),
+                workflow_trace=workflow_trace,
+                step_index=1,
+            )
+            if tool_response is None:
                 chained_steps.append(
                     _build_failed_workflow_step_record(
                         step_index=1,
@@ -2116,6 +2194,7 @@ def orchestrate_agent_request(
                         completed_at=failed_at,
                         failure_message=failure_message,
                         tool_plan=tool_plan.model_dump(),
+                        attempt_count=attempt_count,
                     )
                 )
                 response = _build_failed_workflow_response(
@@ -2143,9 +2222,10 @@ def orchestrate_agent_request(
                     status="completed",
                     timestamp=step_completed_at,
                     detail=(
-                        f"Executed {tool_response.execution_mode} tool "
-                        f"{tool_response.tool_name}:{tool_response.action} "
-                        f"with status {tool_response.execution_status}."
+                        f"Executed {tool_response['execution_mode']} tool "
+                        f"{tool_response['tool_name']}:{tool_response['action']} "
+                        f"with status {tool_response['execution_status']}"
+                        + (f" after {attempt_count} attempt(s)." if attempt_count > 1 else ".")
                     ),
                 )
             )
@@ -2154,13 +2234,14 @@ def orchestrate_agent_request(
                     step_index=1,
                     step_question=search_question,
                     tool_plan=tool_plan.model_dump(),
-                    tool_execution=tool_response.model_dump(),
+                    tool_execution=tool_response,
                     started_at=step_started_at,
                     completed_at=step_completed_at,
+                    attempt_count=attempt_count,
                 )
             )
 
-            if tool_response.output.get("matched_count") == "0":
+            if tool_response["output"].get("matched_count") == "0":
                 clarification_planner_started_at = time.perf_counter()
                 clarification_plan = plan_search_summary_miss_clarification(tool_plan.target)
                 clarification_planning_latency_ms += _elapsed_ms(clarification_planner_started_at)
@@ -2187,7 +2268,7 @@ def orchestrate_agent_request(
                     ),
                     clarification_plan=clarification_plan.model_dump(),
                     tool_plan=tool_plan.model_dump(),
-                    tool_execution=tool_response.model_dump(),
+                    tool_execution=tool_response,
                     step_count=len(chained_steps),
                     tool_chain=chained_steps,
                     workflow_planning_latency_ms=workflow_planning_latency_ms,
@@ -2203,7 +2284,7 @@ def orchestrate_agent_request(
                 return _persist_workflow_response(response) if persist_run else response
 
             try:
-                summary_answer = _build_search_summary(tool_response.output)
+                summary_answer = _build_search_summary(tool_response["output"])
             except Exception as exc:
                 failed_at = build_utc_timestamp()
                 failure_message = _format_failure_message(exc)
@@ -2227,7 +2308,7 @@ def orchestrate_agent_request(
                     failure_message=failure_message,
                     step_count=len(chained_steps),
                     tool_plan=tool_plan.model_dump(),
-                    tool_execution=tool_response.model_dump(),
+                    tool_execution=tool_response,
                     tool_chain=chained_steps,
                     workflow_planning_latency_ms=workflow_planning_latency_ms,
                     tool_planning_latency_ms=tool_planning_latency_ms,
@@ -2260,7 +2341,7 @@ def orchestrate_agent_request(
                 chat_provider="local",
                 chat_model="local-heuristic-summary",
                 tool_plan=tool_plan.model_dump(),
-                tool_execution=tool_response.model_dump(),
+                tool_execution=tool_response,
                 step_count=len(chained_steps),
                 tool_chain=chained_steps,
                 workflow_planning_latency_ms=workflow_planning_latency_ms,
@@ -2334,31 +2415,17 @@ def orchestrate_agent_request(
                     ),
                 )
             )
-            try:
-                tool_response = execute_tool_request(
-                    ToolExecutionRequest(
-                        tool_name=tool_plan.tool_name,
-                        action=tool_plan.action,
-                        target=tool_plan.target,
-                        arguments=tool_plan.arguments,
-                    )
-                )
-            except ValueError:
-                raise
-            except Exception as exc:
-                failed_at = build_utc_timestamp()
-                failure_message = _format_failure_message(exc)
-                workflow_trace.append(
-                    WorkflowTraceEvent(
-                        stage="tool_execution",
-                        status="failed",
-                        timestamp=failed_at,
-                        detail=(
-                            f"Tool execution failed for {tool_plan.tool_name}:{tool_plan.action}: "
-                            f"{failure_message}."
-                        ),
-                    )
-                )
+            tool_response, failed_at, failure_message, attempt_count = _execute_tool_request_with_retry(
+                tool_request=ToolExecutionRequest(
+                    tool_name=tool_plan.tool_name,
+                    action=tool_plan.action,
+                    target=tool_plan.target,
+                    arguments=tool_plan.arguments,
+                ),
+                workflow_trace=workflow_trace,
+                step_index=1,
+            )
+            if tool_response is None:
                 chained_steps.append(
                     _build_failed_workflow_step_record(
                         step_index=1,
@@ -2367,6 +2434,7 @@ def orchestrate_agent_request(
                         completed_at=failed_at,
                         failure_message=failure_message,
                         tool_plan=tool_plan.model_dump(),
+                        attempt_count=attempt_count,
                     )
                 )
                 response = _build_failed_workflow_response(
@@ -2394,9 +2462,10 @@ def orchestrate_agent_request(
                     status="completed",
                     timestamp=step_completed_at,
                     detail=(
-                        f"Executed {tool_response.execution_mode} tool "
-                        f"{tool_response.tool_name}:{tool_response.action} "
-                        f"with status {tool_response.execution_status}."
+                        f"Executed {tool_response['execution_mode']} tool "
+                        f"{tool_response['tool_name']}:{tool_response['action']} "
+                        f"with status {tool_response['execution_status']}"
+                        + (f" after {attempt_count} attempt(s)." if attempt_count > 1 else ".")
                     ),
                 )
             )
@@ -2405,14 +2474,15 @@ def orchestrate_agent_request(
                     step_index=1,
                     step_question=status_question,
                     tool_plan=tool_plan.model_dump(),
-                    tool_execution=tool_response.model_dump(),
+                    tool_execution=tool_response,
                     started_at=step_started_at,
                     completed_at=step_completed_at,
+                    attempt_count=attempt_count,
                 )
             )
 
             try:
-                summary_answer = _build_status_summary(tool_response.output)
+                summary_answer = _build_status_summary(tool_response["output"])
             except Exception as exc:
                 failed_at = build_utc_timestamp()
                 failure_message = _format_failure_message(exc)
@@ -2436,7 +2506,7 @@ def orchestrate_agent_request(
                     failure_message=failure_message,
                     step_count=len(chained_steps),
                     tool_plan=tool_plan.model_dump(),
-                    tool_execution=tool_response.model_dump(),
+                    tool_execution=tool_response,
                     tool_chain=chained_steps,
                     workflow_planning_latency_ms=workflow_planning_latency_ms,
                     tool_planning_latency_ms=tool_planning_latency_ms,
@@ -2469,7 +2539,7 @@ def orchestrate_agent_request(
                 chat_provider="local",
                 chat_model="local-heuristic-summary",
                 tool_plan=tool_plan.model_dump(),
-                tool_execution=tool_response.model_dump(),
+                tool_execution=tool_response,
                 step_count=len(chained_steps),
                 tool_chain=chained_steps,
                 workflow_planning_latency_ms=workflow_planning_latency_ms,
@@ -2578,31 +2648,17 @@ def orchestrate_agent_request(
                 last_updated_at=clarification_timestamp,
             )
             return _persist_workflow_response(response) if persist_run else response
-        try:
-            tool_response = execute_tool_request(
-                ToolExecutionRequest(
-                    tool_name=tool_plan.tool_name,
-                    action=tool_plan.action,
-                    target=tool_plan.target,
-                    arguments=tool_plan.arguments,
-                )
-            )
-        except ValueError:
-            raise
-        except Exception as exc:
-            failed_at = build_utc_timestamp()
-            failure_message = _format_failure_message(exc)
-            workflow_trace.append(
-                WorkflowTraceEvent(
-                    stage="tool_execution",
-                    status="failed",
-                    timestamp=failed_at,
-                    detail=(
-                        f"Tool execution failed for {tool_plan.tool_name}:{tool_plan.action}: "
-                        f"{failure_message}."
-                    ),
-                )
-            )
+        tool_response, failed_at, failure_message, attempt_count = _execute_tool_request_with_retry(
+            tool_request=ToolExecutionRequest(
+                tool_name=tool_plan.tool_name,
+                action=tool_plan.action,
+                target=tool_plan.target,
+                arguments=tool_plan.arguments,
+            ),
+            workflow_trace=workflow_trace,
+            step_index=1,
+        )
+        if tool_response is None:
             failed_step = _build_failed_workflow_step_record(
                 step_index=1,
                 step_question=question,
@@ -2610,6 +2666,7 @@ def orchestrate_agent_request(
                 completed_at=failed_at,
                 failure_message=failure_message,
                 tool_plan=tool_plan.model_dump(),
+                attempt_count=attempt_count,
             )
             response = _build_failed_workflow_response(
                 question=question,
@@ -2636,9 +2693,10 @@ def orchestrate_agent_request(
                 status="completed",
                 timestamp=step_completed_at,
                 detail=(
-                    f"Executed {tool_response.execution_mode} tool "
-                    f"{tool_response.tool_name}:{tool_response.action} "
-                    f"with status {tool_response.execution_status}."
+                    f"Executed {tool_response['execution_mode']} tool "
+                    f"{tool_response['tool_name']}:{tool_response['action']} "
+                    f"with status {tool_response['execution_status']}"
+                    + (f" after {attempt_count} attempt(s)." if attempt_count > 1 else ".")
                 ),
             )
         )
@@ -2650,15 +2708,16 @@ def orchestrate_agent_request(
             workflow_trace=workflow_trace,
             filename=filename,
             tool_plan=tool_plan.model_dump(),
-            tool_execution=tool_response.model_dump(),
+            tool_execution=tool_response,
             tool_chain=[
                 _build_workflow_step_record(
                     step_index=1,
                     step_question=question,
                     tool_plan=tool_plan.model_dump(),
-                    tool_execution=tool_response.model_dump(),
+                    tool_execution=tool_response,
                     started_at=step_started_at,
                     completed_at=step_completed_at,
+                    attempt_count=attempt_count,
                 )
             ],
             workflow_planning_latency_ms=workflow_planning_latency_ms,

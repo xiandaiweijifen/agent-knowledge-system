@@ -4,6 +4,7 @@ from typing import Any
 
 import httpx
 
+from app.core.config import DATA_ROOT
 from app.core.config import settings
 from app.services.llm.planner_cache_service import (
     get_cached_planner_result,
@@ -17,7 +18,7 @@ GEMINI_GENERATE_CONTENT_URL_TEMPLATE = (
     "https://generativelanguage.googleapis.com/v1beta/"
     "models/{model_name}:generateContent"
 )
-WORKFLOW_PLANNER_DEBUG_PATH = Path("../data/tool_state/.tmp/workflow_planner_debug.json")
+WORKFLOW_PLANNER_DEBUG_PATH = DATA_ROOT / "tool_state" / ".tmp" / "workflow_planner_debug.json"
 
 
 def _resolve_openai_workflow_planner_model() -> str:

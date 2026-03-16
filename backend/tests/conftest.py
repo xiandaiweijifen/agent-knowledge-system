@@ -5,9 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from app.core.config import settings
-from app.services.llm.planner_cache_service import clear_planner_cache
-
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TEST_TMP_ROOT = BACKEND_DIR / "tests" / "_tmp"
 SESSION_TMP_ROOT = TEST_TMP_ROOT / f"session_{uuid.uuid4().hex}"
@@ -15,6 +12,9 @@ TOOL_STATE_DIR = BACKEND_DIR.parent / "data" / "tool_state"
 
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
+
+from app.core.config import settings
+from app.services.llm.planner_cache_service import clear_planner_cache
 
 
 def _handle_remove_readonly(func, path, exc_info):

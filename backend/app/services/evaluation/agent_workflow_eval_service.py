@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from app.core.config import DATA_ROOT
 from app.schemas.evaluation import (
     AgentWorkflowEvalCase,
     AgentWorkflowEvalCaseResult,
@@ -13,7 +14,7 @@ from app.services.agent.orchestrator_service import (
     resume_agent_request,
 )
 
-EVAL_DATA_DIR = Path("../data/eval")
+EVAL_DATA_DIR = DATA_ROOT / "eval"
 
 
 def load_agent_workflow_eval_cases(dataset_path: Path) -> list[AgentWorkflowEvalCase]:

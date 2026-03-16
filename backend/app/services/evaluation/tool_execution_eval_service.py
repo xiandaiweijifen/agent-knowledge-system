@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from app.core.config import DATA_ROOT
 from app.schemas.evaluation import (
     ToolExecutionEvalCase,
     ToolExecutionEvalCaseResult,
@@ -11,7 +12,7 @@ from app.schemas.evaluation_api import ToolExecutionEvalDatasetInfo
 from app.schemas.tools import ToolExecutionRequest
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
 
-EVAL_DATA_DIR = Path("../data/eval")
+EVAL_DATA_DIR = DATA_ROOT / "eval"
 
 
 def load_tool_execution_eval_cases(dataset_path: Path) -> list[ToolExecutionEvalCase]:

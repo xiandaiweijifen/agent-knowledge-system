@@ -5,6 +5,7 @@ import unicodedata
 from pathlib import Path
 from typing import Any
 
+from app.core.config import DATA_ROOT
 from app.core.config import settings
 from app.schemas.tools import (
     InferredToolRequest,
@@ -91,7 +92,7 @@ TICKET_LIST_TARGET_PATTERN = re.compile(
     r"\blist\b.+?\btickets?\b\s+for\s+(?P<target>.+)$",
     re.IGNORECASE,
 )
-TICKET_DATA_DIR = Path("../data/tool_state")
+TICKET_DATA_DIR = DATA_ROOT / "tool_state"
 TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
 TOOL_OUTPUT_SCHEMA_VERSION = "tool-output-v1"

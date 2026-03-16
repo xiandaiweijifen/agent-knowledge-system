@@ -37,6 +37,8 @@ class WorkflowStepRecord(BaseModel):
     step_id: str
     step_index: int
     step_status: str
+    attempt_count: int = 1
+    retried: bool = False
     started_at: str
     completed_at: str | None = None
     question: str
@@ -147,6 +149,8 @@ class AgentWorkflowResponse(BaseModel):
     fallback_planner_layers: list[str] = Field(default_factory=list)
     llm_tool_planner_steps: list[int] = Field(default_factory=list)
     fallback_tool_planner_steps: list[int] = Field(default_factory=list)
+    retry_count: int = 0
+    retried_step_indices: list[int] = Field(default_factory=list)
     step_count: int = 0
     route: RouteDecision
     workflow_trace: list[WorkflowTraceEvent] = Field(default_factory=list)
@@ -200,6 +204,8 @@ class AgentWorkflowRunSummary(BaseModel):
     fallback_planner_layers: list[str] = Field(default_factory=list)
     llm_tool_planner_steps: list[int] = Field(default_factory=list)
     fallback_tool_planner_steps: list[int] = Field(default_factory=list)
+    retry_count: int = 0
+    retried_step_indices: list[int] = Field(default_factory=list)
     step_count: int = 0
     route_type: str
     route_reason: str
