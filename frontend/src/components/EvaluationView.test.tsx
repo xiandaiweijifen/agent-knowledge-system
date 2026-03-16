@@ -1,10 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { EvaluationView } from "./EvaluationView";
 
 describe("EvaluationView", () => {
   it("renders overview metrics before detailed evaluation reports", () => {
+    const onExportBundle = vi.fn();
+
     render(
       <EvaluationView
         locale="en"
@@ -115,7 +117,9 @@ describe("EvaluationView", () => {
         filteredEvalCases={[]}
         filteredAgentRouteCases={[]}
         filteredAgentWorkflowCases={[]}
+        exportBusy={false}
         onRefreshDatasets={vi.fn()}
+        onExportBundle={onExportBundle}
         onChangeEvaluationMode={vi.fn()}
         onChangeDatasetName={vi.fn()}
         onChangeEvalTopK={vi.fn()}
@@ -142,5 +146,7 @@ describe("EvaluationView", () => {
     expect(screen.getByText("Recent Evaluation History")).toBeInTheDocument();
     expect(screen.getByText("Workflow Completion")).toBeInTheDocument();
     expect(screen.getByText("Showcase Benchmark")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Export Evaluation Bundle" }));
+    expect(onExportBundle).toHaveBeenCalledTimes(1);
   });
 });

@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.services.evaluation import (
     agent_route_eval_service,
+    export_bundle_service,
     tool_execution_eval_service,
     agent_workflow_eval_service,
     metrics_summary_service,
@@ -453,6 +454,98 @@ def test_evaluation_metrics_summary_endpoint_returns_curated_metrics(monkeypatch
     assert payload["cache_status"] == "cached"
     assert payload["highlights"][0]["label"] == "Workflow Completion"
     assert payload["sections"][0]["dataset_name"] == "agent_workflow_retrieval_eval.json"
+
+
+def test_evaluation_export_bundle_endpoint_returns_showcase_payload(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        export_bundle_service,
+        "get_evaluation_export_bundle",
+        lambda refresh=False: {
+            "generated_at": "2026-03-17T04:00:00+00:00",
+            "overview": {
+                "generated_at": "2026-03-17T03:55:00+00:00",
+                "cache_status": "cached",
+                "retrieval": {
+                    "dataset_count": 4,
+                    "total_cases": 28,
+                    "mean_hit_rate_at_k": 0.76,
+                    "mean_reciprocal_rank": 0.533,
+                    "best_dataset_name": "rag_overview_retrieval_eval.json",
+                    "best_hit_rate_at_k": 1.0,
+                },
+                "workflow": {
+                    "total_run_count": 168,
+                    "completed_run_count": 107,
+                    "clarification_required_run_count": 39,
+                    "failed_run_count": 22,
+                    "completion_rate": 0.637,
+                    "clarification_rate": 0.232,
+                    "failed_rate": 0.131,
+                },
+                "recovery": {
+                    "recovered_run_count": 19,
+                    "recovered_completed_run_count": 19,
+                    "recovery_success_rate": 1.0,
+                    "average_recovery_depth": 1.0,
+                    "resume_from_failed_step_count": 4,
+                    "manual_retrigger_count": 1,
+                    "clarification_recovery_count": 1,
+                },
+            },
+            "metrics_summary": {
+                "generated_at": "2026-03-17T03:55:00+00:00",
+                "cache_status": "cached",
+                "highlights": [
+                    {"label": "Workflow Completion", "value": "63.7%", "detail": "107/168 runs completed."}
+                ],
+                "sections": [
+                    {
+                        "title": "Showcase Retrieval",
+                        "dataset_name": "agent_workflow_retrieval_eval.json",
+                        "metric_name": "hit_rate_at_k",
+                        "metric_value": 1.0,
+                        "formatted_value": "1.000",
+                        "detail": "MRR 0.917 at top-3.",
+                    }
+                ],
+            },
+            "reports": {
+                "retrieval": {
+                    "dataset_name": "agent_workflow_retrieval_eval.json",
+                    "top_k": 3,
+                    "latest_report": {"dataset_name": "agent_workflow_retrieval_eval.json"},
+                    "history": [],
+                },
+                "agent_route": {
+                    "dataset_name": "agent_route_eval.json",
+                    "top_k": None,
+                    "latest_report": {"dataset_name": "agent_route_eval.json"},
+                    "history": [],
+                },
+                "agent_workflow": {
+                    "dataset_name": "agent_workflow_eval.json",
+                    "top_k": None,
+                    "latest_report": {"dataset_name": "agent_workflow_eval.json"},
+                    "history": [],
+                },
+                "tool_execution": {
+                    "dataset_name": "agent_tool_execution_eval.json",
+                    "top_k": None,
+                    "latest_report": {"dataset_name": "agent_tool_execution_eval.json"},
+                    "history": [],
+                },
+            },
+        },
+    )
+
+    response = client.get("/api/evaluation/export-bundle")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["metrics_summary"]["highlights"][0]["label"] == "Workflow Completion"
+    assert payload["reports"]["tool_execution"]["dataset_name"] == "agent_tool_execution_eval.json"
 
 
 def test_latest_retrieval_evaluation_endpoint_returns_saved_report(monkeypatch):

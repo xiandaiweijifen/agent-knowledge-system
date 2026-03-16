@@ -41,7 +41,9 @@ type EvaluationViewProps = {
   filteredEvalCases: EvalReportResponse["report"]["cases"];
   filteredAgentRouteCases: AgentRouteEvalReportResponse["report"]["cases"];
   filteredAgentWorkflowCases: AgentWorkflowEvalReportResponse["report"]["cases"];
+  exportBusy: boolean;
   onRefreshDatasets: () => void;
+  onExportBundle: () => void;
   onChangeEvaluationMode: (mode: EvaluationMode) => void;
   onChangeDatasetName: (datasetName: string) => void;
   onChangeEvalTopK: (value: number) => void;
@@ -71,7 +73,9 @@ export function EvaluationView({
   filteredEvalCases,
   filteredAgentRouteCases,
   filteredAgentWorkflowCases,
+  exportBusy,
   onRefreshDatasets,
+  onExportBundle,
   onChangeEvaluationMode,
   onChangeDatasetName,
   onChangeEvalTopK,
@@ -88,6 +92,8 @@ export function EvaluationView({
           summaryCacheStatus: "摘要缓存",
           benchmarkLabel: "代表性基准",
           benchmarkMetric: "主指标",
+          exportBundle: "导出评估快照",
+          exportingBundle: "导出中...",
           overviewCopy: "汇总当前检索、workflow 与恢复能力的关键指标，便于快速评估系统成熟度。",
           retrievalOverview: "检索概览",
           workflowOverview: "工作流概览",
@@ -183,6 +189,8 @@ export function EvaluationView({
           summaryCacheStatus: "Summary Cache",
           benchmarkLabel: "Showcase Benchmark",
           benchmarkMetric: "Primary Metric",
+          exportBundle: "Export Evaluation Bundle",
+          exportingBundle: "Exporting...",
           overviewCopy:
             "Summarize retrieval, workflow, and recovery health in one place before drilling into individual benchmark suites.",
           retrievalOverview: "Retrieval Overview",
@@ -378,10 +386,15 @@ export function EvaluationView({
             <h2>{copy.metricsSummary}</h2>
             <p className="panel-intro">{copy.metricsSummaryCopy}</p>
           </div>
-          <span className="status-pill">
-            <span>{copy.summaryCacheStatus}</span>
-            <strong>{metricsSummaryCacheStatus}</strong>
-          </span>
+          <div className="button-cluster">
+            <button type="button" className="ghost-button" onClick={onExportBundle} disabled={exportBusy}>
+              {exportBusy ? copy.exportingBundle : copy.exportBundle}
+            </button>
+            <span className="status-pill">
+              <span>{copy.summaryCacheStatus}</span>
+              <strong>{metricsSummaryCacheStatus}</strong>
+            </span>
+          </div>
         </div>
         {evaluationMetricsSummary ? (
           <div className="overview-grid">

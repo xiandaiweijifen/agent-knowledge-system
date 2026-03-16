@@ -10,6 +10,7 @@ import type {
   DocumentPreview,
   EvalDatasetListResponse,
   EvaluationReportHistoryResponse,
+  EvaluationExportBundleResponse,
   EvaluationOverviewResponse,
   EvaluationMetricsSummaryResponse,
   EvalReportResponse,
@@ -309,4 +310,13 @@ export function fetchEvaluationMetricsSummary(refresh = false) {
   }
   const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
   return apiFetch<EvaluationMetricsSummaryResponse>(`/api/evaluation/metrics-summary${suffix}`);
+}
+
+export function fetchEvaluationExportBundle(refresh = false) {
+  const searchParams = new URLSearchParams();
+  if (refresh) {
+    searchParams.set("refresh", "true");
+  }
+  const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
+  return apiFetch<EvaluationExportBundleResponse>(`/api/evaluation/export-bundle${suffix}`);
 }

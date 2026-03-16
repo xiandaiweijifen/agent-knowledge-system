@@ -10,6 +10,7 @@ import {
   fetchDocumentPreview,
   fetchDocuments,
   fetchEvaluationDatasets,
+  fetchEvaluationExportBundle,
   fetchEvaluationMetricsSummary,
   fetchEvaluationHistory,
   fetchEvaluationOverview,
@@ -110,6 +111,7 @@ function App() {
   const [evaluationHistory, setEvaluationHistory] = useState<EvaluationReportHistoryEntry[]>([]);
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
+  const [exportBusy, setExportBusy] = useState(false);
   const [evalCaseFilter, setEvalCaseFilter] = useState<EvalCaseFilter>("all");
   const [latestEvalRevision, setLatestEvalRevision] = useState(0);
 
@@ -700,6 +702,31 @@ function App() {
     }
   }
 
+  async function exportEvaluationBundle() {
+    setExportBusy(true);
+    setEvalError("");
+
+    try {
+      const payload = await fetchEvaluationExportBundle();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      const timestamp = payload.generated_at.replace(/[:.]/g, "-");
+      anchor.href = url;
+      anchor.download = `evaluation_bundle_${timestamp}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      setEvalError(error instanceof Error ? error.message : "Failed to export evaluation bundle");
+    } finally {
+      setExportBusy(false);
+    }
+  }
+
   return (
     <div className="app-shell">
       <header className="hero">
@@ -912,7 +939,9 @@ function App() {
           filteredEvalCases={filteredEvalCases}
           filteredAgentRouteCases={filteredAgentRouteCases}
           filteredAgentWorkflowCases={filteredAgentWorkflowCases}
+          exportBusy={exportBusy}
           onRefreshDatasets={() => void loadEvaluationDatasets(true)}
+          onExportBundle={() => void exportEvaluationBundle()}
           onChangeEvaluationMode={setEvaluationMode}
           onChangeDatasetName={setDatasetName}
           onChangeEvalTopK={setEvalTopK}

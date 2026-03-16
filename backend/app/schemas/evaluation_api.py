@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 from app.schemas.evaluation import (
@@ -47,6 +49,27 @@ class EvaluationMetricsSummaryResponse(BaseModel):
     cache_status: str = "fresh"
     highlights: list[EvaluationMetricHighlight]
     sections: list[EvaluationMetricsSummarySection]
+
+
+class EvaluationExportBundleMode(BaseModel):
+    dataset_name: str
+    top_k: int | None = None
+    latest_report: dict[str, Any] | None = None
+    history: list[EvaluationReportHistoryEntry]
+
+
+class EvaluationExportBundleReports(BaseModel):
+    retrieval: EvaluationExportBundleMode
+    agent_route: EvaluationExportBundleMode
+    agent_workflow: EvaluationExportBundleMode
+    tool_execution: EvaluationExportBundleMode
+
+
+class EvaluationExportBundleResponse(BaseModel):
+    generated_at: str
+    overview: "EvaluationOverviewResponse"
+    metrics_summary: EvaluationMetricsSummaryResponse
+    reports: EvaluationExportBundleReports
 
 
 class RetrievalEvalDatasetInfo(BaseModel):

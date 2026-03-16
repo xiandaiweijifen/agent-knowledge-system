@@ -4,6 +4,7 @@ from app.schemas.evaluation_api import (
     AgentRouteEvalDatasetListResponse,
     AgentRouteEvalRequest,
     AgentRouteEvalResponse,
+    EvaluationExportBundleResponse,
     EvaluationReportHistoryResponse,
     EvaluationMetricsSummaryResponse,
     EvaluationOverviewResponse,
@@ -19,6 +20,7 @@ from app.schemas.evaluation_api import (
 )
 from app.services.evaluation import (
     agent_route_eval_service,
+    export_bundle_service,
     tool_execution_eval_service,
     agent_workflow_eval_service,
     metrics_summary_service,
@@ -38,6 +40,11 @@ def get_evaluation_overview(refresh: bool = False) -> EvaluationOverviewResponse
 @router.get("/evaluation/metrics-summary", response_model=EvaluationMetricsSummaryResponse)
 def get_evaluation_metrics_summary(refresh: bool = False) -> EvaluationMetricsSummaryResponse:
     return metrics_summary_service.get_metrics_summary(refresh=refresh)
+
+
+@router.get("/evaluation/export-bundle", response_model=EvaluationExportBundleResponse)
+def get_evaluation_export_bundle(refresh: bool = False) -> EvaluationExportBundleResponse:
+    return export_bundle_service.get_evaluation_export_bundle(refresh=refresh)
 
 
 @router.get("/evaluation/retrieval/datasets", response_model=RetrievalEvalDatasetListResponse)

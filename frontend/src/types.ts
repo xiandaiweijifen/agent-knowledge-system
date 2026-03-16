@@ -487,5 +487,37 @@ export type EvaluationMetricsSummaryResponse = {
   }>;
 };
 
+export type EvaluationExportBundleResponse = {
+  generated_at: string;
+  overview: EvaluationOverviewResponse;
+  metrics_summary: EvaluationMetricsSummaryResponse;
+  reports: {
+    retrieval: {
+      dataset_name: string;
+      top_k?: number | null;
+      latest_report?: Record<string, unknown> | null;
+      history: EvaluationReportHistoryEntry[];
+    };
+    agent_route: {
+      dataset_name: string;
+      top_k?: number | null;
+      latest_report?: Record<string, unknown> | null;
+      history: EvaluationReportHistoryEntry[];
+    };
+    agent_workflow: {
+      dataset_name: string;
+      top_k?: number | null;
+      latest_report?: Record<string, unknown> | null;
+      history: EvaluationReportHistoryEntry[];
+    };
+    tool_execution: {
+      dataset_name: string;
+      top_k?: number | null;
+      latest_report?: Record<string, unknown> | null;
+      history: EvaluationReportHistoryEntry[];
+    };
+  };
+};
+
 export type EvalCaseFilter = "all" | "hit" | "miss";
 export type EvaluationMode = "retrieval" | "agent-route" | "agent-workflow" | "tool-execution";
