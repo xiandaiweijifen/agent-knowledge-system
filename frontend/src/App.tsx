@@ -2,12 +2,15 @@
 import {
   deleteDocument as deleteDocumentRequest,
   fetchAgentRouteEvaluationDatasets,
+  fetchAgentRouteEvaluationHistory,
   fetchAgentWorkflowEvaluationDatasets,
+  fetchAgentWorkflowEvaluationHistory,
   fetchAgentWorkflowRun,
   fetchAgentWorkflowRuns,
   fetchDocumentPreview,
   fetchDocuments,
   fetchEvaluationDatasets,
+  fetchEvaluationHistory,
   fetchEvaluationOverview,
   fetchLatestAgentRouteEvaluation,
   fetchLatestAgentWorkflowEvaluation,
@@ -41,6 +44,7 @@ import type {
   DocumentPreview,
   EvalCaseFilter,
   EvalDatasetInfo,
+  EvaluationReportHistoryEntry,
   EvaluationOverviewResponse,
   EvaluationMode,
   EvalReportResponse,
@@ -91,6 +95,7 @@ function App() {
   const [agentWorkflowEvalResult, setAgentWorkflowEvalResult] =
     useState<AgentWorkflowEvalReportResponse | null>(null);
   const [evaluationOverview, setEvaluationOverview] = useState<EvaluationOverviewResponse | null>(null);
+  const [evaluationHistory, setEvaluationHistory] = useState<EvaluationReportHistoryEntry[]>([]);
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
   const [evalCaseFilter, setEvalCaseFilter] = useState<EvalCaseFilter>("all");
@@ -487,24 +492,36 @@ function App() {
     async function loadLatestEvaluationReport() {
       try {
         if (evaluationMode === "retrieval") {
-          const payload = await fetchLatestEvaluation(datasetName, evalTopK);
+          const [payload, historyPayload] = await Promise.all([
+            fetchLatestEvaluation(datasetName, evalTopK),
+            fetchEvaluationHistory(datasetName, evalTopK),
+          ]);
           if (!cancelled) {
             setEvalResult(payload);
+            setEvaluationHistory(historyPayload.entries);
           }
           return;
         }
 
         if (evaluationMode === "agent-route") {
-          const payload = await fetchLatestAgentRouteEvaluation(datasetName);
+          const [payload, historyPayload] = await Promise.all([
+            fetchLatestAgentRouteEvaluation(datasetName),
+            fetchAgentRouteEvaluationHistory(datasetName),
+          ]);
           if (!cancelled) {
             setAgentRouteEvalResult(payload);
+            setEvaluationHistory(historyPayload.entries);
           }
           return;
         }
 
-        const payload = await fetchLatestAgentWorkflowEvaluation(datasetName);
+        const [payload, historyPayload] = await Promise.all([
+          fetchLatestAgentWorkflowEvaluation(datasetName),
+          fetchAgentWorkflowEvaluationHistory(datasetName),
+        ]);
         if (!cancelled) {
           setAgentWorkflowEvalResult(payload);
+          setEvaluationHistory(historyPayload.entries);
         }
       } catch {
         if (cancelled) {
@@ -518,6 +535,7 @@ function App() {
         } else {
           setAgentWorkflowEvalResult(null);
         }
+        setEvaluationHistory([]);
       }
     }
 
@@ -837,6 +855,7 @@ function App() {
           evalResult={evalResult}
           agentRouteEvalResult={agentRouteEvalResult}
           agentWorkflowEvalResult={agentWorkflowEvalResult}
+          evaluationHistory={evaluationHistory}
           evalError={evalError}
           evalBusy={evalBusy}
           evalCaseFilter={evalCaseFilter}

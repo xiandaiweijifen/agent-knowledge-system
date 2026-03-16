@@ -437,6 +437,34 @@ def test_latest_retrieval_evaluation_endpoint_returns_saved_report(monkeypatch):
     assert payload["saved_at"] == "2026-03-17T02:00:00+00:00"
 
 
+def test_retrieval_evaluation_history_endpoint_returns_entries(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "list_retrieval_report_history",
+        lambda dataset_name, top_k, limit=5: [
+            {
+                "dataset_name": dataset_name,
+                "saved_at": "2026-03-17T02:00:00+00:00",
+                "report_source": "saved",
+                "top_k": top_k,
+                "primary_metric_name": "hit_rate_at_k",
+                "primary_metric_value": 0.75,
+                "case_count": 8,
+            }
+        ],
+    )
+
+    response = client.get(
+        "/api/evaluation/retrieval/history?dataset_name=rag_overview_retrieval_eval.json&top_k=3",
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["entries"][0]["primary_metric_name"] == "hit_rate_at_k"
+
+
 def test_latest_agent_route_evaluation_endpoint_returns_404_when_missing(monkeypatch):
     client = TestClient(app)
 
@@ -450,6 +478,31 @@ def test_latest_agent_route_evaluation_endpoint_returns_404_when_missing(monkeyp
 
     assert response.status_code == 404
     assert response.json()["detail"] == "evaluation_report_not_found"
+
+
+def test_agent_route_evaluation_history_endpoint_returns_entries(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "list_agent_route_report_history",
+        lambda dataset_name, limit=5: [
+            {
+                "dataset_name": dataset_name,
+                "saved_at": "2026-03-17T02:05:00+00:00",
+                "report_source": "saved",
+                "top_k": None,
+                "primary_metric_name": "route_accuracy",
+                "primary_metric_value": 1.0,
+                "case_count": 23,
+            }
+        ],
+    )
+
+    response = client.get("/api/evaluation/agent-route/history?dataset_name=agent_route_eval.json")
+
+    assert response.status_code == 200
+    assert response.json()["entries"][0]["primary_metric_name"] == "route_accuracy"
 
 
 def test_latest_agent_workflow_evaluation_endpoint_returns_saved_report(monkeypatch):
@@ -480,3 +533,30 @@ def test_latest_agent_workflow_evaluation_endpoint_returns_saved_report(monkeypa
     payload = response.json()
     assert payload["report_source"] == "saved"
     assert payload["saved_at"] == "2026-03-17T02:10:00+00:00"
+
+
+def test_agent_workflow_evaluation_history_endpoint_returns_entries(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "list_agent_workflow_report_history",
+        lambda dataset_name, limit=5: [
+            {
+                "dataset_name": dataset_name,
+                "saved_at": "2026-03-17T02:10:00+00:00",
+                "report_source": "saved",
+                "top_k": None,
+                "primary_metric_name": "workflow_accuracy",
+                "primary_metric_value": 0.9,
+                "case_count": 30,
+            }
+        ],
+    )
+
+    response = client.get(
+        "/api/evaluation/agent-workflow/history?dataset_name=agent_workflow_eval.json",
+    )
+
+    assert response.status_code == 200
+    assert response.json()["entries"][0]["primary_metric_name"] == "workflow_accuracy"

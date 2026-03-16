@@ -13,6 +13,20 @@ class EvaluationReportMetadata(BaseModel):
     report_source: str | None = None
 
 
+class EvaluationReportHistoryEntry(BaseModel):
+    dataset_name: str
+    saved_at: str
+    report_source: str = "saved"
+    top_k: int | None = None
+    primary_metric_name: str
+    primary_metric_value: float
+    case_count: int
+
+
+class EvaluationReportHistoryResponse(BaseModel):
+    entries: list[EvaluationReportHistoryEntry]
+
+
 class RetrievalEvalDatasetInfo(BaseModel):
     dataset_name: str
     case_count: int

@@ -50,6 +50,26 @@ describe("EvaluationView", () => {
         agentWorkflowDatasets={[]}
         datasetName="rag_overview_retrieval_eval.json"
         evalTopK={3}
+        evaluationHistory={[
+          {
+            dataset_name: "rag_overview_retrieval_eval.json",
+            saved_at: "2026-03-17T01:30:00+00:00",
+            report_source: "saved",
+            top_k: 3,
+            primary_metric_name: "hit_rate_at_k",
+            primary_metric_value: 0.875,
+            case_count: 6,
+          },
+          {
+            dataset_name: "rag_overview_retrieval_eval.json",
+            saved_at: "2026-03-16T23:30:00+00:00",
+            report_source: "saved",
+            top_k: 3,
+            primary_metric_name: "hit_rate_at_k",
+            primary_metric_value: 0.75,
+            case_count: 6,
+          },
+        ]}
         evalResult={{
           dataset_name: "rag_overview_retrieval_eval.json",
           saved_at: "2026-03-17T01:30:00+00:00",
@@ -94,5 +114,7 @@ describe("EvaluationView", () => {
     expect(screen.getByText((content) => content.includes("clarification 1"))).toBeInTheDocument();
     expect(screen.getByText("Latest Saved Result")).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("Report Source: Saved"))).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes("Vs Previous: Improved 0.125"))).toBeInTheDocument();
+    expect(screen.getByText("Recent Evaluation History")).toBeInTheDocument();
   });
 });

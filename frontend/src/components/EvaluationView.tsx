@@ -6,6 +6,7 @@ import type {
   AgentWorkflowEvalReportResponse,
   EvalCaseFilter,
   EvalDatasetInfo,
+  EvaluationReportHistoryEntry,
   EvaluationOverviewResponse,
   EvaluationMode,
   EvalReportResponse,
@@ -28,6 +29,7 @@ type EvaluationViewProps = {
   evalResult: EvalReportResponse | null;
   agentRouteEvalResult: AgentRouteEvalReportResponse | null;
   agentWorkflowEvalResult: AgentWorkflowEvalReportResponse | null;
+  evaluationHistory: EvaluationReportHistoryEntry[];
   evalError: string;
   evalBusy: boolean;
   evalCaseFilter: EvalCaseFilter;
@@ -54,6 +56,7 @@ export function EvaluationView({
   evalResult,
   agentRouteEvalResult,
   agentWorkflowEvalResult,
+  evaluationHistory,
   evalError,
   evalBusy,
   evalCaseFilter,
@@ -147,6 +150,11 @@ export function EvaluationView({
           reportSource: "结果来源",
           reportSourceSaved: "本地已保存",
           reportSourceFresh: "刚刚运行",
+          reportHistory: "最近评测历史",
+          previousDelta: "相较上次",
+          improved: "提升",
+          regressed: "下降",
+          unchanged: "持平",
         }
       : {
           workspace: "Evaluation Workspace",
@@ -228,6 +236,11 @@ export function EvaluationView({
           reportSource: "Report Source",
           reportSourceSaved: "Saved",
           reportSourceFresh: "Fresh Run",
+          reportHistory: "Recent Evaluation History",
+          previousDelta: "Vs Previous",
+          improved: "Improved",
+          regressed: "Regressed",
+          unchanged: "Unchanged",
         };
   const visibleDatasets =
     evaluationMode === "retrieval"
@@ -274,6 +287,21 @@ export function EvaluationView({
       ? copy.reportSourceSaved
       : copy.reportSourceFresh
     : null;
+  const previousHistoryEntry =
+    evaluationHistory.length > 1 ? evaluationHistory[1] : null;
+  const latestHistoryEntry = evaluationHistory.length > 0 ? evaluationHistory[0] : null;
+  const historyDelta =
+    latestHistoryEntry && previousHistoryEntry
+      ? latestHistoryEntry.primary_metric_value - previousHistoryEntry.primary_metric_value
+      : null;
+  const historyDeltaLabel =
+    historyDelta === null
+      ? null
+      : historyDelta > 0
+        ? copy.improved
+        : historyDelta < 0
+          ? copy.regressed
+          : copy.unchanged;
 
   return (
     <section className="panel-grid">
@@ -500,6 +528,11 @@ export function EvaluationView({
                   {copy.reportSource}: {activeReportSource}
                 </span>
               ) : null}
+              {historyDelta !== null ? (
+                <span className="meta-pill">
+                  {copy.previousDelta}: {historyDeltaLabel} {historyDelta.toFixed(3)}
+                </span>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -568,6 +601,20 @@ export function EvaluationView({
             {filteredEvalCases.length === 0 && (
               <p className="muted">{copy.noCases}</p>
             )}
+            {evaluationHistory.length > 0 && (
+              <div className="subsection-card">
+                <span className="section-label">{copy.reportHistory}</span>
+                <div className="dataset-list">
+                  {evaluationHistory.map((entry) => (
+                    <article key={`${entry.saved_at}-${entry.primary_metric_name}`} className="dataset-card">
+                      <strong>{new Date(entry.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")}</strong>
+                      <span>{entry.primary_metric_name} {entry.primary_metric_value.toFixed(3)}</span>
+                      <small>{copy.totalCases}: {entry.case_count}</small>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         ) : evaluationMode === "agent-route" && agentRouteEvalResult ? (
           <>
@@ -635,6 +682,20 @@ export function EvaluationView({
             </div>
             {filteredAgentRouteCases.length === 0 && (
               <p className="muted">{copy.noCases}</p>
+            )}
+            {evaluationHistory.length > 0 && (
+              <div className="subsection-card">
+                <span className="section-label">{copy.reportHistory}</span>
+                <div className="dataset-list">
+                  {evaluationHistory.map((entry) => (
+                    <article key={`${entry.saved_at}-${entry.primary_metric_name}`} className="dataset-card">
+                      <strong>{new Date(entry.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")}</strong>
+                      <span>{entry.primary_metric_name} {entry.primary_metric_value.toFixed(3)}</span>
+                      <small>{copy.totalCases}: {entry.case_count}</small>
+                    </article>
+                  ))}
+                </div>
+              </div>
             )}
           </>
         ) : evaluationMode === "agent-workflow" && agentWorkflowEvalResult ? (
@@ -707,6 +768,20 @@ export function EvaluationView({
             </div>
             {filteredAgentWorkflowCases.length === 0 && (
               <p className="muted">{copy.noCases}</p>
+            )}
+            {evaluationHistory.length > 0 && (
+              <div className="subsection-card">
+                <span className="section-label">{copy.reportHistory}</span>
+                <div className="dataset-list">
+                  {evaluationHistory.map((entry) => (
+                    <article key={`${entry.saved_at}-${entry.primary_metric_name}`} className="dataset-card">
+                      <strong>{new Date(entry.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")}</strong>
+                      <span>{entry.primary_metric_name} {entry.primary_metric_value.toFixed(3)}</span>
+                      <small>{copy.totalCases}: {entry.case_count}</small>
+                    </article>
+                  ))}
+                </div>
+              </div>
             )}
           </>
         ) : (

@@ -331,6 +331,20 @@ export type AgentEvalDatasetListResponse = {
   datasets: AgentEvalDatasetInfo[];
 };
 
+export type EvaluationReportHistoryEntry = {
+  dataset_name: string;
+  saved_at: string;
+  report_source: string;
+  top_k?: number | null;
+  primary_metric_name: string;
+  primary_metric_value: number;
+  case_count: number;
+};
+
+export type EvaluationReportHistoryResponse = {
+  entries: EvaluationReportHistoryEntry[];
+};
+
 export type EvalReportResponse = {
   dataset_name: string;
   saved_at?: string | null;

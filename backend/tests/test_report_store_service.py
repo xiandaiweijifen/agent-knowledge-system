@@ -28,6 +28,14 @@ def test_persist_and_load_latest_retrieval_report(workspace_tmp_path, monkeypatc
     assert loaded["report_source"] == "saved"
     assert loaded["report"]["summary"]["total_cases"] == 2
 
+    history = report_store_service.list_retrieval_report_history(
+        dataset_name="rag_overview_retrieval_eval.json",
+        top_k=3,
+    )
+
+    assert len(history) == 1
+    assert history[0]["primary_metric_name"] == "hit_rate_at_k"
+
 
 def test_persist_and_load_latest_agent_route_report(workspace_tmp_path, monkeypatch):
     monkeypatch.setattr(report_store_service, "REPORT_STORE_DIR", workspace_tmp_path)
@@ -48,6 +56,9 @@ def test_persist_and_load_latest_agent_route_report(workspace_tmp_path, monkeypa
     assert loaded is not None
     assert loaded["dataset_name"] == "agent_route_eval.json"
     assert loaded["report_source"] == "saved"
+    assert report_store_service.list_agent_route_report_history("agent_route_eval.json")[0][
+        "primary_metric_name"
+    ] == "route_accuracy"
 
 
 def test_persist_and_load_latest_agent_workflow_report(workspace_tmp_path, monkeypatch):
@@ -69,3 +80,6 @@ def test_persist_and_load_latest_agent_workflow_report(workspace_tmp_path, monke
     assert loaded is not None
     assert loaded["dataset_name"] == "agent_workflow_eval.json"
     assert loaded["report_source"] == "saved"
+    assert report_store_service.list_agent_workflow_report_history("agent_workflow_eval.json")[0][
+        "primary_metric_name"
+    ] == "workflow_accuracy"

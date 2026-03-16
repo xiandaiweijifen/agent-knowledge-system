@@ -4,6 +4,7 @@ from app.schemas.evaluation_api import (
     AgentRouteEvalDatasetListResponse,
     AgentRouteEvalRequest,
     AgentRouteEvalResponse,
+    EvaluationReportHistoryResponse,
     EvaluationOverviewResponse,
     ToolExecutionEvalDatasetListResponse,
     ToolExecutionEvalRequest,
@@ -51,6 +52,21 @@ def get_latest_retrieval_report(dataset_name: str, top_k: int = 3) -> RetrievalE
     return RetrievalEvalResponse.model_validate(payload)
 
 
+@router.get("/evaluation/retrieval/history", response_model=EvaluationReportHistoryResponse)
+def get_retrieval_report_history(
+    dataset_name: str,
+    top_k: int = 3,
+    limit: int = 5,
+) -> EvaluationReportHistoryResponse:
+    return EvaluationReportHistoryResponse(
+        entries=report_store_service.list_retrieval_report_history(
+            dataset_name=dataset_name,
+            top_k=top_k,
+            limit=limit,
+        ),
+    )
+
+
 @router.get("/evaluation/agent-route/datasets", response_model=AgentRouteEvalDatasetListResponse)
 def get_agent_route_datasets() -> AgentRouteEvalDatasetListResponse:
     return AgentRouteEvalDatasetListResponse(
@@ -65,6 +81,16 @@ def get_latest_agent_route_report(dataset_name: str) -> AgentRouteEvalResponse:
         raise HTTPException(status_code=404, detail="evaluation_report_not_found")
 
     return AgentRouteEvalResponse.model_validate(payload)
+
+
+@router.get("/evaluation/agent-route/history", response_model=EvaluationReportHistoryResponse)
+def get_agent_route_report_history(dataset_name: str, limit: int = 5) -> EvaluationReportHistoryResponse:
+    return EvaluationReportHistoryResponse(
+        entries=report_store_service.list_agent_route_report_history(
+            dataset_name=dataset_name,
+            limit=limit,
+        ),
+    )
 
 
 @router.get(
@@ -84,6 +110,16 @@ def get_latest_agent_workflow_report(dataset_name: str) -> AgentWorkflowEvalResp
         raise HTTPException(status_code=404, detail="evaluation_report_not_found")
 
     return AgentWorkflowEvalResponse.model_validate(payload)
+
+
+@router.get("/evaluation/agent-workflow/history", response_model=EvaluationReportHistoryResponse)
+def get_agent_workflow_report_history(dataset_name: str, limit: int = 5) -> EvaluationReportHistoryResponse:
+    return EvaluationReportHistoryResponse(
+        entries=report_store_service.list_agent_workflow_report_history(
+            dataset_name=dataset_name,
+            limit=limit,
+        ),
+    )
 
 
 @router.get(

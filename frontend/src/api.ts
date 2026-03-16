@@ -8,6 +8,7 @@ import type {
   DocumentListResponse,
   DocumentPreview,
   EvalDatasetListResponse,
+  EvaluationReportHistoryResponse,
   EvaluationOverviewResponse,
   EvalReportResponse,
   PersistedChunkDocument,
@@ -183,6 +184,17 @@ export function fetchLatestEvaluation(datasetName: string, topK: number) {
   return apiFetch<EvalReportResponse>(`/api/evaluation/retrieval/latest?${searchParams.toString()}`);
 }
 
+export function fetchEvaluationHistory(datasetName: string, topK: number, limit = 5) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+    top_k: String(topK),
+    limit: String(limit),
+  });
+  return apiFetch<EvaluationReportHistoryResponse>(
+    `/api/evaluation/retrieval/history?${searchParams.toString()}`,
+  );
+}
+
 export function fetchAgentRouteEvaluationDatasets() {
   return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/agent-route/datasets");
 }
@@ -205,6 +217,16 @@ export function fetchLatestAgentRouteEvaluation(datasetName: string) {
   );
 }
 
+export function fetchAgentRouteEvaluationHistory(datasetName: string, limit = 5) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+    limit: String(limit),
+  });
+  return apiFetch<EvaluationReportHistoryResponse>(
+    `/api/evaluation/agent-route/history?${searchParams.toString()}`,
+  );
+}
+
 export function fetchAgentWorkflowEvaluationDatasets() {
   return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/agent-workflow/datasets");
 }
@@ -224,6 +246,16 @@ export function fetchLatestAgentWorkflowEvaluation(datasetName: string) {
   });
   return apiFetch<AgentWorkflowEvalReportResponse>(
     `/api/evaluation/agent-workflow/latest?${searchParams.toString()}`,
+  );
+}
+
+export function fetchAgentWorkflowEvaluationHistory(datasetName: string, limit = 5) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+    limit: String(limit),
+  });
+  return apiFetch<EvaluationReportHistoryResponse>(
+    `/api/evaluation/agent-workflow/history?${searchParams.toString()}`,
   );
 }
 
