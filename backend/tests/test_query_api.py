@@ -2902,6 +2902,75 @@ def test_query_agent_endpoint_retries_single_tool_execution_once_and_recovers(
     assert any(event["stage"] == "retry" for event in payload["workflow_trace"])
 
 
+def test_query_agent_endpoint_supports_debug_fault_injection_for_retry_recovery(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket for the payment service outage",
+            "debug_fault_injection": {
+                "tool_execution_failures": [
+                    {
+                        "tool_name": "ticketing",
+                        "action": "create",
+                        "fail_count": 1,
+                        "message": "debug injected transient failure",
+                    }
+                ]
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
+    assert payload["retry_count"] == 1
+    assert payload["retried_step_indices"] == [1]
+    assert payload["tool_chain"][0]["attempt_count"] == 2
+    assert payload["tool_chain"][0]["retried"] is True
+    assert any(event["stage"] == "fault_injection" for event in payload["workflow_trace"])
+    assert any(event["stage"] == "retry" for event in payload["workflow_trace"])
+
+
+def test_query_agent_endpoint_supports_debug_fault_injection_for_retry_failure():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket for the payment service outage",
+            "debug_fault_injection": {
+                "tool_execution_failures": [
+                    {
+                        "tool_name": "ticketing",
+                        "action": "create",
+                        "fail_count": 2,
+                        "message": "debug injected persistent failure",
+                    }
+                ]
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "failed"
+    assert payload["terminal_reason"] == "tool_execution_failed"
+    assert payload["retry_count"] == 1
+    assert payload["retried_step_indices"] == [1]
+    assert payload["tool_chain"][0]["attempt_count"] == 2
+    assert payload["tool_chain"][0]["retried"] is True
+    assert "debug injected persistent failure" in payload["failure_message"]
+    assert any(event["stage"] == "fault_injection" for event in payload["workflow_trace"])
+    assert any(event["stage"] == "retry" for event in payload["workflow_trace"])
+
+
 def test_resume_agent_endpoint_continues_search_then_summarize_workflow(
     workspace_tmp_path,
     monkeypatch,

@@ -16,6 +16,7 @@ class AgentQueryRequest(BaseModel):
     question: str
     filename: str | None = None
     top_k: int = 3
+    debug_fault_injection: dict[str, object] = Field(default_factory=dict)
 
 
 class AgentResumeRequest(BaseModel):
@@ -24,6 +25,7 @@ class AgentResumeRequest(BaseModel):
     clarification_context: dict[str, str] = Field(default_factory=dict)
     filename: str | None = None
     top_k: int = 3
+    debug_fault_injection: dict[str, object] = Field(default_factory=dict)
 
 
 class WorkflowTraceEvent(BaseModel):

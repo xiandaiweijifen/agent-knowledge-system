@@ -1232,17 +1232,101 @@ def _tool_execution_detail_prefix(step_index: int | None) -> str:
     return f"Step {step_index}: " if step_index is not None else ""
 
 
+def _normalize_debug_fault_injection(
+    debug_fault_injection: dict[str, object] | None,
+) -> dict[str, list[dict[str, object]]]:
+    normalized_rules: list[dict[str, object]] = []
+    raw_rules = (debug_fault_injection or {}).get("tool_execution_failures", [])
+
+    if not isinstance(raw_rules, list):
+        return {"tool_execution_failures": normalized_rules}
+
+    for raw_rule in raw_rules:
+        if not isinstance(raw_rule, dict):
+            continue
+
+        tool_name = str(raw_rule.get("tool_name", "")).strip().lower()
+        action = str(raw_rule.get("action", "")).strip().lower()
+        target = str(raw_rule.get("target", "")).strip()
+        message = str(raw_rule.get("message", "")).strip() or "debug injected tool execution failure"
+        fail_count = raw_rule.get("fail_count", 0)
+
+        if not tool_name or not action:
+            continue
+        if not isinstance(fail_count, int) or fail_count <= 0:
+            continue
+
+        normalized_rules.append(
+            {
+                "tool_name": tool_name,
+                "action": action,
+                "target": target,
+                "message": message,
+                "remaining_failures": fail_count,
+            }
+        )
+
+    return {"tool_execution_failures": normalized_rules}
+
+
+def _consume_injected_tool_execution_failure(
+    tool_request: ToolExecutionRequest,
+    debug_fault_injection: dict[str, list[dict[str, object]]] | None,
+) -> tuple[str | None, int | None]:
+    if not debug_fault_injection:
+        return None, None
+
+    rules = debug_fault_injection.get("tool_execution_failures", [])
+    for rule in rules:
+        if rule.get("tool_name") != tool_request.tool_name:
+            continue
+        if rule.get("action") != tool_request.action:
+            continue
+        target = str(rule.get("target", "")).strip()
+        if target and target != tool_request.target:
+            continue
+
+        remaining_failures = rule.get("remaining_failures", 0)
+        if not isinstance(remaining_failures, int) or remaining_failures <= 0:
+            continue
+
+        rule["remaining_failures"] = remaining_failures - 1
+        return str(rule.get("message", "debug injected tool execution failure")), remaining_failures - 1
+
+    return None, None
+
+
 def _execute_tool_request_with_retry(
     *,
     tool_request: ToolExecutionRequest,
     workflow_trace: list[WorkflowTraceEvent],
     step_index: int | None = None,
+    debug_fault_injection: dict[str, list[dict[str, object]]] | None = None,
 ) -> tuple[dict | None, str | None, str | None, int]:
     attempt_count = 0
 
     while attempt_count < MAX_TOOL_EXECUTION_RETRIES + 1:
         attempt_count += 1
         try:
+            injected_failure_message, remaining_failures = _consume_injected_tool_execution_failure(
+                tool_request,
+                debug_fault_injection,
+            )
+            if injected_failure_message:
+                prefix = _tool_execution_detail_prefix(step_index)
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="fault_injection",
+                        status="completed",
+                        timestamp=build_utc_timestamp(),
+                        detail=(
+                            f"{prefix}injected a debug tool execution failure for "
+                            f"{tool_request.tool_name}:{tool_request.action}. Remaining injected failures: "
+                            f"{remaining_failures}."
+                        ),
+                    )
+                )
+                raise RuntimeError(injected_failure_message)
             tool_response = execute_tool_request(tool_request)
             return tool_response.model_dump(), None, None, attempt_count
         except ValueError:
@@ -1461,6 +1545,7 @@ def resume_agent_request(
     run_id: str | None = None,
     filename: str | None = None,
     top_k: int = 3,
+    debug_fault_injection: dict[str, object] | None = None,
 ) -> AgentWorkflowResponse:
     if not clarification_context:
         raise ValueError("clarification_context_required")
@@ -1527,6 +1612,7 @@ def resume_agent_request(
         top_k=top_k,
         resume_context=clarification_context,
         persist_run=False,
+        debug_fault_injection=debug_fault_injection,
     )
     response.workflow_trace.insert(
         0,
@@ -1562,12 +1648,14 @@ def orchestrate_agent_request(
     top_k: int = 3,
     resume_context: dict[str, str] | None = None,
     persist_run: bool = True,
+    debug_fault_injection: dict[str, object] | None = None,
 ) -> AgentWorkflowResponse:
     """Route and execute the next workflow step for an agent request."""
     workflow_started_at = build_utc_timestamp()
     workflow_planning_latency_ms = 0
     tool_planning_latency_ms = 0
     clarification_planning_latency_ms = 0
+    debug_fault_injection_state = _normalize_debug_fault_injection(debug_fault_injection)
     route = route_request(question=question, filename=filename)
     workflow_trace = [
         WorkflowTraceEvent(
@@ -1790,6 +1878,7 @@ def orchestrate_agent_request(
                     ),
                     workflow_trace=workflow_trace,
                     step_index=step_index,
+                    debug_fault_injection=debug_fault_injection_state,
                 )
                 if tool_response is None:
                     chained_steps.append(
@@ -2027,6 +2116,7 @@ def orchestrate_agent_request(
                     ),
                     workflow_trace=workflow_trace,
                     step_index=step_index,
+                    debug_fault_injection=debug_fault_injection_state,
                 )
                 if tool_response is None:
                     chained_steps.append(
@@ -2184,6 +2274,7 @@ def orchestrate_agent_request(
                 ),
                 workflow_trace=workflow_trace,
                 step_index=1,
+                debug_fault_injection=debug_fault_injection_state,
             )
             if tool_response is None:
                 chained_steps.append(
@@ -2424,6 +2515,7 @@ def orchestrate_agent_request(
                 ),
                 workflow_trace=workflow_trace,
                 step_index=1,
+                debug_fault_injection=debug_fault_injection_state,
             )
             if tool_response is None:
                 chained_steps.append(
@@ -2657,6 +2749,7 @@ def orchestrate_agent_request(
             ),
             workflow_trace=workflow_trace,
             step_index=1,
+            debug_fault_injection=debug_fault_injection_state,
         )
         if tool_response is None:
             failed_step = _build_failed_workflow_step_record(

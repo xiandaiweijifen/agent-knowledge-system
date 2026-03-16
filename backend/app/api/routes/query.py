@@ -65,6 +65,7 @@ def orchestrate_agent_query(request: AgentQueryRequest) -> AgentWorkflowResponse
             question=request.question,
             filename=request.filename,
             top_k=request.top_k,
+            debug_fault_injection=request.debug_fault_injection,
         )
     except FileNotFoundError:
         raise HTTPException(
@@ -84,6 +85,7 @@ def resume_agent_query(request: AgentResumeRequest) -> AgentWorkflowResponse:
             run_id=request.run_id,
             filename=request.filename,
             top_k=request.top_k,
+            debug_fault_injection=request.debug_fault_injection,
         )
     except FileNotFoundError:
         raise HTTPException(
