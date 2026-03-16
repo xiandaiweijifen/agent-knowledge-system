@@ -145,6 +145,16 @@ export function fetchAgentWorkflowRun(runId: string) {
   return apiFetch<AgentWorkflowResponse>(`/api/query/agent/runs/${encodeURIComponent(runId)}`);
 }
 
+export function recoverAgentWorkflowRun(runId: string, recoveryAction?: string) {
+  return apiFetch<AgentWorkflowResponse>("/api/query/agent/recover", {
+    method: "POST",
+    body: JSON.stringify({
+      run_id: runId,
+      recovery_action: recoveryAction ?? null,
+    }),
+  });
+}
+
 export function fetchEvaluationDatasets() {
   return apiFetch<EvalDatasetListResponse>("/api/evaluation/retrieval/datasets");
 }

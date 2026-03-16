@@ -13,6 +13,7 @@ import {
   fetchSystemHealth,
   persistChunks as persistChunksRequest,
   persistEmbeddings as persistEmbeddingsRequest,
+  recoverAgentWorkflowRun as recoverAgentWorkflowRunRequest,
   runAgentRouteEvaluation as runAgentRouteEvaluationRequest,
   runAgentWorkflowEvaluation as runAgentWorkflowEvaluationRequest,
   runAgentQuery as runAgentQueryRequest,
@@ -527,6 +528,21 @@ function App() {
     }
   }
 
+  async function recoverAgentWorkflowRun(runId: string, recoveryAction?: string) {
+    setQueryBusy(true);
+    setQueryError("");
+
+    try {
+      const payload = await recoverAgentWorkflowRunRequest(runId, recoveryAction);
+      setAgentQueryResult(payload);
+      await loadAgentWorkflowRuns();
+    } catch (error) {
+      setQueryError(error instanceof Error ? error.message : "Failed to recover workflow run");
+    } finally {
+      setQueryBusy(false);
+    }
+  }
+
   async function submitEvaluation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setEvalBusy(true);
@@ -730,6 +746,9 @@ function App() {
           onSubmitQuery={submitQuery}
           onRunAgent={() => void runAgentQuery()}
           onLoadAgentWorkflowRun={(runId) => void loadAgentWorkflowRun(runId)}
+          onRecoverAgentWorkflowRun={(runId, recoveryAction) =>
+            void recoverAgentWorkflowRun(runId, recoveryAction)
+          }
           onRunDiagnostics={() => void runDiagnostics()}
         />
       )}

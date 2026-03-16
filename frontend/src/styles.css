@@ -999,7 +999,7 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.84);
-  cursor: pointer;
+  cursor: default;
   transition:
     transform var(--motion-fast),
     background var(--motion-fast),
@@ -1008,7 +1008,6 @@ textarea {
 }
 
 .run-card:hover {
-  transform: translateY(-1px);
   box-shadow: 0 12px 22px rgba(76, 47, 34, 0.07);
 }
 

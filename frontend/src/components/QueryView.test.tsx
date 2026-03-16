@@ -127,6 +127,7 @@ describe("QueryView", () => {
         onSubmitQuery={(event) => event.preventDefault()}
         onRunAgent={vi.fn()}
         onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
     );
@@ -258,6 +259,7 @@ describe("QueryView", () => {
         onSubmitQuery={(event) => event.preventDefault()}
         onRunAgent={vi.fn()}
         onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
     );
@@ -435,6 +437,7 @@ describe("QueryView", () => {
         onSubmitQuery={(event) => event.preventDefault()}
         onRunAgent={vi.fn()}
         onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
     );
@@ -474,6 +477,7 @@ describe("QueryView", () => {
         onSubmitQuery={(event) => event.preventDefault()}
         onRunAgent={vi.fn()}
         onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
     );
@@ -523,13 +527,14 @@ describe("QueryView", () => {
         onSubmitQuery={(event) => event.preventDefault()}
         onRunAgent={vi.fn()}
         onLoadAgentWorkflowRun={onLoadAgentWorkflowRun}
+        onRecoverAgentWorkflowRun={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
     );
 
     expect(screen.getAllByText("Recent Workflow Runs").length).toBeGreaterThan(0);
 
-    await user.click(screen.getByRole("button", { name: /Create a ticket for the payment service outage/i }));
+    await user.click(screen.getByRole("button", { name: "Load Run" }));
 
     expect(onLoadAgentWorkflowRun).toHaveBeenCalledWith("run-2");
   });
@@ -551,6 +556,13 @@ describe("QueryView", () => {
           retry_state: "retry_exhausted",
           recommended_recovery_action: "resume_from_failed_step",
           available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+          recovery_action_details: {
+            resume_from_failed_step: {
+              workflow_kind: "search_then_ticket",
+              target_step_index: 2,
+              reused_step_indices: [1],
+            },
+          },
           resumed_from_step_index: null,
           reused_step_indices: [],
           failure_stage: "tool_execution",
@@ -624,6 +636,7 @@ describe("QueryView", () => {
         onSubmitQuery={(event) => event.preventDefault()}
         onRunAgent={vi.fn()}
         onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
     );
@@ -632,6 +645,72 @@ describe("QueryView", () => {
     expect(screen.getAllByText("Resume From Failed Step (resume_from_failed_step)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Manual Retrigger (manual_retrigger)").length).toBeGreaterThan(0);
     expect(screen.getByText(/Failure:/)).toBeInTheDocument();
+    expect(screen.getByText("Recovery Details")).toBeInTheDocument();
+  });
+
+  it("runs recovery actions for current and recent workflow runs", async () => {
+    const user = userEvent.setup();
+    const onRecoverAgentWorkflowRun = vi.fn();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Create a ticket for the payment service outage"
+        topK={3}
+        activePresetQuestions={["Create a ticket for the payment service outage"]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-current",
+          question: "Create a ticket for the payment service outage",
+          workflow_status: "failed",
+          recommended_recovery_action: "manual_retrigger",
+          available_recovery_actions: ["manual_retrigger"],
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            filename: null,
+          },
+          workflow_trace: [],
+          tool_chain: [],
+        }}
+        agentWorkflowRuns={[
+          {
+            run_id: "run-list",
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "resume_from_failed_step",
+            available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+          },
+        ]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={onRecoverAgentWorkflowRun}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Recover run-current Manual Retrigger" }));
+    await user.click(
+      screen.getByRole("button", { name: "Recover run-list Resume From Failed Step" }),
+    );
+
+    expect(onRecoverAgentWorkflowRun).toHaveBeenNthCalledWith(1, "run-current", "manual_retrigger");
+    expect(onRecoverAgentWorkflowRun).toHaveBeenNthCalledWith(
+      2,
+      "run-list",
+      "resume_from_failed_step",
+    );
   });
 });
 

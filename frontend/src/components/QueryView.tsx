@@ -30,6 +30,7 @@ type QueryViewProps = {
   onSubmitQuery: (event: FormEvent<HTMLFormElement>) => void;
   onRunAgent: () => void;
   onLoadAgentWorkflowRun: (runId: string) => void;
+  onRecoverAgentWorkflowRun: (runId: string, recoveryAction?: string) => void;
   onRunDiagnostics: () => void;
 };
 
@@ -53,6 +54,7 @@ export function QueryView({
   onSubmitQuery,
   onRunAgent,
   onLoadAgentWorkflowRun,
+  onRecoverAgentWorkflowRun,
   onRunDiagnostics,
 }: QueryViewProps) {
   const queryCopy =
@@ -181,6 +183,13 @@ export function QueryView({
           noTicketsMatched: "当前筛选条件下没有工单。",
           toolOutput: "工具输出",
           noActions: "暂无可用恢复入口",
+          recover: "恢复",
+          recovering: "恢复中...",
+          recoverRecommended: "按推荐动作恢复",
+          loadRun: "加载运行记录",
+          clarificationRequired: "该恢复动作需要先补充澄清字段，当前界面暂不支持直接执行。",
+          recoveryDetails: "恢复详情",
+          recoveryAction: "恢复动作",
           clearDiagnostics: "清空诊断",
           runQuery: "运行 Query",
           runDiagnostics: "运行 Diagnostics",
@@ -318,6 +327,14 @@ export function QueryView({
           noTicketsMatched: "No tickets matched the current filter.",
           toolOutput: "Tool Output",
           noActions: "No recovery actions available",
+          recover: "Recover",
+          recovering: "Recovering...",
+          recoverRecommended: "Recover With Recommendation",
+          loadRun: "Load Run",
+          clarificationRequired:
+            "This recovery action requires clarification fields and cannot be executed directly from the current UI.",
+          recoveryDetails: "Recovery Details",
+          recoveryAction: "Recovery Action",
           clearDiagnostics: "Clear Diagnostics",
           runQuery: "Run Query",
           runDiagnostics: "Run Diagnostics",
@@ -357,6 +374,86 @@ export function QueryView({
         {formatRecoveryActionLabel(action)} ({action})
       </span>
     ));
+  }
+
+  function isRecoveryActionExecutable(action: string) {
+    return action !== "resume_with_clarification" && action !== "manual_investigation";
+  }
+
+  function formatRecoveryDetailValue(value: unknown) {
+    if (Array.isArray(value)) {
+      return value.join(", ");
+    }
+    if (typeof value === "boolean") {
+      return value ? queryCopy.yes : queryCopy.no;
+    }
+    if (value === null || value === undefined || value === "") {
+      return queryCopy.none;
+    }
+    return String(value);
+  }
+
+  function renderRecoveryButtons(
+    runId: string | null | undefined,
+    actions: string[] | undefined,
+    recommendedAction: string | null | undefined,
+  ) {
+    if (!runId || !actions || actions.length === 0) {
+      return null;
+    }
+
+    const executableActions = actions.filter(isRecoveryActionExecutable);
+
+    if (executableActions.length === 0) {
+      return <p className="subsection-copy">{queryCopy.clarificationRequired}</p>;
+    }
+
+    return (
+      <div className="button-row">
+        {executableActions.map((action) => (
+          <button
+            key={action}
+            type="button"
+            className={action === recommendedAction ? "primary-button" : "ghost-button"}
+            disabled={queryBusy}
+            aria-label={`${queryCopy.recover} ${runId} ${formatRecoveryActionLabel(action)}`}
+            onClick={() => onRecoverAgentWorkflowRun(runId, action)}
+          >
+            {queryBusy && action === recommendedAction
+              ? queryCopy.recovering
+              : `${queryCopy.recover}: ${formatRecoveryActionLabel(action)}`}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  function renderRecoveryActionDetails(
+    recoveryActionDetails: AgentWorkflowResponse["recovery_action_details"] | undefined,
+  ) {
+    if (!recoveryActionDetails || Object.keys(recoveryActionDetails).length === 0) {
+      return null;
+    }
+
+    return (
+      <article className="subsection-card">
+        <span className="section-label">{queryCopy.recoveryDetails}</span>
+        <div className="tool-output-grid">
+          {Object.entries(recoveryActionDetails).map(([action, details]) => (
+            <div key={action} className="tool-output-card">
+              <span className="trace-label">
+                {queryCopy.recoveryAction}: {formatRecoveryActionLabel(action)}
+              </span>
+              {Object.entries(details).map(([key, value]) => (
+                <strong key={key}>
+                  {key}: {formatRecoveryDetailValue(value)}
+                </strong>
+              ))}
+            </div>
+          ))}
+        </div>
+      </article>
+    );
   }
 
   function renderSupportingContext(
@@ -746,12 +843,19 @@ export function QueryView({
                 <div className="pill-strip">
                   {renderRecoveryActions(agentQueryResult.available_recovery_actions, true)}
                 </div>
+                {renderRecoveryButtons(
+                  agentQueryResult.run_id,
+                  agentQueryResult.available_recovery_actions,
+                  agentQueryResult.recommended_recovery_action,
+                )}
                 {agentQueryResult.failure_message && (
                   <p className="subsection-copy">
                     <strong>{queryCopy.failurePrefix}:</strong> {agentQueryResult.failure_message}
                   </p>
                 )}
               </article>
+
+              {renderRecoveryActionDetails(agentQueryResult.recovery_action_details)}
 
               {agentQueryResult.answer && (
                 <article className="subsection-card">
@@ -915,12 +1019,7 @@ export function QueryView({
           {agentWorkflowRuns.length > 0 ? (
             <div className="run-list">
               {agentWorkflowRuns.map((run) => (
-                <button
-                  key={run.run_id}
-                  type="button"
-                  className="run-card"
-                  onClick={() => onLoadAgentWorkflowRun(run.run_id)}
-                >
+                <article key={run.run_id} className="run-card">
                   <div className="card-title-row">
                     <strong>{run.question}</strong>
                     <span className="status-chip">{run.workflow_status}</span>
@@ -944,7 +1043,22 @@ export function QueryView({
                       {queryCopy.reusedStepsMeta}: {run.reused_step_indices?.join(", ")}
                     </p>
                   )}
-                </button>
+                  <div className="button-row">
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      disabled={queryBusy}
+                      onClick={() => onLoadAgentWorkflowRun(run.run_id)}
+                    >
+                      {queryCopy.loadRun}
+                    </button>
+                  </div>
+                  {renderRecoveryButtons(
+                    run.run_id,
+                    run.available_recovery_actions,
+                    run.recommended_recovery_action,
+                  )}
+                </article>
               ))}
             </div>
           ) : (

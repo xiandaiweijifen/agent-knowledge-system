@@ -167,6 +167,16 @@ export type ToolChainStep = {
   failure_message?: string | null;
 };
 
+export type RecoveryActionDetailValue =
+  | string
+  | number
+  | boolean
+  | null
+  | number[]
+  | string[];
+
+export type RecoveryActionDetails = Record<string, Record<string, RecoveryActionDetailValue>>;
+
 export type AgentWorkflowResponse = {
   run_id?: string | null;
   question: string;
@@ -186,6 +196,7 @@ export type AgentWorkflowResponse = {
   retry_state?: string | null;
   recommended_recovery_action?: string | null;
   available_recovery_actions?: string[];
+  recovery_action_details?: RecoveryActionDetails;
   failure_stage?: string | null;
   failure_message?: string | null;
   started_at?: string | null;
@@ -245,6 +256,7 @@ export type AgentWorkflowRunSummary = {
   retry_state?: string | null;
   recommended_recovery_action?: string | null;
   available_recovery_actions?: string[];
+  recovery_action_details?: RecoveryActionDetails;
   failure_stage?: string | null;
   failure_message?: string | null;
   started_at?: string | null;
