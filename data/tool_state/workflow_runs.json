@@ -7301,5 +7301,112 @@
     },
     "tool_execution": null,
     "tool_chain": []
+  },
+  {
+    "run_id": "80c2df2602904c7797b3b50cf4b45f9f",
+    "question": "Restart payment-service in production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "unsupported_action_clarification",
+    "outcome_category": "clarification_required",
+    "is_recoverable": true,
+    "recommended_recovery_action": "resume_with_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T12:10:14.755533+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-16T12:10:18.483136+00:00",
+    "workflow_planning_mode": null,
+    "tool_planning_mode": "guardrail_ticket_fallback",
+    "tool_planning_modes": [
+      "guardrail_ticket_fallback"
+    ],
+    "clarification_planning_mode": "guardrail_stub",
+    "planner_call_count": 2,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 1858,
+    "tool_planning_latency_ms": 1869,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 3727,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [
+      "tool",
+      "clarification"
+    ],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [
+      1
+    ],
+    "step_count": 0,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:10:14.755599+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:10:18.483089+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:10:18.483136+00:00",
+        "detail": "The request requires an unsupported direct operational action, so the workflow requested clarification before falling back to ticket creation."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing.",
+    "clarification_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_stub",
+      "missing_fields": [
+        "execution_confirmation",
+        "fallback_action"
+      ],
+      "follow_up_questions": [
+        "I cannot directly execute that action for payment-service yet. Do you want me to create a ticket instead?",
+        "If you do not want a ticket, what supported action should I take instead?"
+      ],
+      "clarification_summary": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_ticket_fallback",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "description": "Restart payment-service in production",
+        "service_name": "payment-service",
+        "environment": "production"
+      },
+      "plan_summary": "Fallback to ticketing:create for payment-service because direct operational execution is not supported yet."
+    },
+    "tool_execution": null,
+    "tool_chain": []
   }
 ]

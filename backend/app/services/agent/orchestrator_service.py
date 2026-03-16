@@ -522,8 +522,10 @@ def _extract_tool_planning_mode(response: AgentWorkflowResponse | dict) -> str |
 def _extract_tool_planning_modes(response: AgentWorkflowResponse | dict) -> list[str]:
     if isinstance(response, AgentWorkflowResponse):
         tool_chain = response.tool_chain
+        tool_plan = response.tool_plan
     else:
         tool_chain = response.get("tool_chain")
+        tool_plan = response.get("tool_plan")
     tool_planning_modes: list[str] = []
 
     if isinstance(tool_chain, list):
@@ -536,6 +538,15 @@ def _extract_tool_planning_modes(response: AgentWorkflowResponse | dict) -> list
                 planning_mode = step_tool_plan.get("planning_mode")
                 if isinstance(planning_mode, str) and planning_mode.strip():
                     tool_planning_modes.append(planning_mode.strip())
+
+    if tool_planning_modes:
+        return tool_planning_modes
+
+    if isinstance(tool_plan, dict):
+        planning_mode = tool_plan.get("planning_mode")
+        if isinstance(planning_mode, str) and planning_mode.strip():
+            return [planning_mode.strip()]
+
     return tool_planning_modes
 
 

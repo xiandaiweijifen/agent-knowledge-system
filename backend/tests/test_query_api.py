@@ -2020,6 +2020,13 @@ def test_query_agent_endpoint_clarifies_unsupported_direct_action_instead_of_cre
     assert payload["outcome_category"] == "clarification_required"
     assert payload["is_recoverable"] is True
     assert payload["recommended_recovery_action"] == "resume_with_clarification"
+    assert payload["tool_planning_mode"] == "guardrail_ticket_fallback"
+    assert payload["tool_planning_modes"] == ["guardrail_ticket_fallback"]
+    assert payload["tool_planner_call_count"] == 1
+    assert payload["clarification_planning_mode"] == "guardrail_stub"
+    assert payload["planner_call_count"] == 2
+    assert payload["fallback_planner_layers"] == ["tool", "clarification"]
+    assert payload["fallback_tool_planner_steps"] == [1]
     assert payload["step_count"] == 0
     assert payload["tool_execution"] is None
     assert payload["tool_plan"]["tool_name"] == "ticketing"
