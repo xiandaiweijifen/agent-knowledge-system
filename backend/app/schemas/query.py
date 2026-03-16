@@ -131,6 +131,7 @@ class AgentWorkflowResponse(BaseModel):
     question: str
     resumed_from_question: str | None = None
     source_run_id: str | None = None
+    recovered_via_action: str | None = None
     resume_source_type: str | None = None
     resume_strategy: str | None = None
     resumed_from_step_index: int | None = None
@@ -191,6 +192,7 @@ class AgentWorkflowRunSummary(BaseModel):
     question: str
     resumed_from_question: str | None = None
     source_run_id: str | None = None
+    recovered_via_action: str | None = None
     resume_source_type: str | None = None
     resume_strategy: str | None = None
     resumed_from_step_index: int | None = None

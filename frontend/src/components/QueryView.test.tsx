@@ -663,6 +663,7 @@ describe("QueryView", () => {
           resumed_from_question:
             "Search docs for RAG and create a high severity ticket for payment-service",
           source_run_id: "source-run",
+          recovered_via_action: "resume_from_failed_step",
           resume_source_type: "run_id",
           resume_strategy: "search_then_ticket_failed_step_resume",
           resumed_from_step_index: 2,
@@ -767,6 +768,8 @@ describe("QueryView", () => {
     );
 
     expect(screen.getAllByText("Step 2").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Recovered Via").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Resume From Failed Step").length).toBeGreaterThan(0);
     expect(screen.getByText("search_then_ticket_failed_step_resume")).toBeInTheDocument();
     expect(screen.getByText("source-run")).toBeInTheDocument();
   });

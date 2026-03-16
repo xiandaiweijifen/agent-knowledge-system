@@ -128,6 +128,12 @@ def _normalize_persisted_workflow_step_records(
 
 def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run = dict(run)
+    recovered_via_action = normalized_run.get("recovered_via_action")
+    normalized_run["recovered_via_action"] = (
+        recovered_via_action.strip()
+        if isinstance(recovered_via_action, str) and recovered_via_action.strip()
+        else None
+    )
     normalized_run["tool_chain"] = _normalize_persisted_workflow_step_records(normalized_run)
     resumed_from_step_index = normalized_run.get("resumed_from_step_index")
     normalized_run["resumed_from_step_index"] = (
@@ -708,6 +714,7 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "terminal_reason",
         "outcome_category",
         "is_recoverable",
+        "recovered_via_action",
         "retry_state",
         "recommended_recovery_action",
         "available_recovery_actions",
@@ -1024,6 +1031,7 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 question=run.question,
                 resumed_from_question=run.resumed_from_question,
                 source_run_id=run.source_run_id,
+                recovered_via_action=run.recovered_via_action,
                 resume_source_type=run.resume_source_type,
                 resume_strategy=run.resume_strategy,
                 resumed_from_step_index=run.resumed_from_step_index,
@@ -2113,6 +2121,7 @@ def resume_agent_request(
     filename: str | None = None,
     top_k: int = 3,
     debug_fault_injection: dict[str, object] | None = None,
+    recovered_via_action: str | None = None,
 ) -> AgentWorkflowResponse:
     source_run: AgentWorkflowResponse | None = None
     if run_id and run_id.strip():
@@ -2163,6 +2172,7 @@ def resume_agent_request(
             ),
         )
         response.resume_source_type = resume_source_type
+        response.recovered_via_action = recovered_via_action
         response.resume_strategy = resume_strategy
         response.applied_clarification_fields = applied_clarification_fields
         response.question_rewritten = False
@@ -2259,6 +2269,7 @@ def resume_agent_request(
     )
     response.question = resumed_question
     response.resume_source_type = resume_source_type
+    response.recovered_via_action = recovered_via_action
     response.resume_strategy = resume_strategy
     response.applied_clarification_fields = applied_clarification_fields
     response.question_rewritten = resumed_question != source_question
@@ -2299,6 +2310,7 @@ def recover_agent_request(
             filename=filename if filename is not None else source_run.filename,
             top_k=top_k,
             debug_fault_injection=debug_fault_injection,
+            recovered_via_action=selected_action,
         )
 
     if selected_action in {"manual_retrigger", "retry"}:
@@ -2322,6 +2334,7 @@ def recover_agent_request(
             ),
         )
         response.resume_source_type = "run_id"
+        response.recovered_via_action = selected_action
         response.resume_strategy = (
             "retry_recovery" if selected_action == "retry" else "manual_retrigger_recovery"
         )

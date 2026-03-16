@@ -182,6 +182,7 @@ export type AgentWorkflowResponse = {
   question: string;
   resumed_from_question?: string | null;
   source_run_id?: string | null;
+  recovered_via_action?: string | null;
   resume_source_type?: string | null;
   resume_strategy?: string | null;
   resumed_from_step_index?: number | null;
@@ -242,6 +243,7 @@ export type AgentWorkflowRunSummary = {
   question: string;
   resumed_from_question?: string | null;
   source_run_id?: string | null;
+  recovered_via_action?: string | null;
   resume_source_type?: string | null;
   resume_strategy?: string | null;
   resumed_from_step_index?: number | null;

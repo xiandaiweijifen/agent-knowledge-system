@@ -97,6 +97,7 @@ export function QueryView({
           runId: "Run Id",
           resumedFrom: "恢复来源",
           sourceRun: "源 Run",
+          recoveredVia: "恢复动作",
           resumeType: "恢复类型",
           resumedStep: "恢复步骤",
           notPersisted: "未持久化",
@@ -138,6 +139,7 @@ export function QueryView({
           runMeta: "运行",
           retryMeta: "重试",
           recommendedMeta: "推荐",
+          recoveredViaMeta: "恢复动作",
           resumedFromMeta: "恢复自",
           reusedStepsMeta: "复用步骤",
           noHistory: "还没有工作流历史",
@@ -235,6 +237,7 @@ export function QueryView({
           runId: "Run Id",
           resumedFrom: "Resumed From",
           sourceRun: "Source Run",
+          recoveredVia: "Recovered Via",
           resumeType: "Resume Type",
           resumedStep: "Resumed Step",
           notPersisted: "not persisted",
@@ -279,6 +282,7 @@ export function QueryView({
           runMeta: "run",
           retryMeta: "retry",
           recommendedMeta: "recommended",
+          recoveredViaMeta: "recovered via",
           resumedFromMeta: "resumed from",
           reusedStepsMeta: "reused steps",
           noHistory: "No workflow history yet",
@@ -789,6 +793,14 @@ export function QueryView({
                     <strong>{agentQueryResult.source_run_id ?? queryCopy.notLinked}</strong>
                   </div>
                   <div>
+                    <span className="trace-label">{queryCopy.recoveredVia}</span>
+                    <strong>
+                      {agentQueryResult.recovered_via_action
+                        ? formatRecoveryActionLabel(agentQueryResult.recovered_via_action)
+                        : queryCopy.notResumed}
+                    </strong>
+                  </div>
+                  <div>
                     <span className="trace-label">{queryCopy.resumeType}</span>
                     <strong>{agentQueryResult.resume_strategy ?? queryCopy.notResumed}</strong>
                   </div>
@@ -1034,6 +1046,11 @@ export function QueryView({
                     <span>{queryCopy.retryMeta} {run.retry_state ?? queryCopy.unknown}</span>
                     <span>{queryCopy.recommendedMeta} {run.recommended_recovery_action ?? queryCopy.none}</span>
                   </div>
+                  {run.recovered_via_action && (
+                    <p className="subsection-copy">
+                      {queryCopy.recoveredViaMeta}: {formatRecoveryActionLabel(run.recovered_via_action)}
+                    </p>
+                  )}
                   <div className="pill-strip">
                     {renderRecoveryActions(run.available_recovery_actions, true)}
                   </div>

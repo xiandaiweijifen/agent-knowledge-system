@@ -3954,6 +3954,7 @@ def test_recover_agent_endpoint_uses_recommended_failed_step_resume(
     assert recovered_response.status_code == 200
     recovered_payload = recovered_response.json()
     assert recovered_payload["workflow_status"] == "completed"
+    assert recovered_payload["recovered_via_action"] == "resume_from_failed_step"
     assert recovered_payload["resume_strategy"] == "search_then_ticket_failed_step_resume"
     assert recovered_payload["source_run_id"] == initial_payload["run_id"]
     assert recovered_payload["resume_source_type"] == "run_id"
@@ -4004,6 +4005,7 @@ def test_recover_agent_endpoint_manual_retriggers_single_step_failures(
     assert recovered_response.status_code == 200
     recovered_payload = recovered_response.json()
     assert recovered_payload["workflow_status"] == "completed"
+    assert recovered_payload["recovered_via_action"] == "manual_retrigger"
     assert recovered_payload["resume_strategy"] == "manual_retrigger_recovery"
     assert recovered_payload["source_run_id"] == initial_payload["run_id"]
     assert recovered_payload["resume_source_type"] == "run_id"
