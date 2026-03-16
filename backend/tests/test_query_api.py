@@ -10,7 +10,11 @@ from app.services.agent.tool_service import (
     list_registered_tools,
     plan_tool_request,
 )
-from app.services.llm.workflow_planner_service import _parse_llm_workflow_plan_response
+from app.services.llm.workflow_planner_service import (
+    _extract_gemini_workflow_plan_text,
+    _generate_gemini_workflow_plan,
+    _parse_llm_workflow_plan_response,
+)
 from app.services.agent.clarification_service import (
     plan_clarification,
     plan_search_miss_clarification,
@@ -1516,6 +1520,89 @@ def test_parse_llm_workflow_plan_response_accepts_alias_keys_and_kind_names():
         "search_question": "Look up docs about RAG",
         "follow_up_question": "summarize top 1 results",
     }
+
+
+def test_extract_gemini_workflow_plan_text_collects_nested_candidate_text():
+    payload = {
+        "candidates": [
+            {
+                "content": {
+                    "parts": [
+                        {"text": "Here is the plan:"},
+                        {
+                            "functionCall": {
+                                "name": "ignored",
+                                "args": {"text": "ignore inner args text"},
+                            }
+                        },
+                        {
+                            "text": '{"workflow_kind":"search_then_summarize","search_question":"Look up docs about RAG","follow_up_question":"summarize top 1 results"}'
+                        },
+                    ]
+                }
+            }
+        ]
+    }
+
+    extracted = _extract_gemini_workflow_plan_text(payload)
+
+    assert "workflow_kind" in extracted
+    assert "Look up docs about RAG" in extracted
+
+
+def test_generate_gemini_workflow_plan_captures_debug_payload(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    debug_path = workspace_tmp_path / "workflow_planner_debug.json"
+    monkeypatch.setattr(settings, "workflow_planner_debug_capture", True)
+    monkeypatch.setattr(
+        "app.services.llm.workflow_planner_service.WORKFLOW_PLANNER_DEBUG_PATH",
+        debug_path,
+    )
+    monkeypatch.setattr(settings, "gemini_workflow_planner_model", "gemini-test-model")
+    monkeypatch.setattr(settings, "gemini_api_key", "test-key")
+
+    class _FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": (
+                                        '{"workflow_kind":"search_then_summarize",'
+                                        '"search_question":"Look up docs about RAG",'
+                                        '"follow_up_question":"summarize top 1 results"}'
+                                    )
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(
+        "app.services.llm.workflow_planner_service.httpx.post",
+        lambda *args, **kwargs: _FakeResponse(),
+    )
+
+    payload = _generate_gemini_workflow_plan("Look up docs about RAG, then summarize top 1 results")
+
+    assert payload == {
+        "workflow_kind": "search_then_summarize",
+        "search_question": "Look up docs about RAG",
+        "follow_up_question": "summarize top 1 results",
+    }
+    assert debug_path.exists()
+    debug_payload = json.loads(debug_path.read_text(encoding="utf-8"))
+    assert debug_payload["provider"] == "gemini"
+    assert debug_payload["status"] == "parsed_success"
+    assert "workflow_kind" in debug_payload["raw_text"]
 
 
 def test_plan_clarification_falls_back_when_provider_is_unavailable(monkeypatch):

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     tool_planner_provider: str = "fallback"
     clarification_planner_provider: str = "fallback"
     workflow_planner_provider: str = "fallback"
+    workflow_planner_debug_capture: bool = False
     openai_api_key: str = ""
     openai_chat_model: str = "gpt-4o-mini"
     openai_tool_planner_model: str = ""

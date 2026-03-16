@@ -28,6 +28,7 @@ data/chunks/*
 !data/chunks/.gitkeep
 data/tool_state/.tmp/
 data/tool_state/*.tmp
+data/tool_state/workflow_planner_debug.json
 
 # Python test / cache
 .pytest_cache/

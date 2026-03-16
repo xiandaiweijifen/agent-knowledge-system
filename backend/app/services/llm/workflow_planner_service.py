@@ -1,8 +1,11 @@
 import json
+from pathlib import Path
+from typing import Any
 
 import httpx
 
 from app.core.config import settings
+from app.services.agent.state_store import atomic_write_json
 
 
 OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
@@ -10,6 +13,7 @@ GEMINI_GENERATE_CONTENT_URL_TEMPLATE = (
     "https://generativelanguage.googleapis.com/v1beta/"
     "models/{model_name}:generateContent"
 )
+WORKFLOW_PLANNER_DEBUG_PATH = Path("../data/tool_state/.tmp/workflow_planner_debug.json")
 
 
 def _resolve_openai_workflow_planner_model() -> str:
@@ -27,6 +31,12 @@ def _strip_json_fences(text: str) -> str:
         if cleaned.endswith("```"):
             cleaned = cleaned[:-3]
     return cleaned.strip()
+
+
+def _capture_workflow_planner_debug(payload: dict[str, Any]) -> None:
+    if not settings.workflow_planner_debug_capture:
+        return
+    atomic_write_json(WORKFLOW_PLANNER_DEBUG_PATH, payload)
 
 
 def _extract_first_json_object(text: str) -> str:
@@ -48,6 +58,20 @@ def _extract_first_json_object(text: str) -> str:
             if depth == 0:
                 return cleaned[start : index + 1]
     return cleaned
+
+
+def _extract_text_from_candidate_payload(payload: Any) -> list[str]:
+    texts: list[str] = []
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            if key == "text" and isinstance(value, str) and value.strip():
+                texts.append(value)
+            else:
+                texts.extend(_extract_text_from_candidate_payload(value))
+    elif isinstance(payload, list):
+        for item in payload:
+            texts.extend(_extract_text_from_candidate_payload(item))
+    return texts
 
 
 def _build_workflow_planner_prompt(question: str) -> str:
@@ -147,6 +171,19 @@ def _parse_llm_workflow_plan_response(raw_text: str) -> dict[str, str] | None:
     return _normalize_workflow_plan_payload(payload)
 
 
+def _extract_gemini_workflow_plan_text(payload: dict[str, Any]) -> str:
+    candidates = payload.get("candidates")
+    if not isinstance(candidates, list):
+        return ""
+
+    texts: list[str] = []
+    for candidate in candidates:
+        texts.extend(_extract_text_from_candidate_payload(candidate))
+
+    cleaned_texts = [text.strip() for text in texts if isinstance(text, str) and text.strip()]
+    return "\n".join(cleaned_texts).strip()
+
+
 def _generate_openai_workflow_plan(question: str) -> dict[str, str] | None:
     model_name = _resolve_openai_workflow_planner_model()
     response = httpx.post(
@@ -169,6 +206,16 @@ def _generate_openai_workflow_plan(question: str) -> dict[str, str] | None:
     response.raise_for_status()
     payload = response.json()
     content = payload["choices"][0]["message"]["content"]
+    _capture_workflow_planner_debug(
+        {
+            "provider": "openai",
+            "model": model_name,
+            "question": question,
+            "status": "success" if isinstance(content, str) else "missing_content",
+            "response_json": payload,
+            "raw_text": content if isinstance(content, str) else None,
+        }
+    )
     if not isinstance(content, str):
         return None
     return _parse_llm_workflow_plan_response(content)
@@ -193,10 +240,26 @@ def _generate_gemini_workflow_plan(question: str) -> dict[str, str] | None:
     )
     response.raise_for_status()
     payload = response.json()
-    content = payload["candidates"][0]["content"]["parts"][0]["text"]
-    if not isinstance(content, str):
-        return None
-    return _parse_llm_workflow_plan_response(content)
+    content = _extract_gemini_workflow_plan_text(payload)
+    parsed_plan = _parse_llm_workflow_plan_response(content) if content else None
+    _capture_workflow_planner_debug(
+        {
+            "provider": "gemini",
+            "model": model_name,
+            "question": question,
+            "status": (
+                "parsed_success"
+                if parsed_plan is not None
+                else "parse_failed"
+                if content
+                else "missing_text"
+            ),
+            "response_json": payload,
+            "raw_text": content or None,
+            "parsed_plan": parsed_plan,
+        }
+    )
+    return parsed_plan
 
 
 def generate_llm_workflow_plan(question: str) -> tuple[str, dict[str, str] | None]:
@@ -215,7 +278,16 @@ def generate_llm_workflow_plan(question: str) -> tuple[str, dict[str, str] | Non
             if not settings.gemini_api_key:
                 return "heuristic_fallback_missing_gemini_key", None
             return "llm_gemini", _generate_gemini_workflow_plan(question)
-    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
+        _capture_workflow_planner_debug(
+            {
+                "provider": provider,
+                "question": question,
+                "status": "exception",
+                "error_type": type(exc).__name__,
+                "error_message": str(exc),
+            }
+        )
         return f"heuristic_fallback_after_{provider}_error", None
 
     return "heuristic_fallback_unsupported_provider", None
