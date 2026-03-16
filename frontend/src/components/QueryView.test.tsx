@@ -655,7 +655,10 @@ describe("QueryView", () => {
     expect(screen.getByText("Recovery Details")).toBeInTheDocument();
   });
 
-  it("renders resumed workflow record fields without losing the real step index", () => {
+  it("renders resumed workflow record fields without losing the real step index", async () => {
+    const user = userEvent.setup();
+    const onLoadAgentWorkflowRun = vi.fn();
+
     render(
       <QueryView
         documents={[]}
@@ -770,7 +773,7 @@ describe("QueryView", () => {
         onClearDiagnostics={vi.fn()}
         onSubmitQuery={(event) => event.preventDefault()}
         onRunAgent={vi.fn()}
-        onLoadAgentWorkflowRun={vi.fn()}
+        onLoadAgentWorkflowRun={onLoadAgentWorkflowRun}
         onRecoverAgentWorkflowRun={vi.fn()}
         onRunDiagnostics={vi.fn()}
       />,
@@ -783,6 +786,12 @@ describe("QueryView", () => {
     expect(screen.getByText("search_then_ticket_failed_step_resume")).toBeInTheDocument();
     expect(screen.getAllByText("source-run").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1").length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: "Load Root Run" }));
+    await user.click(screen.getByRole("button", { name: "Load Source Run" }));
+
+    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(1, "source-run");
+    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(2, "source-run");
   });
 
   it("runs recovery actions for current and recent workflow runs", async () => {

@@ -954,6 +954,31 @@ textarea {
   word-break: break-word;
 }
 
+.inline-link-button {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.84rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.inline-link-button:hover {
+  color: var(--accent-strong);
+}
+
+.inline-link-button:focus-visible {
+  outline: 2px solid rgba(159, 58, 29, 0.45);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .workflow-record-grid > div,
 .workflow-record-grid strong {
   min-width: 0;

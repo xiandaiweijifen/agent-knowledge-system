@@ -96,9 +96,11 @@ export function QueryView({
           workflowRecord: "工作流记录",
           runId: "Run Id",
           rootRun: "根 Run",
+          loadRootRun: "加载根 Run",
           recoveryDepth: "恢复深度",
           resumedFrom: "恢复来源",
           sourceRun: "源 Run",
+          loadSourceRun: "加载源 Run",
           recoveredVia: "恢复动作",
           resumeType: "恢复类型",
           resumedStep: "恢复步骤",
@@ -238,9 +240,11 @@ export function QueryView({
           workflowRecord: "Workflow Record",
           runId: "Run Id",
           rootRun: "Root Run",
+          loadRootRun: "Load Root Run",
           recoveryDepth: "Recovery Depth",
           resumedFrom: "Resumed From",
           sourceRun: "Source Run",
+          loadSourceRun: "Load Source Run",
           recoveredVia: "Recovered Via",
           resumeType: "Resume Type",
           resumedStep: "Resumed Step",
@@ -810,6 +814,15 @@ export function QueryView({
                   <div>
                     <span className="trace-label">{queryCopy.rootRun}</span>
                     <strong className="trace-code">{agentQueryResult.root_run_id ?? queryCopy.notLinked}</strong>
+                    {agentQueryResult.root_run_id && agentQueryResult.root_run_id !== agentQueryResult.run_id && (
+                      <button
+                        type="button"
+                        className="inline-link-button"
+                        onClick={() => onLoadAgentWorkflowRun(agentQueryResult.root_run_id!)}
+                      >
+                        {queryCopy.loadRootRun}
+                      </button>
+                    )}
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.recoveryDepth}</span>
@@ -822,6 +835,15 @@ export function QueryView({
                   <div>
                     <span className="trace-label">{queryCopy.sourceRun}</span>
                     <strong className="trace-code">{agentQueryResult.source_run_id ?? queryCopy.notLinked}</strong>
+                    {agentQueryResult.source_run_id && (
+                      <button
+                        type="button"
+                        className="inline-link-button"
+                        onClick={() => onLoadAgentWorkflowRun(agentQueryResult.source_run_id!)}
+                      >
+                        {queryCopy.loadSourceRun}
+                      </button>
+                    )}
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.recoveredVia}</span>
