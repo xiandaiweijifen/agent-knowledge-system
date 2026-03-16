@@ -133,10 +133,42 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
         normalized_run.get("tool_planning_mode")
         or _extract_tool_planning_mode(normalized_run)
     )
+    existing_tool_planning_modes = normalized_run.get("tool_planning_modes")
+    if isinstance(existing_tool_planning_modes, list):
+        normalized_run["tool_planning_modes"] = [
+            mode.strip()
+            for mode in existing_tool_planning_modes
+            if isinstance(mode, str) and mode.strip()
+        ]
+    else:
+        normalized_run["tool_planning_modes"] = _extract_tool_planning_modes(normalized_run)
     normalized_run["clarification_planning_mode"] = (
         normalized_run.get("clarification_planning_mode")
         or _extract_clarification_planning_mode(normalized_run)
     )
+    normalized_run["tool_planner_call_count"] = _coerce_non_negative_int(
+        normalized_run.get("tool_planner_call_count")
+    ) or len(normalized_run["tool_planning_modes"])
+    existing_llm_tool_planner_steps = normalized_run.get("llm_tool_planner_steps")
+    if isinstance(existing_llm_tool_planner_steps, list):
+        normalized_run["llm_tool_planner_steps"] = [
+            step for step in existing_llm_tool_planner_steps if isinstance(step, int) and step > 0
+        ]
+    else:
+        normalized_run["llm_tool_planner_steps"] = _extract_tool_planner_steps_by_mode(
+            normalized_run["tool_planning_modes"],
+            llm_only=True,
+        )
+    existing_fallback_tool_planner_steps = normalized_run.get("fallback_tool_planner_steps")
+    if isinstance(existing_fallback_tool_planner_steps, list):
+        normalized_run["fallback_tool_planner_steps"] = [
+            step for step in existing_fallback_tool_planner_steps if isinstance(step, int) and step > 0
+        ]
+    else:
+        normalized_run["fallback_tool_planner_steps"] = _extract_tool_planner_steps_by_mode(
+            normalized_run["tool_planning_modes"],
+            llm_only=False,
+        )
     normalized_run["workflow_planning_latency_ms"] = _coerce_non_negative_int(
         normalized_run.get("workflow_planning_latency_ms")
     )
@@ -153,6 +185,52 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
         + normalized_run["tool_planning_latency_ms"]
         + normalized_run["clarification_planning_latency_ms"]
     )
+    normalized_run["planner_call_count"] = _coerce_non_negative_int(
+        normalized_run.get("planner_call_count")
+    ) or (
+        (1 if normalized_run["workflow_planning_mode"] else 0)
+        + normalized_run["tool_planner_call_count"]
+        + (1 if normalized_run["clarification_planning_mode"] else 0)
+    )
+    existing_llm_planner_layers = normalized_run.get("llm_planner_layers")
+    if isinstance(existing_llm_planner_layers, list):
+        normalized_run["llm_planner_layers"] = [
+            layer.strip()
+            for layer in existing_llm_planner_layers
+            if isinstance(layer, str) and layer.strip()
+        ]
+    else:
+        normalized_run["llm_planner_layers"] = [
+            layer
+            for layer, mode in (
+                ("workflow", normalized_run["workflow_planning_mode"]),
+                ("tool", normalized_run["tool_planning_mode"]),
+                ("clarification", normalized_run["clarification_planning_mode"]),
+            )
+            if isinstance(mode, str)
+            and mode.startswith("llm_")
+            and (layer != "tool" or bool(normalized_run["llm_tool_planner_steps"]))
+        ]
+    existing_fallback_planner_layers = normalized_run.get("fallback_planner_layers")
+    if isinstance(existing_fallback_planner_layers, list):
+        normalized_run["fallback_planner_layers"] = [
+            layer.strip()
+            for layer in existing_fallback_planner_layers
+            if isinstance(layer, str) and layer.strip()
+        ]
+    else:
+        normalized_run["fallback_planner_layers"] = [
+            layer
+            for layer, mode in (
+                ("workflow", normalized_run["workflow_planning_mode"]),
+                ("tool", normalized_run["tool_planning_mode"]),
+                ("clarification", normalized_run["clarification_planning_mode"]),
+            )
+            if isinstance(mode, str)
+            and not mode.startswith("llm_")
+            and mode != "heuristic workflow matcher"
+            and (layer != "tool" or bool(normalized_run["fallback_tool_planner_steps"]))
+        ]
     return normalized_run
 
 
@@ -316,11 +394,18 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "terminal_reason",
         "workflow_planning_mode",
         "tool_planning_mode",
+        "tool_planning_modes",
         "clarification_planning_mode",
+        "planner_call_count",
+        "tool_planner_call_count",
         "workflow_planning_latency_ms",
         "tool_planning_latency_ms",
         "clarification_planning_latency_ms",
         "planner_latency_ms_total",
+        "llm_planner_layers",
+        "fallback_planner_layers",
+        "llm_tool_planner_steps",
+        "fallback_tool_planner_steps",
     )
     return any(run.get(field) != normalized_run.get(field) for field in migration_fields)
 
@@ -344,20 +429,31 @@ def _extract_workflow_planning_mode_from_trace(trace: list[dict] | list[Workflow
 
 
 def _extract_tool_planning_mode(response: AgentWorkflowResponse | dict) -> str | None:
+    tool_planning_modes = _extract_tool_planning_modes(response)
+    if tool_planning_modes:
+        return tool_planning_modes[-1]
+
     if isinstance(response, AgentWorkflowResponse):
         tool_plan = response.tool_plan
-        tool_chain = response.tool_chain
     else:
         tool_plan = response.get("tool_plan")
-        tool_chain = response.get("tool_chain")
 
     if isinstance(tool_plan, dict):
         planning_mode = tool_plan.get("planning_mode")
         if isinstance(planning_mode, str) and planning_mode.strip():
             return planning_mode
+    return None
+
+
+def _extract_tool_planning_modes(response: AgentWorkflowResponse | dict) -> list[str]:
+    if isinstance(response, AgentWorkflowResponse):
+        tool_chain = response.tool_chain
+    else:
+        tool_chain = response.get("tool_chain")
+    tool_planning_modes: list[str] = []
 
     if isinstance(tool_chain, list):
-        for step in reversed(tool_chain):
+        for step in tool_chain:
             if isinstance(step, dict):
                 step_tool_plan = step.get("tool_plan")
             else:
@@ -365,8 +461,18 @@ def _extract_tool_planning_mode(response: AgentWorkflowResponse | dict) -> str |
             if isinstance(step_tool_plan, dict):
                 planning_mode = step_tool_plan.get("planning_mode")
                 if isinstance(planning_mode, str) and planning_mode.strip():
-                    return planning_mode
-    return None
+                    tool_planning_modes.append(planning_mode.strip())
+    return tool_planning_modes
+
+
+def _extract_tool_planner_steps_by_mode(tool_planning_modes: list[str], *, llm_only: bool) -> list[int]:
+    matching_steps: list[int] = []
+    for index, planning_mode in enumerate(tool_planning_modes, start=1):
+        if llm_only and planning_mode.startswith("llm_"):
+            matching_steps.append(index)
+        if not llm_only and not planning_mode.startswith("llm_"):
+            matching_steps.append(index)
+    return matching_steps
 
 
 def _extract_clarification_planning_mode(response: AgentWorkflowResponse | dict) -> str | None:
@@ -384,8 +490,10 @@ def _extract_clarification_planning_mode(response: AgentWorkflowResponse | dict)
 
 def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowResponse:
     response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
+    response.tool_planning_modes = _extract_tool_planning_modes(response)
     response.tool_planning_mode = _extract_tool_planning_mode(response)
     response.clarification_planning_mode = _extract_clarification_planning_mode(response)
+    response.tool_planner_call_count = len(response.tool_planning_modes)
     response.workflow_planning_latency_ms = _coerce_non_negative_int(response.workflow_planning_latency_ms)
     response.tool_planning_latency_ms = _coerce_non_negative_int(response.tool_planning_latency_ms)
     response.clarification_planning_latency_ms = _coerce_non_negative_int(
@@ -396,19 +504,48 @@ def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowRes
         "tool": response.tool_planning_mode,
         "clarification": response.clarification_planning_mode,
     }
-    response.planner_call_count = sum(1 for mode in planner_layers.values() if mode)
+    response.planner_call_count = (
+        (1 if response.workflow_planning_mode else 0)
+        + response.tool_planner_call_count
+        + (1 if response.clarification_planning_mode else 0)
+    )
     response.planner_latency_ms_total = (
         response.workflow_planning_latency_ms
         + response.tool_planning_latency_ms
         + response.clarification_planning_latency_ms
     )
+    response.llm_tool_planner_steps = _extract_tool_planner_steps_by_mode(
+        response.tool_planning_modes,
+        llm_only=True,
+    )
+    response.fallback_tool_planner_steps = _extract_tool_planner_steps_by_mode(
+        response.tool_planning_modes,
+        llm_only=False,
+    )
     response.llm_planner_layers = [
-        layer for layer, mode in planner_layers.items() if isinstance(mode, str) and mode.startswith("llm_")
+        layer
+        for layer, mode in planner_layers.items()
+        if (
+            isinstance(mode, str)
+            and mode.startswith("llm_")
+            and (
+                layer != "tool"
+                or bool(response.llm_tool_planner_steps)
+            )
+        )
     ]
     response.fallback_planner_layers = [
         layer
         for layer, mode in planner_layers.items()
-        if isinstance(mode, str) and not mode.startswith("llm_") and mode != "heuristic workflow matcher"
+        if (
+            isinstance(mode, str)
+            and not mode.startswith("llm_")
+            and mode != "heuristic workflow matcher"
+            and (
+                layer != "tool"
+                or bool(response.fallback_tool_planner_steps)
+            )
+        )
     ]
     return response
 
@@ -556,14 +693,18 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 last_updated_at=run.last_updated_at,
                 workflow_planning_mode=run.workflow_planning_mode,
                 tool_planning_mode=run.tool_planning_mode,
+                tool_planning_modes=run.tool_planning_modes,
                 clarification_planning_mode=run.clarification_planning_mode,
                 planner_call_count=run.planner_call_count,
+                tool_planner_call_count=run.tool_planner_call_count,
                 workflow_planning_latency_ms=run.workflow_planning_latency_ms,
                 tool_planning_latency_ms=run.tool_planning_latency_ms,
                 clarification_planning_latency_ms=run.clarification_planning_latency_ms,
                 planner_latency_ms_total=run.planner_latency_ms_total,
                 llm_planner_layers=run.llm_planner_layers,
                 fallback_planner_layers=run.fallback_planner_layers,
+                llm_tool_planner_steps=run.llm_tool_planner_steps,
+                fallback_tool_planner_steps=run.fallback_tool_planner_steps,
                 step_count=run.step_count,
                 route_type=run.route.route_type,
                 route_reason=run.route.route_reason,

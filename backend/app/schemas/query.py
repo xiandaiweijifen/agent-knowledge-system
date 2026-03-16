@@ -132,14 +132,18 @@ class AgentWorkflowResponse(BaseModel):
     last_updated_at: str | None = None
     workflow_planning_mode: str | None = None
     tool_planning_mode: str | None = None
+    tool_planning_modes: list[str] = Field(default_factory=list)
     clarification_planning_mode: str | None = None
     planner_call_count: int = 0
+    tool_planner_call_count: int = 0
     workflow_planning_latency_ms: int = 0
     tool_planning_latency_ms: int = 0
     clarification_planning_latency_ms: int = 0
     planner_latency_ms_total: int = 0
     llm_planner_layers: list[str] = Field(default_factory=list)
     fallback_planner_layers: list[str] = Field(default_factory=list)
+    llm_tool_planner_steps: list[int] = Field(default_factory=list)
+    fallback_tool_planner_steps: list[int] = Field(default_factory=list)
     step_count: int = 0
     route: RouteDecision
     workflow_trace: list[WorkflowTraceEvent] = Field(default_factory=list)
@@ -178,14 +182,18 @@ class AgentWorkflowRunSummary(BaseModel):
     last_updated_at: str | None = None
     workflow_planning_mode: str | None = None
     tool_planning_mode: str | None = None
+    tool_planning_modes: list[str] = Field(default_factory=list)
     clarification_planning_mode: str | None = None
     planner_call_count: int = 0
+    tool_planner_call_count: int = 0
     workflow_planning_latency_ms: int = 0
     tool_planning_latency_ms: int = 0
     clarification_planning_latency_ms: int = 0
     planner_latency_ms_total: int = 0
     llm_planner_layers: list[str] = Field(default_factory=list)
     fallback_planner_layers: list[str] = Field(default_factory=list)
+    llm_tool_planner_steps: list[int] = Field(default_factory=list)
+    fallback_tool_planner_steps: list[int] = Field(default_factory=list)
     step_count: int = 0
     route_type: str
     route_reason: str

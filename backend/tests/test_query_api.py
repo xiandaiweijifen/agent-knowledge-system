@@ -1419,8 +1419,10 @@ def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_
     assert payload["step_count"] == 2
     assert payload["workflow_planning_mode"] == "llm_gemini"
     assert payload["tool_planning_mode"] == "llm_gemini"
+    assert payload["tool_planning_modes"] == ["llm_gemini", "llm_gemini"]
     assert payload["clarification_planning_mode"] is None
-    assert payload["planner_call_count"] == 2
+    assert payload["tool_planner_call_count"] == 2
+    assert payload["planner_call_count"] == 3
     assert payload["workflow_planning_latency_ms"] >= 0
     assert payload["tool_planning_latency_ms"] >= 0
     assert payload["clarification_planning_latency_ms"] == 0
@@ -1431,6 +1433,8 @@ def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_
     )
     assert payload["llm_planner_layers"] == ["workflow", "tool"]
     assert payload["fallback_planner_layers"] == []
+    assert payload["llm_tool_planner_steps"] == [1, 2]
+    assert payload["fallback_tool_planner_steps"] == []
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
     assert any(
@@ -1518,6 +1522,8 @@ def test_query_agent_endpoint_reports_clean_workflow_planner_fallback_reason(
     )
     assert payload["workflow_planning_mode"] == "heuristic workflow matcher after gemini error"
     assert payload["tool_planning_mode"] == "heuristic_fallback_after_gemini_error"
+    assert payload["tool_planning_modes"] == ["heuristic_fallback_after_gemini_error"]
+    assert payload["tool_planner_call_count"] == 1
     assert payload["planner_call_count"] == 2
     assert payload["workflow_planning_latency_ms"] >= 0
     assert payload["tool_planning_latency_ms"] >= 0
@@ -1529,6 +1535,8 @@ def test_query_agent_endpoint_reports_clean_workflow_planner_fallback_reason(
     )
     assert payload["llm_planner_layers"] == []
     assert payload["fallback_planner_layers"] == ["workflow", "tool"]
+    assert payload["llm_tool_planner_steps"] == []
+    assert payload["fallback_tool_planner_steps"] == [1]
 
 
 def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow_planner(
@@ -1556,6 +1564,8 @@ def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow
     assert payload["workflow_status"] == "completed"
     assert payload["answer_source"] == "local_search_summary"
     assert payload["workflow_planning_mode"] == "heuristic workflow matcher"
+    assert payload["tool_planning_modes"] == ["heuristic_stub"]
+    assert payload["tool_planner_call_count"] == 1
     assert payload["planner_call_count"] == 2
     assert payload["workflow_planning_latency_ms"] == 0
     assert payload["tool_planning_latency_ms"] >= 0
@@ -1563,6 +1573,8 @@ def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow
     assert payload["planner_latency_ms_total"] == payload["tool_planning_latency_ms"]
     assert payload["llm_planner_layers"] == []
     assert payload["fallback_planner_layers"] == ["tool"]
+    assert payload["llm_tool_planner_steps"] == []
+    assert payload["fallback_tool_planner_steps"] == [1]
     assert any(
         event["stage"] == "workflow_planning"
         and "search_then_summarize workflow via heuristic workflow matcher" in event["detail"]
@@ -2094,6 +2106,22 @@ def test_query_agent_endpoint_supports_status_then_ticket_multistep_workflow(
     assert payload["workflow_status"] == "completed"
     assert payload["terminal_reason"] == "tool_execution_completed"
     assert payload["step_count"] == 2
+    assert payload["tool_planning_modes"] == [
+        payload["tool_chain"][0]["tool_plan"]["planning_mode"],
+        payload["tool_chain"][1]["tool_plan"]["planning_mode"],
+    ]
+    assert payload["tool_planner_call_count"] == 2
+    assert payload["planner_call_count"] == 3
+    assert payload["llm_tool_planner_steps"] == [
+        index
+        for index, mode in enumerate(payload["tool_planning_modes"], start=1)
+        if mode.startswith("llm_")
+    ]
+    assert payload["fallback_tool_planner_steps"] == [
+        index
+        for index, mode in enumerate(payload["tool_planning_modes"], start=1)
+        if not mode.startswith("llm_")
+    ]
     assert payload["workflow_trace"][1]["stage"] == "workflow_planning"
     assert "status_then_ticket workflow" in payload["workflow_trace"][1]["detail"]
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
@@ -2999,14 +3027,18 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["answer_source"] is None
     assert payload["runs"][0]["workflow_planning_mode"] is None
     assert payload["runs"][0]["tool_planning_mode"] == "heuristic_stub"
+    assert payload["runs"][0]["tool_planning_modes"] == ["heuristic_stub"]
     assert payload["runs"][0]["clarification_planning_mode"] is None
     assert payload["runs"][0]["planner_call_count"] == 1
+    assert payload["runs"][0]["tool_planner_call_count"] == 1
     assert payload["runs"][0]["workflow_planning_latency_ms"] == 0
     assert payload["runs"][0]["tool_planning_latency_ms"] == 0
     assert payload["runs"][0]["clarification_planning_latency_ms"] == 0
     assert payload["runs"][0]["planner_latency_ms_total"] == 0
     assert payload["runs"][0]["llm_planner_layers"] == []
     assert payload["runs"][0]["fallback_planner_layers"] == ["tool"]
+    assert payload["runs"][0]["llm_tool_planner_steps"] == []
+    assert payload["runs"][0]["fallback_tool_planner_steps"] == [1]
     assert payload["runs"][0]["final_tool_name"] == "ticketing"
     assert payload["runs"][0]["final_tool_action"] == "create"
     assert payload["runs"][0]["run_id"] != first_run_id
@@ -3265,11 +3297,18 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
                         "last_updated_at": "2026-03-15T16:12:37.487903+00:00",
                         "workflow_planning_mode": None,
                         "tool_planning_mode": None,
+                        "tool_planning_modes": [],
                         "clarification_planning_mode": None,
+                        "planner_call_count": 0,
+                        "tool_planner_call_count": 0,
                         "workflow_planning_latency_ms": 0,
                         "tool_planning_latency_ms": 0,
                         "clarification_planning_latency_ms": 0,
                         "planner_latency_ms_total": 0,
+                        "llm_planner_layers": [],
+                        "fallback_planner_layers": [],
+                        "llm_tool_planner_steps": [],
+                        "fallback_tool_planner_steps": [],
                         "step_count": 1,
                     "route": {
                         "route_type": "tool_execution",
