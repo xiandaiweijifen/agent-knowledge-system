@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.query import (
+    AgentRecoverRequest,
     AgentQueryRequest,
     AgentWorkflowMigrationResponse,
     AgentWorkflowRunPruneRequest,
@@ -25,6 +26,7 @@ from app.services.agent.orchestrator_service import (
     migrate_persisted_workflow_runs,
     orchestrate_agent_request,
     prune_persisted_workflow_runs,
+    recover_agent_request,
     reset_persisted_workflow_runs,
     resume_agent_request,
 )
@@ -92,6 +94,23 @@ def resume_agent_query(request: AgentResumeRequest) -> AgentWorkflowResponse:
             status_code=404,
             detail="Persisted embedding file not found. Generate embeddings first",
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/agent/recover", response_model=AgentWorkflowResponse)
+def recover_agent_query(request: AgentRecoverRequest) -> AgentWorkflowResponse:
+    try:
+        return recover_agent_request(
+            run_id=request.run_id,
+            recovery_action=request.recovery_action,
+            clarification_context=request.clarification_context,
+            filename=request.filename,
+            top_k=request.top_k,
+            debug_fault_injection=request.debug_fault_injection,
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

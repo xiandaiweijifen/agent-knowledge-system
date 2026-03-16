@@ -28,6 +28,15 @@ class AgentResumeRequest(BaseModel):
     debug_fault_injection: dict[str, object] = Field(default_factory=dict)
 
 
+class AgentRecoverRequest(BaseModel):
+    run_id: str
+    recovery_action: str | None = None
+    clarification_context: dict[str, str] = Field(default_factory=dict)
+    filename: str | None = None
+    top_k: int = 3
+    debug_fault_injection: dict[str, object] = Field(default_factory=dict)
+
+
 class WorkflowTraceEvent(BaseModel):
     stage: str
     status: str

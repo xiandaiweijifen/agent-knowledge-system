@@ -2270,6 +2270,76 @@ def resume_agent_request(
     )
 
 
+def recover_agent_request(
+    *,
+    run_id: str,
+    recovery_action: str | None = None,
+    clarification_context: dict[str, str] | None = None,
+    filename: str | None = None,
+    top_k: int = 3,
+    debug_fault_injection: dict[str, object] | None = None,
+) -> AgentWorkflowResponse:
+    source_run = get_persisted_workflow_run(run_id)
+    available_actions = source_run.available_recovery_actions or _derive_available_recovery_actions(source_run)
+    selected_action = recovery_action.strip() if isinstance(recovery_action, str) and recovery_action.strip() else (
+        source_run.recommended_recovery_action or _derive_recommended_recovery_action(source_run)
+    )
+    clarification_context = clarification_context or {}
+
+    if not selected_action or selected_action == "none":
+        raise ValueError("no_recovery_action_available")
+    if selected_action not in available_actions:
+        raise ValueError("recovery_action_not_available")
+
+    if selected_action in {"resume_from_failed_step", "resume_with_clarification"}:
+        return resume_agent_request(
+            original_question=source_run.question,
+            clarification_context=clarification_context,
+            run_id=source_run.run_id,
+            filename=filename if filename is not None else source_run.filename,
+            top_k=top_k,
+            debug_fault_injection=debug_fault_injection,
+        )
+
+    if selected_action in {"manual_retrigger", "retry"}:
+        response = orchestrate_agent_request(
+            question=source_run.question,
+            filename=filename if filename is not None else source_run.filename,
+            top_k=top_k,
+            persist_run=False,
+            debug_fault_injection=debug_fault_injection,
+        )
+        response.workflow_trace.insert(
+            0,
+            WorkflowTraceEvent(
+                stage="workflow_recovery",
+                status="completed",
+                timestamp=build_utc_timestamp(),
+                detail=(
+                    f"Recovered workflow from run_id via {selected_action} using "
+                    f"{'retry_recovery' if selected_action == 'retry' else 'manual_retrigger_recovery'}."
+                ),
+            ),
+        )
+        response.resume_source_type = "run_id"
+        response.resume_strategy = (
+            "retry_recovery" if selected_action == "retry" else "manual_retrigger_recovery"
+        )
+        response.applied_clarification_fields = []
+        response.question_rewritten = False
+        response.overridden_plan_arguments = []
+        return _persist_workflow_response(
+            response=response,
+            resumed_from_question=source_run.question,
+            source_run_id=source_run.run_id,
+        )
+
+    if selected_action == "manual_investigation":
+        raise ValueError("manual_investigation_not_executable")
+
+    raise ValueError("unsupported_recovery_action")
+
+
 def orchestrate_agent_request(
     question: str,
     filename: str | None = None,
