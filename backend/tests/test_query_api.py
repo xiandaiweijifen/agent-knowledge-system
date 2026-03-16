@@ -1618,6 +1618,18 @@ def test_parse_llm_workflow_plan_response_accepts_status_then_ticket_kind():
     }
 
 
+def test_parse_llm_workflow_plan_response_accepts_status_then_summarize_kind():
+    payload = _parse_llm_workflow_plan_response(
+        '{"workflow_kind":"status_then_summarize","search_question":"Check system status for payment-service","follow_up_question":"summarize the result"}'
+    )
+
+    assert payload == {
+        "workflow_kind": "status_then_summarize",
+        "search_question": "Check system status for payment-service",
+        "follow_up_question": "summarize the result",
+    }
+
+
 def test_generate_llm_tool_plan_reuses_cached_result(monkeypatch):
     call_count = 0
 
@@ -2211,6 +2223,34 @@ def test_query_agent_endpoint_supports_status_then_ticket_multistep_workflow(
         payload["tool_chain"][1]["tool_execution"]["output"]["supporting_summary"]
     )
     assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
+
+
+def test_query_agent_endpoint_supports_status_then_summarize_workflow():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Check system status for payment-service and summarize the result",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "status_summary_completed"
+    assert payload["step_count"] == 1
+    assert payload["answer_source"] == "local_status_summary"
+    assert payload["chat_provider"] == "local"
+    assert payload["chat_model"] == "local-heuristic-summary"
+    assert payload["tool_plan"]["tool_name"] == "system_status"
+    assert payload["tool_execution"]["tool_name"] == "system_status"
+    assert "System status for payment-service is ok in development." in payload["answer"]
+    assert "Current configuration: chat provider is gemini" in payload["answer"]
+    assert any(
+        event["stage"] == "status_summary"
+        and "system status results" in event["detail"]
+        for event in payload["workflow_trace"]
+    )
 
 
 def test_query_agent_endpoint_supports_status_then_ticket_close_workflow(
@@ -3028,6 +3068,31 @@ def test_resume_agent_endpoint_continues_status_then_ticket_workflow(
     assert payload["tool_chain"][-1]["tool_execution"]["output"]["environment"] == "production"
     assert payload["workflow_trace"][0]["stage"] == "workflow_resume"
     assert "status_then_ticket_resume" in payload["workflow_trace"][0]["detail"]
+
+
+def test_resume_agent_endpoint_continues_status_then_summarize_workflow():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "original_question": "Check system status for payment-service and summarize the result",
+            "clarification_context": {
+                "environment": "production",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["resume_source_type"] == "original_question"
+    assert payload["resume_strategy"] == "status_then_summarize_resume"
+    assert payload["applied_clarification_fields"] == ["environment"]
+    assert payload["question_rewritten"] is False
+    assert payload["overridden_plan_arguments"] == ["environment"]
+    assert payload["answer_source"] == "local_status_summary"
+    assert payload["workflow_trace"][0]["stage"] == "workflow_resume"
+    assert "status_then_summarize_resume" in payload["workflow_trace"][0]["detail"]
 
 
 def test_query_agent_endpoint_persists_workflow_run_and_supports_lookup(

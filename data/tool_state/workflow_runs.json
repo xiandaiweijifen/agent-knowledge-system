@@ -6344,5 +6344,528 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "8ccf1b231bfe46ce86da4dbabf48d73d",
+    "question": "Check system status for payment-service and summarize the result",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "status_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T06:10:22.866514+00:00",
+    "completed_at": "2026-03-16T06:10:25.540264+00:00",
+    "last_updated_at": "2026-03-16T06:10:25.540264+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 2,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 1286,
+    "tool_planning_latency_ms": 1387,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 2673,
+    "llm_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:10:22.866560+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:10:24.152722+00:00",
+        "detail": "Planned status_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:10:25.540107+00:00",
+        "detail": "Planned system_status:query for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:10:25.540188+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      },
+      {
+        "stage": "status_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:10:25.540253+00:00",
+        "detail": "Generated a local summary for system status results in response to 'summarize the result'."
+      }
+    ],
+    "filename": null,
+    "answer": "System status for payment-service is ok in development. Current configuration: chat provider is gemini, chat model is gemini-2.5-flash.",
+    "answer_source": "local_status_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T06:10:25.540264+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status for payment-service",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for payment-service.",
+      "trace_id": "aec666ffd7654ee3b37dd0452d35dbd6",
+      "executed_at": "2026-03-16T06:10:25.540168+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "payment-service",
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T06:10:24.152759+00:00",
+        "completed_at": "2026-03-16T06:10:25.540188+00:00",
+        "question": "Check system status for payment-service",
+        "tool_plan": {
+          "question": "Check system status for payment-service",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service.",
+          "trace_id": "aec666ffd7654ee3b37dd0452d35dbd6",
+          "executed_at": "2026-03-16T06:10:25.540168+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "91d645fb6577428cbd25e179854ad446",
+    "question": "Check system status for payment-service and summarize the result",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "status_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T06:11:24.660342+00:00",
+    "completed_at": "2026-03-16T06:11:24.662244+00:00",
+    "last_updated_at": "2026-03-16T06:11:24.662244+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 2,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 2,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 2,
+    "llm_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:24.660382+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:24.662039+00:00",
+        "detail": "Planned status_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:24.662139+00:00",
+        "detail": "Planned system_status:query for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:24.662198+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      },
+      {
+        "stage": "status_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:24.662238+00:00",
+        "detail": "Generated a local summary for system status results in response to 'summarize the result'."
+      }
+    ],
+    "filename": null,
+    "answer": "System status for payment-service is ok in development. Current configuration: chat provider is gemini, chat model is gemini-2.5-flash.",
+    "answer_source": "local_status_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T06:11:24.662244+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status for payment-service",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for payment-service.",
+      "trace_id": "5a8aaf1471914eb39745db2d4cbc5643",
+      "executed_at": "2026-03-16T06:11:24.662184+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "payment-service",
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T06:11:24.662060+00:00",
+        "completed_at": "2026-03-16T06:11:24.662198+00:00",
+        "question": "Check system status for payment-service",
+        "tool_plan": {
+          "question": "Check system status for payment-service",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service.",
+          "trace_id": "5a8aaf1471914eb39745db2d4cbc5643",
+          "executed_at": "2026-03-16T06:11:24.662184+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "cc046e1e093b4b4da608f79fe0ec6a69",
+    "question": "Check system status for payment-service and summarize the result",
+    "resumed_from_question": "Check system status for payment-service and summarize the result",
+    "source_run_id": null,
+    "resume_source_type": "original_question",
+    "resume_strategy": "status_then_summarize_resume",
+    "applied_clarification_fields": [
+      "environment"
+    ],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [
+      "environment"
+    ],
+    "workflow_status": "completed",
+    "terminal_reason": "status_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T06:11:43.074646+00:00",
+    "completed_at": "2026-03-16T06:11:43.076546+00:00",
+    "last_updated_at": "2026-03-16T06:11:43.076546+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 2,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 2,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 2,
+    "llm_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:43.076701+00:00",
+        "detail": "Resumed workflow from 'Check system status for payment-service and summarize the result' via original_question using status_then_summarize_resume with fields: environment; overridden arguments: environment."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:43.074700+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:43.076285+00:00",
+        "detail": "Planned status_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:43.076418+00:00",
+        "detail": "Planned system_status:query for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:43.076490+00:00",
+        "detail": "Executed local_adapter tool system_status:query with status completed."
+      },
+      {
+        "stage": "status_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:11:43.076537+00:00",
+        "detail": "Generated a local summary for system status results in response to 'summarize the result'."
+      }
+    ],
+    "filename": null,
+    "answer": "System status for payment-service is ok in development. Current configuration: chat provider is gemini, chat model is gemini-2.5-flash.",
+    "answer_source": "local_status_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T06:11:43.076546+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check system status for payment-service",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "arguments": {},
+      "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for payment-service.",
+      "trace_id": "12471c698d334b3286165130d47921e1",
+      "executed_at": "2026-03-16T06:11:43.076470+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "payment-service",
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "false",
+        "redis_configured": "false"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T06:11:43.076317+00:00",
+        "completed_at": "2026-03-16T06:11:43.076490+00:00",
+        "question": "Check system status for payment-service",
+        "tool_plan": {
+          "question": "Check system status for payment-service",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {},
+          "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service.",
+          "trace_id": "12471c698d334b3286165130d47921e1",
+          "executed_at": "2026-03-16T06:11:43.076470+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "false",
+            "redis_configured": "false"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]
