@@ -2024,6 +2024,11 @@ def resume_agent_request(
             source_run_id=source_run_id,
         )
 
+    if source_run is not None and not clarification_context:
+        if source_run.workflow_status == "completed":
+            raise ValueError("source_run_not_failed_step_resumable")
+        raise ValueError("source_run_not_eligible_for_failed_step_resume")
+
     if not clarification_context:
         raise ValueError("clarification_context_required")
 

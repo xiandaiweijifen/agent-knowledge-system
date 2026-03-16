@@ -3755,6 +3755,87 @@ def test_resume_agent_endpoint_can_resume_failed_status_then_summarize_from_step
     assert any(event["stage"] == "status_summary" for event in resumed_payload["workflow_trace"])
 
 
+def test_resume_agent_endpoint_returns_clear_error_for_completed_run_without_clarification(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    initial_response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket for the payment service outage",
+        },
+    )
+
+    assert initial_response.status_code == 200
+    initial_payload = initial_response.json()
+    assert initial_payload["workflow_status"] == "completed"
+
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "run_id": initial_payload["run_id"],
+            "clarification_context": {},
+        },
+    )
+
+    assert resumed_response.status_code == 400
+    assert resumed_response.json()["detail"] == "source_run_not_failed_step_resumable"
+
+
+def test_resume_agent_endpoint_returns_clear_error_for_non_eligible_failed_run_without_clarification(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    initial_response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket for the payment service outage",
+            "debug_fault_injection": {
+                "tool_execution_failures": [
+                    {
+                        "tool_name": "ticketing",
+                        "action": "create",
+                        "fail_count": 2,
+                        "message": "debug injected persistent failure",
+                    }
+                ]
+            },
+        },
+    )
+
+    assert initial_response.status_code == 200
+    initial_payload = initial_response.json()
+    assert initial_payload["workflow_status"] == "failed"
+    assert initial_payload["step_count"] == 1
+
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "run_id": initial_payload["run_id"],
+            "clarification_context": {},
+        },
+    )
+
+    assert resumed_response.status_code == 400
+    assert resumed_response.json()["detail"] == "source_run_not_eligible_for_failed_step_resume"
+
+
 def test_resume_agent_endpoint_requires_original_question_or_run_id():
     client = TestClient(app)
     response = client.post(
