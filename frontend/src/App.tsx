@@ -562,42 +562,44 @@ function App() {
               <p className="eyebrow">{appCopy.eyebrow}</p>
               <h1>{appCopy.brand}</h1>
             </div>
-            <div className="locale-toggle" aria-label={appCopy.language}>
-              <span className="locale-toggle-label">{appCopy.language}</span>
-              <div className="locale-toggle-control">
-                <button
-                  type="button"
-                  className={`locale-toggle-button${locale === "en" ? " active" : ""}`}
-                  onClick={() => setLocale("en")}
-                >
-                  {appCopy.english}
-                </button>
-                <button
-                  type="button"
-                  className={`locale-toggle-button${locale === "zh" ? " active" : ""}`}
-                  onClick={() => setLocale("zh")}
-                >
-                  {appCopy.chinese}
-                </button>
-              </div>
-            </div>
           </div>
           <p className="hero-copy">
             {appCopy.heroCopy}
           </p>
         </div>
-        <div className="hero-stats">
-          <div className="stat-card">
-            <span>{appCopy.documents}</span>
-            <strong>{documents.length}</strong>
+        <div className="hero-side">
+          <div className="locale-toggle" aria-label={appCopy.language}>
+            <span className="locale-toggle-label">{appCopy.language}</span>
+            <div className="locale-toggle-control">
+              <button
+                type="button"
+                className={`locale-toggle-button${locale === "en" ? " active" : ""}`}
+                onClick={() => setLocale("en")}
+              >
+                {appCopy.english}
+              </button>
+              <button
+                type="button"
+                className={`locale-toggle-button${locale === "zh" ? " active" : ""}`}
+                onClick={() => setLocale("zh")}
+              >
+                {appCopy.chinese}
+              </button>
+            </div>
           </div>
-          <div className="stat-card">
-            <span>{appCopy.evalDatasets}</span>
-            <strong>{datasets.length + agentRouteDatasets.length + agentWorkflowDatasets.length}</strong>
-          </div>
-          <div className="stat-card">
-            <span>{appCopy.defaultTopK}</span>
-            <strong>{topK}</strong>
+          <div className="hero-stats">
+            <div className="stat-card">
+              <span>{appCopy.documents}</span>
+              <strong>{documents.length}</strong>
+            </div>
+            <div className="stat-card">
+              <span>{appCopy.evalDatasets}</span>
+              <strong>{datasets.length + agentRouteDatasets.length + agentWorkflowDatasets.length}</strong>
+            </div>
+            <div className="stat-card">
+              <span>{appCopy.defaultTopK}</span>
+              <strong>{topK}</strong>
+            </div>
           </div>
         </div>
       </header>
