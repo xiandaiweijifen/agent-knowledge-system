@@ -155,6 +155,7 @@ export function EvaluationView({
           improved: "提升",
           regressed: "下降",
           unchanged: "持平",
+          metric: "指标",
         }
       : {
           workspace: "Evaluation Workspace",
@@ -241,6 +242,7 @@ export function EvaluationView({
           improved: "Improved",
           regressed: "Regressed",
           unchanged: "Unchanged",
+          metric: "Metric",
         };
   const visibleDatasets =
     evaluationMode === "retrieval"
@@ -608,8 +610,11 @@ export function EvaluationView({
                   {evaluationHistory.map((entry) => (
                     <article key={`${entry.saved_at}-${entry.primary_metric_name}`} className="dataset-card">
                       <strong>{new Date(entry.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")}</strong>
-                      <span>{entry.primary_metric_name} {entry.primary_metric_value.toFixed(3)}</span>
-                      <small>{copy.totalCases}: {entry.case_count}</small>
+                      <div className="meta-row">
+                        <span>{copy.metric} {entry.primary_metric_name}</span>
+                        <span>{entry.primary_metric_value.toFixed(3)}</span>
+                        <span>{copy.totalCases}: {entry.case_count}</span>
+                      </div>
                     </article>
                   ))}
                 </div>
@@ -690,8 +695,11 @@ export function EvaluationView({
                   {evaluationHistory.map((entry) => (
                     <article key={`${entry.saved_at}-${entry.primary_metric_name}`} className="dataset-card">
                       <strong>{new Date(entry.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")}</strong>
-                      <span>{entry.primary_metric_name} {entry.primary_metric_value.toFixed(3)}</span>
-                      <small>{copy.totalCases}: {entry.case_count}</small>
+                      <div className="meta-row">
+                        <span>{copy.metric} {entry.primary_metric_name}</span>
+                        <span>{entry.primary_metric_value.toFixed(3)}</span>
+                        <span>{copy.totalCases}: {entry.case_count}</span>
+                      </div>
                     </article>
                   ))}
                 </div>
@@ -776,8 +784,11 @@ export function EvaluationView({
                   {evaluationHistory.map((entry) => (
                     <article key={`${entry.saved_at}-${entry.primary_metric_name}`} className="dataset-card">
                       <strong>{new Date(entry.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")}</strong>
-                      <span>{entry.primary_metric_name} {entry.primary_metric_value.toFixed(3)}</span>
-                      <small>{copy.totalCases}: {entry.case_count}</small>
+                      <div className="meta-row">
+                        <span>{copy.metric} {entry.primary_metric_name}</span>
+                        <span>{entry.primary_metric_value.toFixed(3)}</span>
+                        <span>{copy.totalCases}: {entry.case_count}</span>
+                      </div>
                     </article>
                   ))}
                 </div>
