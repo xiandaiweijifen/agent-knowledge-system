@@ -14,6 +14,7 @@ describe("DocumentsView", () => {
 
     render(
       <DocumentsView
+        locale="en"
         documents={[
           {
             filename: "rag_overview.md",

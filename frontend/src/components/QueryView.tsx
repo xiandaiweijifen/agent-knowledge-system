@@ -1,15 +1,17 @@
-import type { FormEvent } from "react";
+﻿import type { FormEvent } from "react";
 
 import type {
   AgentWorkflowResponse,
   AgentWorkflowRunSummary,
   DiagnosticsResponse,
   DocumentItem,
+  Locale,
   QueryResponse,
   ToolChainStep,
 } from "../types";
 
 type QueryViewProps = {
+  locale?: Locale;
   documents: DocumentItem[];
   queryFilename: string;
   question: string;
@@ -32,6 +34,7 @@ type QueryViewProps = {
 };
 
 export function QueryView({
+  locale = "en",
   documents,
   queryFilename,
   question,
@@ -52,20 +55,289 @@ export function QueryView({
   onLoadAgentWorkflowRun,
   onRunDiagnostics,
 }: QueryViewProps) {
+  const queryCopy =
+    locale === "zh"
+      ? {
+          workspace: "查询工作台",
+          bannerTitle: "回答追踪与检索检查",
+          bannerCopy: "运行有依据的查询，比较回答链路，并检查向量分数与 rerank bonus 的行为。",
+          noDocument: "未选择文档",
+          answerReady: "回答已就绪",
+          answerIdle: "回答未生成",
+          diagnosticsReady: "诊断已就绪",
+          diagnosticsIdle: "诊断未运行",
+          queryLab: "查询实验台",
+          queryLabCopy: "检查选中文档的检索行为、回答生成过程和 rerank 信号。",
+          documentContext: "文档上下文",
+          noDocumentContext: "无文档上下文（可选 Agent）",
+          documentHint:
+            "`运行 Query` 和 `运行 Diagnostics` 需要文档。`运行 Agent` 可在没有文档时执行工具或澄清工作流。",
+          question: "问题",
+          presetQuestions: "预设问题",
+          topK: "Top-K",
+          topKSummary: "top-k",
+          noDocumentHint:
+            "当前未选择文档上下文。仅检索类操作会被禁用，但 Agent 工具工作流仍可运行。",
+          runningQuery: "正在运行查询工作流...",
+          agentWorkflow: "Agent 工作流",
+          workflowStatus: "工作流状态",
+          route: "路由",
+          answerProvider: "回答提供方",
+          tool: "工具",
+          routeReason: "路由原因",
+          routeContext: "路由上下文",
+          documentUsed: "文档",
+          retrievalUsed: "检索",
+          toolPlanningUsed: "工具规划",
+          used: "已使用",
+          notUsed: "未使用",
+          workflowRecord: "工作流记录",
+          runId: "Run Id",
+          resumedFrom: "恢复来源",
+          sourceRun: "源 Run",
+          resumeType: "恢复类型",
+          resumedStep: "恢复步骤",
+          notPersisted: "未持久化",
+          notResumed: "未恢复",
+          notLinked: "未关联",
+          notResumedFromStep: "未从步骤恢复",
+          reusedSteps: "复用步骤",
+          none: "无",
+          questionRewritten: "问题改写",
+          yes: "是",
+          no: "否",
+          recoverySemantics: "恢复语义",
+          outcome: "结果分类",
+          retryState: "重试状态",
+          recommended: "推荐动作",
+          failureStage: "失败阶段",
+          unknown: "未知",
+          failurePrefix: "失败信息",
+          knowledgeResult: "知识结果",
+          executedSteps: "已执行步骤",
+          executedStepsCopy: (count: number) => `这个工作流在返回最终结果前执行了 ${count} 个步骤。`,
+          step: "步骤",
+          target: "目标",
+          planningMode: "规划模式",
+          executionMode: "执行模式",
+          finalStep: "最终步骤",
+          toolPlan: "工具计划",
+          action: "动作",
+          finalStepCopy: "顶层快照展示的是最终执行步骤。完整链路请看上面的已执行步骤。",
+          finalStepExecution: "最终步骤执行",
+          toolExecution: "工具执行",
+          clarificationPlan: "澄清计划",
+          missing: "缺失",
+          workflowTrace: "工作流轨迹",
+          noWorkflow: "还没有 Agent 工作流",
+          noWorkflowCopy: "运行 Agent 后可查看路由选择、工作流轨迹，以及工具或澄清输出。",
+          recentRuns: "最近工作流运行",
+          routeMeta: "路由",
+          runMeta: "运行",
+          retryMeta: "重试",
+          recommendedMeta: "推荐",
+          resumedFromMeta: "恢复自",
+          reusedStepsMeta: "复用步骤",
+          noHistory: "还没有工作流历史",
+          noHistoryCopy: "运行 Agent 后会持久化工作流运行记录，并可在这里重新加载。",
+          answerTrace: "回答链路",
+          chatProvider: "对话提供方",
+          chatModel: "对话模型",
+          answerLatency: "回答耗时",
+          embeddingProvider: "Embedding 提供方",
+          queryProvider: "查询提供方",
+          retrievalLatency: "检索耗时",
+          topChunks: "Top 检索片段",
+          chars: "字符",
+          vector: "向量",
+          bonus: "加成",
+          noAnswerTrace: "还没有回答链路",
+          noAnswerTraceCopy: "运行查询后可检查回答文本、模型提供方和 Top 检索片段。",
+          retrievalDiagnostics: "检索诊断",
+          scoredChunks: "评分片段数",
+          candidates: "候选数",
+          meanScore: "平均分",
+          maxScore: "最高分",
+          minScore: "最低分",
+          latency: "耗时",
+          candidateRanking: "候选排序",
+          noDiagnostics: "还没有诊断结果",
+          noDiagnosticsCopy: "运行诊断后可检查向量分数、rerank bonus 和候选排序。",
+          supportingContext: "支撑上下文",
+          searchQuery: "搜索问题",
+          matchedDocuments: "匹配文档数",
+          documents: "文档",
+          searchSnippets: "搜索片段",
+          executionStatus: "执行状态",
+          mode: "模式",
+          traceId: "Trace Id",
+          notAvailable: "不可用",
+          ticketId: "工单 Id",
+          status: "状态",
+          severity: "严重级别",
+          environment: "环境",
+          ticketCount: "工单数量",
+          statusFilter: "状态筛选",
+          noTicketsMatched: "当前筛选条件下没有工单。",
+          toolOutput: "工具输出",
+          noActions: "暂无可用恢复入口",
+          clearDiagnostics: "清空诊断",
+          runQuery: "运行 Query",
+          runDiagnostics: "运行 Diagnostics",
+          runAgent: "运行 Agent",
+        }
+      : {
+          workspace: "Query Workspace",
+          bannerTitle: "Answer Tracing And Retrieval Inspection",
+          bannerCopy:
+            "Run grounded queries, compare answer traces, and inspect vector score versus rerank bonus behavior.",
+          noDocument: "no document",
+          answerReady: "answer ready",
+          answerIdle: "answer idle",
+          diagnosticsReady: "diagnostics ready",
+          diagnosticsIdle: "diagnostics idle",
+          queryLab: "Query Lab",
+          queryLabCopy:
+            "Probe retrieval behavior, answer generation, and reranking signals for a selected document.",
+          documentContext: "Document Context",
+          noDocumentContext: "No document context (Agent optional)",
+          documentHint:
+            "`Run Query` and `Run Diagnostics` require a document. `Run Agent` can operate without one for tool execution or clarification workflows.",
+          question: "Question",
+          presetQuestions: "Preset Questions",
+          topK: "Top-K",
+          topKSummary: "top-k",
+          noDocumentHint:
+            "No document context selected. Retrieval-only actions are disabled, but agent tool workflows can still run.",
+          runningQuery: "Running query workflow...",
+          agentWorkflow: "Agent Workflow",
+          workflowStatus: "Workflow Status",
+          route: "Route",
+          answerProvider: "Answer Provider",
+          tool: "Tool",
+          routeReason: "Route Reason",
+          routeContext: "Route Context",
+          documentUsed: "document",
+          retrievalUsed: "retrieval",
+          toolPlanningUsed: "tool planning",
+          used: "used",
+          notUsed: "not used",
+          workflowRecord: "Workflow Record",
+          runId: "Run Id",
+          resumedFrom: "Resumed From",
+          sourceRun: "Source Run",
+          resumeType: "Resume Type",
+          resumedStep: "Resumed Step",
+          notPersisted: "not persisted",
+          notResumed: "not resumed",
+          notLinked: "not linked",
+          notResumedFromStep: "not resumed from step",
+          reusedSteps: "reused steps",
+          none: "none",
+          questionRewritten: "question rewritten",
+          yes: "yes",
+          no: "no",
+          recoverySemantics: "Recovery Semantics",
+          outcome: "Outcome",
+          retryState: "Retry State",
+          recommended: "Recommended",
+          failureStage: "Failure Stage",
+          unknown: "unknown",
+          failurePrefix: "Failure",
+          knowledgeResult: "Knowledge Result",
+          executedSteps: "Executed Steps",
+          executedStepsCopy: (count: number) =>
+            `The workflow executed ${count} step${count === 1 ? "" : "s"} before returning the final result.`,
+          step: "Step",
+          target: "Target",
+          planningMode: "Planning Mode",
+          executionMode: "Execution Mode",
+          finalStep: "Final Step",
+          toolPlan: "Tool Plan",
+          action: "Action",
+          finalStepCopy:
+            "This top-level snapshot shows the final executed step. Use Executed Steps above to inspect the full chain.",
+          finalStepExecution: "Final Step Execution",
+          toolExecution: "Tool Execution",
+          clarificationPlan: "Clarification Plan",
+          missing: "missing",
+          workflowTrace: "Workflow Trace",
+          noWorkflow: "No agent workflow yet",
+          noWorkflowCopy:
+            "Run Agent to inspect route selection, workflow trace, and tool or clarification output.",
+          recentRuns: "Recent Workflow Runs",
+          routeMeta: "route",
+          runMeta: "run",
+          retryMeta: "retry",
+          recommendedMeta: "recommended",
+          resumedFromMeta: "resumed from",
+          reusedStepsMeta: "reused steps",
+          noHistory: "No workflow history yet",
+          noHistoryCopy:
+            "Run Agent to persist workflow runs, then load a recent run from this panel.",
+          answerTrace: "Answer Trace",
+          chatProvider: "Chat Provider",
+          chatModel: "Chat Model",
+          answerLatency: "Answer Latency",
+          embeddingProvider: "Embedding Provider",
+          queryProvider: "Query Provider",
+          retrievalLatency: "Retrieval Latency",
+          topChunks: "Top Retrieved Chunks",
+          chars: "chars",
+          vector: "vector",
+          bonus: "bonus",
+          noAnswerTrace: "No answer trace yet",
+          noAnswerTraceCopy:
+            "Run a query to inspect answer text, provider selection, and top retrieved chunks.",
+          retrievalDiagnostics: "Retrieval Diagnostics",
+          scoredChunks: "Scored Chunks",
+          candidates: "Candidates",
+          meanScore: "Mean Score",
+          maxScore: "Max Score",
+          minScore: "Min Score",
+          latency: "Latency",
+          candidateRanking: "Candidate Ranking",
+          noDiagnostics: "No diagnostics yet",
+          noDiagnosticsCopy:
+            "Run diagnostics to inspect vector scores, rerank bonuses, and candidate ordering.",
+          supportingContext: "Supporting Context",
+          searchQuery: "Search Query",
+          matchedDocuments: "Matched Documents",
+          documents: "Documents",
+          searchSnippets: "Search Snippets",
+          executionStatus: "Execution Status",
+          mode: "Mode",
+          traceId: "Trace Id",
+          notAvailable: "n/a",
+          ticketId: "Ticket Id",
+          status: "Status",
+          severity: "Severity",
+          environment: "Environment",
+          ticketCount: "Ticket Count",
+          statusFilter: "Status Filter",
+          noTicketsMatched: "No tickets matched the current filter.",
+          toolOutput: "Tool Output",
+          noActions: "No recovery actions available",
+          clearDiagnostics: "Clear Diagnostics",
+          runQuery: "Run Query",
+          runDiagnostics: "Run Diagnostics",
+          runAgent: "Run Agent",
+        };
+
   function formatRecoveryActionLabel(action: string) {
     switch (action) {
       case "resume_from_failed_step":
-        return "从失败步骤继续";
+        return locale === "zh" ? "从失败步骤继续" : "Resume From Failed Step";
       case "manual_retrigger":
-        return "人工重新触发";
+        return locale === "zh" ? "人工重新触发" : "Manual Retrigger";
       case "resume_with_clarification":
-        return "补充澄清后继续";
+        return locale === "zh" ? "补充澄清后继续" : "Resume With Clarification";
       case "retry":
-        return "重试";
+        return locale === "zh" ? "重试" : "Retry";
       case "manual_investigation":
-        return "人工排查";
+        return locale === "zh" ? "人工排查" : "Manual Investigation";
       case "none":
-        return "无需恢复";
+        return locale === "zh" ? "无需恢复" : "No Recovery Needed";
       default:
         return action;
     }
@@ -75,7 +347,7 @@ export function QueryView({
     if (!actions || actions.length === 0) {
       return (
         <span className={`meta-pill${mutedWhenEmpty ? " muted-pill" : ""}`}>
-          无可用恢复入口
+          {queryCopy.noActions}
         </span>
       );
     }
@@ -106,30 +378,30 @@ export function QueryView({
 
     return (
       <article className="supporting-context-card">
-        <span className="section-label">Supporting Context</span>
+        <span className="section-label">{queryCopy.supportingContext}</span>
         <div className="trace-grid">
           {supportingQuery && (
             <div>
-              <span className="trace-label">Search Query</span>
+              <span className="trace-label">{queryCopy.searchQuery}</span>
               <strong>{supportingQuery}</strong>
             </div>
           )}
           {supportingMatchCount && (
             <div>
-              <span className="trace-label">Matched Documents</span>
+              <span className="trace-label">{queryCopy.matchedDocuments}</span>
               <strong>{supportingMatchCount}</strong>
             </div>
           )}
         </div>
         {supportingDocuments && (
           <div className="supporting-block">
-            <span className="trace-label">Documents</span>
+            <span className="trace-label">{queryCopy.documents}</span>
             <p>{supportingDocuments}</p>
           </div>
         )}
         {supportingSnippets && (
           <div className="supporting-block">
-            <span className="trace-label">Search Snippets</span>
+            <span className="trace-label">{queryCopy.searchSnippets}</span>
             <p>{supportingSnippets}</p>
           </div>
         )}
@@ -156,15 +428,15 @@ export function QueryView({
       <>
         <div className="trace-grid">
           <div>
-            <span className="trace-label">Execution Status</span>
+            <span className="trace-label">{queryCopy.executionStatus}</span>
             <strong>{toolExecution.execution_status}</strong>
           </div>
           <div>
-            <span className="trace-label">Mode</span>
+            <span className="trace-label">{queryCopy.mode}</span>
             <strong>{toolExecution.execution_mode}</strong>
           </div>
           <div>
-            <span className="trace-label">Trace Id</span>
+            <span className="trace-label">{queryCopy.traceId}</span>
             <strong>{toolExecution.trace_id}</strong>
           </div>
         </div>
@@ -173,20 +445,20 @@ export function QueryView({
           <div className="ticketing-highlight">
             <div className="trace-grid">
               <div>
-                <span className="trace-label">Ticket Id</span>
-                <strong>{toolExecution.output.ticket_id ?? "n/a"}</strong>
+                <span className="trace-label">{queryCopy.ticketId}</span>
+                <strong>{toolExecution.output.ticket_id ?? queryCopy.notAvailable}</strong>
               </div>
               <div>
-                <span className="trace-label">Status</span>
-                <strong>{toolExecution.output.status ?? "n/a"}</strong>
+                <span className="trace-label">{queryCopy.status}</span>
+                <strong>{toolExecution.output.status ?? queryCopy.notAvailable}</strong>
               </div>
               <div>
-                <span className="trace-label">Severity</span>
-                <strong>{toolExecution.output.severity ?? "n/a"}</strong>
+                <span className="trace-label">{queryCopy.severity}</span>
+                <strong>{toolExecution.output.severity ?? queryCopy.notAvailable}</strong>
               </div>
               <div>
-                <span className="trace-label">Environment</span>
-                <strong>{toolExecution.output.environment ?? "n/a"}</strong>
+                <span className="trace-label">{queryCopy.environment}</span>
+                <strong>{toolExecution.output.environment ?? queryCopy.notAvailable}</strong>
               </div>
             </div>
           </div>
@@ -196,11 +468,11 @@ export function QueryView({
           <div className="ticketing-highlight">
             <div className="trace-grid">
               <div>
-                <span className="trace-label">Ticket Count</span>
+                <span className="trace-label">{queryCopy.ticketCount}</span>
                 <strong>{toolExecution.output.ticket_count ?? "0"}</strong>
               </div>
               <div>
-                <span className="trace-label">Status Filter</span>
+                <span className="trace-label">{queryCopy.statusFilter}</span>
                 <strong>{toolExecution.output.status_filter ?? "all"}</strong>
               </div>
             </div>
@@ -211,14 +483,14 @@ export function QueryView({
                 ))}
               </div>
             ) : (
-              <p className="subsection-copy">No tickets matched the current filter.</p>
+              <p className="subsection-copy">{queryCopy.noTicketsMatched}</p>
             )}
           </div>
         )}
         {Object.keys(toolExecution.output).length > 0 &&
           !(toolExecution.tool_name === "ticketing" && toolExecution.action === "list") && (
             <>
-              <span className="section-label">Tool Output</span>
+              <span className="section-label">{queryCopy.toolOutput}</span>
               <div className="tool-output-grid">
                 {Object.entries(toolExecution.output)
                   .filter(
@@ -256,18 +528,15 @@ export function QueryView({
       <article className="panel panel-span view-banner">
         <div className="view-banner-content">
           <div>
-            <span className="section-label">Query Workspace</span>
-            <h2 className="view-banner-title">Answer Tracing And Retrieval Inspection</h2>
-            <p className="view-banner-copy">
-              Run grounded queries, compare answer traces, and inspect vector score versus rerank
-              bonus behavior.
-            </p>
+            <span className="section-label">{queryCopy.workspace}</span>
+            <h2 className="view-banner-title">{queryCopy.bannerTitle}</h2>
+            <p className="view-banner-copy">{queryCopy.bannerCopy}</p>
           </div>
           <div className="view-banner-meta">
-            <span>{queryFilename || "no document"}</span>
-            <span>top-k {topK}</span>
-            <span>{queryResult ? "answer ready" : "answer idle"}</span>
-            <span>{diagnosticsResult ? "diagnostics ready" : "diagnostics idle"}</span>
+            <span>{queryFilename || queryCopy.noDocument}</span>
+            <span>{queryCopy.topKSummary} {topK}</span>
+            <span>{queryResult ? queryCopy.answerReady : queryCopy.answerIdle}</span>
+            <span>{diagnosticsResult ? queryCopy.diagnosticsReady : queryCopy.diagnosticsIdle}</span>
           </div>
         </div>
       </article>
@@ -275,24 +544,22 @@ export function QueryView({
       <article className="panel">
         <div className="panel-heading">
           <div>
-            <h2>Query Lab</h2>
-            <p className="panel-intro">
-              Probe retrieval behavior, answer generation, and reranking signals for a selected document.
-            </p>
+            <h2>{queryCopy.queryLab}</h2>
+            <p className="panel-intro">{queryCopy.queryLabCopy}</p>
           </div>
           <button type="button" className="ghost-button" onClick={onClearDiagnostics}>
-            Clear Diagnostics
+            {queryCopy.clearDiagnostics}
           </button>
         </div>
         <form className="stack-form" onSubmit={onSubmitQuery}>
           <label>
-            Document Context
+            {queryCopy.documentContext}
             <select
               value={queryFilename}
               onChange={(event) => onChangeDocument(event.target.value)}
               disabled={documents.length === 0}
             >
-              <option value="">No document context (Agent optional)</option>
+              <option value="">{queryCopy.noDocumentContext}</option>
               {documents.map((item) => (
                 <option key={item.filename} value={item.filename}>
                   {item.filename}
@@ -301,15 +568,14 @@ export function QueryView({
             </select>
           </label>
           <p className="muted">
-            `Run Query` and `Run Diagnostics` require a document. `Run Agent` can operate without one
-            for tool execution or clarification workflows.
+            {queryCopy.documentHint}
           </p>
           <label>
-            Question
+            {queryCopy.question}
             <textarea value={question} onChange={(event) => onChangeQuestion(event.target.value)} rows={4} />
           </label>
           <div className="preset-block">
-            <span className="section-label">Preset Questions</span>
+            <span className="section-label">{queryCopy.presetQuestions}</span>
             <div className="preset-strip">
               {activePresetQuestions.map((preset) => (
                 <button
@@ -324,7 +590,7 @@ export function QueryView({
             </div>
           </div>
           <label>
-            Top-K
+            {queryCopy.topK}
             <input
               type="number"
               min={1}
@@ -335,7 +601,7 @@ export function QueryView({
           </label>
           <div className="button-row">
             <button type="submit" className="primary-button" disabled={queryBusy || !hasDocument || !hasQuestion}>
-              Run Query
+              {queryCopy.runQuery}
             </button>
             <button
               type="button"
@@ -343,7 +609,7 @@ export function QueryView({
               disabled={queryBusy || !hasDocument || !hasQuestion}
               onClick={onRunDiagnostics}
             >
-              Run Diagnostics
+              {queryCopy.runDiagnostics}
             </button>
             <button
               type="button"
@@ -351,89 +617,88 @@ export function QueryView({
               disabled={queryBusy || !hasQuestion}
               onClick={onRunAgent}
             >
-              Run Agent
+              {queryCopy.runAgent}
             </button>
           </div>
         </form>
         {!hasDocument && (
           <p className="muted">
-            No document context selected. Retrieval-only actions are disabled, but agent tool workflows can
-            still run.
+            {queryCopy.noDocumentHint}
           </p>
         )}
-        {queryBusy && <p className="status">Running query workflow...</p>}
+        {queryBusy && <p className="status">{queryCopy.runningQuery}</p>}
         {queryError && <p className="error">{queryError}</p>}
       </article>
 
       <div className="query-results">
         <article className="panel">
           <div className="panel-heading">
-            <h2>Agent Workflow</h2>
+            <h2>{queryCopy.agentWorkflow}</h2>
           </div>
           {agentQueryResult ? (
             <div className="result-stack">
               <div className="trace-grid">
                 <div>
-                  <span className="trace-label">Workflow Status</span>
+                    <span className="trace-label">{queryCopy.workflowStatus}</span>
                   <strong>{agentQueryResult.workflow_status}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Route</span>
+                    <span className="trace-label">{queryCopy.route}</span>
                   <strong>{agentQueryResult.route.route_type}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Answer Provider</span>
-                  <strong>{agentQueryResult.chat_provider ?? "not used"}</strong>
+                    <span className="trace-label">{queryCopy.answerProvider}</span>
+                    <strong>{agentQueryResult.chat_provider ?? queryCopy.notUsed}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Tool</span>
-                  <strong>{agentQueryResult.tool_plan?.tool_name ?? "not used"}</strong>
+                    <span className="trace-label">{queryCopy.tool}</span>
+                    <strong>{agentQueryResult.tool_plan?.tool_name ?? queryCopy.notUsed}</strong>
                 </div>
               </div>
 
               <article className="subsection-card">
-                <span className="section-label">Route Reason</span>
+                <span className="section-label">{queryCopy.routeReason}</span>
                 <p className="subsection-copy">{agentQueryResult.route.route_reason}</p>
               </article>
 
               <article className="subsection-card">
-                <span className="section-label">Route Context</span>
+                <span className="section-label">{queryCopy.routeContext}</span>
                 <div className="pill-strip">
                   <span className={`meta-pill${routeUsesFilename ? "" : " muted-pill"}`}>
-                    document {routeUsesFilename ? `used: ${agentQueryResult.filename}` : "not used"}
+                    {queryCopy.documentUsed} {routeUsesFilename ? `${queryCopy.used}: ${agentQueryResult.filename}` : queryCopy.notUsed}
                   </span>
                   <span className={`meta-pill${routeUsesRetrieval ? "" : " muted-pill"}`}>
-                    retrieval {routeUsesRetrieval ? "used" : "not used"}
+                    {queryCopy.retrievalUsed} {routeUsesRetrieval ? queryCopy.used : queryCopy.notUsed}
                   </span>
                   <span className={`meta-pill${routeUsesToolPlanning ? "" : " muted-pill"}`}>
-                    tool planning {routeUsesToolPlanning ? "used" : "not used"}
+                    {queryCopy.toolPlanningUsed} {routeUsesToolPlanning ? queryCopy.used : queryCopy.notUsed}
                   </span>
                 </div>
               </article>
 
               <article className="subsection-card">
-                <span className="section-label">Workflow Record</span>
+                <span className="section-label">{queryCopy.workflowRecord}</span>
                 <div className="trace-grid">
                   <div>
-                    <span className="trace-label">Run Id</span>
-                    <strong>{agentQueryResult.run_id ?? "not persisted"}</strong>
+                    <span className="trace-label">{queryCopy.runId}</span>
+                    <strong>{agentQueryResult.run_id ?? queryCopy.notPersisted}</strong>
                   </div>
                   <div>
-                    <span className="trace-label">Resumed From</span>
-                    <strong>{agentQueryResult.resumed_from_question ?? "not resumed"}</strong>
+                    <span className="trace-label">{queryCopy.resumedFrom}</span>
+                    <strong>{agentQueryResult.resumed_from_question ?? queryCopy.notResumed}</strong>
                   </div>
                   <div>
-                    <span className="trace-label">Source Run</span>
-                    <strong>{agentQueryResult.source_run_id ?? "not linked"}</strong>
+                    <span className="trace-label">{queryCopy.sourceRun}</span>
+                    <strong>{agentQueryResult.source_run_id ?? queryCopy.notLinked}</strong>
                   </div>
                   <div>
-                    <span className="trace-label">Resume Type</span>
-                    <strong>{agentQueryResult.resume_strategy ?? "not resumed"}</strong>
+                    <span className="trace-label">{queryCopy.resumeType}</span>
+                    <strong>{agentQueryResult.resume_strategy ?? queryCopy.notResumed}</strong>
                   </div>
                   <div>
-                    <span className="trace-label">Resumed Step</span>
+                    <span className="trace-label">{queryCopy.resumedStep}</span>
                     <strong>
-                      {agentQueryResult.resumed_from_step_index ?? "not resumed from step"}
+                      {agentQueryResult.resumed_from_step_index ?? queryCopy.notResumedFromStep}
                     </strong>
                   </div>
                 </div>
@@ -443,30 +708,30 @@ export function QueryView({
                       (agentQueryResult.reused_step_indices?.length ?? 0) > 0 ? "" : " muted-pill"
                     }`}
                   >
-                    reused steps{" "}
+                    {queryCopy.reusedSteps}{" "}
                     {(agentQueryResult.reused_step_indices?.length ?? 0) > 0
                       ? agentQueryResult.reused_step_indices?.join(", ")
-                      : "none"}
+                      : queryCopy.none}
                   </span>
                   <span className="meta-pill">
-                    question rewritten {agentQueryResult.question_rewritten ? "yes" : "no"}
+                    {queryCopy.questionRewritten} {agentQueryResult.question_rewritten ? queryCopy.yes : queryCopy.no}
                   </span>
                 </div>
               </article>
 
               <article className="subsection-card">
-                <span className="section-label">Recovery Semantics</span>
+                <span className="section-label">{queryCopy.recoverySemantics}</span>
                 <div className="trace-grid">
                   <div>
-                    <span className="trace-label">Outcome</span>
-                    <strong>{agentQueryResult.outcome_category ?? "unknown"}</strong>
+                    <span className="trace-label">{queryCopy.outcome}</span>
+                    <strong>{agentQueryResult.outcome_category ?? queryCopy.unknown}</strong>
                   </div>
                   <div>
-                    <span className="trace-label">Retry State</span>
-                    <strong>{agentQueryResult.retry_state ?? "unknown"}</strong>
+                    <span className="trace-label">{queryCopy.retryState}</span>
+                    <strong>{agentQueryResult.retry_state ?? queryCopy.unknown}</strong>
                   </div>
                   <div>
-                    <span className="trace-label">Recommended</span>
+                    <span className="trace-label">{queryCopy.recommended}</span>
                     <strong>
                       {formatRecoveryActionLabel(
                         agentQueryResult.recommended_recovery_action ?? "none",
@@ -474,8 +739,8 @@ export function QueryView({
                     </strong>
                   </div>
                   <div>
-                    <span className="trace-label">Failure Stage</span>
-                    <strong>{agentQueryResult.failure_stage ?? "n/a"}</strong>
+                    <span className="trace-label">{queryCopy.failureStage}</span>
+                    <strong>{agentQueryResult.failure_stage ?? queryCopy.notAvailable}</strong>
                   </div>
                 </div>
                 <div className="pill-strip">
@@ -483,25 +748,22 @@ export function QueryView({
                 </div>
                 {agentQueryResult.failure_message && (
                   <p className="subsection-copy">
-                    <strong>Failure:</strong> {agentQueryResult.failure_message}
+                    <strong>{queryCopy.failurePrefix}:</strong> {agentQueryResult.failure_message}
                   </p>
                 )}
               </article>
 
               {agentQueryResult.answer && (
                 <article className="subsection-card">
-                  <span className="section-label">Knowledge Result</span>
+                  <span className="section-label">{queryCopy.knowledgeResult}</span>
                   <blockquote className="answer-card">{agentQueryResult.answer}</blockquote>
                 </article>
               )}
 
               {hasToolChain && (
                 <article className="subsection-card">
-                  <span className="section-label">Executed Steps</span>
-                  <p className="subsection-copy">
-                    The workflow executed {agentQueryResult.tool_chain.length} step
-                    {agentQueryResult.tool_chain.length === 1 ? "" : "s"} before returning the final result.
-                  </p>
+                  <span className="section-label">{queryCopy.executedSteps}</span>
+                  <p className="subsection-copy">{queryCopy.executedStepsCopy(agentQueryResult.tool_chain.length)}</p>
                   <div className="tool-chain-list">
                     {agentQueryResult.tool_chain.map((step, index) => (
                       <article
@@ -510,7 +772,7 @@ export function QueryView({
                       >
                         <header className="tool-chain-header">
                           <div>
-                            <span className="section-label">Step {index + 1}</span>
+                            <span className="section-label">{queryCopy.step} {index + 1}</span>
                             <h3>{step.tool_plan.tool_name}</h3>
                           </div>
                           <span className="status-chip success">
@@ -518,20 +780,20 @@ export function QueryView({
                           </span>
                         </header>
                         <p className="subsection-copy">
-                          <strong>Question:</strong> {step.question}
+                          <strong>{queryCopy.question}:</strong> {step.question}
                         </p>
                         <div className="trace-grid">
                           <div>
-                            <span className="trace-label">Target</span>
+                            <span className="trace-label">{queryCopy.target}</span>
                             <strong>{step.tool_plan.target}</strong>
                           </div>
                           <div>
-                            <span className="trace-label">Planning Mode</span>
+                            <span className="trace-label">{queryCopy.planningMode}</span>
                             <strong>{step.tool_plan.planning_mode}</strong>
                           </div>
                           <div>
-                            <span className="trace-label">Execution Mode</span>
-                            <strong>{step.tool_execution?.execution_mode ?? "not executed"}</strong>
+                            <span className="trace-label">{queryCopy.executionMode}</span>
+                            <strong>{step.tool_execution?.execution_mode ?? queryCopy.notUsed}</strong>
                           </div>
                         </div>
                         {Object.keys(step.tool_plan.arguments).length > 0 && (
@@ -553,23 +815,23 @@ export function QueryView({
               {agentQueryResult.tool_plan && (
                 <article className="subsection-card">
                   <span className="section-label">
-                    {hasToolChain ? "Final Step" : "Tool Plan"}
+                    {hasToolChain ? queryCopy.finalStep : queryCopy.toolPlan}
                   </span>
                   <div className="trace-grid">
                     <div>
-                      <span className="trace-label">Tool</span>
+                      <span className="trace-label">{queryCopy.tool}</span>
                       <strong>{agentQueryResult.tool_plan.tool_name}</strong>
                     </div>
                     <div>
-                      <span className="trace-label">Action</span>
+                      <span className="trace-label">{queryCopy.action}</span>
                       <strong>{agentQueryResult.tool_plan.action}</strong>
                     </div>
                     <div>
-                      <span className="trace-label">Target</span>
+                      <span className="trace-label">{queryCopy.target}</span>
                       <strong>{agentQueryResult.tool_plan.target}</strong>
                     </div>
                     <div>
-                      <span className="trace-label">Planning Mode</span>
+                      <span className="trace-label">{queryCopy.planningMode}</span>
                       <strong>{agentQueryResult.tool_plan.planning_mode}</strong>
                     </div>
                   </div>
@@ -584,10 +846,7 @@ export function QueryView({
                   )}
                   <p className="subsection-copy">{agentQueryResult.tool_plan.plan_summary}</p>
                   {hasToolChain && (
-                    <p className="muted">
-                      This top-level snapshot shows the final executed step. Use Executed Steps above
-                      to inspect the full chain.
-                    </p>
+                    <p className="muted">{queryCopy.finalStepCopy}</p>
                   )}
                 </article>
               )}
@@ -595,7 +854,7 @@ export function QueryView({
               {agentQueryResult.tool_execution && (
                 <article className="subsection-card">
                   <span className="section-label">
-                    {hasToolChain ? "Final Step Execution" : "Tool Execution"}
+                    {hasToolChain ? queryCopy.finalStepExecution : queryCopy.toolExecution}
                   </span>
                   {renderToolExecutionDetails(agentQueryResult.tool_execution)}
                 </article>
@@ -603,7 +862,7 @@ export function QueryView({
 
               {agentQueryResult.clarification_plan && (
                 <article className="subsection-card">
-                  <span className="section-label">Clarification Plan</span>
+                  <span className="section-label">{queryCopy.clarificationPlan}</span>
                   <p className="subsection-copy">
                     {agentQueryResult.clarification_message ??
                       agentQueryResult.clarification_plan.clarification_summary}
@@ -612,7 +871,7 @@ export function QueryView({
                     <div className="pill-strip">
                       {agentQueryResult.clarification_plan.missing_fields.map((field) => (
                         <span key={field} className="meta-pill">
-                          missing: {field}
+                          {queryCopy.missing}: {field}
                         </span>
                       ))}
                     </div>
@@ -627,7 +886,7 @@ export function QueryView({
                 </article>
               )}
 
-              <div className="section-label">Workflow Trace</div>
+              <div className="section-label">{queryCopy.workflowTrace}</div>
               <div className="trace-event-list">
                 {agentQueryResult.workflow_trace.map((event) => (
                   <article key={`${event.stage}-${event.timestamp}`} className="trace-event-card">
@@ -643,17 +902,15 @@ export function QueryView({
             </div>
           ) : (
             <div className="empty-state empty-state-large">
-              <strong>No agent workflow yet</strong>
-              <p>
-                Run Agent to inspect route selection, workflow trace, and tool or clarification output.
-              </p>
+              <strong>{queryCopy.noWorkflow}</strong>
+              <p>{queryCopy.noWorkflowCopy}</p>
             </div>
           )}
         </article>
 
         <article className="panel">
           <div className="panel-heading">
-            <h2>Recent Workflow Runs</h2>
+            <h2>{queryCopy.recentRuns}</h2>
           </div>
           {agentWorkflowRuns.length > 0 ? (
             <div className="run-list">
@@ -669,22 +926,22 @@ export function QueryView({
                     <span className="status-chip">{run.workflow_status}</span>
                   </div>
                   <div className="meta-row">
-                    <span>route {run.route_type}</span>
-                    <span>run {run.run_id}</span>
+                    <span>{queryCopy.routeMeta} {run.route_type}</span>
+                    <span>{queryCopy.runMeta} {run.run_id}</span>
                   </div>
                   <div className="meta-row">
-                    <span>retry {run.retry_state ?? "unknown"}</span>
-                    <span>recommended {run.recommended_recovery_action ?? "none"}</span>
+                    <span>{queryCopy.retryMeta} {run.retry_state ?? queryCopy.unknown}</span>
+                    <span>{queryCopy.recommendedMeta} {run.recommended_recovery_action ?? queryCopy.none}</span>
                   </div>
                   <div className="pill-strip">
                     {renderRecoveryActions(run.available_recovery_actions, true)}
                   </div>
                   {run.resumed_from_question && (
-                    <p className="subsection-copy">resumed from: {run.resumed_from_question}</p>
+                    <p className="subsection-copy">{queryCopy.resumedFromMeta}: {run.resumed_from_question}</p>
                   )}
                   {(run.reused_step_indices?.length ?? 0) > 0 && (
                     <p className="subsection-copy">
-                      reused steps: {run.reused_step_indices?.join(", ")}
+                      {queryCopy.reusedStepsMeta}: {run.reused_step_indices?.join(", ")}
                     </p>
                   )}
                 </button>
@@ -692,46 +949,46 @@ export function QueryView({
             </div>
           ) : (
             <div className="empty-state">
-              <strong>No workflow history yet</strong>
-              <p>Run Agent to persist workflow runs, then load a recent run from this panel.</p>
+              <strong>{queryCopy.noHistory}</strong>
+              <p>{queryCopy.noHistoryCopy}</p>
             </div>
           )}
         </article>
 
         <article className="panel">
           <div className="panel-heading">
-            <h2>Answer Trace</h2>
+            <h2>{queryCopy.answerTrace}</h2>
           </div>
           {queryResult ? (
             <div className="result-stack">
               <div className="trace-grid">
                 <div>
-                  <span className="trace-label">Chat Provider</span>
+                  <span className="trace-label">{queryCopy.chatProvider}</span>
                   <strong>{queryResult.chat_provider}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Chat Model</span>
+                  <span className="trace-label">{queryCopy.chatModel}</span>
                   <strong>{queryResult.chat_model}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Answer Latency</span>
+                  <span className="trace-label">{queryCopy.answerLatency}</span>
                   <strong>{queryResult.answer_latency_ms.toFixed(3)} ms</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Embedding Provider</span>
+                  <span className="trace-label">{queryCopy.embeddingProvider}</span>
                   <strong>{queryResult.retrieval.embedding_provider}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Query Provider</span>
+                  <span className="trace-label">{queryCopy.queryProvider}</span>
                   <strong>{queryResult.retrieval.query_embedding_provider}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Retrieval Latency</span>
+                  <span className="trace-label">{queryCopy.retrievalLatency}</span>
                   <strong>{queryResult.retrieval.retrieval_latency_ms.toFixed(3)} ms</strong>
                 </div>
               </div>
               <blockquote className="answer-card">{queryResult.answer}</blockquote>
-              <div className="section-label">Top Retrieved Chunks</div>
+              <div className="section-label">{queryCopy.topChunks}</div>
               <div className="match-list compact">
                 {queryResult.retrieval.matches.map((match) => (
                   <article key={match.chunk_id} className="match-card trace-card">
@@ -740,9 +997,9 @@ export function QueryView({
                       <span>{match.score.toFixed(6)}</span>
                     </header>
                     <div className="meta-row">
-                      <span>chars {match.char_count}</span>
-                      <span>vector {match.vector_score?.toFixed(6) ?? "-"}</span>
-                      <span>bonus {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
+                      <span>{queryCopy.chars} {match.char_count}</span>
+                      <span>{queryCopy.vector} {match.vector_score?.toFixed(6) ?? "-"}</span>
+                      <span>{queryCopy.bonus} {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
                     </div>
                     <p>{match.content}</p>
                   </article>
@@ -751,45 +1008,45 @@ export function QueryView({
             </div>
           ) : (
             <div className="empty-state empty-state-large">
-              <strong>No answer trace yet</strong>
-              <p>Run a query to inspect answer text, provider selection, and top retrieved chunks.</p>
+              <strong>{queryCopy.noAnswerTrace}</strong>
+              <p>{queryCopy.noAnswerTraceCopy}</p>
             </div>
           )}
         </article>
 
         <article className="panel">
           <div className="panel-heading">
-            <h2>Retrieval Diagnostics</h2>
+            <h2>{queryCopy.retrievalDiagnostics}</h2>
           </div>
           {diagnosticsResult ? (
             <>
               <div className="trace-grid">
                 <div>
-                  <span className="trace-label">Scored Chunks</span>
+                  <span className="trace-label">{queryCopy.scoredChunks}</span>
                   <strong>{diagnosticsResult.diagnostics.total_scored_chunks}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Candidates</span>
+                  <span className="trace-label">{queryCopy.candidates}</span>
                   <strong>{diagnosticsResult.diagnostics.returned_candidate_count}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Mean Score</span>
+                  <span className="trace-label">{queryCopy.meanScore}</span>
                   <strong>{diagnosticsResult.diagnostics.mean_score.toFixed(6)}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Max Score</span>
+                  <span className="trace-label">{queryCopy.maxScore}</span>
                   <strong>{diagnosticsResult.diagnostics.max_score.toFixed(6)}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Min Score</span>
+                  <span className="trace-label">{queryCopy.minScore}</span>
                   <strong>{diagnosticsResult.diagnostics.min_score.toFixed(6)}</strong>
                 </div>
                 <div>
-                  <span className="trace-label">Latency</span>
+                  <span className="trace-label">{queryCopy.latency}</span>
                   <strong>{diagnosticsResult.retrieval.retrieval_latency_ms.toFixed(3)} ms</strong>
                 </div>
               </div>
-              <div className="section-label">Candidate Ranking</div>
+              <div className="section-label">{queryCopy.candidateRanking}</div>
               <div className="match-list compact">
                 {diagnosticsResult.candidates.map((match) => (
                   <article key={match.chunk_id} className="match-card diagnostic trace-card">
@@ -798,9 +1055,9 @@ export function QueryView({
                       <span>{match.score.toFixed(6)}</span>
                     </header>
                     <div className="meta-row">
-                      <span>vector {match.vector_score?.toFixed(6) ?? "-"}</span>
-                      <span>bonus {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
-                      <span>chars {match.char_count}</span>
+                      <span>{queryCopy.vector} {match.vector_score?.toFixed(6) ?? "-"}</span>
+                      <span>{queryCopy.bonus} {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
+                      <span>{queryCopy.chars} {match.char_count}</span>
                     </div>
                     <p>{match.content}</p>
                   </article>
@@ -809,8 +1066,8 @@ export function QueryView({
             </>
           ) : (
             <div className="empty-state empty-state-large">
-              <strong>No diagnostics yet</strong>
-              <p>Run diagnostics to inspect vector scores, rerank bonuses, and candidate ordering.</p>
+              <strong>{queryCopy.noDiagnostics}</strong>
+              <p>{queryCopy.noDiagnosticsCopy}</p>
             </div>
           )}
         </article>

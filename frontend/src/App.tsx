@@ -24,7 +24,7 @@ import {
 import { DocumentsView } from "./components/DocumentsView";
 import { EvaluationView } from "./components/EvaluationView";
 import { QueryView } from "./components/QueryView";
-import { presetQuestions, views } from "./constants";
+import { getViews, presetQuestions } from "./constants";
 import type {
   AgentWorkflowResponse,
   AgentWorkflowRunSummary,
@@ -42,11 +42,13 @@ import type {
   PersistedEmbeddingDocument,
   QueryResponse,
   SystemHealthResponse,
+  Locale,
   ViewKey,
 } from "./types";
 
 function App() {
   const [activeView, setActiveView] = useState<ViewKey>("documents");
+  const [locale, setLocale] = useState<Locale>("en");
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [selectedFilename, setSelectedFilename] = useState("");
@@ -91,6 +93,62 @@ function App() {
       "What is the main topic of this document?",
       "What are the most important system behaviors described here?",
     ];
+  const views = getViews(locale);
+  const appCopy = {
+    en: {
+      eyebrow: "Enterprise RAG Agent Console",
+      heroCopy:
+        "A focused console for inspecting ingestion artifacts, tracing retrieval, and benchmarking retrieval quality across curated datasets.",
+      documents: "Documents",
+      evalDatasets: "Eval Datasets",
+      defaultTopK: "Default Query Top-K",
+      brand: "Agent Knowledge System",
+      systemSnapshot: "System Snapshot",
+      systemSnapshotCopy:
+        "Active providers and infrastructure readiness for the current backend session.",
+      backend: "Backend",
+      environment: "Environment",
+      embedding: "Embedding",
+      chat: "Chat",
+      providerKeys: "Provider Keys",
+      infra: "Infra",
+      unavailable: "unavailable",
+      unknown: "unknown",
+      on: "on",
+      off: "off",
+      modules: "Console Modules",
+      modulesCopy:
+        "Choose the operating surface for ingestion, retrieval diagnostics, or benchmark review.",
+      language: "Language",
+      english: "English",
+      chinese: "中文",
+    },
+    zh: {
+      eyebrow: "企业级 RAG Agent 控制台",
+      heroCopy: "一个聚焦于摄取产物检查、检索追踪和基准评测的控制台。",
+      documents: "文档数",
+      evalDatasets: "评测数据集",
+      defaultTopK: "默认查询 Top-K",
+      brand: "Agent Knowledge System",
+      systemSnapshot: "系统快照",
+      systemSnapshotCopy: "展示当前后端会话中的活跃提供方与基础设施就绪状态。",
+      backend: "后端",
+      environment: "环境",
+      embedding: "嵌入模型",
+      chat: "对话模型",
+      providerKeys: "提供方密钥",
+      infra: "基础设施",
+      unavailable: "不可用",
+      unknown: "未知",
+      on: "开启",
+      off: "关闭",
+      modules: "控制台模块",
+      modulesCopy: "选择用于摄取、检索诊断或基准结果查看的工作界面。",
+      language: "语言",
+      english: "English",
+      chinese: "中文",
+    },
+  }[locale];
 
   const filteredEvalCases =
     evalResult?.report.cases.filter((item) => {
@@ -499,86 +557,108 @@ function App() {
     <div className="app-shell">
       <header className="hero">
         <div>
-          <p className="eyebrow">Enterprise RAG Agent Console</p>
-          <h1>Agent Knowledge System</h1>
+          <div className="hero-topbar">
+            <div>
+              <p className="eyebrow">{appCopy.eyebrow}</p>
+              <h1>{appCopy.brand}</h1>
+            </div>
+            <div className="locale-toggle" aria-label={appCopy.language}>
+              <span className="locale-toggle-label">{appCopy.language}</span>
+              <div className="locale-toggle-control">
+                <button
+                  type="button"
+                  className={`locale-toggle-button${locale === "en" ? " active" : ""}`}
+                  onClick={() => setLocale("en")}
+                >
+                  {appCopy.english}
+                </button>
+                <button
+                  type="button"
+                  className={`locale-toggle-button${locale === "zh" ? " active" : ""}`}
+                  onClick={() => setLocale("zh")}
+                >
+                  {appCopy.chinese}
+                </button>
+              </div>
+            </div>
+          </div>
           <p className="hero-copy">
-            A focused console for inspecting ingestion artifacts, tracing retrieval,
-            and benchmarking retrieval quality across curated datasets.
+            {appCopy.heroCopy}
           </p>
         </div>
         <div className="hero-stats">
           <div className="stat-card">
-            <span>Documents</span>
+            <span>{appCopy.documents}</span>
             <strong>{documents.length}</strong>
           </div>
           <div className="stat-card">
-            <span>Eval Datasets</span>
+            <span>{appCopy.evalDatasets}</span>
             <strong>{datasets.length + agentRouteDatasets.length + agentWorkflowDatasets.length}</strong>
           </div>
           <div className="stat-card">
-            <span>Default Query Top-K</span>
+            <span>{appCopy.defaultTopK}</span>
             <strong>{topK}</strong>
           </div>
         </div>
       </header>
 
-      <section className="status-banner-wrap" aria-label="System Snapshot">
+      <section className="status-banner-wrap" aria-label={appCopy.systemSnapshot}>
         <div className="status-banner-heading">
-          <span className="section-label">System Snapshot</span>
+          <span className="section-label">{appCopy.systemSnapshot}</span>
           <p className="status-banner-copy">
-            Active providers and infrastructure readiness for the current backend session.
+            {appCopy.systemSnapshotCopy}
           </p>
         </div>
         <section className="status-banner">
           <div className="status-pill">
-            <span>Backend</span>
-            <strong>{systemHealth?.status ?? "unknown"}</strong>
+            <span>{appCopy.backend}</span>
+            <strong>{systemHealth?.status ?? appCopy.unknown}</strong>
           </div>
           <div className="status-pill">
-            <span>Environment</span>
-            <strong>{systemHealth?.app_env ?? "unavailable"}</strong>
+            <span>{appCopy.environment}</span>
+            <strong>{systemHealth?.app_env ?? appCopy.unavailable}</strong>
           </div>
           <div className="status-pill">
-            <span>Embedding</span>
+            <span>{appCopy.embedding}</span>
             <strong>
               {systemHealth
                 ? `${systemHealth.embedding_provider} / ${systemHealth.embedding_model}`
-                : "unavailable"}
+                : appCopy.unavailable}
             </strong>
           </div>
           <div className="status-pill">
-            <span>Chat</span>
+            <span>{appCopy.chat}</span>
             <strong>
               {systemHealth
                 ? `${systemHealth.chat_provider} / ${systemHealth.chat_model}`
-                : "unavailable"}
+                : appCopy.unavailable}
             </strong>
           </div>
           <div className="status-pill">
-            <span>Provider Keys</span>
+            <span>{appCopy.providerKeys}</span>
             <strong>
               {systemHealth
-                ? `Gemini ${systemHealth.providers.gemini_configured ? "on" : "off"} | OpenAI ${systemHealth.providers.openai_configured ? "on" : "off"}`
-                : "unavailable"}
+                ? `Gemini ${systemHealth.providers.gemini_configured ? appCopy.on : appCopy.off} | OpenAI ${systemHealth.providers.openai_configured ? appCopy.on : appCopy.off}`
+                : appCopy.unavailable}
             </strong>
           </div>
           <div className="status-pill">
-            <span>Infra</span>
+            <span>{appCopy.infra}</span>
             <strong>
               {systemHealth
-                ? `DB ${systemHealth.storage.database_configured ? "on" : "off"} | Redis ${systemHealth.storage.redis_configured ? "on" : "off"}`
-                : "unavailable"}
+                ? `DB ${systemHealth.storage.database_configured ? appCopy.on : appCopy.off} | Redis ${systemHealth.storage.redis_configured ? appCopy.on : appCopy.off}`
+                : appCopy.unavailable}
             </strong>
           </div>
         </section>
       </section>
       {systemHealthError && <p className="error">{systemHealthError}</p>}
 
-      <section className="nav-section" aria-label="Console Modules">
+      <section className="nav-section" aria-label={appCopy.modules}>
         <div className="nav-section-heading">
-          <span className="section-label">Console Modules</span>
+          <span className="section-label">{appCopy.modules}</span>
           <p className="nav-section-copy">
-            Choose the operating surface for ingestion, retrieval diagnostics, or benchmark review.
+            {appCopy.modulesCopy}
           </p>
         </div>
         <nav className="tab-row" aria-label="Views">
@@ -598,6 +678,7 @@ function App() {
 
       {activeView === "documents" && (
         <DocumentsView
+          locale={locale}
           documents={documents}
           selectedFilename={selectedFilename}
           preview={preview}
@@ -628,6 +709,7 @@ function App() {
 
       {activeView === "query" && (
         <QueryView
+          locale={locale}
           documents={documents}
           queryFilename={queryFilename}
           question={question}
@@ -652,6 +734,7 @@ function App() {
 
       {activeView === "evaluation" && (
         <EvaluationView
+          locale={locale}
           evaluationMode={evaluationMode}
           datasets={datasets}
           agentRouteDatasets={agentRouteDatasets}

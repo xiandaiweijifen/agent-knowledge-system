@@ -1,3 +1,5 @@
+export type Locale = "en" | "zh";
+
 export type ViewKey = "documents" | "query" | "evaluation";
 
 export type DocumentItem = {

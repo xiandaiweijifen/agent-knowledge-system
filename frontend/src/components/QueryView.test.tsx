@@ -629,8 +629,9 @@ describe("QueryView", () => {
     );
 
     expect(screen.getAllByText("Recovery Semantics").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("从失败步骤继续 (resume_from_failed_step)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("人工重新触发 (manual_retrigger)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Resume From Failed Step (resume_from_failed_step)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Manual Retrigger (manual_retrigger)").length).toBeGreaterThan(0);
     expect(screen.getByText(/Failure:/)).toBeInTheDocument();
   });
 });
+

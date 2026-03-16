@@ -1,4 +1,4 @@
-import type { ViewKey } from "./types";
+import type { Locale, ViewKey } from "./types";
 
 export const presetQuestions: Record<string, string[]> = {
   "rag_overview.md": [
@@ -15,8 +15,19 @@ export const presetQuestions: Record<string, string[]> = {
   ],
 };
 
-export const views: Array<{ key: ViewKey; label: string; kicker: string }> = [
-  { key: "documents", label: "Documents", kicker: "Ingestion artifacts" },
-  { key: "query", label: "Query Lab", kicker: "Retrieval and answer tracing" },
-  { key: "evaluation", label: "Evaluation", kicker: "Retrieval benchmark sets" },
-];
+const viewCopy: Record<Locale, Array<{ key: ViewKey; label: string; kicker: string }>> = {
+  en: [
+    { key: "documents", label: "Documents", kicker: "Ingestion artifacts" },
+    { key: "query", label: "Query Lab", kicker: "Retrieval and answer tracing" },
+    { key: "evaluation", label: "Evaluation", kicker: "Retrieval benchmark sets" },
+  ],
+  zh: [
+    { key: "documents", label: "文档", kicker: "摄取产物" },
+    { key: "query", label: "查询台", kicker: "检索与回答追踪" },
+    { key: "evaluation", label: "评测", kicker: "检索基准集" },
+  ],
+};
+
+export function getViews(locale: Locale) {
+  return viewCopy[locale];
+}
