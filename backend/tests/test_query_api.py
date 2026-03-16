@@ -1399,6 +1399,9 @@ def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_
     assert payload["workflow_planning_mode"] == "llm_gemini"
     assert payload["tool_planning_mode"] == "llm_gemini"
     assert payload["clarification_planning_mode"] is None
+    assert payload["planner_call_count"] == 2
+    assert payload["llm_planner_layers"] == ["workflow", "tool"]
+    assert payload["fallback_planner_layers"] == []
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
     assert any(
@@ -1486,6 +1489,9 @@ def test_query_agent_endpoint_reports_clean_workflow_planner_fallback_reason(
     )
     assert payload["workflow_planning_mode"] == "heuristic workflow matcher after gemini error"
     assert payload["tool_planning_mode"] == "heuristic_fallback_after_gemini_error"
+    assert payload["planner_call_count"] == 2
+    assert payload["llm_planner_layers"] == []
+    assert payload["fallback_planner_layers"] == ["workflow", "tool"]
 
 
 def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow_planner(
@@ -1513,6 +1519,9 @@ def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow
     assert payload["workflow_status"] == "completed"
     assert payload["answer_source"] == "local_search_summary"
     assert payload["workflow_planning_mode"] == "heuristic workflow matcher"
+    assert payload["planner_call_count"] == 2
+    assert payload["llm_planner_layers"] == []
+    assert payload["fallback_planner_layers"] == ["tool"]
     assert any(
         event["stage"] == "workflow_planning"
         and "search_then_summarize workflow via heuristic workflow matcher" in event["detail"]
@@ -2762,6 +2771,9 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["workflow_planning_mode"] is None
     assert payload["runs"][0]["tool_planning_mode"] == "heuristic_stub"
     assert payload["runs"][0]["clarification_planning_mode"] is None
+    assert payload["runs"][0]["planner_call_count"] == 1
+    assert payload["runs"][0]["llm_planner_layers"] == []
+    assert payload["runs"][0]["fallback_planner_layers"] == ["tool"]
     assert payload["runs"][0]["final_tool_name"] == "ticketing"
     assert payload["runs"][0]["final_tool_action"] == "create"
     assert payload["runs"][0]["run_id"] != first_run_id

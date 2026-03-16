@@ -133,6 +133,9 @@ class AgentWorkflowResponse(BaseModel):
     workflow_planning_mode: str | None = None
     tool_planning_mode: str | None = None
     clarification_planning_mode: str | None = None
+    planner_call_count: int = 0
+    llm_planner_layers: list[str] = Field(default_factory=list)
+    fallback_planner_layers: list[str] = Field(default_factory=list)
     step_count: int = 0
     route: RouteDecision
     workflow_trace: list[WorkflowTraceEvent] = Field(default_factory=list)
@@ -172,6 +175,9 @@ class AgentWorkflowRunSummary(BaseModel):
     workflow_planning_mode: str | None = None
     tool_planning_mode: str | None = None
     clarification_planning_mode: str | None = None
+    planner_call_count: int = 0
+    llm_planner_layers: list[str] = Field(default_factory=list)
+    fallback_planner_layers: list[str] = Field(default_factory=list)
     step_count: int = 0
     route_type: str
     route_reason: str

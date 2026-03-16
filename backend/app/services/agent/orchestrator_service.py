@@ -353,6 +353,20 @@ def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowRes
     response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
     response.tool_planning_mode = _extract_tool_planning_mode(response)
     response.clarification_planning_mode = _extract_clarification_planning_mode(response)
+    planner_layers = {
+        "workflow": response.workflow_planning_mode,
+        "tool": response.tool_planning_mode,
+        "clarification": response.clarification_planning_mode,
+    }
+    response.planner_call_count = sum(1 for mode in planner_layers.values() if mode)
+    response.llm_planner_layers = [
+        layer for layer, mode in planner_layers.items() if isinstance(mode, str) and mode.startswith("llm_")
+    ]
+    response.fallback_planner_layers = [
+        layer
+        for layer, mode in planner_layers.items()
+        if isinstance(mode, str) and not mode.startswith("llm_") and mode != "heuristic workflow matcher"
+    ]
     return response
 
 
@@ -494,6 +508,9 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 workflow_planning_mode=run.workflow_planning_mode,
                 tool_planning_mode=run.tool_planning_mode,
                 clarification_planning_mode=run.clarification_planning_mode,
+                planner_call_count=run.planner_call_count,
+                llm_planner_layers=run.llm_planner_layers,
+                fallback_planner_layers=run.fallback_planner_layers,
                 step_count=run.step_count,
                 route_type=run.route.route_type,
                 route_reason=run.route.route_reason,
