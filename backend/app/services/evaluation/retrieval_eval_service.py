@@ -109,7 +109,7 @@ def list_retrieval_datasets() -> list[RetrievalEvalDatasetInfo]:
     if not EVAL_DATA_DIR.exists():
         return datasets
 
-    for dataset_path in sorted(EVAL_DATA_DIR.glob("*.json")):
+    for dataset_path in sorted(EVAL_DATA_DIR.glob("*_retrieval_eval.json")):
         cases = load_retrieval_eval_cases(dataset_path)
         filenames = sorted({case.filename for case in cases})
 

@@ -1,6 +1,10 @@
 import json
 
-from app.services.evaluation.retrieval_eval_service import evaluate_retrieval_dataset
+from app.services.evaluation import retrieval_eval_service
+from app.services.evaluation.retrieval_eval_service import (
+    evaluate_retrieval_dataset,
+    list_retrieval_datasets,
+)
 from app.services.indexing import embedding_service
 
 
@@ -80,3 +84,48 @@ def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
     assert report.summary.hit_rate_at_k == 1.0
     assert report.summary.mean_reciprocal_rank == 1.0
     assert all(case.hit_at_k for case in report.cases)
+
+
+def test_list_retrieval_datasets_only_includes_retrieval_eval_files(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    eval_dir = workspace_tmp_path / "eval"
+    eval_dir.mkdir()
+
+    (eval_dir / "rag_overview_retrieval_eval.json").write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "case_1",
+                        "filename": "rag_overview.md",
+                        "question": "What is RAG?",
+                        "expected_chunk_ids": ["rag_overview.md::chunk_0"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    (eval_dir / "agent_route_eval.json").write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "route_1",
+                        "question": "Create a ticket",
+                        "expected_route_type": "tool_execution",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(retrieval_eval_service, "EVAL_DATA_DIR", eval_dir)
+
+    datasets = list_retrieval_datasets()
+
+    assert len(datasets) == 1
+    assert datasets[0].dataset_name == "rag_overview_retrieval_eval.json"
