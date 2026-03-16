@@ -1,10 +1,10 @@
 # Agent Knowledge System
 
-An engineering-focused agent system for knowledge retrieval, tool execution, workflow orchestration, and runtime observability.
+An engineering-focused agent runtime for knowledge retrieval, tool execution, workflow orchestration, failure recovery, and evaluation.
 
 ## What This Project Is
 
-This repository is building a local-first agent knowledge system for engineering and operations scenarios.
+This repository builds a local-first agent runtime for engineering and operations scenarios.
 
 It is not just a RAG demo and not just a chat endpoint with a few prompts. The target shape is a system with:
 
@@ -13,13 +13,14 @@ It is not just a RAG demo and not just a chat endpoint with a few prompts. The t
 - tool execution through adapter-style interfaces
 - multi-step workflow orchestration
 - planner fallback and debugability
-- persisted runs, resume behavior, and runtime diagnostics
+- persisted runs, recovery behavior, and runtime diagnostics
+- evaluation reports and benchmark dashboards
 
-Today, the project already has a working backend, frontend console, local tool adapters, evaluation flows, and a multi-step agent runtime.
+Today, the project already has a working backend, frontend console, local tool adapters, persisted workflow lineage, recoverable multi-step runs, and an evaluation dashboard with locally saved reports.
 
 ## Current State
 
-The repository is in a middle-to-late build phase.
+The repository is in a late build phase.
 
 Implemented and usable today:
 
@@ -36,13 +37,17 @@ Implemented and usable today:
   - `search_then_summarize`
   - `status_then_ticket`
   - `status_then_summarize`
-- resume flows for clarification-driven continuation
-- persisted workflow runs with trace events, planner metadata, and maintenance endpoints
-- retrieval, route, and workflow evaluation datasets with a frontend evaluation console
+- retry semantics and retry-exhausted handling
+- clarification-driven continuation
+- failed-step resume for selected workflow shapes
+- unified recovery entrypoint and recovery action semantics
+- persisted workflow runs with trace events, lineage metadata, and maintenance endpoints
+- retrieval, route, workflow, and tool-execution evaluation datasets with a frontend evaluation console
+- locally persisted evaluation reports, overview caching, and benchmark history
 
 Still intentionally unfinished:
 
-- richer runtime recovery such as step retry and rerun from step N
+- richer runtime recovery such as more general rerun-from-step-N behavior
 - real external system adapters
 - a more formal database-backed state layer
 - broader workflow branching and policy logic
@@ -90,8 +95,11 @@ The agent runtime already supports:
 - multi-step workflow traces
 - workflow persistence
 - resume metadata
+- recovery lineage metadata
+- previous/root/source run navigation
 - terminal reasons and failure stages
 - planner mode, planner count, and planner latency diagnostics
+- retry state and recovery action semantics
 - run listing, lookup, stats, pruning, reset, and schema migration
 
 ### 5. Evaluation and Observability
@@ -99,6 +107,8 @@ The agent runtime already supports:
 - retrieval evaluation datasets and reports
 - agent route evaluation datasets and reports
 - agent workflow evaluation datasets and reports
+- tool execution evaluation datasets and reports
+- evaluation overview, highlights, latest-result loading, and history
 - workflow planner debug capture
 - persisted workflow run inspection through API and frontend
 
@@ -111,7 +121,57 @@ High-level backend flow:
 3. Retrieval services score and rerank candidate chunks.
 4. Requests are routed into retrieval, clarification, or tool/workflow execution.
 5. Planner services decide tool or workflow behavior, with fallback paths if model planning fails.
-6. Workflow runs are persisted with trace events and planner diagnostics.
+6. Workflow runs are persisted with trace events, lineage metadata, and planner diagnostics.
+7. Evaluation services aggregate benchmark results and persist latest/history reports for the dashboard.
+
+## Recovery Model
+
+The runtime distinguishes between:
+
+- retryable tool failures
+- recoverable workflow failures
+- clarification-required pauses
+- terminal failures
+
+Supported recovery behavior today includes:
+
+- retry with retry-exhausted semantics
+- failed-step resume for selected workflow shapes
+- clarification-based continuation
+- manual retrigger recovery
+- persisted recovery lineage with `root_run_id`, `source_run_id`, `recovery_depth`, and `recovered_via_action`
+
+The frontend exposes these semantics through:
+
+- recover actions on workflow runs
+- recovery chain visualization
+- chain focus and chain navigation
+- root/source run loading shortcuts
+
+## Evaluation Model
+
+The evaluation layer currently has four benchmark modes:
+
+- retrieval
+- agent route
+- agent workflow
+- tool execution
+
+For each supported benchmark mode, the system can:
+
+- load local evaluation datasets
+- run evaluation against the current runtime
+- persist the latest report locally
+- persist timestamped history snapshots
+- surface deltas versus the previous run
+- aggregate overview and highlight metrics for the dashboard
+
+Stored evaluation artifacts live under:
+
+- `data/eval/`
+- `data/tool_state/evaluation_reports/`
+- `data/tool_state/evaluation_overview_cache.json`
+- `data/tool_state/evaluation_metrics_summary.json`
 
 Main implementation areas:
 
@@ -165,10 +225,22 @@ Main implementation areas:
 
 - `GET /api/evaluation/retrieval/datasets`
 - `POST /api/evaluation/retrieval`
+- `GET /api/evaluation/retrieval/latest`
+- `GET /api/evaluation/retrieval/history`
 - `GET /api/evaluation/agent-route/datasets`
 - `POST /api/evaluation/agent-route`
+- `GET /api/evaluation/agent-route/latest`
+- `GET /api/evaluation/agent-route/history`
 - `GET /api/evaluation/agent-workflow/datasets`
 - `POST /api/evaluation/agent-workflow`
+- `GET /api/evaluation/agent-workflow/latest`
+- `GET /api/evaluation/agent-workflow/history`
+- `GET /api/evaluation/agent-tool-execution/datasets`
+- `POST /api/evaluation/agent-tool-execution`
+- `GET /api/evaluation/agent-tool-execution/latest`
+- `GET /api/evaluation/agent-tool-execution/history`
+- `GET /api/evaluation/overview`
+- `GET /api/evaluation/metrics-summary`
 
 ## Tech Stack
 
@@ -261,8 +333,25 @@ Useful runtime flags:
 2. Persist chunks and embeddings, or use one-click pipeline generation.
 3. Run a retrieval query in the `Query` view.
 4. Run an agent request and inspect the workflow trace.
-5. Inspect recent workflow runs from the query console.
-6. Run retrieval, route, or workflow evaluation datasets from the `Evaluation` view.
+5. Force a recoverable workflow failure and recover it from the query console.
+6. Inspect recovery lineage and chain navigation in recent workflow runs.
+7. Run retrieval, route, workflow, or tool-execution evaluation datasets from the `Evaluation` view.
+8. Review the persisted latest report, history deltas, and dashboard overview.
+
+## Demo Path
+
+The strongest end-to-end demo path today is:
+
+1. Submit a multi-step agent request such as `Search docs for RAG and create a high severity ticket for payment-service`.
+2. Inject a persistent failure into the ticketing step.
+3. Observe the run fail with `retry_exhausted` and a structured recovery action.
+4. Recover the run through the unified recovery entrypoint or the Query UI.
+5. Inspect:
+   - the recovered run
+   - reused steps
+   - recovery lineage
+   - recovery chain navigation
+6. Open `Evaluation` and review benchmark highlights, overview metrics, and saved report history.
 
 ## Testing
 
@@ -291,12 +380,12 @@ npm run build
 - `docs/`: architecture and planning notes
 - `scripts/`: helper scripts for local development and evaluation
 
-## Near-Term Direction
+## Current Focus
 
-The next iteration focus is runtime maturity rather than feature sprawl:
+The next iteration focus is runtime maturity and project hardening rather than feature sprawl:
 
-- failure semantics cleanup
-- step retry and richer recovery
-- stronger resume behavior
+- tighter benchmark and metrics packaging
+- stronger project documentation and demo clarity
 - more realistic adapter boundaries
-- broader workflow evaluation coverage
+- broader evaluation coverage
+- deeper runtime policy and analytics over time
