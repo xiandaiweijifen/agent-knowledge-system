@@ -10646,5 +10646,403 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "d528dcb0be9c4ca5b97f85e5e0cb20a3",
+    "question": "Search docs for RAG and create a high severity ticket for payment-service",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "failed",
+    "terminal_reason": "tool_execution_failed",
+    "outcome_category": "recoverable_failure",
+    "is_recoverable": true,
+    "retry_state": "retry_exhausted",
+    "recommended_recovery_action": "resume_from_failed_step",
+    "available_recovery_actions": [
+      "resume_from_failed_step",
+      "manual_retrigger"
+    ],
+    "recovery_action_details": {
+      "resume_from_failed_step": {
+        "workflow_kind": "search_then_ticket",
+        "target_step_index": 2,
+        "reused_step_indices": [
+          1
+        ]
+      },
+      "manual_retrigger": {
+        "restarts_workflow": true
+      }
+    },
+    "failure_stage": "tool_execution",
+    "failure_message": "RuntimeError: debug injected persistent failure",
+    "started_at": "2026-03-16T14:14:22.491962+00:00",
+    "completed_at": "2026-03-16T14:14:37.528704+00:00",
+    "last_updated_at": "2026-03-16T14:14:37.528704+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini",
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 3,
+    "tool_planner_call_count": 2,
+    "workflow_planning_latency_ms": 6566,
+    "tool_planning_latency_ms": 8463,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 15029,
+    "llm_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1,
+      2
+    ],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 1,
+    "retried_step_indices": [
+      2
+    ],
+    "step_count": 2,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:22.492028+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:29.058138+00:00",
+        "detail": "Planned search_then_ticket workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:33.432279+00:00",
+        "detail": "Step 1: planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:33.439754+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "tool_context",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:37.528562+00:00",
+        "detail": "Step 2 inherited supporting search context from step 1 before the ticket step."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:37.528594+00:00",
+        "detail": "Step 2: planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "fault_injection",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:37.528635+00:00",
+        "detail": "Step 2: injected a debug tool execution failure for ticketing:create. Remaining injected failures: 1."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-03-16T14:14:37.528651+00:00",
+        "detail": "Step 2: tool execution attempt 1 failed for ticketing:create: RuntimeError: debug injected persistent failure."
+      },
+      {
+        "stage": "retry",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:37.528669+00:00",
+        "detail": "Step 2: retrying tool execution after attempt 1 failed."
+      },
+      {
+        "stage": "fault_injection",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:37.528689+00:00",
+        "detail": "Step 2: injected a debug tool execution failure for ticketing:create. Remaining injected failures: 0."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-03-16T14:14:37.528704+00:00",
+        "detail": "Step 2: tool execution failed for ticketing:create after 2 attempt(s): RuntimeError: debug injected persistent failure."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "create a high severity ticket for payment-service",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "supporting_query": "RAG",
+        "supporting_documents": "rag_overview.md, test_chunk.txt",
+        "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+        "supporting_match_count": "2",
+        "severity": "high"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": null,
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-03-16T14:14:29.058181+00:00",
+        "completed_at": "2026-03-16T14:14:33.439754+00:00",
+        "question": "Search docs for RAG",
+        "tool_plan": {
+          "question": "Search docs for RAG",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for RAG using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 2 matching document(s) for 'RAG'.",
+          "trace_id": "ef5f66a5e37845569c2423741c25d65f",
+          "executed_at": "2026-03-16T14:14:33.439605+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "2",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "2",
+            "matched_documents": "rag_overview.md, test_chunk.txt",
+            "skipped_documents": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      },
+      {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "failed",
+        "attempt_count": 2,
+        "retried": true,
+        "started_at": "2026-03-16T14:14:33.439799+00:00",
+        "completed_at": "2026-03-16T14:14:37.528704+00:00",
+        "question": "create a high severity ticket for payment-service",
+        "tool_plan": {
+          "question": "create a high severity ticket for payment-service",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "supporting_query": "RAG",
+            "supporting_documents": "rag_overview.md, test_chunk.txt",
+            "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+            "supporting_match_count": "2",
+            "severity": "high"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": null,
+        "failure_message": "RuntimeError: debug injected persistent failure"
+      }
+    ]
+  },
+  {
+    "run_id": "439ffddfa3f048328dd15baa3c5e09f7",
+    "question": "Create a ticket for the payment service outage",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "failed",
+    "terminal_reason": "tool_execution_failed",
+    "outcome_category": "recoverable_failure",
+    "is_recoverable": true,
+    "retry_state": "retry_exhausted",
+    "recommended_recovery_action": "manual_retrigger",
+    "available_recovery_actions": [
+      "manual_retrigger"
+    ],
+    "recovery_action_details": {
+      "manual_retrigger": {
+        "restarts_workflow": true
+      }
+    },
+    "failure_stage": "tool_execution",
+    "failure_message": "RuntimeError: debug injected persistent failure",
+    "started_at": "2026-03-16T14:14:52.579483+00:00",
+    "completed_at": "2026-03-16T14:14:59.636805+00:00",
+    "last_updated_at": "2026-03-16T14:14:59.636805+00:00",
+    "workflow_planning_mode": null,
+    "tool_planning_mode": "heuristic_fallback_after_gemini_error",
+    "tool_planning_modes": [
+      "heuristic_fallback_after_gemini_error"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 1,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 3705,
+    "tool_planning_latency_ms": 3352,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 7057,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [
+      "tool"
+    ],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [
+      1
+    ],
+    "retry_count": 1,
+    "retried_step_indices": [
+      1
+    ],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:52.579546+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:59.636704+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "fault_injection",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:59.636759+00:00",
+        "detail": "Step 1: injected a debug tool execution failure for ticketing:create. Remaining injected failures: 1."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-03-16T14:14:59.636775+00:00",
+        "detail": "Step 1: tool execution attempt 1 failed for ticketing:create: RuntimeError: debug injected persistent failure."
+      },
+      {
+        "stage": "retry",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:59.636788+00:00",
+        "detail": "Step 1: retrying tool execution after attempt 1 failed."
+      },
+      {
+        "stage": "fault_injection",
+        "status": "completed",
+        "timestamp": "2026-03-16T14:14:59.636798+00:00",
+        "detail": "Step 1: injected a debug tool execution failure for ticketing:create. Remaining injected failures: 0."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-03-16T14:14:59.636805+00:00",
+        "detail": "Step 1: tool execution failed for ticketing:create after 2 attempt(s): RuntimeError: debug injected persistent failure."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a ticket for the payment service outage",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {},
+      "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+    },
+    "tool_execution": null,
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "failed",
+        "attempt_count": 2,
+        "retried": true,
+        "started_at": "2026-03-16T14:14:56.284555+00:00",
+        "completed_at": "2026-03-16T14:14:59.636805+00:00",
+        "question": "Create a ticket for the payment service outage",
+        "tool_plan": {
+          "question": "Create a ticket for the payment service outage",
+          "planning_mode": "heuristic_fallback_after_gemini_error",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {},
+          "plan_summary": "Plan ticketing:create for payment-service using a local heuristic planner."
+        },
+        "tool_execution": null,
+        "failure_message": "RuntimeError: debug injected persistent failure"
+      }
+    ]
   }
 ]

@@ -171,6 +171,15 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
         ]
     else:
         normalized_run["available_recovery_actions"] = _derive_available_recovery_actions(normalized_run)
+    existing_recovery_action_details = normalized_run.get("recovery_action_details")
+    if isinstance(existing_recovery_action_details, dict):
+        normalized_run["recovery_action_details"] = {
+            action: detail
+            for action, detail in existing_recovery_action_details.items()
+            if isinstance(action, str) and action.strip() and isinstance(detail, dict)
+        }
+    else:
+        normalized_run["recovery_action_details"] = _derive_recovery_action_details(normalized_run)
     normalized_run["workflow_planning_mode"] = (
         normalized_run.get("workflow_planning_mode")
         or _extract_workflow_planning_mode_from_trace(normalized_run.get("workflow_trace", []))
@@ -576,6 +585,84 @@ def _derive_available_recovery_actions(response: AgentWorkflowResponse | dict) -
     return []
 
 
+def _derive_failed_step_resume_details(response: AgentWorkflowResponse | dict) -> dict[str, object]:
+    if not _is_failed_step_resume_eligible(response):
+        return {}
+
+    if isinstance(response, AgentWorkflowResponse):
+        question = response.question
+        tool_chain = response.tool_chain
+    else:
+        question = response.get("question", "")
+        tool_chain = response.get("tool_chain", [])
+
+    workflow_kind, _, _, _ = _resolve_multistep_workflow(question)
+
+    def _step_value(step: object, field: str):
+        if isinstance(step, dict):
+            return step.get(field)
+        return getattr(step, field, None)
+
+    target_step_index = 2
+    if workflow_kind in {"search_then_ticket", "status_then_ticket"} and isinstance(tool_chain, list) and tool_chain:
+        last_step = tool_chain[-1]
+        step_index = _step_value(last_step, "step_index")
+        if isinstance(step_index, int) and step_index > 0:
+            target_step_index = step_index
+
+    return {
+        "workflow_kind": workflow_kind,
+        "target_step_index": target_step_index,
+        "reused_step_indices": [1],
+    }
+
+
+def _derive_recovery_action_details(response: AgentWorkflowResponse | dict) -> dict[str, dict[str, object]]:
+    available_actions = _derive_available_recovery_actions(response)
+    details: dict[str, dict[str, object]] = {}
+
+    if "resume_from_failed_step" in available_actions:
+        details["resume_from_failed_step"] = _derive_failed_step_resume_details(response)
+
+    if "resume_with_clarification" in available_actions:
+        clarification_plan = (
+            response.clarification_plan
+            if isinstance(response, AgentWorkflowResponse)
+            else response.get("clarification_plan")
+        )
+        missing_fields = []
+        if isinstance(clarification_plan, dict):
+            raw_missing_fields = clarification_plan.get("missing_fields")
+            if isinstance(raw_missing_fields, list):
+                missing_fields = [field for field in raw_missing_fields if isinstance(field, str)]
+        details["resume_with_clarification"] = {
+            "missing_fields": missing_fields,
+        }
+
+    if "manual_retrigger" in available_actions:
+        details["manual_retrigger"] = {
+            "restarts_workflow": True,
+        }
+
+    if "retry" in available_actions:
+        details["retry"] = {
+            "retries_from_start": True,
+        }
+
+    if "manual_investigation" in available_actions:
+        failure_stage = (
+            response.failure_stage
+            if isinstance(response, AgentWorkflowResponse)
+            else response.get("failure_stage")
+        )
+        details["manual_investigation"] = {
+            "requires_manual_review": True,
+            "failure_stage": failure_stage,
+        }
+
+    return details
+
+
 def _coerce_non_negative_int(value: object) -> int:
     return value if isinstance(value, int) and value >= 0 else 0
 
@@ -624,6 +711,7 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "retry_state",
         "recommended_recovery_action",
         "available_recovery_actions",
+        "recovery_action_details",
         "retry_count",
         "retried_step_indices",
         "workflow_planning_mode",
@@ -745,6 +833,7 @@ def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowRes
     response.retry_state = _derive_retry_state(response)
     response.recommended_recovery_action = _derive_recommended_recovery_action(response)
     response.available_recovery_actions = _derive_available_recovery_actions(response)
+    response.recovery_action_details = _derive_recovery_action_details(response)
     response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
     response.tool_planning_modes = _extract_tool_planning_modes(response)
     response.tool_planning_mode = _extract_tool_planning_mode(response)
@@ -949,6 +1038,7 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 retry_state=run.retry_state,
                 recommended_recovery_action=run.recommended_recovery_action,
                 available_recovery_actions=run.available_recovery_actions,
+                recovery_action_details=run.recovery_action_details,
                 failure_stage=run.failure_stage,
                 failure_message=run.failure_message,
                 started_at=run.started_at,

@@ -136,6 +136,7 @@ class AgentWorkflowResponse(BaseModel):
     retry_state: str | None = None
     recommended_recovery_action: str | None = None
     available_recovery_actions: list[str] = Field(default_factory=list)
+    recovery_action_details: dict[str, dict[str, object]] = Field(default_factory=dict)
     failure_stage: str | None = None
     failure_message: str | None = None
     started_at: str | None = None
@@ -195,6 +196,7 @@ class AgentWorkflowRunSummary(BaseModel):
     retry_state: str | None = None
     recommended_recovery_action: str | None = None
     available_recovery_actions: list[str] = Field(default_factory=list)
+    recovery_action_details: dict[str, dict[str, object]] = Field(default_factory=dict)
     failure_stage: str | None = None
     failure_message: str | None = None
     started_at: str | None = None

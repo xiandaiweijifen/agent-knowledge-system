@@ -2024,6 +2024,11 @@ def test_query_agent_endpoint_clarifies_unsupported_direct_action_instead_of_cre
     assert payload["retry_state"] == "not_applicable"
     assert payload["recommended_recovery_action"] == "resume_with_clarification"
     assert payload["available_recovery_actions"] == ["resume_with_clarification"]
+    assert payload["recovery_action_details"] == {
+        "resume_with_clarification": {
+            "missing_fields": ["execution_confirmation", "fallback_action"],
+        }
+    }
     assert payload["tool_planning_mode"] == "guardrail_ticket_fallback"
     assert payload["tool_planning_modes"] == ["guardrail_ticket_fallback"]
     assert payload["tool_planner_call_count"] == 1
@@ -2733,6 +2738,11 @@ def test_query_agent_endpoint_returns_structured_failure_for_knowledge_errors(
     assert payload["retry_state"] == "retry_available"
     assert payload["recommended_recovery_action"] == "retry"
     assert payload["available_recovery_actions"] == ["retry"]
+    assert payload["recovery_action_details"] == {
+        "retry": {
+            "retries_from_start": True,
+        }
+    }
     assert payload["failure_stage"] == "retrieval"
     assert "simulated retrieval failure" in payload["failure_message"]
     assert payload["step_count"] == 0
@@ -2776,6 +2786,11 @@ def test_query_agent_endpoint_returns_structured_failure_for_single_tool_errors(
     assert payload["retry_state"] == "retry_exhausted"
     assert payload["recommended_recovery_action"] == "manual_retrigger"
     assert payload["available_recovery_actions"] == ["manual_retrigger"]
+    assert payload["recovery_action_details"] == {
+        "manual_retrigger": {
+            "restarts_workflow": True,
+        }
+    }
     assert payload["retry_count"] == 1
     assert payload["retried_step_indices"] == [1]
     assert payload["failure_stage"] == "tool_execution"
@@ -2847,6 +2862,16 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
         "resume_from_failed_step",
         "manual_retrigger",
     ]
+    assert payload["recovery_action_details"] == {
+        "resume_from_failed_step": {
+            "workflow_kind": "search_then_ticket",
+            "target_step_index": 2,
+            "reused_step_indices": [1],
+        },
+        "manual_retrigger": {
+            "restarts_workflow": True,
+        },
+    }
     assert payload["retry_count"] == 1
     assert payload["retried_step_indices"] == [2]
     assert payload["failure_stage"] == "tool_execution"
@@ -3677,6 +3702,16 @@ def test_resume_agent_endpoint_can_resume_failed_search_then_summarize_from_step
         "resume_from_failed_step",
         "manual_retrigger",
     ]
+    assert initial_payload["recovery_action_details"] == {
+        "resume_from_failed_step": {
+            "workflow_kind": "search_then_summarize",
+            "target_step_index": 2,
+            "reused_step_indices": [1],
+        },
+        "manual_retrigger": {
+            "restarts_workflow": True,
+        },
+    }
     assert initial_payload["tool_chain"][0]["step_status"] == "completed"
 
     monkeypatch.setattr(
@@ -3746,6 +3781,16 @@ def test_resume_agent_endpoint_can_resume_failed_status_then_summarize_from_step
         "resume_from_failed_step",
         "manual_retrigger",
     ]
+    assert initial_payload["recovery_action_details"] == {
+        "resume_from_failed_step": {
+            "workflow_kind": "status_then_summarize",
+            "target_step_index": 2,
+            "reused_step_indices": [1],
+        },
+        "manual_retrigger": {
+            "restarts_workflow": True,
+        },
+    }
     assert initial_payload["tool_chain"][0]["step_status"] == "completed"
 
     monkeypatch.setattr(
@@ -3996,6 +4041,16 @@ def test_list_agent_workflow_runs_endpoint_marks_failed_step_resume_eligible_run
         "resume_from_failed_step",
         "manual_retrigger",
     ]
+    assert payload["runs"][0]["recovery_action_details"] == {
+        "resume_from_failed_step": {
+            "workflow_kind": "search_then_ticket",
+            "target_step_index": 2,
+            "reused_step_indices": [1],
+        },
+        "manual_retrigger": {
+            "restarts_workflow": True,
+        },
+    }
 
 
 def test_list_agent_workflow_runs_endpoint_recovers_from_invalid_store(
@@ -4251,6 +4306,7 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
                         "retry_state": "not_applicable",
                         "recommended_recovery_action": "none",
                         "available_recovery_actions": [],
+                        "recovery_action_details": {},
                         "resumed_from_step_index": None,
                         "reused_step_indices": [],
                     "started_at": "2026-03-15T16:12:37.485983+00:00",
