@@ -120,6 +120,18 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run["completed_at"] = _backfill_completed_at(normalized_run)
     normalized_run["last_updated_at"] = _backfill_last_updated_at(normalized_run)
     normalized_run["terminal_reason"] = _backfill_terminal_reason(normalized_run)
+    normalized_run["workflow_planning_mode"] = (
+        normalized_run.get("workflow_planning_mode")
+        or _extract_workflow_planning_mode_from_trace(normalized_run.get("workflow_trace", []))
+    )
+    normalized_run["tool_planning_mode"] = (
+        normalized_run.get("tool_planning_mode")
+        or _extract_tool_planning_mode(normalized_run)
+    )
+    normalized_run["clarification_planning_mode"] = (
+        normalized_run.get("clarification_planning_mode")
+        or _extract_clarification_planning_mode(normalized_run)
+    )
     return normalized_run
 
 
@@ -273,8 +285,75 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "completed_at",
         "last_updated_at",
         "terminal_reason",
+        "workflow_planning_mode",
+        "tool_planning_mode",
+        "clarification_planning_mode",
     )
     return any(run.get(field) != normalized_run.get(field) for field in migration_fields)
+
+
+def _extract_workflow_planning_mode_from_trace(trace: list[dict] | list[WorkflowTraceEvent]) -> str | None:
+    for event in trace:
+        if isinstance(event, WorkflowTraceEvent):
+            stage = event.stage
+            detail = event.detail
+        elif isinstance(event, dict):
+            stage = event.get("stage")
+            detail = event.get("detail")
+        else:
+            continue
+        if stage != "workflow_planning" or not isinstance(detail, str):
+            continue
+        match = re.search(r"\bvia\s+(.+?)\.$", detail.strip(), re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    return None
+
+
+def _extract_tool_planning_mode(response: AgentWorkflowResponse | dict) -> str | None:
+    if isinstance(response, AgentWorkflowResponse):
+        tool_plan = response.tool_plan
+        tool_chain = response.tool_chain
+    else:
+        tool_plan = response.get("tool_plan")
+        tool_chain = response.get("tool_chain")
+
+    if isinstance(tool_plan, dict):
+        planning_mode = tool_plan.get("planning_mode")
+        if isinstance(planning_mode, str) and planning_mode.strip():
+            return planning_mode
+
+    if isinstance(tool_chain, list):
+        for step in reversed(tool_chain):
+            if isinstance(step, dict):
+                step_tool_plan = step.get("tool_plan")
+            else:
+                step_tool_plan = step.tool_plan
+            if isinstance(step_tool_plan, dict):
+                planning_mode = step_tool_plan.get("planning_mode")
+                if isinstance(planning_mode, str) and planning_mode.strip():
+                    return planning_mode
+    return None
+
+
+def _extract_clarification_planning_mode(response: AgentWorkflowResponse | dict) -> str | None:
+    clarification_plan = (
+        response.clarification_plan
+        if isinstance(response, AgentWorkflowResponse)
+        else response.get("clarification_plan")
+    )
+    if isinstance(clarification_plan, dict):
+        planning_mode = clarification_plan.get("planning_mode")
+        if isinstance(planning_mode, str) and planning_mode.strip():
+            return planning_mode
+    return None
+
+
+def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowResponse:
+    response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
+    response.tool_planning_mode = _extract_tool_planning_mode(response)
+    response.clarification_planning_mode = _extract_clarification_planning_mode(response)
+    return response
 
 
 def _extract_final_tool_identity(run: AgentWorkflowResponse) -> tuple[str | None, str | None]:
@@ -302,6 +381,7 @@ def _persist_workflow_response(
     resumed_from_question: str | None = None,
     source_run_id: str | None = None,
 ) -> AgentWorkflowResponse:
+    response = _annotate_planner_modes(response)
     response.run_id = uuid.uuid4().hex
     response.resumed_from_question = resumed_from_question
     response.source_run_id = source_run_id
@@ -323,7 +403,7 @@ def _finalize_workflow_response(
     response.started_at = started_at
     response.completed_at = completed_at
     response.last_updated_at = last_updated_at or completed_at or started_at
-    return response
+    return _annotate_planner_modes(response)
 
 
 def _format_failure_message(exc: Exception) -> str:
@@ -411,6 +491,9 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 started_at=run.started_at,
                 completed_at=run.completed_at,
                 last_updated_at=run.last_updated_at,
+                workflow_planning_mode=run.workflow_planning_mode,
+                tool_planning_mode=run.tool_planning_mode,
+                clarification_planning_mode=run.clarification_planning_mode,
                 step_count=run.step_count,
                 route_type=run.route.route_type,
                 route_reason=run.route.route_reason,

@@ -1355,6 +1355,7 @@ def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
     monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
     monkeypatch.setattr(settings, "workflow_planner_provider", "gemini")
+    monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
     monkeypatch.setattr(
         "app.services.agent.orchestrator_service.generate_llm_workflow_plan",
         lambda question: (
@@ -1363,6 +1364,22 @@ def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_
                 "workflow_kind": "search_then_ticket",
                 "search_question": "Search docs for payment-service outage",
                 "follow_up_question": "create a high severity ticket for payment-service",
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        "app.services.agent.tool_service.generate_llm_tool_plan",
+        lambda question, supported_tools: (
+            "llm_gemini",
+            {
+                "tool_name": "document_search"
+                if "search docs" in question.lower()
+                else "ticketing",
+                "action": "query" if "search docs" in question.lower() else "create",
+                "target": "payment-service outage"
+                if "search docs" in question.lower()
+                else "payment-service",
+                "arguments": {"severity": "high"} if "ticket" in question.lower() else {},
             },
         ),
     )
@@ -1379,6 +1396,9 @@ def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["step_count"] == 2
+    assert payload["workflow_planning_mode"] == "llm_gemini"
+    assert payload["tool_planning_mode"] == "llm_gemini"
+    assert payload["clarification_planning_mode"] is None
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
     assert any(
@@ -1438,9 +1458,14 @@ def test_query_agent_endpoint_reports_clean_workflow_planner_fallback_reason(
     )
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
     monkeypatch.setattr(settings, "workflow_planner_provider", "gemini")
+    monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
     monkeypatch.setattr(
         "app.services.agent.orchestrator_service.generate_llm_workflow_plan",
         lambda question: ("heuristic_fallback_after_gemini_error", None),
+    )
+    monkeypatch.setattr(
+        "app.services.agent.tool_service.generate_llm_tool_plan",
+        lambda question, supported_tools: ("heuristic_fallback_after_gemini_error", None),
     )
 
     client = TestClient(app)
@@ -1459,6 +1484,8 @@ def test_query_agent_endpoint_reports_clean_workflow_planner_fallback_reason(
         in event["detail"]
         for event in payload["workflow_trace"]
     )
+    assert payload["workflow_planning_mode"] == "heuristic workflow matcher after gemini error"
+    assert payload["tool_planning_mode"] == "heuristic_fallback_after_gemini_error"
 
 
 def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow_planner(
@@ -1485,6 +1512,7 @@ def test_query_agent_endpoint_supports_then_style_multistep_without_llm_workflow
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["answer_source"] == "local_search_summary"
+    assert payload["workflow_planning_mode"] == "heuristic workflow matcher"
     assert any(
         event["stage"] == "workflow_planning"
         and "search_then_summarize workflow via heuristic workflow matcher" in event["detail"]
@@ -2731,6 +2759,9 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["last_updated_at"] == payload["runs"][0]["completed_at"]
     assert payload["runs"][0]["answer_source"] is None
+    assert payload["runs"][0]["workflow_planning_mode"] is None
+    assert payload["runs"][0]["tool_planning_mode"] == "heuristic_stub"
+    assert payload["runs"][0]["clarification_planning_mode"] is None
     assert payload["runs"][0]["final_tool_name"] == "ticketing"
     assert payload["runs"][0]["final_tool_action"] == "create"
     assert payload["runs"][0]["run_id"] != first_run_id

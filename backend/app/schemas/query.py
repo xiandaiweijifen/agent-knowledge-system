@@ -130,6 +130,9 @@ class AgentWorkflowResponse(BaseModel):
     started_at: str | None = None
     completed_at: str | None = None
     last_updated_at: str | None = None
+    workflow_planning_mode: str | None = None
+    tool_planning_mode: str | None = None
+    clarification_planning_mode: str | None = None
     step_count: int = 0
     route: RouteDecision
     workflow_trace: list[WorkflowTraceEvent] = Field(default_factory=list)
@@ -166,6 +169,9 @@ class AgentWorkflowRunSummary(BaseModel):
     started_at: str | None = None
     completed_at: str | None = None
     last_updated_at: str | None = None
+    workflow_planning_mode: str | None = None
+    tool_planning_mode: str | None = None
+    clarification_planning_mode: str | None = None
     step_count: int = 0
     route_type: str
     route_reason: str
