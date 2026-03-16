@@ -775,7 +775,7 @@ export function QueryView({
 
               <article className="subsection-card">
                 <span className="section-label">{queryCopy.workflowRecord}</span>
-                <div className="trace-grid">
+                <div className="trace-grid workflow-record-grid">
                   <div>
                     <span className="trace-label">{queryCopy.runId}</span>
                     <strong>{agentQueryResult.run_id ?? queryCopy.notPersisted}</strong>
@@ -876,7 +876,9 @@ export function QueryView({
                       >
                         <header className="tool-chain-header">
                           <div>
-                            <span className="section-label">{queryCopy.step} {index + 1}</span>
+                            <span className="section-label">
+                              {queryCopy.step} {step.step_index}
+                            </span>
                             <h3>{step.tool_plan.tool_name}</h3>
                           </div>
                           <span className="status-chip success">

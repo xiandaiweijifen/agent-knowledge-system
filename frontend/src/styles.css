@@ -930,6 +930,13 @@ textarea {
   line-height: 1.45;
 }
 
+.workflow-record-grid > div,
+.workflow-record-grid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .answer-card {
   margin: 0;
   padding: 18px 20px;

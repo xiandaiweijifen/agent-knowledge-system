@@ -648,6 +648,129 @@ describe("QueryView", () => {
     expect(screen.getByText("Recovery Details")).toBeInTheDocument();
   });
 
+  it("renders resumed workflow record fields without losing the real step index", () => {
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Search docs for RAG and create a high severity ticket for payment-service"
+        topK={3}
+        activePresetQuestions={["Search docs for RAG and create a high severity ticket for payment-service"]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-resumed",
+          question: "Search docs for RAG and create a high severity ticket for payment-service",
+          resumed_from_question:
+            "Search docs for RAG and create a high severity ticket for payment-service",
+          source_run_id: "source-run",
+          resume_source_type: "run_id",
+          resume_strategy: "search_then_ticket_failed_step_resume",
+          resumed_from_step_index: 2,
+          reused_step_indices: [1],
+          question_rewritten: false,
+          workflow_status: "completed",
+          recommended_recovery_action: "none",
+          available_recovery_actions: [],
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            filename: null,
+          },
+          workflow_trace: [],
+          tool_plan: {
+            question: "create a high severity ticket for payment-service",
+            planning_mode: "llm_gemini",
+            route_hint: "tool_execution",
+            tool_name: "ticketing",
+            action: "create",
+            target: "payment-service",
+            arguments: {
+              severity: "high",
+              supporting_query: "RAG",
+            },
+            plan_summary: "Plan ticketing:create for payment-service using a llm planner.",
+          },
+          tool_execution: {
+            tool_name: "ticketing",
+            action: "create",
+            target: "payment-service",
+            execution_status: "completed",
+            execution_mode: "local_adapter",
+            result_summary: "Created local ticket TICKET-0204 for payment-service.",
+            trace_id: "trace-final",
+            executed_at: "2026-03-16T00:00:00+00:00",
+            output: {
+              ticket_id: "TICKET-0204",
+              status: "open",
+              severity: "high",
+              environment: "unspecified",
+              supporting_query: "RAG",
+            },
+          },
+          tool_chain: [
+            {
+              step_id: "step_2",
+              step_index: 2,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-03-16T00:00:00+00:00",
+              completed_at: "2026-03-16T00:00:00+00:00",
+              question: "create a high severity ticket for payment-service",
+              tool_plan: {
+                question: "create a high severity ticket for payment-service",
+                planning_mode: "llm_gemini",
+                route_hint: "tool_execution",
+                tool_name: "ticketing",
+                action: "create",
+                target: "payment-service",
+                arguments: {
+                  severity: "high",
+                  supporting_query: "RAG",
+                },
+                plan_summary: "Plan ticketing:create for payment-service using a llm planner.",
+              },
+              tool_execution: {
+                tool_name: "ticketing",
+                action: "create",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Created local ticket TICKET-0204 for payment-service.",
+                trace_id: "trace-step-2",
+                executed_at: "2026-03-16T00:00:00+00:00",
+                output: {
+                  ticket_id: "TICKET-0204",
+                  status: "open",
+                  severity: "high",
+                  environment: "unspecified",
+                  supporting_query: "RAG",
+                },
+              },
+            },
+          ],
+        }}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Step 2").length).toBeGreaterThan(0);
+    expect(screen.getByText("search_then_ticket_failed_step_resume")).toBeInTheDocument();
+    expect(screen.getByText("source-run")).toBeInTheDocument();
+  });
+
   it("runs recovery actions for current and recent workflow runs", async () => {
     const user = userEvent.setup();
     const onRecoverAgentWorkflowRun = vi.fn();
