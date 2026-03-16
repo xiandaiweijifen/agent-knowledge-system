@@ -1082,6 +1082,26 @@ textarea {
   gap: 12px;
 }
 
+.recovery-chain-list {
+  display: grid;
+  gap: 12px;
+}
+
+.recovery-chain-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.recovery-chain-card.is-current {
+  border-color: rgba(159, 58, 29, 0.24);
+  background: rgba(255, 248, 240, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
 .run-filter-grid {
   display: grid;
   gap: 12px;

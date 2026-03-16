@@ -103,6 +103,12 @@ export function QueryView({
           used: "已使用",
           notUsed: "未使用",
           workflowRecord: "工作流记录",
+          recoveryChain: "恢复链",
+          recoveryChainCopy: "查看当前工作流所属恢复链，并快速跳转到相关运行记录。",
+          currentRun: "当前运行",
+          rootRunBadge: "根运行",
+          sourceRunBadge: "源运行",
+          loadChainRun: "加载链上运行",
           runId: "Run Id",
           rootRun: "根 Run",
           loadRootRun: "加载根 Run",
@@ -258,6 +264,12 @@ export function QueryView({
           used: "used",
           notUsed: "not used",
           workflowRecord: "Workflow Record",
+          recoveryChain: "Recovery Chain",
+          recoveryChainCopy: "Inspect the current workflow lineage and jump directly to related runs.",
+          currentRun: "Current Run",
+          rootRunBadge: "Root Run",
+          sourceRunBadge: "Source Run",
+          loadChainRun: "Load Chain Run",
           runId: "Run Id",
           rootRun: "Root Run",
           loadRootRun: "Load Root Run",
@@ -634,6 +646,16 @@ export function QueryView({
     );
   }
 
+  function getWorkflowRunRouteType(run: AgentWorkflowResponse | AgentWorkflowRunSummary) {
+    if ("route" in run && run.route) {
+      return run.route.route_type;
+    }
+    if ("route_type" in run && run.route_type) {
+      return run.route_type;
+    }
+    return queryCopy.unknown;
+  }
+
   function renderSupportingContext(
     output: Record<string, string>,
   ) {
@@ -797,7 +819,33 @@ export function QueryView({
   const routeUsesRetrieval = !!agentQueryResult?.retrieval;
   const routeUsesToolPlanning = !!agentQueryResult?.tool_plan;
   const hasToolChain = (agentQueryResult?.tool_chain.length ?? 0) > 0;
+  const currentRunId = agentQueryResult?.run_id ?? null;
+  const currentRootRunId = agentQueryResult?.root_run_id ?? agentQueryResult?.run_id ?? null;
   const normalizedRunSearch = runSearch.trim().toLowerCase();
+  const relatedWorkflowRuns = agentQueryResult
+    ? [
+        agentQueryResult,
+        ...agentWorkflowRuns.filter((run) => {
+          const runRootId = run.root_run_id ?? run.run_id ?? null;
+          return Boolean(currentRootRunId) && runRootId === currentRootRunId;
+        }),
+      ]
+        .filter(
+          (run, index, items) =>
+            Boolean(run.run_id) &&
+            items.findIndex((candidate) => candidate.run_id === run.run_id) === index,
+        )
+        .sort((left, right) => {
+          const depthDelta = (left.recovery_depth ?? 0) - (right.recovery_depth ?? 0);
+          if (depthDelta !== 0) {
+            return depthDelta;
+          }
+
+          const leftTime = left.started_at ?? left.last_updated_at ?? "";
+          const rightTime = right.started_at ?? right.last_updated_at ?? "";
+          return leftTime.localeCompare(rightTime);
+        })
+    : [];
   const filteredWorkflowRuns = agentWorkflowRuns.filter((run) => {
     if (runStatusFilter !== "all" && run.workflow_status !== runStatusFilter) {
       return false;
@@ -1051,6 +1099,71 @@ export function QueryView({
                   </span>
                 </div>
               </article>
+
+              {relatedWorkflowRuns.length > 0 && (
+                <article className="subsection-card">
+                  <span className="section-label">{queryCopy.recoveryChain}</span>
+                  <p className="subsection-copy">{queryCopy.recoveryChainCopy}</p>
+                  <div className="recovery-chain-list">
+                    {relatedWorkflowRuns.map((run) => {
+                      const runId = run.run_id ?? queryCopy.notPersisted;
+                      const isCurrentRun = run.run_id === currentRunId;
+                      const isRootRun =
+                        Boolean(currentRootRunId) && run.run_id === currentRootRunId;
+                      const isSourceRun =
+                        Boolean(agentQueryResult.source_run_id) &&
+                        run.run_id === agentQueryResult.source_run_id;
+
+                      return (
+                        <article
+                          key={runId}
+                          className={`recovery-chain-card${isCurrentRun ? " is-current" : ""}`}
+                        >
+                          <div className="card-title-row">
+                            <strong>{run.question}</strong>
+                            <span className="status-chip">{run.workflow_status}</span>
+                          </div>
+                          <div className="meta-row">
+                            <span>{queryCopy.runMeta} {runId}</span>
+                            <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
+                          </div>
+                          <div className="meta-row">
+                            <span>{queryCopy.routeMeta} {getWorkflowRunRouteType(run)}</span>
+                            <span>
+                              {queryCopy.recoveredViaMeta}:{" "}
+                              {run.recovered_via_action
+                                ? formatRecoveryActionLabel(run.recovered_via_action)
+                                : queryCopy.none}
+                            </span>
+                          </div>
+                          <div className="pill-strip">
+                            {isCurrentRun && <span className="meta-pill">{queryCopy.currentRun}</span>}
+                            {isRootRun && <span className="meta-pill">{queryCopy.rootRunBadge}</span>}
+                            {isSourceRun && <span className="meta-pill">{queryCopy.sourceRunBadge}</span>}
+                            {run.resume_strategy && (
+                              <span className="meta-pill">
+                                {formatResumeStrategyLabel(run.resume_strategy)}
+                              </span>
+                            )}
+                          </div>
+                          {!isCurrentRun && run.run_id && (
+                            <div className="button-row">
+                              <button
+                                type="button"
+                                className="ghost-button"
+                                disabled={queryBusy}
+                                onClick={() => onLoadAgentWorkflowRun(run.run_id!)}
+                              >
+                                {queryCopy.loadChainRun}
+                              </button>
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                  </div>
+                </article>
+              )}
 
               <article className="subsection-card">
                 <span className="section-label">{queryCopy.recoverySemantics}</span>

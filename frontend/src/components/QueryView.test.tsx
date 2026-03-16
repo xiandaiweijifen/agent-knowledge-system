@@ -782,7 +782,7 @@ describe("QueryView", () => {
     expect(screen.getAllByText("Step 2").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recovered Via").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Resume From Failed Step").length).toBeGreaterThan(0);
-    expect(screen.getByText("Search Then Ticket Failed-Step Resume")).toBeInTheDocument();
+    expect(screen.getAllByText("Search Then Ticket Failed-Step Resume").length).toBeGreaterThan(0);
     expect(screen.getByText("search_then_ticket_failed_step_resume")).toBeInTheDocument();
     expect(screen.getAllByText("source-run").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1").length).toBeGreaterThan(0);
@@ -792,6 +792,102 @@ describe("QueryView", () => {
 
     expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(1, "source-run");
     expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(2, "source-run");
+  });
+
+  it("renders a recovery chain for the current workflow and loads related runs", async () => {
+    const user = userEvent.setup();
+    const onLoadAgentWorkflowRun = vi.fn();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Search docs for RAG and create a high severity ticket for payment-service"
+        topK={3}
+        activePresetQuestions={["Search docs for RAG and create a high severity ticket for payment-service"]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-depth-2",
+          root_run_id: "run-root",
+          recovery_depth: 2,
+          question: "Search docs for RAG and create a high severity ticket for payment-service",
+          resumed_from_question:
+            "Search docs for RAG and create a high severity ticket for payment-service",
+          source_run_id: "run-depth-1",
+          recovered_via_action: "resume_from_failed_step",
+          resume_source_type: "run_id",
+          resume_strategy: "search_then_ticket_failed_step_resume",
+          resumed_from_step_index: 2,
+          reused_step_indices: [1],
+          question_rewritten: false,
+          workflow_status: "completed",
+          recommended_recovery_action: "none",
+          available_recovery_actions: [],
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            filename: null,
+          },
+          workflow_trace: [],
+          tool_chain: [],
+        }}
+        agentWorkflowRuns={[
+          {
+            run_id: "run-root",
+            root_run_id: "run-root",
+            recovery_depth: 0,
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "resume_from_failed_step",
+            available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+          },
+          {
+            run_id: "run-depth-1",
+            root_run_id: "run-root",
+            recovery_depth: 1,
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            resumed_from_question:
+              "Search docs for RAG and create a high severity ticket for payment-service",
+            source_run_id: "run-root",
+            recovered_via_action: "resume_from_failed_step",
+            resume_strategy: "search_then_ticket_failed_step_resume",
+            workflow_status: "completed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "none",
+            available_recovery_actions: [],
+          },
+        ]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={onLoadAgentWorkflowRun}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Recovery Chain").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Current Run").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Root Run").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Source Run").length).toBeGreaterThan(0);
+
+    const chainButtons = screen.getAllByRole("button", { name: "Load Chain Run" });
+    expect(chainButtons).toHaveLength(2);
+
+    await user.click(chainButtons[0]);
+    await user.click(chainButtons[1]);
+
+    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(1, "run-root");
+    expect(onLoadAgentWorkflowRun).toHaveBeenNthCalledWith(2, "run-depth-1");
   });
 
   it("runs recovery actions for current and recent workflow runs", async () => {
