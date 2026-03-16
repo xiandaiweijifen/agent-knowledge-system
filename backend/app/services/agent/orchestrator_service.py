@@ -479,6 +479,55 @@ def _derive_retry_state(response: AgentWorkflowResponse | dict) -> str | None:
     return "retry_available"
 
 
+def _is_failed_step_resume_eligible(response: AgentWorkflowResponse | dict) -> bool:
+    if isinstance(response, AgentWorkflowResponse):
+        workflow_status = response.workflow_status
+        failure_stage = response.failure_stage
+        question = response.question
+        tool_chain = response.tool_chain
+    else:
+        workflow_status = response.get("workflow_status")
+        failure_stage = response.get("failure_stage")
+        question = response.get("question", "")
+        tool_chain = response.get("tool_chain", [])
+
+    if workflow_status != "failed":
+        return False
+    if not isinstance(question, str) or not question.strip():
+        return False
+    if not isinstance(tool_chain, list) or not tool_chain:
+        return False
+
+    workflow_kind, _, _, _ = _resolve_multistep_workflow(question)
+
+    def _step_value(step: object, field: str):
+        if isinstance(step, dict):
+            return step.get(field)
+        return getattr(step, field, None)
+
+    reusable_step = tool_chain[0]
+
+    if workflow_kind in {"search_then_ticket", "status_then_ticket"}:
+        if failure_stage != "tool_execution" or len(tool_chain) < 2:
+            return False
+        failed_step = tool_chain[-1]
+        return (
+            _step_value(reusable_step, "step_index") == 1
+            and _step_value(reusable_step, "step_status") == "completed"
+            and _step_value(failed_step, "step_index") == 2
+            and _step_value(failed_step, "step_status") == "failed"
+        )
+
+    if workflow_kind in {"search_then_summarize", "status_then_summarize"}:
+        return (
+            failure_stage in {"search_summary", "status_summary"}
+            and _step_value(reusable_step, "step_index") == 1
+            and _step_value(reusable_step, "step_status") == "completed"
+        )
+
+    return False
+
+
 def _derive_recommended_recovery_action(response: AgentWorkflowResponse | dict) -> str | None:
     outcome_category = _derive_outcome_category(response)
     retry_state = _derive_retry_state(response)
@@ -487,6 +536,8 @@ def _derive_recommended_recovery_action(response: AgentWorkflowResponse | dict) 
     if outcome_category == "clarification_required":
         return "resume_with_clarification"
     if outcome_category == "recoverable_failure":
+        if _is_failed_step_resume_eligible(response):
+            return "resume_from_failed_step"
         if retry_state == "retry_exhausted":
             return "manual_retrigger"
         return "retry"
@@ -1440,32 +1491,7 @@ def _extract_resume_ticket_overrides(clarification_context: dict[str, str]) -> d
 
 
 def _can_resume_from_failed_step(source_run: AgentWorkflowResponse) -> bool:
-    if source_run.workflow_status != "failed":
-        return False
-
-    workflow_kind, _, _, _ = _resolve_multistep_workflow(source_run.question)
-    if workflow_kind in {"search_then_ticket", "status_then_ticket"}:
-        if source_run.failure_stage != "tool_execution":
-            return False
-        if len(source_run.tool_chain) < 2:
-            return False
-        reusable_step = source_run.tool_chain[0]
-        failed_step = source_run.tool_chain[-1]
-        if reusable_step.step_index != 1 or reusable_step.step_status != "completed":
-            return False
-        if failed_step.step_index != 2 or failed_step.step_status != "failed":
-            return False
-        return True
-
-    if workflow_kind in {"search_then_summarize", "status_then_summarize"}:
-        if source_run.failure_stage not in {"search_summary", "status_summary"}:
-            return False
-        if not source_run.tool_chain:
-            return False
-        reusable_step = source_run.tool_chain[0]
-        return reusable_step.step_index == 1 and reusable_step.step_status == "completed"
-
-    return False
+    return _is_failed_step_resume_eligible(source_run)
 
 
 def _copy_workflow_step_record(step) -> dict:

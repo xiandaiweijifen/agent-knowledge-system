@@ -2838,7 +2838,7 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
     assert payload["outcome_category"] == "recoverable_failure"
     assert payload["is_recoverable"] is True
     assert payload["retry_state"] == "retry_exhausted"
-    assert payload["recommended_recovery_action"] == "manual_retrigger"
+    assert payload["recommended_recovery_action"] == "resume_from_failed_step"
     assert payload["retry_count"] == 1
     assert payload["retried_step_indices"] == [2]
     assert payload["failure_stage"] == "tool_execution"
@@ -3664,6 +3664,7 @@ def test_resume_agent_endpoint_can_resume_failed_search_then_summarize_from_step
     assert initial_payload["workflow_status"] == "failed"
     assert initial_payload["terminal_reason"] == "search_summary_failed"
     assert initial_payload["failure_stage"] == "search_summary"
+    assert initial_payload["recommended_recovery_action"] == "resume_from_failed_step"
     assert initial_payload["tool_chain"][0]["step_status"] == "completed"
 
     monkeypatch.setattr(
@@ -3728,6 +3729,7 @@ def test_resume_agent_endpoint_can_resume_failed_status_then_summarize_from_step
     assert initial_payload["workflow_status"] == "failed"
     assert initial_payload["terminal_reason"] == "status_summary_failed"
     assert initial_payload["failure_stage"] == "status_summary"
+    assert initial_payload["recommended_recovery_action"] == "resume_from_failed_step"
     assert initial_payload["tool_chain"][0]["step_status"] == "completed"
 
     monkeypatch.setattr(
@@ -3921,6 +3923,54 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["final_tool_name"] == "ticketing"
     assert payload["runs"][0]["final_tool_action"] == "create"
     assert payload["runs"][0]["run_id"] != first_run_id
+
+
+def test_list_agent_workflow_runs_endpoint_marks_failed_step_resume_eligible_runs(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG combines document retrieval with language model generation.",
+        encoding="utf-8",
+    )
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Search docs for RAG and create a high severity ticket for payment-service",
+            "debug_fault_injection": {
+                "tool_execution_failures": [
+                    {
+                        "tool_name": "ticketing",
+                        "action": "create",
+                        "fail_count": 2,
+                        "message": "debug injected persistent failure",
+                    }
+                ]
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    list_response = client.get("/api/query/agent/runs?limit=1")
+
+    assert list_response.status_code == 200
+    payload = list_response.json()
+    assert payload["runs"][0]["workflow_status"] == "failed"
+    assert payload["runs"][0]["retry_state"] == "retry_exhausted"
+    assert payload["runs"][0]["recommended_recovery_action"] == "resume_from_failed_step"
 
 
 def test_list_agent_workflow_runs_endpoint_recovers_from_invalid_store(
