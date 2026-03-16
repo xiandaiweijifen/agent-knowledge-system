@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     clarification_planner_provider: str = "fallback"
     workflow_planner_provider: str = "fallback"
     workflow_planner_debug_capture: bool = False
+    planner_cache_ttl_seconds: int = 120
+    planner_cache_max_entries: int = 256
     openai_api_key: str = ""
     openai_chat_model: str = "gpt-4o-mini"
     openai_tool_planner_model: str = ""

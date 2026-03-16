@@ -14,7 +14,10 @@ from app.services.llm.workflow_planner_service import (
     _extract_gemini_workflow_plan_text,
     _generate_gemini_workflow_plan,
     _parse_llm_workflow_plan_response,
+    generate_llm_workflow_plan,
 )
+from app.services.llm.tool_planner_service import generate_llm_tool_plan
+from app.services.llm.clarification_planner_service import generate_llm_clarification_plan
 from app.services.agent.clarification_service import (
     plan_clarification,
     plan_search_miss_clarification,
@@ -1559,6 +1562,140 @@ def test_parse_llm_workflow_plan_response_accepts_json_with_explanatory_wrapper(
         "search_question": "Look up docs about RAG",
         "follow_up_question": "summarize top 1 results",
     }
+
+
+def test_generate_llm_tool_plan_reuses_cached_result(monkeypatch):
+    call_count = 0
+
+    class _FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": '{"tool_name":"document_search","action":"query","target":"RAG","arguments":{"max_results":"1"}}'
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+
+    def _fake_post(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        return _FakeResponse()
+
+    monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
+    monkeypatch.setattr(settings, "gemini_api_key", "test-key")
+    monkeypatch.setattr("app.services.llm.tool_planner_service.httpx.post", _fake_post)
+
+    supported_tools = {
+        "document_search": {
+            "supported_actions": ["query"],
+            "description": "Search documents.",
+        }
+    }
+
+    first_mode, first_plan = generate_llm_tool_plan("Look up docs about RAG", supported_tools)
+    second_mode, second_plan = generate_llm_tool_plan("Look up docs about RAG", supported_tools)
+
+    assert first_mode == "llm_gemini"
+    assert second_mode == "llm_gemini"
+    assert first_plan == second_plan
+    assert call_count == 1
+
+
+def test_generate_llm_clarification_plan_reuses_cached_result(monkeypatch):
+    call_count = 0
+
+    class _FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": '{"missing_fields":["action"],"follow_up_questions":["What action should I take?"],"clarification_summary":"The request should be clarified before continuing."}'
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+
+    def _fake_post(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        return _FakeResponse()
+
+    monkeypatch.setattr(settings, "clarification_planner_provider", "gemini")
+    monkeypatch.setattr(settings, "gemini_api_key", "test-key")
+    monkeypatch.setattr("app.services.llm.clarification_planner_service.httpx.post", _fake_post)
+
+    first_mode, first_plan = generate_llm_clarification_plan(
+        mode="general",
+        question="Please do that for production",
+    )
+    second_mode, second_plan = generate_llm_clarification_plan(
+        mode="general",
+        question="Please do that for production",
+    )
+
+    assert first_mode == "llm_gemini"
+    assert second_mode == "llm_gemini"
+    assert first_plan == second_plan
+    assert call_count == 1
+
+
+def test_generate_llm_workflow_plan_reuses_cached_result(monkeypatch):
+    call_count = 0
+
+    class _FakeResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": '{"workflow_kind":"search_then_summarize","search_question":"Look up docs about RAG","follow_up_question":"summarize top 1 results"}'
+                                }
+                            ],
+                            "role": "model",
+                        }
+                    }
+                ]
+            }
+
+    def _fake_post(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        return _FakeResponse()
+
+    monkeypatch.setattr(settings, "workflow_planner_provider", "gemini")
+    monkeypatch.setattr(settings, "gemini_api_key", "test-key")
+    monkeypatch.setattr("app.services.llm.workflow_planner_service.httpx.post", _fake_post)
+
+    first_mode, first_plan = generate_llm_workflow_plan("Look up docs about RAG, then summarize top 1 results")
+    second_mode, second_plan = generate_llm_workflow_plan("Look up docs about RAG, then summarize top 1 results")
+
+    assert first_mode == "llm_gemini"
+    assert second_mode == "llm_gemini"
+    assert first_plan == second_plan
+    assert call_count == 1
 
 
 def test_parse_llm_workflow_plan_response_accepts_alias_keys_and_kind_names():

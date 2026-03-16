@@ -3,6 +3,10 @@ import json
 import httpx
 
 from app.core.config import settings
+from app.services.llm.planner_cache_service import (
+    get_cached_planner_result,
+    set_cached_planner_result,
+)
 
 
 OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
@@ -176,6 +180,17 @@ def generate_llm_clarification_plan(
     if provider == "fallback":
         return "heuristic_stub", None
 
+    cache_payload = {
+        "provider": provider,
+        "mode": mode,
+        "question": question,
+        "search_query": search_query or "",
+        "next_action_question": next_action_question or "",
+    }
+    cached_plan = get_cached_planner_result("clarification_planner", cache_payload)
+    if cached_plan is not None:
+        return f"llm_{provider}", cached_plan
+
     prompt = _build_clarification_prompt(
         mode=mode,
         question=question,
@@ -187,12 +202,18 @@ def generate_llm_clarification_plan(
         if provider == "openai":
             if not settings.openai_api_key:
                 return "heuristic_fallback_missing_openai_key", None
-            return "llm_openai", _generate_openai_clarification_plan(prompt)
+            plan = _generate_openai_clarification_plan(prompt)
+            if plan is not None:
+                set_cached_planner_result("clarification_planner", cache_payload, plan)
+            return "llm_openai", plan
 
         if provider == "gemini":
             if not settings.gemini_api_key:
                 return "heuristic_fallback_missing_gemini_key", None
-            return "llm_gemini", _generate_gemini_clarification_plan(prompt)
+            plan = _generate_gemini_clarification_plan(prompt)
+            if plan is not None:
+                set_cached_planner_result("clarification_planner", cache_payload, plan)
+            return "llm_gemini", plan
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError):
         return f"heuristic_fallback_after_{provider}_error", None
 

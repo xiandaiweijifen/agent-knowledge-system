@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from app.core.config import settings
+from app.services.llm.planner_cache_service import clear_planner_cache
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 TEST_TMP_ROOT = BACKEND_DIR / "tests" / "_tmp"
@@ -67,3 +68,6 @@ def isolate_llm_planner_providers(monkeypatch):
     monkeypatch.setattr(settings, "tool_planner_provider", "fallback")
     monkeypatch.setattr(settings, "clarification_planner_provider", "fallback")
     monkeypatch.setattr(settings, "workflow_planner_provider", "fallback")
+    monkeypatch.setattr(settings, "planner_cache_ttl_seconds", 120)
+    monkeypatch.setattr(settings, "planner_cache_max_entries", 256)
+    clear_planner_cache()

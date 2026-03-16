@@ -4282,5 +4282,343 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "379b57055420435b8fde6701acad1da1",
+    "question": "Look up docs about RAG, then summarize top 1 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T05:15:15.658998+00:00",
+    "completed_at": "2026-03-16T05:15:18.845488+00:00",
+    "last_updated_at": "2026-03-16T05:15:18.845488+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "clarification_planning_mode": null,
+    "planner_call_count": 2,
+    "workflow_planning_latency_ms": 1794,
+    "tool_planning_latency_ms": 1386,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 3180,
+    "llm_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:15.659059+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:17.452589+00:00",
+        "detail": "Planned search_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:18.839130+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:18.845370+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:18.845476+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 2 matching document(s) for 'RAG' and returned 1 result(s). Showing the top 1 result(s) out of 2 total matches. The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T05:15:18.845488+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Look up docs about RAG",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "458f28b380554d8da077c23637038794",
+      "executed_at": "2026-03-16T05:15:18.845312+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "1",
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "1",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T05:15:17.452619+00:00",
+        "completed_at": "2026-03-16T05:15:18.845370+00:00",
+        "question": "Look up docs about RAG",
+        "tool_plan": {
+          "question": "Look up docs about RAG",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "458f28b380554d8da077c23637038794",
+          "executed_at": "2026-03-16T05:15:18.845312+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "1",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "1",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "53ec6a6e78ef46468b58cece51148e33",
+    "question": "Look up docs about RAG, then summarize top 1 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T05:15:27.398426+00:00",
+    "completed_at": "2026-03-16T05:15:27.404212+00:00",
+    "last_updated_at": "2026-03-16T05:15:27.404212+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "clarification_planning_mode": null,
+    "planner_call_count": 2,
+    "workflow_planning_latency_ms": 1,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 1,
+    "llm_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:27.398463+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:27.399920+00:00",
+        "detail": "Planned search_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:27.400027+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:27.404103+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:15:27.404198+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 2 matching document(s) for 'RAG' and returned 1 result(s). Showing the top 1 result(s) out of 2 total matches. The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T05:15:27.404212+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Look up docs about RAG",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "89cf85c28e714a12a99d469ba926d51d",
+      "executed_at": "2026-03-16T05:15:27.404034+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "1",
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "1",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T05:15:27.399938+00:00",
+        "completed_at": "2026-03-16T05:15:27.404103+00:00",
+        "question": "Look up docs about RAG",
+        "tool_plan": {
+          "question": "Look up docs about RAG",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "89cf85c28e714a12a99d469ba926d51d",
+          "executed_at": "2026-03-16T05:15:27.404034+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "1",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "1",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

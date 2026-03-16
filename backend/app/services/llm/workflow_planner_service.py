@@ -5,6 +5,10 @@ from typing import Any
 import httpx
 
 from app.core.config import settings
+from app.services.llm.planner_cache_service import (
+    get_cached_planner_result,
+    set_cached_planner_result,
+)
 from app.services.agent.state_store import atomic_write_json
 
 
@@ -268,16 +272,38 @@ def generate_llm_workflow_plan(question: str) -> tuple[str, dict[str, str] | Non
     if provider == "fallback":
         return "heuristic_stub", None
 
+    cache_payload = {
+        "provider": provider,
+        "question": question,
+    }
+    cached_plan = get_cached_planner_result("workflow_planner", cache_payload)
+    if cached_plan is not None:
+        _capture_workflow_planner_debug(
+            {
+                "provider": provider,
+                "question": question,
+                "status": "cache_hit",
+                "parsed_plan": cached_plan,
+            }
+        )
+        return f"llm_{provider}", cached_plan
+
     try:
         if provider == "openai":
             if not settings.openai_api_key:
                 return "heuristic_fallback_missing_openai_key", None
-            return "llm_openai", _generate_openai_workflow_plan(question)
+            plan = _generate_openai_workflow_plan(question)
+            if plan is not None:
+                set_cached_planner_result("workflow_planner", cache_payload, plan)
+            return "llm_openai", plan
 
         if provider == "gemini":
             if not settings.gemini_api_key:
                 return "heuristic_fallback_missing_gemini_key", None
-            return "llm_gemini", _generate_gemini_workflow_plan(question)
+            plan = _generate_gemini_workflow_plan(question)
+            if plan is not None:
+                set_cached_planner_result("workflow_planner", cache_payload, plan)
+            return "llm_gemini", plan
     except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
         _capture_workflow_planner_debug(
             {
