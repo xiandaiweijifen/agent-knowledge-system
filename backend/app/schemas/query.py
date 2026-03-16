@@ -135,6 +135,7 @@ class AgentWorkflowResponse(BaseModel):
     is_recoverable: bool | None = None
     retry_state: str | None = None
     recommended_recovery_action: str | None = None
+    available_recovery_actions: list[str] = Field(default_factory=list)
     failure_stage: str | None = None
     failure_message: str | None = None
     started_at: str | None = None
@@ -193,6 +194,7 @@ class AgentWorkflowRunSummary(BaseModel):
     is_recoverable: bool | None = None
     retry_state: str | None = None
     recommended_recovery_action: str | None = None
+    available_recovery_actions: list[str] = Field(default_factory=list)
     failure_stage: str | None = None
     failure_message: str | None = None
     started_at: str | None = None

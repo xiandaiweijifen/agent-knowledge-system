@@ -1963,6 +1963,7 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
     assert payload["is_recoverable"] is False
     assert payload["retry_state"] == "not_applicable"
     assert payload["recommended_recovery_action"] == "none"
+    assert payload["available_recovery_actions"] == []
     assert payload["route"]["route_type"] == "knowledge_retrieval"
     assert len(payload["workflow_trace"]) >= 3
     assert payload["retrieval"]["filename"] == "sample.txt"
@@ -2022,6 +2023,7 @@ def test_query_agent_endpoint_clarifies_unsupported_direct_action_instead_of_cre
     assert payload["is_recoverable"] is True
     assert payload["retry_state"] == "not_applicable"
     assert payload["recommended_recovery_action"] == "resume_with_clarification"
+    assert payload["available_recovery_actions"] == ["resume_with_clarification"]
     assert payload["tool_planning_mode"] == "guardrail_ticket_fallback"
     assert payload["tool_planning_modes"] == ["guardrail_ticket_fallback"]
     assert payload["tool_planner_call_count"] == 1
@@ -2730,6 +2732,7 @@ def test_query_agent_endpoint_returns_structured_failure_for_knowledge_errors(
     assert payload["is_recoverable"] is True
     assert payload["retry_state"] == "retry_available"
     assert payload["recommended_recovery_action"] == "retry"
+    assert payload["available_recovery_actions"] == ["retry"]
     assert payload["failure_stage"] == "retrieval"
     assert "simulated retrieval failure" in payload["failure_message"]
     assert payload["step_count"] == 0
@@ -2772,6 +2775,7 @@ def test_query_agent_endpoint_returns_structured_failure_for_single_tool_errors(
     assert payload["is_recoverable"] is True
     assert payload["retry_state"] == "retry_exhausted"
     assert payload["recommended_recovery_action"] == "manual_retrigger"
+    assert payload["available_recovery_actions"] == ["manual_retrigger"]
     assert payload["retry_count"] == 1
     assert payload["retried_step_indices"] == [1]
     assert payload["failure_stage"] == "tool_execution"
@@ -2839,6 +2843,10 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
     assert payload["is_recoverable"] is True
     assert payload["retry_state"] == "retry_exhausted"
     assert payload["recommended_recovery_action"] == "resume_from_failed_step"
+    assert payload["available_recovery_actions"] == [
+        "resume_from_failed_step",
+        "manual_retrigger",
+    ]
     assert payload["retry_count"] == 1
     assert payload["retried_step_indices"] == [2]
     assert payload["failure_stage"] == "tool_execution"
@@ -3665,6 +3673,10 @@ def test_resume_agent_endpoint_can_resume_failed_search_then_summarize_from_step
     assert initial_payload["terminal_reason"] == "search_summary_failed"
     assert initial_payload["failure_stage"] == "search_summary"
     assert initial_payload["recommended_recovery_action"] == "resume_from_failed_step"
+    assert initial_payload["available_recovery_actions"] == [
+        "resume_from_failed_step",
+        "manual_retrigger",
+    ]
     assert initial_payload["tool_chain"][0]["step_status"] == "completed"
 
     monkeypatch.setattr(
@@ -3730,6 +3742,10 @@ def test_resume_agent_endpoint_can_resume_failed_status_then_summarize_from_step
     assert initial_payload["terminal_reason"] == "status_summary_failed"
     assert initial_payload["failure_stage"] == "status_summary"
     assert initial_payload["recommended_recovery_action"] == "resume_from_failed_step"
+    assert initial_payload["available_recovery_actions"] == [
+        "resume_from_failed_step",
+        "manual_retrigger",
+    ]
     assert initial_payload["tool_chain"][0]["step_status"] == "completed"
 
     monkeypatch.setattr(
@@ -3894,6 +3910,7 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["is_recoverable"] is False
     assert payload["runs"][0]["retry_state"] == "not_applicable"
     assert payload["runs"][0]["recommended_recovery_action"] == "none"
+    assert payload["runs"][0]["available_recovery_actions"] == []
     assert payload["runs"][0]["resumed_from_question"] is None
     assert payload["runs"][0]["source_run_id"] is None
     assert payload["runs"][0]["resume_source_type"] is None
@@ -3975,6 +3992,10 @@ def test_list_agent_workflow_runs_endpoint_marks_failed_step_resume_eligible_run
     assert payload["runs"][0]["reused_step_indices"] == []
     assert payload["runs"][0]["retry_state"] == "retry_exhausted"
     assert payload["runs"][0]["recommended_recovery_action"] == "resume_from_failed_step"
+    assert payload["runs"][0]["available_recovery_actions"] == [
+        "resume_from_failed_step",
+        "manual_retrigger",
+    ]
 
 
 def test_list_agent_workflow_runs_endpoint_recovers_from_invalid_store(
@@ -4229,6 +4250,9 @@ def test_migrate_agent_workflow_runs_endpoint_is_noop_for_current_schema(
                         "is_recoverable": False,
                         "retry_state": "not_applicable",
                         "recommended_recovery_action": "none",
+                        "available_recovery_actions": [],
+                        "resumed_from_step_index": None,
+                        "reused_step_indices": [],
                     "started_at": "2026-03-15T16:12:37.485983+00:00",
                         "completed_at": "2026-03-15T16:12:37.487903+00:00",
                         "last_updated_at": "2026-03-15T16:12:37.487903+00:00",

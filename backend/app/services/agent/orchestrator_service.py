@@ -162,6 +162,15 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
         normalized_run.get("recommended_recovery_action")
         or _derive_recommended_recovery_action(normalized_run)
     )
+    existing_available_recovery_actions = normalized_run.get("available_recovery_actions")
+    if isinstance(existing_available_recovery_actions, list):
+        normalized_run["available_recovery_actions"] = [
+            action.strip()
+            for action in existing_available_recovery_actions
+            if isinstance(action, str) and action.strip()
+        ]
+    else:
+        normalized_run["available_recovery_actions"] = _derive_available_recovery_actions(normalized_run)
     normalized_run["workflow_planning_mode"] = (
         normalized_run.get("workflow_planning_mode")
         or _extract_workflow_planning_mode_from_trace(normalized_run.get("workflow_trace", []))
@@ -549,6 +558,24 @@ def _derive_recommended_recovery_action(response: AgentWorkflowResponse | dict) 
     return None
 
 
+def _derive_available_recovery_actions(response: AgentWorkflowResponse | dict) -> list[str]:
+    outcome_category = _derive_outcome_category(response)
+    retry_state = _derive_retry_state(response)
+    if outcome_category == "completed":
+        return []
+    if outcome_category == "clarification_required":
+        return ["resume_with_clarification"]
+    if outcome_category == "recoverable_failure":
+        if _is_failed_step_resume_eligible(response):
+            return ["resume_from_failed_step", "manual_retrigger"]
+        if retry_state == "retry_exhausted":
+            return ["manual_retrigger"]
+        return ["retry"]
+    if outcome_category == "non_recoverable_failure":
+        return ["manual_investigation"]
+    return []
+
+
 def _coerce_non_negative_int(value: object) -> int:
     return value if isinstance(value, int) and value >= 0 else 0
 
@@ -596,6 +623,7 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "is_recoverable",
         "retry_state",
         "recommended_recovery_action",
+        "available_recovery_actions",
         "retry_count",
         "retried_step_indices",
         "workflow_planning_mode",
@@ -716,6 +744,7 @@ def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowRes
     ]
     response.retry_state = _derive_retry_state(response)
     response.recommended_recovery_action = _derive_recommended_recovery_action(response)
+    response.available_recovery_actions = _derive_available_recovery_actions(response)
     response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
     response.tool_planning_modes = _extract_tool_planning_modes(response)
     response.tool_planning_mode = _extract_tool_planning_mode(response)
@@ -919,6 +948,7 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 is_recoverable=run.is_recoverable,
                 retry_state=run.retry_state,
                 recommended_recovery_action=run.recommended_recovery_action,
+                available_recovery_actions=run.available_recovery_actions,
                 failure_stage=run.failure_stage,
                 failure_message=run.failure_message,
                 started_at=run.started_at,
