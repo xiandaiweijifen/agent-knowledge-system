@@ -353,6 +353,11 @@ The strongest end-to-end demo path today is:
    - recovery chain navigation
 6. Open `Evaluation` and review benchmark highlights, overview metrics, and saved report history.
 
+For a repeatable walkthrough, use:
+
+- [demo_playbook.md](/d:/project/agent-knowledge-system/docs/demo_playbook.md)
+- [demo_recovery_flow.ps1](/d:/project/agent-knowledge-system/scripts/demo_recovery_flow.ps1)
+
 ## Testing
 
 ### Backend
