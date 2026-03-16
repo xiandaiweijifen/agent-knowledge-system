@@ -5,6 +5,7 @@ from app.services.evaluation import (
     agent_route_eval_service,
     tool_execution_eval_service,
     agent_workflow_eval_service,
+    metrics_summary_service,
     overview_service,
     report_store_service,
     retrieval_eval_service,
@@ -414,6 +415,44 @@ def test_evaluation_overview_endpoint_returns_aggregated_metrics(monkeypatch):
     assert payload["workflow"]["completion_rate"] == 0.6
     assert payload["recovery"]["resume_from_failed_step_count"] == 3
     assert payload["cache_status"] == "cached"
+
+
+def test_evaluation_metrics_summary_endpoint_returns_curated_metrics(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        metrics_summary_service,
+        "get_metrics_summary",
+        lambda refresh=False: {
+            "generated_at": "2026-03-17T03:00:00+00:00",
+            "cache_status": "cached",
+            "highlights": [
+                {
+                    "label": "Workflow Completion",
+                    "value": "63.7%",
+                    "detail": "107/168 runs completed.",
+                }
+            ],
+            "sections": [
+                {
+                    "title": "Showcase Retrieval Benchmark",
+                    "dataset_name": "agent_workflow_retrieval_eval.json",
+                    "metric_name": "hit_rate_at_k",
+                    "metric_value": 1.0,
+                    "formatted_value": "1.000",
+                    "detail": "MRR 0.917 at top-3.",
+                }
+            ],
+        },
+    )
+
+    response = client.get("/api/evaluation/metrics-summary")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["cache_status"] == "cached"
+    assert payload["highlights"][0]["label"] == "Workflow Completion"
+    assert payload["sections"][0]["dataset_name"] == "agent_workflow_retrieval_eval.json"
 
 
 def test_latest_retrieval_evaluation_endpoint_returns_saved_report(monkeypatch):

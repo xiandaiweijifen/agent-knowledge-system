@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-03-16T19:08:12.997700+00:00",
+  "cache_status": "fresh",
+  "highlights": [
+    {
+      "label": "Workflow Completion",
+      "value": "63.7%",
+      "detail": "107/168 runs completed."
+    },
+    {
+      "label": "Recovery Success",
+      "value": "100.0%",
+      "detail": "19/19 recovered runs completed."
+    },
+    {
+      "label": "Retrieval Mean Hit@K",
+      "value": "0.760",
+      "detail": "4 datasets / 28 cases."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Showcase Retrieval Benchmark",
+      "dataset_name": "agent_workflow_retrieval_eval.json",
+      "metric_name": "hit_rate_at_k",
+      "metric_value": 1.0,
+      "formatted_value": "1.000",
+      "detail": "MRR 0.917 at top-3."
+    },
+    {
+      "title": "Tool Execution Accuracy Benchmark",
+      "dataset_name": "agent_tool_execution_eval.json",
+      "metric_name": "tool_accuracy",
+      "metric_value": 1.0,
+      "formatted_value": "1.000",
+      "detail": "9 tool execution cases."
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import type {
   EvalCaseFilter,
   EvalDatasetInfo,
   EvaluationReportHistoryEntry,
+  EvaluationMetricsSummaryResponse,
   EvaluationOverviewResponse,
   EvaluationMode,
   EvalReportResponse,
@@ -22,6 +23,7 @@ type EvaluationViewProps = {
   locale: Locale;
   evaluationMode: EvaluationMode;
   evaluationOverview: EvaluationOverviewResponse | null;
+  evaluationMetricsSummary: EvaluationMetricsSummaryResponse | null;
   datasets: EvalDatasetInfo[];
   agentRouteDatasets: AgentEvalDatasetInfo[];
   agentWorkflowDatasets: AgentEvalDatasetInfo[];
@@ -51,6 +53,7 @@ export function EvaluationView({
   locale,
   evaluationMode,
   evaluationOverview,
+  evaluationMetricsSummary,
   datasets,
   agentRouteDatasets,
   agentWorkflowDatasets,
@@ -80,6 +83,9 @@ export function EvaluationView({
       ? {
           workspace: "评测工作台",
           overview: "评测总览",
+          metricsSummary: "定稿指标摘要",
+          metricsSummaryCopy: "固定一版适合写入 README 和简历的核心指标，避免从不同报告里手动拼数。",
+          summaryCacheStatus: "摘要缓存",
           overviewCopy: "汇总当前检索、workflow 与恢复能力的关键指标，便于快速评估系统成熟度。",
           retrievalOverview: "检索概览",
           workflowOverview: "工作流概览",
@@ -169,6 +175,9 @@ export function EvaluationView({
       : {
           workspace: "Evaluation Workspace",
           overview: "Evaluation Overview",
+          metricsSummary: "Resume-Ready Metrics Summary",
+          metricsSummaryCopy: "Pin down a stable set of headline metrics suitable for the README and resume without hand-assembling numbers from multiple reports.",
+          summaryCacheStatus: "Summary Cache",
           overviewCopy:
             "Summarize retrieval, workflow, and recovery health in one place before drilling into individual benchmark suites.",
           retrievalOverview: "Retrieval Overview",
@@ -302,6 +311,11 @@ export function EvaluationView({
       ? copy.cached
       : copy.fresh
     : copy.unavailableMetric;
+  const metricsSummaryCacheStatus = evaluationMetricsSummary
+    ? evaluationMetricsSummary.cache_status === "cached"
+      ? copy.cached
+      : copy.fresh
+    : copy.unavailableMetric;
   const activeReportSavedAt = activeReport?.saved_at
     ? new Date(activeReport.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")
     : null;
@@ -351,6 +365,50 @@ export function EvaluationView({
             <span>{activeReport ? copy.reportReady : copy.reportIdle}</span>
           </div>
         </div>
+      </article>
+
+      <article className="panel panel-span">
+        <div className="panel-heading">
+          <div>
+            <h2>{copy.metricsSummary}</h2>
+            <p className="panel-intro">{copy.metricsSummaryCopy}</p>
+          </div>
+          <span className="status-pill">
+            <span>{copy.summaryCacheStatus}</span>
+            <strong>{metricsSummaryCacheStatus}</strong>
+          </span>
+        </div>
+        {evaluationMetricsSummary ? (
+          <div className="overview-grid">
+            <section className="subsection-card">
+              <span className="section-label">{copy.metricsSummary}</span>
+              <div className="summary-strip overview-summary-strip">
+                {evaluationMetricsSummary.highlights.map((highlight) => (
+                  <div key={highlight.label} className="summary-card">
+                    <span className="trace-label">{highlight.label}</span>
+                    <strong>{highlight.value}</strong>
+                    {highlight.detail ? <small>{highlight.detail}</small> : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+            {evaluationMetricsSummary.sections.map((section) => (
+              <section key={`${section.title}-${section.dataset_name ?? "none"}`} className="subsection-card">
+                <span className="section-label">{section.title}</span>
+                <div className="preview-meta">
+                  {section.dataset_name ? <span>{section.dataset_name}</span> : null}
+                  <strong>{section.formatted_value}</strong>
+                </div>
+                {section.detail ? <p className="panel-intro">{section.detail}</p> : null}
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <strong>{copy.metricsSummary}</strong>
+            <p>{copy.unavailableMetric}</p>
+          </div>
+        )}
       </article>
 
       <article className="panel panel-span">

@@ -27,6 +27,28 @@ class EvaluationReportHistoryResponse(BaseModel):
     entries: list[EvaluationReportHistoryEntry]
 
 
+class EvaluationMetricHighlight(BaseModel):
+    label: str
+    value: str
+    detail: str | None = None
+
+
+class EvaluationMetricsSummarySection(BaseModel):
+    title: str
+    dataset_name: str | None = None
+    metric_name: str
+    metric_value: float
+    formatted_value: str
+    detail: str | None = None
+
+
+class EvaluationMetricsSummaryResponse(BaseModel):
+    generated_at: str
+    cache_status: str = "fresh"
+    highlights: list[EvaluationMetricHighlight]
+    sections: list[EvaluationMetricsSummarySection]
+
+
 class RetrievalEvalDatasetInfo(BaseModel):
     dataset_name: str
     case_count: int

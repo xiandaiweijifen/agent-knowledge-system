@@ -469,5 +469,23 @@ export type EvaluationOverviewResponse = {
   };
 };
 
+export type EvaluationMetricsSummaryResponse = {
+  generated_at: string;
+  cache_status: string;
+  highlights: Array<{
+    label: string;
+    value: string;
+    detail?: string | null;
+  }>;
+  sections: Array<{
+    title: string;
+    dataset_name?: string | null;
+    metric_name: string;
+    metric_value: number;
+    formatted_value: string;
+    detail?: string | null;
+  }>;
+};
+
 export type EvalCaseFilter = "all" | "hit" | "miss";
 export type EvaluationMode = "retrieval" | "agent-route" | "agent-workflow" | "tool-execution";

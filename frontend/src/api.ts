@@ -11,6 +11,7 @@ import type {
   EvalDatasetListResponse,
   EvaluationReportHistoryResponse,
   EvaluationOverviewResponse,
+  EvaluationMetricsSummaryResponse,
   EvalReportResponse,
   PersistedChunkDocument,
   PersistedEmbeddingDocument,
@@ -299,4 +300,13 @@ export function fetchEvaluationOverview(refresh = false) {
   }
   const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
   return apiFetch<EvaluationOverviewResponse>(`/api/evaluation/overview${suffix}`);
+}
+
+export function fetchEvaluationMetricsSummary(refresh = false) {
+  const searchParams = new URLSearchParams();
+  if (refresh) {
+    searchParams.set("refresh", "true");
+  }
+  const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
+  return apiFetch<EvaluationMetricsSummaryResponse>(`/api/evaluation/metrics-summary${suffix}`);
 }

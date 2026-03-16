@@ -39,6 +39,27 @@ describe("EvaluationView", () => {
             clarification_recovery_count: 1,
           },
         }}
+        evaluationMetricsSummary={{
+          generated_at: "2026-03-17T00:00:00+00:00",
+          cache_status: "cached",
+          highlights: [
+            {
+              label: "Workflow Completion",
+              value: "63.7%",
+              detail: "107/168 runs completed.",
+            },
+          ],
+          sections: [
+            {
+              title: "Showcase Retrieval Benchmark",
+              dataset_name: "agent_workflow_retrieval_eval.json",
+              metric_name: "hit_rate_at_k",
+              metric_value: 1,
+              formatted_value: "1.000",
+              detail: "MRR 0.917 at top-3.",
+            },
+          ],
+        }}
         datasets={[
           {
             dataset_name: "rag_overview_retrieval_eval.json",
@@ -104,6 +125,7 @@ describe("EvaluationView", () => {
     );
 
     expect(screen.getByText("Evaluation Overview")).toBeInTheDocument();
+    expect(screen.getAllByText("Resume-Ready Metrics Summary").length).toBeGreaterThan(0);
     expect(screen.getByText("Retrieval Overview")).toBeInTheDocument();
     expect(screen.getByText("Workflow Overview")).toBeInTheDocument();
     expect(screen.getByText("Recovery Overview")).toBeInTheDocument();
@@ -118,5 +140,6 @@ describe("EvaluationView", () => {
     expect(screen.getByText((content) => content.includes("Report Source: Saved"))).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("Vs Previous: Improved 0.125"))).toBeInTheDocument();
     expect(screen.getByText("Recent Evaluation History")).toBeInTheDocument();
+    expect(screen.getByText("Workflow Completion")).toBeInTheDocument();
   });
 });

@@ -10,6 +10,7 @@ import {
   fetchDocumentPreview,
   fetchDocuments,
   fetchEvaluationDatasets,
+  fetchEvaluationMetricsSummary,
   fetchEvaluationHistory,
   fetchEvaluationOverview,
   fetchLatestAgentRouteEvaluation,
@@ -51,6 +52,7 @@ import type {
   EvaluationReportHistoryEntry,
   EvaluationOverviewResponse,
   EvaluationMode,
+  EvaluationMetricsSummaryResponse,
   EvalReportResponse,
   ToolExecutionEvalReportResponse,
   PersistedChunkDocument,
@@ -103,6 +105,8 @@ function App() {
   const [toolExecutionEvalResult, setToolExecutionEvalResult] =
     useState<ToolExecutionEvalReportResponse | null>(null);
   const [evaluationOverview, setEvaluationOverview] = useState<EvaluationOverviewResponse | null>(null);
+  const [evaluationMetricsSummary, setEvaluationMetricsSummary] =
+    useState<EvaluationMetricsSummaryResponse | null>(null);
   const [evaluationHistory, setEvaluationHistory] = useState<EvaluationReportHistoryEntry[]>([]);
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
@@ -452,12 +456,13 @@ function App() {
   async function loadEvaluationDatasets(refreshOverview = false) {
     setEvalError("");
 
-    const [retrievalPayload, routePayload, workflowPayload, toolExecutionPayload, overviewPayload] = await Promise.allSettled([
+    const [retrievalPayload, routePayload, workflowPayload, toolExecutionPayload, overviewPayload, metricsSummaryPayload] = await Promise.allSettled([
       fetchEvaluationDatasets(),
       fetchAgentRouteEvaluationDatasets(),
       fetchAgentWorkflowEvaluationDatasets(),
       fetchToolExecutionEvaluationDatasets(),
       fetchEvaluationOverview(refreshOverview),
+      fetchEvaluationMetricsSummary(refreshOverview),
     ]);
 
     setDatasets(retrievalPayload.status === "fulfilled" ? retrievalPayload.value.datasets : []);
@@ -469,6 +474,9 @@ function App() {
       toolExecutionPayload.status === "fulfilled" ? toolExecutionPayload.value.datasets : [],
     );
     setEvaluationOverview(overviewPayload.status === "fulfilled" ? overviewPayload.value : null);
+    setEvaluationMetricsSummary(
+      metricsSummaryPayload.status === "fulfilled" ? metricsSummaryPayload.value : null,
+    );
 
     const failures = [
       retrievalPayload.status === "rejected" ? "retrieval" : null,
@@ -476,6 +484,7 @@ function App() {
       workflowPayload.status === "rejected" ? "agent-workflow" : null,
       toolExecutionPayload.status === "rejected" ? "tool-execution" : null,
       overviewPayload.status === "rejected" ? "overview" : null,
+      metricsSummaryPayload.status === "rejected" ? "metrics-summary" : null,
     ].filter((item): item is string => item !== null);
 
     if (failures.length > 0) {
@@ -885,6 +894,7 @@ function App() {
           locale={locale}
           evaluationMode={evaluationMode}
           evaluationOverview={evaluationOverview}
+          evaluationMetricsSummary={evaluationMetricsSummary}
           datasets={datasets}
           agentRouteDatasets={agentRouteDatasets}
           agentWorkflowDatasets={agentWorkflowDatasets}

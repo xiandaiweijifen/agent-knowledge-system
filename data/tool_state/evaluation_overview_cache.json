@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-03-16T18:33:57.837376+00:00",
+  "generated_at": "2026-03-16T19:09:37.580483+00:00",
   "cache_status": "fresh",
   "retrieval": {
     "dataset_count": 4,
     "total_cases": 28,
-    "mean_hit_rate_at_k": 0.76041675,
-    "mean_reciprocal_rank": 0.53298625,
-    "best_dataset_name": "rag_overview_retrieval_eval.json",
+    "mean_hit_rate_at_k": 0.92708325,
+    "mean_reciprocal_rank": 0.81076375,
+    "best_dataset_name": "agent_workflow_retrieval_eval.json",
     "best_hit_rate_at_k": 1.0
   },
   "workflow": {
