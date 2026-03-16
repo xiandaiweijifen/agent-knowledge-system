@@ -129,6 +129,15 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run["completed_at"] = _backfill_completed_at(normalized_run)
     normalized_run["last_updated_at"] = _backfill_last_updated_at(normalized_run)
     normalized_run["terminal_reason"] = _backfill_terminal_reason(normalized_run)
+    normalized_run["outcome_category"] = (
+        normalized_run.get("outcome_category")
+        or _derive_outcome_category(normalized_run)
+    )
+    normalized_run["is_recoverable"] = _backfill_is_recoverable(normalized_run)
+    normalized_run["recommended_recovery_action"] = (
+        normalized_run.get("recommended_recovery_action")
+        or _derive_recommended_recovery_action(normalized_run)
+    )
     normalized_run["workflow_planning_mode"] = (
         normalized_run.get("workflow_planning_mode")
         or _extract_workflow_planning_mode_from_trace(normalized_run.get("workflow_trace", []))
@@ -379,6 +388,64 @@ def _backfill_terminal_reason(run: dict) -> str | None:
     return None
 
 
+def _derive_outcome_category(response: AgentWorkflowResponse | dict) -> str | None:
+    workflow_status = (
+        response.workflow_status if isinstance(response, AgentWorkflowResponse) else response.get("workflow_status")
+    )
+    terminal_reason = (
+        response.terminal_reason if isinstance(response, AgentWorkflowResponse) else response.get("terminal_reason")
+    )
+
+    if workflow_status == "completed":
+        return "completed"
+    if workflow_status == "clarification_required":
+        return "clarification_required"
+    if workflow_status == "failed":
+        if isinstance(terminal_reason, str) and terminal_reason in {
+            "knowledge_retrieval_failed",
+            "tool_planning_failed",
+            "tool_execution_failed",
+            "search_summary_failed",
+            "status_summary_failed",
+        }:
+            return "recoverable_failure"
+        return "non_recoverable_failure"
+    return None
+
+
+def _derive_is_recoverable(response: AgentWorkflowResponse | dict) -> bool | None:
+    outcome_category = _derive_outcome_category(response)
+    if outcome_category == "completed":
+        return False
+    if outcome_category == "clarification_required":
+        return True
+    if outcome_category == "recoverable_failure":
+        return True
+    if outcome_category == "non_recoverable_failure":
+        return False
+    return None
+
+
+def _backfill_is_recoverable(run: dict) -> bool | None:
+    existing = run.get("is_recoverable")
+    if isinstance(existing, bool):
+        return existing
+    return _derive_is_recoverable(run)
+
+
+def _derive_recommended_recovery_action(response: AgentWorkflowResponse | dict) -> str | None:
+    outcome_category = _derive_outcome_category(response)
+    if outcome_category == "completed":
+        return "none"
+    if outcome_category == "clarification_required":
+        return "resume_with_clarification"
+    if outcome_category == "recoverable_failure":
+        return "retry"
+    if outcome_category == "non_recoverable_failure":
+        return "manual_investigation"
+    return None
+
+
 def _coerce_non_negative_int(value: object) -> int:
     return value if isinstance(value, int) and value >= 0 else 0
 
@@ -396,6 +463,9 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "completed_at",
         "last_updated_at",
         "terminal_reason",
+        "outcome_category",
+        "is_recoverable",
+        "recommended_recovery_action",
         "workflow_planning_mode",
         "tool_planning_mode",
         "tool_planning_modes",
@@ -493,6 +563,9 @@ def _extract_clarification_planning_mode(response: AgentWorkflowResponse | dict)
 
 
 def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowResponse:
+    response.outcome_category = _derive_outcome_category(response)
+    response.is_recoverable = _derive_is_recoverable(response)
+    response.recommended_recovery_action = _derive_recommended_recovery_action(response)
     response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
     response.tool_planning_modes = _extract_tool_planning_modes(response)
     response.tool_planning_mode = _extract_tool_planning_mode(response)
@@ -690,6 +763,9 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 overridden_plan_arguments=run.overridden_plan_arguments,
                 workflow_status=run.workflow_status,
                 terminal_reason=run.terminal_reason,
+                outcome_category=run.outcome_category,
+                is_recoverable=run.is_recoverable,
+                recommended_recovery_action=run.recommended_recovery_action,
                 failure_stage=run.failure_stage,
                 failure_message=run.failure_message,
                 started_at=run.started_at,

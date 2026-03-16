@@ -7044,5 +7044,262 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "994b2a4b241a48deb9e7db731696a29a",
+    "question": "Create a ticket for the payment service outage",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": false,
+    "recommended_recovery_action": "none",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T12:05:04.865220+00:00",
+    "completed_at": "2026-03-16T12:05:08.434381+00:00",
+    "last_updated_at": "2026-03-16T12:05:08.434381+00:00",
+    "workflow_planning_mode": null,
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 1,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 2001,
+    "tool_planning_latency_ms": 1557,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 3558,
+    "llm_planner_layers": [
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:05:04.865337+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:05:08.423653+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:05:08.434381+00:00",
+        "detail": "Executed local_adapter tool ticketing:create with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a ticket for the payment service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {},
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0185 for payment-service.",
+      "trace_id": "99e7faf75b5040758185251d6117ee6e",
+      "executed_at": "2026-03-16T12:05:08.428318+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0185",
+        "ticket_id": "TICKET-0185",
+        "status": "open",
+        "severity": "unspecified",
+        "environment": "unspecified",
+        "created_at": "2026-03-16T12:05:08.428318+00:00",
+        "updated_at": "2026-03-16T12:05:08.428318+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T12:05:06.866569+00:00",
+        "completed_at": "2026-03-16T12:05:08.434381+00:00",
+        "question": "Create a ticket for the payment service outage",
+        "tool_plan": {
+          "question": "Create a ticket for the payment service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {},
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0185 for payment-service.",
+          "trace_id": "99e7faf75b5040758185251d6117ee6e",
+          "executed_at": "2026-03-16T12:05:08.428318+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0185",
+            "ticket_id": "TICKET-0185",
+            "status": "open",
+            "severity": "unspecified",
+            "environment": "unspecified",
+            "created_at": "2026-03-16T12:05:08.428318+00:00",
+            "updated_at": "2026-03-16T12:05:08.428318+00:00"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "94f9630e18b24614b5525204951d0d9f",
+    "question": "Restart payment-service in production",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "unsupported_action_clarification",
+    "outcome_category": "clarification_required",
+    "is_recoverable": true,
+    "recommended_recovery_action": "resume_with_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T12:05:36.647900+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-16T12:05:39.886341+00:00",
+    "workflow_planning_mode": null,
+    "tool_planning_mode": "guardrail_ticket_fallback",
+    "tool_planning_modes": [],
+    "clarification_planning_mode": "guardrail_stub",
+    "planner_call_count": 1,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 1583,
+    "tool_planning_latency_ms": 1655,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 3238,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [
+      "clarification"
+    ],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "step_count": 0,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request contains an execution verb and an external system target, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:05:36.647950+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:05:39.886279+00:00",
+        "detail": "Planned ticketing:create for payment-service."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T12:05:39.886341+00:00",
+        "detail": "The request requires an unsupported direct operational action, so the workflow requested clarification before falling back to ticket creation."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing.",
+    "clarification_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_stub",
+      "missing_fields": [
+        "execution_confirmation",
+        "fallback_action"
+      ],
+      "follow_up_questions": [
+        "I cannot directly execute that action for payment-service yet. Do you want me to create a ticket instead?",
+        "If you do not want a ticket, what supported action should I take instead?"
+      ],
+      "clarification_summary": "The request asks for a direct operational action that this system does not execute yet, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Restart payment-service in production",
+      "planning_mode": "guardrail_ticket_fallback",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "description": "Restart payment-service in production",
+        "service_name": "payment-service",
+        "environment": "production"
+      },
+      "plan_summary": "Fallback to ticketing:create for payment-service because direct operational execution is not supported yet."
+    },
+    "tool_execution": null,
+    "tool_chain": []
   }
 ]

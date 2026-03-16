@@ -125,6 +125,9 @@ class AgentWorkflowResponse(BaseModel):
     overridden_plan_arguments: list[str] = Field(default_factory=list)
     workflow_status: str
     terminal_reason: str | None = None
+    outcome_category: str | None = None
+    is_recoverable: bool | None = None
+    recommended_recovery_action: str | None = None
     failure_stage: str | None = None
     failure_message: str | None = None
     started_at: str | None = None
@@ -175,6 +178,9 @@ class AgentWorkflowRunSummary(BaseModel):
     overridden_plan_arguments: list[str] = Field(default_factory=list)
     workflow_status: str
     terminal_reason: str | None = None
+    outcome_category: str | None = None
+    is_recoverable: bool | None = None
+    recommended_recovery_action: str | None = None
     failure_stage: str | None = None
     failure_message: str | None = None
     started_at: str | None = None

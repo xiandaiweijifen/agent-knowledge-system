@@ -1959,6 +1959,9 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
     payload = response.json()
     assert payload["workflow_status"] == "completed"
     assert payload["terminal_reason"] == "knowledge_answer_generated"
+    assert payload["outcome_category"] == "completed"
+    assert payload["is_recoverable"] is False
+    assert payload["recommended_recovery_action"] == "none"
     assert payload["route"]["route_type"] == "knowledge_retrieval"
     assert len(payload["workflow_trace"]) >= 3
     assert payload["retrieval"]["filename"] == "sample.txt"
@@ -2014,6 +2017,9 @@ def test_query_agent_endpoint_clarifies_unsupported_direct_action_instead_of_cre
     payload = response.json()
     assert payload["workflow_status"] == "clarification_required"
     assert payload["terminal_reason"] == "unsupported_action_clarification"
+    assert payload["outcome_category"] == "clarification_required"
+    assert payload["is_recoverable"] is True
+    assert payload["recommended_recovery_action"] == "resume_with_clarification"
     assert payload["step_count"] == 0
     assert payload["tool_execution"] is None
     assert payload["tool_plan"]["tool_name"] == "ticketing"
@@ -2711,6 +2717,9 @@ def test_query_agent_endpoint_returns_structured_failure_for_knowledge_errors(
     payload = response.json()
     assert payload["workflow_status"] == "failed"
     assert payload["terminal_reason"] == "knowledge_retrieval_failed"
+    assert payload["outcome_category"] == "recoverable_failure"
+    assert payload["is_recoverable"] is True
+    assert payload["recommended_recovery_action"] == "retry"
     assert payload["failure_stage"] == "retrieval"
     assert "simulated retrieval failure" in payload["failure_message"]
     assert payload["step_count"] == 0
@@ -2746,6 +2755,9 @@ def test_query_agent_endpoint_returns_structured_failure_for_single_tool_errors(
     payload = response.json()
     assert payload["workflow_status"] == "failed"
     assert payload["terminal_reason"] == "tool_execution_failed"
+    assert payload["outcome_category"] == "recoverable_failure"
+    assert payload["is_recoverable"] is True
+    assert payload["recommended_recovery_action"] == "retry"
     assert payload["failure_stage"] == "tool_execution"
     assert "simulated tool failure" in payload["failure_message"]
     assert payload["step_count"] == 1
@@ -2800,6 +2812,9 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
     payload = response.json()
     assert payload["workflow_status"] == "failed"
     assert payload["terminal_reason"] == "tool_execution_failed"
+    assert payload["outcome_category"] == "recoverable_failure"
+    assert payload["is_recoverable"] is True
+    assert payload["recommended_recovery_action"] == "retry"
     assert payload["failure_stage"] == "tool_execution"
     assert "simulated ticket failure" in payload["failure_message"]
     assert payload["step_count"] == 2
@@ -3374,6 +3389,9 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
     assert payload["runs"][0]["question"] == "Create a ticket for the payment service outage"
     assert payload["runs"][0]["route_type"] == "tool_execution"
     assert payload["runs"][0]["terminal_reason"] == "tool_execution_completed"
+    assert payload["runs"][0]["outcome_category"] == "completed"
+    assert payload["runs"][0]["is_recoverable"] is False
+    assert payload["runs"][0]["recommended_recovery_action"] == "none"
     assert payload["runs"][0]["resumed_from_question"] is None
     assert payload["runs"][0]["source_run_id"] is None
     assert payload["runs"][0]["resume_source_type"] is None
@@ -3853,6 +3871,53 @@ def test_get_agent_workflow_run_stats_endpoint_returns_summary_counts(
         "latest_run_id": "run-3",
         "latest_updated_at": "2026-03-15T10:02:03+00:00",
     }
+
+
+def test_get_agent_workflow_run_endpoint_backfills_recovery_semantics_for_unknown_failed_reason(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    workflow_run_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": "run-unknown-failure",
+                    "question": "Broken run",
+                    "workflow_status": "failed",
+                    "terminal_reason": "unexpected_runtime_state",
+                    "failure_stage": "runtime",
+                    "failure_message": "unexpected state encountered",
+                    "started_at": "2026-03-15T10:02:00+00:00",
+                    "completed_at": "2026-03-15T10:02:03+00:00",
+                    "last_updated_at": "2026-03-15T10:02:03+00:00",
+                    "step_count": 1,
+                    "route": {
+                        "route_type": "tool_execution",
+                        "route_reason": "route 3",
+                        "filename": None,
+                    },
+                    "workflow_trace": [],
+                    "tool_chain": [],
+                },
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/query/agent/runs/run-unknown-failure")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["terminal_reason"] == "unexpected_runtime_state"
+    assert payload["outcome_category"] == "non_recoverable_failure"
+    assert payload["is_recoverable"] is False
+    assert payload["recommended_recovery_action"] == "manual_investigation"
 
 
 def test_prune_agent_workflow_runs_endpoint_keeps_latest_runs(
