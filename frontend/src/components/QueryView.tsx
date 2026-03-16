@@ -1,5 +1,7 @@
 ﻿import type { FormEvent } from "react";
 
+import { useState } from "react";
+
 import type {
   AgentWorkflowResponse,
   AgentWorkflowRunSummary,
@@ -61,6 +63,9 @@ export function QueryView({
   onRecoverAgentWorkflowRun,
   onRunDiagnostics,
 }: QueryViewProps) {
+  const [runSearch, setRunSearch] = useState("");
+  const [runStatusFilter, setRunStatusFilter] = useState("all");
+  const [runRecoveryFilter, setRunRecoveryFilter] = useState("all");
   const queryCopy =
     locale === "zh"
       ? {
@@ -143,6 +148,13 @@ export function QueryView({
           noWorkflow: "还没有 Agent 工作流",
           noWorkflowCopy: "运行 Agent 后可查看路由选择、工作流轨迹，以及工具或澄清输出。",
           recentRuns: "最近工作流运行",
+          runSearch: "运行搜索",
+          runSearchPlaceholder: "按问题或 run id 搜索",
+          runStatusFilter: "状态筛选",
+          runRecoveryFilter: "恢复筛选",
+          allRuns: "全部",
+          noMatchingRuns: "没有匹配的工作流运行",
+          noMatchingRunsCopy: "调整搜索词或筛选条件后再试。",
           routeMeta: "路由",
           runMeta: "运行",
           retryMeta: "重试",
@@ -294,6 +306,13 @@ export function QueryView({
           noWorkflowCopy:
             "Run Agent to inspect route selection, workflow trace, and tool or clarification output.",
           recentRuns: "Recent Workflow Runs",
+          runSearch: "Run Search",
+          runSearchPlaceholder: "Search by question or run id",
+          runStatusFilter: "Status Filter",
+          runRecoveryFilter: "Recovery Filter",
+          allRuns: "All",
+          noMatchingRuns: "No matching workflow runs",
+          noMatchingRunsCopy: "Try a different search term or filter.",
           routeMeta: "route",
           runMeta: "run",
           retryMeta: "retry",
@@ -778,6 +797,27 @@ export function QueryView({
   const routeUsesRetrieval = !!agentQueryResult?.retrieval;
   const routeUsesToolPlanning = !!agentQueryResult?.tool_plan;
   const hasToolChain = (agentQueryResult?.tool_chain.length ?? 0) > 0;
+  const normalizedRunSearch = runSearch.trim().toLowerCase();
+  const filteredWorkflowRuns = agentWorkflowRuns.filter((run) => {
+    if (runStatusFilter !== "all" && run.workflow_status !== runStatusFilter) {
+      return false;
+    }
+
+    if (
+      runRecoveryFilter !== "all" &&
+      (run.recommended_recovery_action ?? "none") !== runRecoveryFilter
+    ) {
+      return false;
+    }
+
+    if (!normalizedRunSearch) {
+      return true;
+    }
+
+    return [run.question, run.run_id, run.root_run_id, run.source_run_id]
+      .filter((value): value is string => typeof value === "string" && value.length > 0)
+      .some((value) => value.toLowerCase().includes(normalizedRunSearch));
+  });
 
   return (
     <section className="panel-grid query-layout">
@@ -1217,8 +1257,47 @@ export function QueryView({
             <h2>{queryCopy.recentRuns}</h2>
           </div>
           {agentWorkflowRuns.length > 0 ? (
+            <>
+              <div className="run-filter-grid">
+                <label>
+                  {queryCopy.runSearch}
+                  <input
+                    type="text"
+                    value={runSearch}
+                    placeholder={queryCopy.runSearchPlaceholder}
+                    onChange={(event) => setRunSearch(event.target.value)}
+                  />
+                </label>
+                <label>
+                  {queryCopy.runStatusFilter}
+                  <select
+                    value={runStatusFilter}
+                    onChange={(event) => setRunStatusFilter(event.target.value)}
+                  >
+                    <option value="all">{queryCopy.allRuns}</option>
+                    <option value="completed">completed</option>
+                    <option value="failed">failed</option>
+                    <option value="clarification_required">clarification_required</option>
+                  </select>
+                </label>
+                <label>
+                  {queryCopy.runRecoveryFilter}
+                  <select
+                    value={runRecoveryFilter}
+                    onChange={(event) => setRunRecoveryFilter(event.target.value)}
+                  >
+                    <option value="all">{queryCopy.allRuns}</option>
+                    <option value="none">none</option>
+                    <option value="resume_from_failed_step">resume_from_failed_step</option>
+                    <option value="resume_with_clarification">resume_with_clarification</option>
+                    <option value="manual_retrigger">manual_retrigger</option>
+                    <option value="retry">retry</option>
+                  </select>
+                </label>
+              </div>
+              {filteredWorkflowRuns.length > 0 ? (
             <div className="run-list">
-              {agentWorkflowRuns.map((run) => (
+              {filteredWorkflowRuns.map((run) => (
                 <article key={run.run_id} className="run-card">
                   <div className="card-title-row">
                     <strong>{run.question}</strong>
@@ -1271,6 +1350,13 @@ export function QueryView({
                 </article>
               ))}
             </div>
+              ) : (
+                <div className="empty-state">
+                  <strong>{queryCopy.noMatchingRuns}</strong>
+                  <p>{queryCopy.noMatchingRunsCopy}</p>
+                </div>
+              )}
+            </>
           ) : (
             <div className="empty-state">
               <strong>{queryCopy.noHistory}</strong>

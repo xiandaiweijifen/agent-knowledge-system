@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -857,6 +857,75 @@ describe("QueryView", () => {
       "run-list",
       "resume_from_failed_step",
     );
+  });
+
+  it("filters recent workflow runs by search and recovery action", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Check system status"
+        topK={3}
+        activePresetQuestions={["Check system status"]}
+        queryResult={null}
+        agentQueryResult={null}
+        agentWorkflowRuns={[
+          {
+            run_id: "run-alpha",
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "resume_from_failed_step",
+            available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+          },
+          {
+            run_id: "run-beta",
+            question: "Create a ticket for the payment service outage",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "manual_retrigger",
+            available_recovery_actions: ["manual_retrigger"],
+          },
+        ]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    const recentRunsPanel = screen
+      .getAllByRole("heading", { name: "Recent Workflow Runs" })
+      .at(-1)
+      ?.closest("article");
+    expect(recentRunsPanel).not.toBeNull();
+    const recentRuns = within(recentRunsPanel!);
+
+    await user.selectOptions(recentRuns.getByLabelText("Recovery Filter"), "manual_retrigger");
+    expect(
+      recentRuns.getAllByText("Create a ticket for the payment service outage").length,
+    ).toBeGreaterThan(0);
+    expect(
+      recentRuns.queryAllByText(
+        "Search docs for RAG and create a high severity ticket for payment-service",
+      ).length,
+    ).toBe(0);
+
+    await user.clear(recentRuns.getByLabelText("Run Search"));
+    await user.type(recentRuns.getByLabelText("Run Search"), "alpha");
+    expect(recentRuns.getByText("No matching workflow runs")).toBeInTheDocument();
   });
 
   it("submits clarification recovery fields from the current workflow view", async () => {
