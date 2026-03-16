@@ -1148,6 +1148,117 @@ describe("QueryView", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("groups recent workflow runs by recovery chain and toggles chain visibility", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Search docs for RAG and create a high severity ticket for payment-service"
+        topK={3}
+        activePresetQuestions={["Search docs for RAG and create a high severity ticket for payment-service"]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-depth-1",
+          root_run_id: "run-root",
+          recovery_depth: 1,
+          question: "Search docs for RAG and create a high severity ticket for payment-service",
+          workflow_status: "completed",
+          recommended_recovery_action: "none",
+          available_recovery_actions: [],
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            filename: null,
+          },
+          workflow_trace: [],
+          tool_chain: [],
+        }}
+        agentWorkflowRuns={[
+          {
+            run_id: "run-root",
+            root_run_id: "run-root",
+            recovery_depth: 0,
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "resume_from_failed_step",
+            available_recovery_actions: ["resume_from_failed_step", "manual_retrigger"],
+          },
+          {
+            run_id: "run-depth-1",
+            root_run_id: "run-root",
+            recovery_depth: 1,
+            question: "Search docs for RAG and create a high severity ticket for payment-service",
+            workflow_status: "completed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "none",
+            available_recovery_actions: [],
+          },
+          {
+            run_id: "run-other",
+            root_run_id: "run-other",
+            recovery_depth: 0,
+            question: "Create a ticket for the payment service outage",
+            workflow_status: "failed",
+            route_type: "tool_execution",
+            route_reason: "Tool execution route.",
+            recommended_recovery_action: "manual_retrigger",
+            available_recovery_actions: ["manual_retrigger"],
+          },
+        ]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    const recentRunsPanel = screen
+      .getAllByRole("heading", { name: "Recent Workflow Runs" })
+      .at(-1)
+      ?.closest("article");
+    expect(recentRunsPanel).not.toBeNull();
+    const recentRuns = within(recentRunsPanel!);
+
+    expect(recentRuns.getAllByText(/Chain Root:/).length).toBe(2);
+    expect(recentRuns.getAllByText("Current Chain").length).toBeGreaterThan(0);
+    expect(
+      recentRuns.getAllByText("Search docs for RAG and create a high severity ticket for payment-service").length,
+    ).toBeGreaterThan(0);
+
+    await user.click(
+      recentRuns
+        .getAllByRole("button")
+        .find((button) => button.textContent?.includes("Collapse Chain"))!,
+    );
+
+    expect(
+      recentRuns.queryAllByText("Search docs for RAG and create a high severity ticket for payment-service").length,
+    ).toBe(0);
+
+    await user.click(
+      recentRuns
+        .getAllByRole("button")
+        .find((button) => button.textContent?.includes("Expand Chain"))!,
+    );
+
+    expect(
+      recentRuns.getAllByText("Search docs for RAG and create a high severity ticket for payment-service").length,
+    ).toBeGreaterThan(0);
+  });
+
   it("submits clarification recovery fields from the current workflow view", async () => {
     const user = userEvent.setup();
     const onRecoverAgentWorkflowRun = vi.fn();

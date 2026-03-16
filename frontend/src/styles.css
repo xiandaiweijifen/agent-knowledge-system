@@ -1082,6 +1082,20 @@ textarea {
   gap: 12px;
 }
 
+.run-chain-group {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.82);
+}
+
+.run-chain-runs {
+  display: grid;
+  gap: 12px;
+}
+
 .recovery-chain-list {
   display: grid;
   gap: 12px;

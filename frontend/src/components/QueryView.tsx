@@ -67,6 +67,7 @@ export function QueryView({
   const [runStatusFilter, setRunStatusFilter] = useState("all");
   const [runRecoveryFilter, setRunRecoveryFilter] = useState("all");
   const [focusedChainRootRunId, setFocusedChainRootRunId] = useState<string | null>(null);
+  const [collapsedChainRootRunIds, setCollapsedChainRootRunIds] = useState<string[]>([]);
   const queryCopy =
     locale === "zh"
       ? {
@@ -165,6 +166,11 @@ export function QueryView({
           focusCurrentChain: "仅看当前链",
           clearChainFocus: "查看全部链路",
           chainScopeActive: "当前只显示同一恢复链上的运行记录。",
+          chainRoot: "链根",
+          chainRuns: "链内运行数",
+          collapseChain: "折叠链路",
+          expandChain: "展开链路",
+          currentChain: "当前链",
           allRuns: "全部",
           noMatchingRuns: "没有匹配的工作流运行",
           noMatchingRunsCopy: "调整搜索词或筛选条件后再试。",
@@ -335,6 +341,11 @@ export function QueryView({
           focusCurrentChain: "Focus Current Chain",
           clearChainFocus: "Show All Chains",
           chainScopeActive: "Only runs from the current recovery chain are visible.",
+          chainRoot: "Chain Root",
+          chainRuns: "Chain Runs",
+          collapseChain: "Collapse Chain",
+          expandChain: "Expand Chain",
+          currentChain: "Current Chain",
           allRuns: "All",
           noMatchingRuns: "No matching workflow runs",
           noMatchingRunsCopy: "Try a different search term or filter.",
@@ -893,6 +904,30 @@ export function QueryView({
       .filter((value): value is string => typeof value === "string" && value.length > 0)
       .some((value) => value.toLowerCase().includes(normalizedRunSearch));
   });
+  const groupedFilteredWorkflowRuns = filteredWorkflowRuns.reduce<
+    Array<{ rootRunId: string; runs: AgentWorkflowRunSummary[] }>
+  >((groups, run) => {
+    const rootRunId = run.root_run_id ?? run.run_id;
+    const existingGroup = groups.find((group) => group.rootRunId === rootRunId);
+    if (existingGroup) {
+      existingGroup.runs.push(run);
+      return groups;
+    }
+    groups.push({ rootRunId, runs: [run] });
+    return groups;
+  }, []);
+
+  function isChainCollapsed(rootRunId: string) {
+    return collapsedChainRootRunIds.includes(rootRunId);
+  }
+
+  function toggleChainCollapsed(rootRunId: string) {
+    setCollapsedChainRootRunIds((current) =>
+      current.includes(rootRunId)
+        ? current.filter((id) => id !== rootRunId)
+        : [...current, rootRunId],
+    );
+  }
 
   return (
     <section className="panel-grid query-layout">
@@ -1483,60 +1518,98 @@ export function QueryView({
               {focusedChainRootRunId && (
                 <p className="subsection-copy">{queryCopy.chainScopeActive}</p>
               )}
-              {filteredWorkflowRuns.length > 0 ? (
+              {groupedFilteredWorkflowRuns.length > 0 ? (
             <div className="run-list">
-              {filteredWorkflowRuns.map((run) => (
-                <article key={run.run_id} className="run-card">
-                  <div className="card-title-row">
-                    <strong>{run.question}</strong>
-                    <span className="status-chip">{run.workflow_status}</span>
-                  </div>
-                  <div className="meta-row">
-                    <span>{queryCopy.routeMeta} {run.route_type}</span>
-                    <span>{queryCopy.runMeta} {run.run_id}</span>
-                  </div>
-                  <div className="meta-row">
-                    <span>{queryCopy.rootRun}: {run.root_run_id ?? queryCopy.notLinked}</span>
-                    <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
-                  </div>
-                  <div className="meta-row">
-                    <span>{queryCopy.retryMeta} {run.retry_state ?? queryCopy.unknown}</span>
-                    <span>{queryCopy.recommendedMeta} {run.recommended_recovery_action ?? queryCopy.none}</span>
-                  </div>
-                  {run.recovered_via_action && (
-                    <p className="subsection-copy">
-                      {queryCopy.recoveredViaMeta}: {formatRecoveryActionLabel(run.recovered_via_action)}
-                    </p>
-                  )}
-                  <div className="pill-strip">
-                    {renderRecoveryActions(run.available_recovery_actions, true)}
-                  </div>
-                  {run.resumed_from_question && (
-                    <p className="subsection-copy">{queryCopy.resumedFromMeta}: {run.resumed_from_question}</p>
-                  )}
-                  {(run.reused_step_indices?.length ?? 0) > 0 && (
-                    <p className="subsection-copy">
-                      {queryCopy.reusedStepsMeta}: {run.reused_step_indices?.join(", ")}
-                    </p>
-                  )}
-                  <div className="button-row">
-                    <button
-                      type="button"
-                      className="ghost-button"
-                      disabled={queryBusy}
-                      onClick={() => onLoadAgentWorkflowRun(run.run_id)}
-                    >
-                      {queryCopy.loadRun}
-                    </button>
-                  </div>
-                  {renderRecoveryButtons(
-                    run.run_id,
-                    run.available_recovery_actions,
-                    run.recommended_recovery_action,
-                    run.recovery_action_details,
-                  )}
-                </article>
-              ))}
+              {groupedFilteredWorkflowRuns.map((group) => {
+                const isCurrentChain = Boolean(currentRootRunId) && group.rootRunId === currentRootRunId;
+                const isCollapsed = isChainCollapsed(group.rootRunId);
+                const completedCount = group.runs.filter((run) => run.workflow_status === "completed").length;
+                const failedCount = group.runs.filter((run) => run.workflow_status === "failed").length;
+                const clarificationCount = group.runs.filter(
+                  (run) => run.workflow_status === "clarification_required",
+                ).length;
+
+                return (
+                  <article key={group.rootRunId} className="run-chain-group">
+                    <div className="card-title-row">
+                      <strong>{queryCopy.chainRoot}: {group.rootRunId}</strong>
+                      <div className="button-row">
+                        {isCurrentChain && <span className="meta-pill">{queryCopy.currentChain}</span>}
+                        <button
+                          type="button"
+                          className="ghost-button"
+                          disabled={queryBusy}
+                          onClick={() => toggleChainCollapsed(group.rootRunId)}
+                        >
+                          {isCollapsed ? queryCopy.expandChain : queryCopy.collapseChain}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="meta-row">
+                      <span>{queryCopy.chainRuns}: {group.runs.length}</span>
+                      <span>
+                        completed {completedCount} | failed {failedCount} | clarification_required {clarificationCount}
+                      </span>
+                    </div>
+                    {!isCollapsed && (
+                      <div className="run-chain-runs">
+                        {group.runs.map((run) => (
+                          <article key={run.run_id} className="run-card">
+                            <div className="card-title-row">
+                              <strong>{run.question}</strong>
+                              <span className="status-chip">{run.workflow_status}</span>
+                            </div>
+                            <div className="meta-row">
+                              <span>{queryCopy.routeMeta} {run.route_type}</span>
+                              <span>{queryCopy.runMeta} {run.run_id}</span>
+                            </div>
+                            <div className="meta-row">
+                              <span>{queryCopy.rootRun}: {run.root_run_id ?? queryCopy.notLinked}</span>
+                              <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
+                            </div>
+                            <div className="meta-row">
+                              <span>{queryCopy.retryMeta} {run.retry_state ?? queryCopy.unknown}</span>
+                              <span>{queryCopy.recommendedMeta} {run.recommended_recovery_action ?? queryCopy.none}</span>
+                            </div>
+                            {run.recovered_via_action && (
+                              <p className="subsection-copy">
+                                {queryCopy.recoveredViaMeta}: {formatRecoveryActionLabel(run.recovered_via_action)}
+                              </p>
+                            )}
+                            <div className="pill-strip">
+                              {renderRecoveryActions(run.available_recovery_actions, true)}
+                            </div>
+                            {run.resumed_from_question && (
+                              <p className="subsection-copy">{queryCopy.resumedFromMeta}: {run.resumed_from_question}</p>
+                            )}
+                            {(run.reused_step_indices?.length ?? 0) > 0 && (
+                              <p className="subsection-copy">
+                                {queryCopy.reusedStepsMeta}: {run.reused_step_indices?.join(", ")}
+                              </p>
+                            )}
+                            <div className="button-row">
+                              <button
+                                type="button"
+                                className="ghost-button"
+                                disabled={queryBusy}
+                                onClick={() => onLoadAgentWorkflowRun(run.run_id)}
+                              >
+                                {queryCopy.loadRun}
+                              </button>
+                            </div>
+                            {renderRecoveryButtons(
+                              run.run_id,
+                              run.available_recovery_actions,
+                              run.recommended_recovery_action,
+                              run.recovery_action_details,
+                            )}
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
             </div>
               ) : (
                 <div className="empty-state">
