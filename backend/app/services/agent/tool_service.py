@@ -187,6 +187,19 @@ def _extract_ticket_target_filter(question: str) -> str | None:
     return _canonicalize_ticket_target(target)
 
 
+def _is_generic_ticket_target(target: str) -> bool:
+    return target.strip().lower() in {"ticket", "tickets", "incident", "incidents"}
+
+
+def _pop_ticket_target_argument(arguments: dict[str, str]) -> str | None:
+    for key in ("service", "service_name", "target", "resource"):
+        value = arguments.get(key, "").strip()
+        if value:
+            arguments.pop(key, None)
+            return value
+    return None
+
+
 def _clean_ticket_target(question: str, target: str, action: str) -> str:
     cleaned_target = target.strip()
     cleaned_target = TICKET_ID_PATTERN.sub("", cleaned_target).strip(" .")
@@ -762,6 +775,11 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         )
         if supporting_summary:
             ticket["supporting_summary"] = supporting_summary
+        normalized_status = request.arguments.get("status", "").strip().lower()
+        if normalized_status == "open":
+            ticket.pop("closed_at", None)
+        elif normalized_status == "closed":
+            ticket["closed_at"] = now
         ticket["updated_at"] = now
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
@@ -1135,11 +1153,20 @@ def _normalize_planned_request(
             max_results = _extract_search_max_results_argument(question)
             if max_results and "max_results" not in normalized_arguments:
                 normalized_arguments["max_results"] = max_results
+        cleaned_ticket_target = _clean_ticket_target(
+            question,
+            inferred_request.target,
+            inferred_request.action,
+        )
+        if _is_generic_ticket_target(cleaned_ticket_target):
+            argument_target = _pop_ticket_target_argument(normalized_arguments)
+            if argument_target:
+                cleaned_ticket_target = _canonicalize_ticket_target(argument_target)
 
         inferred_request = InferredToolRequest(
             tool_name=inferred_request.tool_name,
             action=inferred_request.action,
-            target=_clean_ticket_target(question, inferred_request.target, inferred_request.action),
+            target=cleaned_ticket_target,
         )
 
     if inferred_request.tool_name == "document_search":

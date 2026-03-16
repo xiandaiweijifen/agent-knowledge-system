@@ -6062,5 +6062,287 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "80159e67c6c94e1c8df56d49be48569a",
+    "question": "Search docs for RAG and update ticket TICKET-0001 for payment-service status to open in staging",
+    "resumed_from_question": "Search docs for payment-service outage and update ticket TICKET-0001 for payment-service status to open",
+    "source_run_id": null,
+    "resume_source_type": "original_question",
+    "resume_strategy": "search_then_ticket_resume",
+    "applied_clarification_fields": [
+      "environment",
+      "search_query_refinement",
+      "status"
+    ],
+    "question_rewritten": true,
+    "overridden_plan_arguments": [
+      "environment",
+      "status",
+      "target"
+    ],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T06:00:19.916794+00:00",
+    "completed_at": "2026-03-16T06:00:23.843243+00:00",
+    "last_updated_at": "2026-03-16T06:00:23.843243+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "heuristic_fallback_after_gemini_error",
+    "tool_planning_modes": [
+      "llm_gemini",
+      "heuristic_fallback_after_gemini_error"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 3,
+    "tool_planner_call_count": 2,
+    "workflow_planning_latency_ms": 1700,
+    "tool_planning_latency_ms": 2208,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 3908,
+    "llm_planner_layers": [
+      "workflow"
+    ],
+    "fallback_planner_layers": [
+      "tool"
+    ],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [
+      2
+    ],
+    "step_count": 2,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:23.843925+00:00",
+        "detail": "Resumed workflow from 'Search docs for payment-service outage and update ticket TICKET-0001 for payment-service status to open' via original_question using search_then_ticket_resume with fields: environment, search_query_refinement, status; overridden arguments: environment, status, target."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:19.916835+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:21.616760+00:00",
+        "detail": "Planned search_then_ticket workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:23.099505+00:00",
+        "detail": "Step 1: planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:23.106236+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "tool_context",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:23.831813+00:00",
+        "detail": "Step 2 inherited supporting search context from step 1 before the ticket step."
+      },
+      {
+        "stage": "resume_context",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:23.831862+00:00",
+        "detail": "Applied structured clarification fields to ticket execution."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:23.831875+00:00",
+        "detail": "Step 2: planned ticketing:update for payment-service."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T06:00:23.843243+00:00",
+        "detail": "Step 2: executed local_adapter tool ticketing:update with status completed."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "update ticket TICKET-0001 for payment-service status to open in staging",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "update",
+      "target": "payment-service",
+      "arguments": {
+        "supporting_query": "RAG",
+        "supporting_documents": "rag_overview.md, test_chunk.txt",
+        "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+        "supporting_match_count": "2",
+        "ticket_id": "TICKET-0001",
+        "environment": "staging",
+        "status": "closed"
+      },
+      "plan_summary": "Plan ticketing:update for payment-service using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "update",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Updated local ticket TICKET-0001 for payment-service.",
+      "trace_id": "0dda959335df4c0f8c2604fe8ae3c3aa",
+      "executed_at": "2026-03-16T06:00:23.836142+00:00",
+      "output": {
+        "ticket_id": "TICKET-0001",
+        "target": "payment-service",
+        "status": "closed",
+        "severity": "unspecified",
+        "environment": "staging",
+        "created_at": "2026-03-14T17:13:33.905877+00:00",
+        "updated_at": "2026-03-16T06:00:23.836142+00:00",
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "resource_id": "TICKET-0001",
+        "supporting_status": "ok",
+        "supporting_status_target": "payment-service",
+        "supporting_status_app_env": "development",
+        "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "closed_at": "2026-03-16T06:00:23.836142+00:00",
+        "supporting_query": "RAG",
+        "supporting_documents": "rag_overview.md, test_chunk.txt",
+        "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+        "supporting_match_count": "2",
+        "service": "payment-service"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T06:00:21.616804+00:00",
+        "completed_at": "2026-03-16T06:00:23.106236+00:00",
+        "question": "Search docs for RAG",
+        "tool_plan": {
+          "question": "Search docs for RAG",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for RAG using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 2 matching document(s) for 'RAG'.",
+          "trace_id": "1d20dfab64844b2da3d1f64ac55ecf09",
+          "executed_at": "2026-03-16T06:00:23.106180+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "2",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "2",
+            "matched_documents": "rag_overview.md, test_chunk.txt",
+            "skipped_documents": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      },
+      {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "started_at": "2026-03-16T06:00:23.106335+00:00",
+        "completed_at": "2026-03-16T06:00:23.843243+00:00",
+        "question": "update ticket TICKET-0001 for payment-service status to open in staging",
+        "tool_plan": {
+          "question": "update ticket TICKET-0001 for payment-service status to open in staging",
+          "planning_mode": "heuristic_fallback_after_gemini_error",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "update",
+          "target": "payment-service",
+          "arguments": {
+            "supporting_query": "RAG",
+            "supporting_documents": "rag_overview.md, test_chunk.txt",
+            "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+            "supporting_match_count": "2",
+            "ticket_id": "TICKET-0001",
+            "environment": "staging",
+            "status": "closed"
+          },
+          "plan_summary": "Plan ticketing:update for payment-service using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "update",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Updated local ticket TICKET-0001 for payment-service.",
+          "trace_id": "0dda959335df4c0f8c2604fe8ae3c3aa",
+          "executed_at": "2026-03-16T06:00:23.836142+00:00",
+          "output": {
+            "ticket_id": "TICKET-0001",
+            "target": "payment-service",
+            "status": "closed",
+            "severity": "unspecified",
+            "environment": "staging",
+            "created_at": "2026-03-14T17:13:33.905877+00:00",
+            "updated_at": "2026-03-16T06:00:23.836142+00:00",
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "resource_id": "TICKET-0001",
+            "supporting_status": "ok",
+            "supporting_status_target": "payment-service",
+            "supporting_status_app_env": "development",
+            "supporting_summary": "Search for 'RAG' matched 2 supporting document(s). Primary supporting documents: rag_overview.md, test_chunk.txt. Top supporting snippet: rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "closed_at": "2026-03-16T06:00:23.836142+00:00",
+            "supporting_query": "RAG",
+            "supporting_documents": "rag_overview.md, test_chunk.txt",
+            "supporting_snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation. | test_chunk.txt: Built a RAG assistant for internal engineering documentation. - Added retrieval, reranking, and prompt grounding to improve answer quality. - Exposed search diagnostics so engineers could inspect top matches and latency.",
+            "supporting_match_count": "2",
+            "service": "payment-service"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

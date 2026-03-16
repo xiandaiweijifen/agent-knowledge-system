@@ -327,6 +327,15 @@ def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path,
         )
     )
 
+    reopened = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="update",
+            target="payment-service",
+            arguments={"ticket_id": ticket_id, "status": "open"},
+        )
+    )
+
     assert created.execution_status == "completed"
     assert created.output["schema_version"] == "tool-output-v1"
     assert created.output["output_kind"] == "record"
@@ -335,6 +344,9 @@ def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path,
     assert created.output["status"] == "open"
     assert updated.output["severity"] == "medium"
     assert closed.output["status"] == "closed"
+    assert "closed_at" in closed.output
+    assert reopened.output["status"] == "open"
+    assert "closed_at" not in reopened.output
 
 
 def test_execute_ticketing_tool_builds_supporting_summary_from_search_context(
@@ -2138,6 +2150,7 @@ def test_query_agent_endpoint_supports_search_then_ticket_update_workflow(
     assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][1]["tool_plan"]["action"] == "update"
+    assert payload["tool_chain"][1]["tool_plan"]["target"] == "payment-service"
     assert payload["tool_chain"][1]["tool_plan"]["arguments"]["ticket_id"] == "TICKET-0001"
     assert payload["tool_chain"][1]["tool_plan"]["arguments"]["status"] == "closed"
     assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_query"] == "payment-service outage"
@@ -2921,6 +2934,8 @@ def test_resume_agent_endpoint_applies_structured_ticket_overrides_for_ticket_up
     assert final_plan["arguments"]["ticket_id"] == "TICKET-0001"
     assert final_plan["arguments"]["status"] == "closed"
     assert final_plan["arguments"]["environment"] == "staging"
+    assert final_plan["target"] == "payment-service"
+    assert "service" not in final_plan["arguments"]
     assert final_output["ticket_id"] == "TICKET-0001"
     assert final_output["status"] == "closed"
     assert final_output["environment"] == "staging"
