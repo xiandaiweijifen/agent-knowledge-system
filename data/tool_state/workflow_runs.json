@@ -3943,5 +3943,344 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "e95577648cb14d3da99a2fb4f109e2f1",
+    "question": "Look up docs about RAG, then summarize top 1 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T05:06:30.376062+00:00",
+    "completed_at": "2026-03-16T05:06:32.872565+00:00",
+    "last_updated_at": "2026-03-16T05:06:32.872565+00:00",
+    "workflow_planning_mode": "heuristic workflow matcher after gemini error",
+    "tool_planning_mode": "heuristic_fallback_after_gemini_error",
+    "clarification_planning_mode": null,
+    "planner_call_count": 2,
+    "workflow_planning_latency_ms": 1365,
+    "tool_planning_latency_ms": 1126,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 2491,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:06:30.376138+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:06:31.740697+00:00",
+        "detail": "Planned search_then_summarize workflow via heuristic workflow matcher after gemini error."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:06:32.867172+00:00",
+        "detail": "Planned document_search:query for RAG."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:06:32.872482+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:06:32.872557+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 1 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I found 2 matching document(s) for 'RAG' and returned 1 result(s). Showing the top 1 result(s) out of 2 total matches. The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T05:06:32.872565+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Look up docs about RAG",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "arguments": {
+        "max_results": "1"
+      },
+      "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "RAG",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'RAG'.",
+      "trace_id": "e49573e5fd5145a3bbdb9f6f8747f4ce",
+      "executed_at": "2026-03-16T05:06:32.872437+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "RAG",
+        "item_count": "1",
+        "query": "RAG",
+        "matched_count": "2",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "1",
+        "max_results": "1",
+        "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "9.373",
+        "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T05:06:31.740729+00:00",
+        "completed_at": "2026-03-16T05:06:32.872482+00:00",
+        "question": "Look up docs about RAG",
+        "tool_plan": {
+          "question": "Look up docs about RAG",
+          "planning_mode": "heuristic_fallback_after_gemini_error",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "arguments": {
+            "max_results": "1"
+          },
+          "plan_summary": "Plan document_search:query for RAG using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "RAG",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'RAG'.",
+          "trace_id": "e49573e5fd5145a3bbdb9f6f8747f4ce",
+          "executed_at": "2026-03-16T05:06:32.872437+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "RAG",
+            "item_count": "1",
+            "query": "RAG",
+            "matched_count": "2",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "1",
+            "max_results": "1",
+            "snippets": "rag_overview.md: Retrieval-augmented generation, or RAG, is a system pattern that combines document retrieval with language model generation.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "9.373",
+            "top_match_reason": "filename match, full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "79707dbd75214542bf98b030028b8db6",
+    "question": "Look up docs about payment-service outage, then create a high severity ticket for payment-service",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "search_miss_clarification",
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T05:07:09.464849+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-16T05:07:22.465646+00:00",
+    "workflow_planning_mode": "heuristic workflow matcher after gemini error",
+    "tool_planning_mode": "heuristic_fallback_after_gemini_error",
+    "clarification_planning_mode": "heuristic_fallback_after_gemini_error",
+    "planner_call_count": 3,
+    "workflow_planning_latency_ms": 5444,
+    "tool_planning_latency_ms": 5388,
+    "clarification_planning_latency_ms": 2164,
+    "planner_latency_ms_total": 12996,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [
+      "workflow",
+      "tool",
+      "clarification"
+    ],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:07:09.464897+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:07:14.909362+00:00",
+        "detail": "Planned search_then_ticket workflow via heuristic workflow matcher after gemini error."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:07:20.297698+00:00",
+        "detail": "Step 1: planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:07:20.301411+00:00",
+        "detail": "Step 1: executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T05:07:22.465646+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before ticket creation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before creating a ticket.",
+    "clarification_plan": {
+      "question": "create a high severity ticket for payment-service",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "missing_fields": [
+        "search_query_refinement",
+        "execution_confirmation",
+        "environment"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'payment-service outage'. Should I search a different phrase or document set?",
+        "Do you still want me to continue with the action even without supporting documentation?",
+        "Which environment should the action apply to?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents for the search step, so it should be clarified before continuing to execution."
+    },
+    "tool_plan": {
+      "question": "Look up docs about payment-service outage",
+      "planning_mode": "heuristic_fallback_after_gemini_error",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "arguments": {},
+      "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'payment-service outage'.",
+      "trace_id": "01ff50f1402c476c80dede59c84fc04b",
+      "executed_at": "2026-03-16T05:07:20.301356+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "payment-service outage",
+        "item_count": "0",
+        "query": "payment-service outage",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "started_at": "2026-03-16T05:07:14.909405+00:00",
+        "completed_at": "2026-03-16T05:07:20.301411+00:00",
+        "question": "Look up docs about payment-service outage",
+        "tool_plan": {
+          "question": "Look up docs about payment-service outage",
+          "planning_mode": "heuristic_fallback_after_gemini_error",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {},
+          "plan_summary": "Plan document_search:query for payment-service outage using a local heuristic planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "01ff50f1402c476c80dede59c84fc04b",
+          "executed_at": "2026-03-16T05:07:20.301356+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "payment-service outage",
+            "item_count": "0",
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

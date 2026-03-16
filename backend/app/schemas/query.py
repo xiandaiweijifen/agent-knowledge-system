@@ -134,6 +134,10 @@ class AgentWorkflowResponse(BaseModel):
     tool_planning_mode: str | None = None
     clarification_planning_mode: str | None = None
     planner_call_count: int = 0
+    workflow_planning_latency_ms: int = 0
+    tool_planning_latency_ms: int = 0
+    clarification_planning_latency_ms: int = 0
+    planner_latency_ms_total: int = 0
     llm_planner_layers: list[str] = Field(default_factory=list)
     fallback_planner_layers: list[str] = Field(default_factory=list)
     step_count: int = 0
@@ -176,6 +180,10 @@ class AgentWorkflowRunSummary(BaseModel):
     tool_planning_mode: str | None = None
     clarification_planning_mode: str | None = None
     planner_call_count: int = 0
+    workflow_planning_latency_ms: int = 0
+    tool_planning_latency_ms: int = 0
+    clarification_planning_latency_ms: int = 0
+    planner_latency_ms_total: int = 0
     llm_planner_layers: list[str] = Field(default_factory=list)
     fallback_planner_layers: list[str] = Field(default_factory=list)
     step_count: int = 0

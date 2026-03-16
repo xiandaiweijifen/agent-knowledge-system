@@ -1,5 +1,6 @@
 import json
 import re
+import time
 import uuid
 from pathlib import Path
 
@@ -131,6 +132,22 @@ def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run["clarification_planning_mode"] = (
         normalized_run.get("clarification_planning_mode")
         or _extract_clarification_planning_mode(normalized_run)
+    )
+    normalized_run["workflow_planning_latency_ms"] = _coerce_non_negative_int(
+        normalized_run.get("workflow_planning_latency_ms")
+    )
+    normalized_run["tool_planning_latency_ms"] = _coerce_non_negative_int(
+        normalized_run.get("tool_planning_latency_ms")
+    )
+    normalized_run["clarification_planning_latency_ms"] = _coerce_non_negative_int(
+        normalized_run.get("clarification_planning_latency_ms")
+    )
+    normalized_run["planner_latency_ms_total"] = _coerce_non_negative_int(
+        normalized_run.get("planner_latency_ms_total")
+    ) or (
+        normalized_run["workflow_planning_latency_ms"]
+        + normalized_run["tool_planning_latency_ms"]
+        + normalized_run["clarification_planning_latency_ms"]
     )
     return normalized_run
 
@@ -276,6 +293,14 @@ def _backfill_terminal_reason(run: dict) -> str | None:
     return None
 
 
+def _coerce_non_negative_int(value: object) -> int:
+    return value if isinstance(value, int) and value >= 0 else 0
+
+
+def _elapsed_ms(started_at: float) -> int:
+    return max(0, round((time.perf_counter() - started_at) * 1000))
+
+
 def _workflow_run_requires_migration(run: dict) -> bool:
     normalized_run = _normalize_persisted_workflow_run(run)
     migration_fields = (
@@ -288,6 +313,10 @@ def _workflow_run_requires_migration(run: dict) -> bool:
         "workflow_planning_mode",
         "tool_planning_mode",
         "clarification_planning_mode",
+        "workflow_planning_latency_ms",
+        "tool_planning_latency_ms",
+        "clarification_planning_latency_ms",
+        "planner_latency_ms_total",
     )
     return any(run.get(field) != normalized_run.get(field) for field in migration_fields)
 
@@ -353,12 +382,22 @@ def _annotate_planner_modes(response: AgentWorkflowResponse) -> AgentWorkflowRes
     response.workflow_planning_mode = _extract_workflow_planning_mode_from_trace(response.workflow_trace)
     response.tool_planning_mode = _extract_tool_planning_mode(response)
     response.clarification_planning_mode = _extract_clarification_planning_mode(response)
+    response.workflow_planning_latency_ms = _coerce_non_negative_int(response.workflow_planning_latency_ms)
+    response.tool_planning_latency_ms = _coerce_non_negative_int(response.tool_planning_latency_ms)
+    response.clarification_planning_latency_ms = _coerce_non_negative_int(
+        response.clarification_planning_latency_ms
+    )
     planner_layers = {
         "workflow": response.workflow_planning_mode,
         "tool": response.tool_planning_mode,
         "clarification": response.clarification_planning_mode,
     }
     response.planner_call_count = sum(1 for mode in planner_layers.values() if mode)
+    response.planner_latency_ms_total = (
+        response.workflow_planning_latency_ms
+        + response.tool_planning_latency_ms
+        + response.clarification_planning_latency_ms
+    )
     response.llm_planner_layers = [
         layer for layer, mode in planner_layers.items() if isinstance(mode, str) and mode.startswith("llm_")
     ]
@@ -442,6 +481,9 @@ def _build_failed_workflow_response(
     tool_plan: dict | None = None,
     tool_execution: dict | None = None,
     tool_chain: list[dict] | None = None,
+    workflow_planning_latency_ms: int = 0,
+    tool_planning_latency_ms: int = 0,
+    clarification_planning_latency_ms: int = 0,
 ) -> AgentWorkflowResponse:
     response = AgentWorkflowResponse(
         question=question,
@@ -456,6 +498,9 @@ def _build_failed_workflow_response(
         tool_plan=tool_plan,
         tool_execution=tool_execution,
         tool_chain=tool_chain or [],
+        workflow_planning_latency_ms=workflow_planning_latency_ms,
+        tool_planning_latency_ms=tool_planning_latency_ms,
+        clarification_planning_latency_ms=clarification_planning_latency_ms,
     )
     return _finalize_workflow_response(
         response,
@@ -509,6 +554,10 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 tool_planning_mode=run.tool_planning_mode,
                 clarification_planning_mode=run.clarification_planning_mode,
                 planner_call_count=run.planner_call_count,
+                workflow_planning_latency_ms=run.workflow_planning_latency_ms,
+                tool_planning_latency_ms=run.tool_planning_latency_ms,
+                clarification_planning_latency_ms=run.clarification_planning_latency_ms,
+                planner_latency_ms_total=run.planner_latency_ms_total,
                 llm_planner_layers=run.llm_planner_layers,
                 fallback_planner_layers=run.fallback_planner_layers,
                 step_count=run.step_count,
@@ -1052,6 +1101,9 @@ def orchestrate_agent_request(
 ) -> AgentWorkflowResponse:
     """Route and execute the next workflow step for an agent request."""
     workflow_started_at = build_utc_timestamp()
+    workflow_planning_latency_ms = 0
+    tool_planning_latency_ms = 0
+    clarification_planning_latency_ms = 0
     route = route_request(question=question, filename=filename)
     workflow_trace = [
         WorkflowTraceEvent(
@@ -1141,9 +1193,11 @@ def orchestrate_agent_request(
 
     if route.route_type == "tool_execution":
         chained_steps: list[dict] = []
+        workflow_planner_started_at = time.perf_counter()
         workflow_kind, workflow_search_question, workflow_follow_up_question, workflow_planning_mode = (
             _resolve_multistep_workflow(question)
         )
+        workflow_planning_latency_ms += _elapsed_ms(workflow_planner_started_at)
         resume_context = resume_context or {}
 
         if workflow_kind in {"search_then_ticket", "search_then_summarize"}:
@@ -1169,11 +1223,14 @@ def orchestrate_agent_request(
 
             for step_index, step_question in enumerate((search_question, ticket_question), start=1):
                 step_started_at = build_utc_timestamp()
+                tool_planner_started_at = time.perf_counter()
                 try:
                     tool_plan = plan_tool_request(step_question)
                 except ValueError:
+                    tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
                     raise
                 except Exception as exc:
+                    tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
                     failed_at = build_utc_timestamp()
                     failure_message = _format_failure_message(exc)
                     workflow_trace.append(
@@ -1205,8 +1262,12 @@ def orchestrate_agent_request(
                         failure_message=failure_message,
                         step_count=len(chained_steps),
                         tool_chain=chained_steps,
+                        workflow_planning_latency_ms=workflow_planning_latency_ms,
+                        tool_planning_latency_ms=tool_planning_latency_ms,
+                        clarification_planning_latency_ms=clarification_planning_latency_ms,
                     )
                     return _persist_workflow_response(response) if persist_run else response
+                tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
                 if (
                     step_index == 2
                     and tool_plan.tool_name == "ticketing"
@@ -1300,6 +1361,9 @@ def orchestrate_agent_request(
                         step_count=len(chained_steps),
                         tool_plan=tool_plan.model_dump(),
                         tool_chain=chained_steps,
+                        workflow_planning_latency_ms=workflow_planning_latency_ms,
+                        tool_planning_latency_ms=tool_planning_latency_ms,
+                        clarification_planning_latency_ms=clarification_planning_latency_ms,
                     )
                     return _persist_workflow_response(response) if persist_run else response
                 step_completed_at = build_utc_timestamp()
@@ -1345,10 +1409,12 @@ def orchestrate_agent_request(
                         )
                         prior_search_context = {}
                         continue
+                    clarification_planner_started_at = time.perf_counter()
                     clarification_plan = plan_search_miss_clarification(
                         search_query=tool_plan.target,
                         next_action_question=ticket_question,
                     )
+                    clarification_planning_latency_ms += _elapsed_ms(clarification_planner_started_at)
                     workflow_trace.append(
                         WorkflowTraceEvent(
                             stage="clarification_planning",
@@ -1375,6 +1441,9 @@ def orchestrate_agent_request(
                         tool_execution=tool_response.model_dump(),
                         step_count=len(chained_steps),
                         tool_chain=chained_steps,
+                        workflow_planning_latency_ms=workflow_planning_latency_ms,
+                        tool_planning_latency_ms=tool_planning_latency_ms,
+                        clarification_planning_latency_ms=clarification_planning_latency_ms,
                     )
                     response = _finalize_workflow_response(
                         response,
@@ -1398,6 +1467,9 @@ def orchestrate_agent_request(
                 tool_plan=final_step["tool_plan"],
                 tool_execution=final_step["tool_execution"],
                 tool_chain=chained_steps,
+                workflow_planning_latency_ms=workflow_planning_latency_ms,
+                tool_planning_latency_ms=tool_planning_latency_ms,
+                clarification_planning_latency_ms=clarification_planning_latency_ms,
             )
             response = _finalize_workflow_response(
                 response,
@@ -1410,11 +1482,14 @@ def orchestrate_agent_request(
         if workflow_kind == "search_then_summarize" and workflow_search_question and workflow_follow_up_question:
             search_question, summarize_question = workflow_search_question, workflow_follow_up_question
             step_started_at = build_utc_timestamp()
+            tool_planner_started_at = time.perf_counter()
             try:
                 tool_plan = plan_tool_request(search_question)
             except ValueError:
+                tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
                 raise
             except Exception as exc:
+                tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
                 failed_at = build_utc_timestamp()
                 failure_message = _format_failure_message(exc)
                 workflow_trace.append(
@@ -1446,8 +1521,12 @@ def orchestrate_agent_request(
                     failure_message=failure_message,
                     step_count=1,
                     tool_chain=chained_steps,
+                    workflow_planning_latency_ms=workflow_planning_latency_ms,
+                    tool_planning_latency_ms=tool_planning_latency_ms,
+                    clarification_planning_latency_ms=clarification_planning_latency_ms,
                 )
                 return _persist_workflow_response(response) if persist_run else response
+            tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
             summary_context = _extract_summary_step_context(summarize_question)
             if summary_context:
                 tool_plan.arguments = {
@@ -1513,6 +1592,9 @@ def orchestrate_agent_request(
                     step_count=1,
                     tool_plan=tool_plan.model_dump(),
                     tool_chain=chained_steps,
+                    workflow_planning_latency_ms=workflow_planning_latency_ms,
+                    tool_planning_latency_ms=tool_planning_latency_ms,
+                    clarification_planning_latency_ms=clarification_planning_latency_ms,
                 )
                 return _persist_workflow_response(response) if persist_run else response
             step_completed_at = build_utc_timestamp()
@@ -1540,7 +1622,9 @@ def orchestrate_agent_request(
             )
 
             if tool_response.output.get("matched_count") == "0":
+                clarification_planner_started_at = time.perf_counter()
                 clarification_plan = plan_search_summary_miss_clarification(tool_plan.target)
+                clarification_planning_latency_ms += _elapsed_ms(clarification_planner_started_at)
                 workflow_trace.append(
                     WorkflowTraceEvent(
                         stage="clarification_planning",
@@ -1567,6 +1651,9 @@ def orchestrate_agent_request(
                     tool_execution=tool_response.model_dump(),
                     step_count=len(chained_steps),
                     tool_chain=chained_steps,
+                    workflow_planning_latency_ms=workflow_planning_latency_ms,
+                    tool_planning_latency_ms=tool_planning_latency_ms,
+                    clarification_planning_latency_ms=clarification_planning_latency_ms,
                 )
                 response = _finalize_workflow_response(
                     response,
@@ -1603,6 +1690,9 @@ def orchestrate_agent_request(
                     tool_plan=tool_plan.model_dump(),
                     tool_execution=tool_response.model_dump(),
                     tool_chain=chained_steps,
+                    workflow_planning_latency_ms=workflow_planning_latency_ms,
+                    tool_planning_latency_ms=tool_planning_latency_ms,
+                    clarification_planning_latency_ms=clarification_planning_latency_ms,
                 )
                 return _persist_workflow_response(response) if persist_run else response
             workflow_trace.append(
@@ -1634,6 +1724,9 @@ def orchestrate_agent_request(
                 tool_execution=tool_response.model_dump(),
                 step_count=len(chained_steps),
                 tool_chain=chained_steps,
+                workflow_planning_latency_ms=workflow_planning_latency_ms,
+                tool_planning_latency_ms=tool_planning_latency_ms,
+                clarification_planning_latency_ms=clarification_planning_latency_ms,
             )
             response = _finalize_workflow_response(
                 response,
@@ -1644,11 +1737,14 @@ def orchestrate_agent_request(
             return _persist_workflow_response(response) if persist_run else response
 
         step_started_at = build_utc_timestamp()
+        tool_planner_started_at = time.perf_counter()
         try:
             tool_plan = plan_tool_request(question)
         except ValueError:
+            tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
             raise
         except Exception as exc:
+            tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
             failed_at = build_utc_timestamp()
             failure_message = _format_failure_message(exc)
             workflow_trace.append(
@@ -1678,8 +1774,12 @@ def orchestrate_agent_request(
                 failure_message=failure_message,
                 step_count=1,
                 tool_chain=[failed_step],
+                workflow_planning_latency_ms=workflow_planning_latency_ms,
+                tool_planning_latency_ms=tool_planning_latency_ms,
+                clarification_planning_latency_ms=clarification_planning_latency_ms,
             )
             return _persist_workflow_response(response) if persist_run else response
+        tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
         workflow_trace.append(
             WorkflowTraceEvent(
                 stage="tool_planning",
@@ -1692,7 +1792,9 @@ def orchestrate_agent_request(
             )
         )
         if _requires_unsupported_action_clarification(question):
+            clarification_planner_started_at = time.perf_counter()
             clarification_plan = plan_unsupported_action_clarification(question, tool_plan.target)
+            clarification_planning_latency_ms += _elapsed_ms(clarification_planner_started_at)
             fallback_tool_plan = _build_unsupported_action_fallback_plan(question, tool_plan.target)
             clarification_timestamp = build_utc_timestamp()
             workflow_trace.append(
@@ -1717,6 +1819,9 @@ def orchestrate_agent_request(
                 clarification_plan=clarification_plan.model_dump(),
                 tool_plan=fallback_tool_plan,
                 tool_chain=[],
+                workflow_planning_latency_ms=workflow_planning_latency_ms,
+                tool_planning_latency_ms=tool_planning_latency_ms,
+                clarification_planning_latency_ms=clarification_planning_latency_ms,
             )
             response = _finalize_workflow_response(
                 response,
@@ -1771,6 +1876,9 @@ def orchestrate_agent_request(
                 step_count=1,
                 tool_plan=tool_plan.model_dump(),
                 tool_chain=[failed_step],
+                workflow_planning_latency_ms=workflow_planning_latency_ms,
+                tool_planning_latency_ms=tool_planning_latency_ms,
+                clarification_planning_latency_ms=clarification_planning_latency_ms,
             )
             return _persist_workflow_response(response) if persist_run else response
         step_completed_at = build_utc_timestamp()
@@ -1805,6 +1913,9 @@ def orchestrate_agent_request(
                     completed_at=step_completed_at,
                 )
             ],
+            workflow_planning_latency_ms=workflow_planning_latency_ms,
+            tool_planning_latency_ms=tool_planning_latency_ms,
+            clarification_planning_latency_ms=clarification_planning_latency_ms,
         )
         response = _finalize_workflow_response(
             response,
@@ -1814,7 +1925,9 @@ def orchestrate_agent_request(
         )
         return _persist_workflow_response(response) if persist_run else response
 
+    clarification_planner_started_at = time.perf_counter()
     clarification_plan = plan_clarification(question)
+    clarification_planning_latency_ms += _elapsed_ms(clarification_planner_started_at)
     workflow_trace.append(
         WorkflowTraceEvent(
             stage="clarification_planning",
@@ -1836,6 +1949,9 @@ def orchestrate_agent_request(
         clarification_message=clarification_plan.clarification_summary,
         clarification_plan=clarification_plan.model_dump(),
         tool_chain=[],
+        workflow_planning_latency_ms=workflow_planning_latency_ms,
+        tool_planning_latency_ms=tool_planning_latency_ms,
+        clarification_planning_latency_ms=clarification_planning_latency_ms,
     )
     response = _finalize_workflow_response(
         response,
