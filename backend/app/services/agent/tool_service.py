@@ -64,6 +64,10 @@ STATUS_PREFIX_PATTERN = re.compile(
     r"^(check|show|inspect|query)\s+",
     re.IGNORECASE,
 )
+SYSTEM_STATUS_FOR_PATTERN = re.compile(
+    r"^(system\s+status|status|health|configuration|config)\s+for\s+",
+    re.IGNORECASE,
+)
 FILENAME_PATTERN = re.compile(
     r"\b([A-Za-z0-9._-]+\.(?:txt|md|pdf|docx))\b",
     re.IGNORECASE,
@@ -288,6 +292,9 @@ def _build_supporting_summary(arguments: dict[str, str]) -> str:
     matched_documents = arguments.get("supporting_documents", "").strip()
     matched_count = arguments.get("supporting_match_count", "").strip()
     snippets = arguments.get("supporting_snippets", "").strip()
+    supporting_status = arguments.get("supporting_status", "").strip()
+    supporting_status_target = arguments.get("supporting_status_target", "").strip()
+    supporting_status_app_env = arguments.get("supporting_status_app_env", "").strip()
 
     summary_parts: list[str] = []
 
@@ -309,6 +316,15 @@ def _build_supporting_summary(arguments: dict[str, str]) -> str:
         first_snippet = snippets.split(" | ", maxsplit=1)[0].strip()
         if first_snippet:
             summary_parts.append(f"Top supporting snippet: {first_snippet}")
+
+    if supporting_status:
+        status_subject = supporting_status_target or "the requested target"
+        status_sentence = (
+            f"System status snapshot for {status_subject} reported status {supporting_status}"
+        )
+        if supporting_status_app_env:
+            status_sentence += f" in {supporting_status_app_env}"
+        summary_parts.append(f"{status_sentence}.")
 
     return " ".join(summary_parts).strip()
 
@@ -668,11 +684,17 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             "supporting_documents",
             "supporting_snippets",
             "supporting_match_count",
+            "supporting_status",
+            "supporting_status_target",
+            "supporting_status_app_env",
         ):
             context_value = request.arguments.get(context_key, "").strip()
             if context_value:
                 ticket[context_key] = context_value
-        supporting_summary = _build_supporting_summary(request.arguments)
+        supporting_summary = (
+            request.arguments.get("supporting_summary", "").strip()
+            or _build_supporting_summary(request.arguments)
+        )
         if supporting_summary:
             ticket["supporting_summary"] = supporting_summary
         tickets.append(ticket)
@@ -768,7 +790,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     raise ValueError("unsupported_ticket_action")
 
 
-def _build_system_status_output() -> dict[str, str]:
+def _build_system_status_output(target: str) -> dict[str, str]:
     embedding_model = (
         settings.gemini_embedding_model
         if settings.embedding_provider == "gemini"
@@ -788,7 +810,7 @@ def _build_system_status_output() -> dict[str, str]:
         **_build_tool_output_metadata(
             output_kind="status_snapshot",
             resource_type="system_status",
-            target="agent-knowledge-system",
+            target=target,
         ),
         "status": "ok",
         "app_env": settings.app_env,
@@ -905,7 +927,7 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
         raise ValueError("unsupported_tool_name")
 
     if tool_name == "system_status":
-        output = _build_system_status_output()
+        output = _build_system_status_output(target)
         return ToolExecutionResponse(
             tool_name=tool_name,
             action=action,
@@ -994,6 +1016,7 @@ def infer_tool_request(question: str) -> InferredToolRequest:
             target = normalized_question
     elif tool_name == "system_status":
         target = STATUS_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
+        target = SYSTEM_STATUS_FOR_PATTERN.sub("", target).strip(" ?.!")
         if not target:
             target = "agent-knowledge-system"
     else:

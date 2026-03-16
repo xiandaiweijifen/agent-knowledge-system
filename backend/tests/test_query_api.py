@@ -756,9 +756,27 @@ def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
     assert response.output["schema_version"] == "tool-output-v1"
     assert response.output["output_kind"] == "status_snapshot"
     assert response.output["resource_type"] == "system_status"
+    assert response.output["target"] == "agent-knowledge-system"
     assert response.output["embedding_provider"] == "gemini"
     assert response.output["chat_provider"] == "fallback"
     assert response.output["gemini_configured"] == "true"
+
+
+def test_execute_system_status_tool_preserves_requested_target(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "development")
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="system_status",
+            action="query",
+            target="payment-service",
+            arguments={},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.output["target"] == "payment-service"
+    assert response.output["status"] == "ok"
 
 
 def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, monkeypatch):
@@ -1564,6 +1582,18 @@ def test_parse_llm_workflow_plan_response_accepts_json_with_explanatory_wrapper(
     }
 
 
+def test_parse_llm_workflow_plan_response_accepts_status_then_ticket_kind():
+    payload = _parse_llm_workflow_plan_response(
+        '{"workflow_kind":"status_check_then_ticket","search_question":"Check system status for payment-service","follow_up_question":"create a high severity ticket for payment-service"}'
+    )
+
+    assert payload == {
+        "workflow_kind": "status_then_ticket",
+        "search_question": "Check system status for payment-service",
+        "follow_up_question": "create a high severity ticket for payment-service",
+    }
+
+
 def test_generate_llm_tool_plan_reuses_cached_result(monkeypatch):
     call_count = 0
 
@@ -2041,6 +2071,40 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     assert "supporting_summary" in payload["tool_chain"][1]["tool_execution"]["output"]
     assert "payment-service outage" in payload["tool_chain"][1]["tool_execution"]["output"]["supporting_summary"]
     assert sum(1 for event in payload["workflow_trace"] if event["stage"] == "tool_execution") == 2
+    assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
+
+
+def test_query_agent_endpoint_supports_status_then_ticket_multistep_workflow(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Check system status for payment-service and create a high severity ticket for payment-service",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
+    assert payload["step_count"] == 2
+    assert payload["workflow_trace"][1]["stage"] == "workflow_planning"
+    assert "status_then_ticket workflow" in payload["workflow_trace"][1]["detail"]
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
+    assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_status"] == "ok"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_status_target"] == "payment-service"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_status"] == "ok"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_status_target"] == "payment-service"
+    assert "System status snapshot for payment-service reported status ok" in (
+        payload["tool_chain"][1]["tool_execution"]["output"]["supporting_summary"]
+    )
     assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
 
 

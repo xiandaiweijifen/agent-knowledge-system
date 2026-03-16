@@ -2624,5 +2624,22 @@
     "environment": "production",
     "created_at": "2026-03-15T19:44:55.009756+00:00",
     "updated_at": "2026-03-15T19:44:55.009756+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0182",
+    "ticket_id": "TICKET-0182",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-03-16T05:25:05.349020+00:00",
+    "updated_at": "2026-03-16T05:25:05.349020+00:00",
+    "supporting_status": "ok",
+    "supporting_status_target": "payment-service",
+    "supporting_status_app_env": "development",
+    "supporting_summary": "System status snapshot for payment-service reported status ok in development."
   }
 ]

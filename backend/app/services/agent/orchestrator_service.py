@@ -44,6 +44,10 @@ SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
     r"(?P<search>^(?:search|find|lookup|look up).+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<summarize>summari[sz]e.+)$",
     re.IGNORECASE,
 )
+STATUS_AND_TICKET_PATTERN = re.compile(
+    r"(?P<status>^(?:check|show|inspect|query).+?\b(?:status|health|configuration|config)\b.+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<ticket>(?:create|open).+\bticket\b.+)$",
+    re.IGNORECASE,
+)
 UNSUPPORTED_DIRECT_ACTION_PATTERN = re.compile(
     r"\b(restart|deploy|rollback|delete|remove|shutdown|stop|start)\b",
     re.IGNORECASE,
@@ -665,12 +669,20 @@ def _match_search_then_summarize_workflow(question: str) -> tuple[str, str] | No
     return match.group("search").strip(), match.group("summarize").strip()
 
 
+def _match_status_then_ticket_workflow(question: str) -> tuple[str, str] | None:
+    match = STATUS_AND_TICKET_PATTERN.match(question.strip())
+    if not match:
+        return None
+
+    return match.group("status").strip(), match.group("ticket").strip()
+
+
 def _resolve_multistep_workflow(question: str) -> tuple[str | None, str | None, str | None, str | None]:
     planning_mode, llm_plan = generate_llm_workflow_plan(question)
 
     if llm_plan is not None:
         workflow_kind = llm_plan["workflow_kind"]
-        if workflow_kind in {"search_then_ticket", "search_then_summarize"}:
+        if workflow_kind in {"search_then_ticket", "search_then_summarize", "status_then_ticket"}:
             return (
                 workflow_kind,
                 llm_plan["search_question"],
@@ -688,6 +700,10 @@ def _resolve_multistep_workflow(question: str) -> tuple[str | None, str | None, 
     search_then_summarize = _match_search_then_summarize_workflow(question)
     if search_then_summarize is not None:
         return "search_then_summarize", search_then_summarize[0], search_then_summarize[1], planning_mode
+
+    status_then_ticket = _match_status_then_ticket_workflow(question)
+    if status_then_ticket is not None:
+        return "status_then_ticket", status_then_ticket[0], status_then_ticket[1], planning_mode
 
     return None, None, None, planning_mode
 
@@ -722,6 +738,30 @@ def _build_search_context_arguments(tool_output: dict[str, str]) -> dict[str, st
         arguments["supporting_snippets"] = snippets
     if matched_count:
         arguments["supporting_match_count"] = matched_count
+
+    return arguments
+
+
+def _build_status_context_arguments(tool_output: dict[str, str]) -> dict[str, str]:
+    arguments: dict[str, str] = {}
+
+    status = tool_output.get("status", "").strip()
+    target = tool_output.get("target", "").strip()
+    app_env = tool_output.get("app_env", "").strip()
+
+    if status:
+        arguments["supporting_status"] = status
+    if target:
+        arguments["supporting_status_target"] = target
+    if app_env:
+        arguments["supporting_status_app_env"] = app_env
+
+    if status:
+        status_subject = target or "the requested target"
+        summary = f"System status snapshot for {status_subject} reported status {status}"
+        if app_env:
+            summary += f" in {app_env}"
+        arguments["supporting_summary"] = f"{summary}."
 
     return arguments
 
@@ -1200,7 +1240,7 @@ def orchestrate_agent_request(
         workflow_planning_latency_ms += _elapsed_ms(workflow_planner_started_at)
         resume_context = resume_context or {}
 
-        if workflow_kind in {"search_then_ticket", "search_then_summarize"}:
+        if workflow_kind in {"search_then_ticket", "search_then_summarize", "status_then_ticket"}:
             planner_label = _describe_workflow_planning_mode(workflow_planning_mode)
             workflow_trace.append(
                 WorkflowTraceEvent(
@@ -1455,6 +1495,192 @@ def orchestrate_agent_request(
 
                 if step_index == 1 and tool_response.tool_name == "document_search":
                     prior_search_context = _build_search_context_arguments(tool_response.output)
+
+            final_step = chained_steps[-1]
+            response = AgentWorkflowResponse(
+                question=question,
+                workflow_status="completed",
+                step_count=len(chained_steps),
+                route=route,
+                workflow_trace=workflow_trace,
+                filename=filename,
+                tool_plan=final_step["tool_plan"],
+                tool_execution=final_step["tool_execution"],
+                tool_chain=chained_steps,
+                workflow_planning_latency_ms=workflow_planning_latency_ms,
+                tool_planning_latency_ms=tool_planning_latency_ms,
+                clarification_planning_latency_ms=clarification_planning_latency_ms,
+            )
+            response = _finalize_workflow_response(
+                response,
+                started_at=workflow_started_at,
+                terminal_reason="tool_execution_completed",
+                completed_at=workflow_trace[-1].timestamp,
+            )
+            return _persist_workflow_response(response) if persist_run else response
+
+        if workflow_kind == "status_then_ticket" and workflow_search_question and workflow_follow_up_question:
+            status_question, ticket_question = workflow_search_question, workflow_follow_up_question
+            prior_status_context: dict[str, str] = {}
+
+            for step_index, step_question in enumerate((status_question, ticket_question), start=1):
+                step_started_at = build_utc_timestamp()
+                tool_planner_started_at = time.perf_counter()
+                try:
+                    tool_plan = plan_tool_request(step_question)
+                except ValueError:
+                    tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+                    raise
+                except Exception as exc:
+                    tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+                    failed_at = build_utc_timestamp()
+                    failure_message = _format_failure_message(exc)
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="tool_planning",
+                            status="failed",
+                            timestamp=failed_at,
+                            detail=f"Step {step_index}: tool planning failed: {failure_message}.",
+                        )
+                    )
+                    chained_steps.append(
+                        _build_failed_workflow_step_record(
+                            step_index=step_index,
+                            step_question=step_question,
+                            started_at=step_started_at,
+                            completed_at=failed_at,
+                            failure_message=failure_message,
+                        )
+                    )
+                    response = _build_failed_workflow_response(
+                        question=question,
+                        route=route,
+                        workflow_trace=workflow_trace,
+                        filename=filename,
+                        started_at=workflow_started_at,
+                        failed_at=failed_at,
+                        terminal_reason="tool_planning_failed",
+                        failure_stage="tool_planning",
+                        failure_message=failure_message,
+                        step_count=len(chained_steps),
+                        tool_chain=chained_steps,
+                        workflow_planning_latency_ms=workflow_planning_latency_ms,
+                        tool_planning_latency_ms=tool_planning_latency_ms,
+                        clarification_planning_latency_ms=clarification_planning_latency_ms,
+                    )
+                    return _persist_workflow_response(response) if persist_run else response
+                tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+                if (
+                    step_index == 2
+                    and tool_plan.tool_name == "ticketing"
+                    and tool_plan.action == "create"
+                    and prior_status_context
+                ):
+                    tool_plan.arguments = {
+                        **prior_status_context,
+                        **tool_plan.arguments,
+                    }
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="tool_context",
+                            status="completed",
+                            timestamp=build_utc_timestamp(),
+                            detail=(
+                                "Step 2 inherited supporting system status context from step 1 "
+                                "before ticket creation."
+                            ),
+                        )
+                    )
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="tool_planning",
+                        status="completed",
+                        timestamp=build_utc_timestamp(),
+                        detail=(
+                            f"Step {step_index}: planned {tool_plan.tool_name}:{tool_plan.action} "
+                            f"for {tool_plan.target}."
+                        ),
+                    )
+                )
+                try:
+                    tool_response = execute_tool_request(
+                        ToolExecutionRequest(
+                            tool_name=tool_plan.tool_name,
+                            action=tool_plan.action,
+                            target=tool_plan.target,
+                            arguments=tool_plan.arguments,
+                        )
+                    )
+                except ValueError:
+                    raise
+                except Exception as exc:
+                    failed_at = build_utc_timestamp()
+                    failure_message = _format_failure_message(exc)
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="tool_execution",
+                            status="failed",
+                            timestamp=failed_at,
+                            detail=(
+                                f"Step {step_index}: tool execution failed for "
+                                f"{tool_plan.tool_name}:{tool_plan.action}: {failure_message}."
+                            ),
+                        )
+                    )
+                    chained_steps.append(
+                        _build_failed_workflow_step_record(
+                            step_index=step_index,
+                            step_question=step_question,
+                            started_at=step_started_at,
+                            completed_at=failed_at,
+                            failure_message=failure_message,
+                            tool_plan=tool_plan.model_dump(),
+                        )
+                    )
+                    response = _build_failed_workflow_response(
+                        question=question,
+                        route=route,
+                        workflow_trace=workflow_trace,
+                        filename=filename,
+                        started_at=workflow_started_at,
+                        failed_at=failed_at,
+                        terminal_reason="tool_execution_failed",
+                        failure_stage="tool_execution",
+                        failure_message=failure_message,
+                        step_count=len(chained_steps),
+                        tool_plan=tool_plan.model_dump(),
+                        tool_chain=chained_steps,
+                        workflow_planning_latency_ms=workflow_planning_latency_ms,
+                        tool_planning_latency_ms=tool_planning_latency_ms,
+                        clarification_planning_latency_ms=clarification_planning_latency_ms,
+                    )
+                    return _persist_workflow_response(response) if persist_run else response
+                step_completed_at = build_utc_timestamp()
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="tool_execution",
+                        status="completed",
+                        timestamp=step_completed_at,
+                        detail=(
+                            f"Step {step_index}: executed {tool_response.execution_mode} tool "
+                            f"{tool_response.tool_name}:{tool_response.action} "
+                            f"with status {tool_response.execution_status}."
+                        ),
+                    )
+                )
+                chained_steps.append(
+                    _build_workflow_step_record(
+                        step_index=step_index,
+                        step_question=step_question,
+                        tool_plan=tool_plan.model_dump(),
+                        tool_execution=tool_response.model_dump(),
+                        started_at=step_started_at,
+                        completed_at=step_completed_at,
+                    )
+                )
+
+                if step_index == 1 and tool_response.tool_name == "system_status":
+                    prior_status_context = _build_status_context_arguments(tool_response.output)
 
             final_step = chained_steps[-1]
             response = AgentWorkflowResponse(

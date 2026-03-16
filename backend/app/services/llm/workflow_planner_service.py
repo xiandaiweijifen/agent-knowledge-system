@@ -81,15 +81,17 @@ def _extract_text_from_candidate_payload(payload: Any) -> list[str]:
 def _build_workflow_planner_prompt(question: str) -> str:
     return (
         "You are a workflow planning assistant for an enterprise agent system. "
-        "Decide whether the user request should stay single-step or be decomposed into a search-first workflow. "
+        "Decide whether the user request should stay single-step or be decomposed into a supported multi-step workflow. "
         "Return JSON only with keys: workflow_kind, search_question, follow_up_question. "
-        "workflow_kind must be one of: single_step, search_then_ticket, search_then_summarize. "
+        "workflow_kind must be one of: single_step, search_then_ticket, search_then_summarize, status_then_ticket. "
         "If workflow_kind is single_step, return empty strings for search_question and follow_up_question. "
         "If workflow_kind is search_then_ticket, search_question must contain the search step and "
         "follow_up_question must contain the ticket action step. "
         "If workflow_kind is search_then_summarize, search_question must contain the search step and "
         "follow_up_question must contain the summary step. "
-        "Use single_step if the request is not clearly a search-first workflow. "
+        "If workflow_kind is status_then_ticket, search_question must contain the system status step and "
+        "follow_up_question must contain the ticket action step. "
+        "Use single_step if the request is not clearly a supported multi-step workflow. "
         "Good examples:\n"
         '- "Search docs for payment-service outage and create a high severity ticket for payment-service" '
         '-> {"workflow_kind":"search_then_ticket","search_question":"Search docs for payment-service outage",'
@@ -97,6 +99,9 @@ def _build_workflow_planner_prompt(question: str) -> str:
         '- "Look up docs about RAG, then summarize top 1 results" '
         '-> {"workflow_kind":"search_then_summarize","search_question":"Look up docs about RAG",'
         '"follow_up_question":"summarize top 1 results"}\n'
+        '- "Check system status for payment-service, then create a high severity ticket for payment-service" '
+        '-> {"workflow_kind":"status_then_ticket","search_question":"Check system status for payment-service",'
+        '"follow_up_question":"create a high severity ticket for payment-service"}\n'
         '- "Create a ticket for payment-service outage" '
         '-> {"workflow_kind":"single_step","search_question":"","follow_up_question":""}\n'
         "Preserve clear user constraints like filename, max_results, severity, environment, and target. "
@@ -119,6 +124,11 @@ def _normalize_workflow_kind(value: str) -> str:
         "search_then_summary": "search_then_summarize",
         "search_then_summarize": "search_then_summarize",
         "search_to_summary": "search_then_summarize",
+        "status_ticket": "status_then_ticket",
+        "status_then_ticket": "status_then_ticket",
+        "status_check_then_ticket": "status_then_ticket",
+        "check_status_then_ticket": "status_then_ticket",
+        "status_to_ticket": "status_then_ticket",
     }
     return aliases.get(normalized, normalized)
 
@@ -138,7 +148,12 @@ def _normalize_workflow_plan_payload(payload: dict) -> dict[str, str] | None:
     if not isinstance(workflow_kind, str):
         return None
     normalized_kind = _normalize_workflow_kind(workflow_kind)
-    if normalized_kind not in {"single_step", "search_then_ticket", "search_then_summarize"}:
+    if normalized_kind not in {
+        "single_step",
+        "search_then_ticket",
+        "search_then_summarize",
+        "status_then_ticket",
+    }:
         return None
 
     if not isinstance(search_question, str) or not isinstance(follow_up_question, str):
