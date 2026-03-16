@@ -6,6 +6,7 @@ from app.services.evaluation.retrieval_eval_service import (
     list_retrieval_datasets,
 )
 from app.services.indexing import embedding_service
+from app.services.retrieval.retrieval_service import compute_rerank_bonus
 
 
 def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
@@ -129,3 +130,40 @@ def test_list_retrieval_datasets_only_includes_retrieval_eval_files(
 
     assert len(datasets) == 1
     assert datasets[0].dataset_name == "rag_overview_retrieval_eval.json"
+
+
+def test_rerank_bonus_prefers_exact_workflow_path_phrase():
+    query = "When should the agent use the tool execution path?"
+    tool_execution_chunk = """
+If the request requires action, the workflow should move into a tool execution
+path. The agent may call a ticketing tool, a deployment tool, a search API, or
+an internal service.
+    """.strip()
+    routing_chunk = """
+The first step in an agent workflow is request routing. A router examines the
+user question and decides which path should handle it. Some requests are
+execution requests that require tools.
+    """.strip()
+
+    assert compute_rerank_bonus(query, tool_execution_chunk) > compute_rerank_bonus(
+        query,
+        routing_chunk,
+    )
+
+
+def test_rerank_bonus_prefers_observability_anchor_terms():
+    query = "What should engineers log for observability in an agent workflow system?"
+    observability_chunk = """
+Observability is critical in an agent workflow system. Engineers should log the
+route decision, retrieval latency, tool latency, answer latency, provider
+selection, fallback behavior, and final action status.
+    """.strip()
+    routing_chunk = """
+The first step in an agent workflow is request routing. A router examines the
+user question and decides which path should handle it.
+    """.strip()
+
+    assert compute_rerank_bonus(query, observability_chunk) > compute_rerank_bonus(
+        query,
+        routing_chunk,
+    )

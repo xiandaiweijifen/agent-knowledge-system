@@ -1,13 +1,13 @@
 {
   "dataset_name": "agent_workflow_retrieval_eval.json",
-  "saved_at": "2026-03-16T18:33:19.798899+00:00",
+  "saved_at": "2026-03-16T18:40:34.284312+00:00",
   "report_source": "fresh",
   "report": {
     "top_k": 3,
     "summary": {
       "total_cases": 8,
-      "hit_rate_at_k": 0.75,
-      "mean_reciprocal_rank": 0.6875
+      "hit_rate_at_k": 1.0,
+      "mean_reciprocal_rank": 0.916667
     },
     "cases": [
       {
@@ -19,8 +19,8 @@
         ],
         "retrieved_chunk_ids": [
           "agent_workflow.md::chunk_0",
-          "agent_workflow.md::chunk_5",
-          "agent_workflow.md::chunk_6"
+          "agent_workflow.md::chunk_6",
+          "agent_workflow.md::chunk_1"
         ],
         "hit_at_k": true,
         "reciprocal_rank": 1.0
@@ -34,8 +34,8 @@
         ],
         "retrieved_chunk_ids": [
           "agent_workflow.md::chunk_1",
-          "agent_workflow.md::chunk_2",
-          "agent_workflow.md::chunk_4"
+          "agent_workflow.md::chunk_0",
+          "agent_workflow.md::chunk_6"
         ],
         "hit_at_k": true,
         "reciprocal_rank": 1.0
@@ -48,12 +48,12 @@
           "agent_workflow.md::chunk_2"
         ],
         "retrieved_chunk_ids": [
-          "agent_workflow.md::chunk_1",
           "agent_workflow.md::chunk_2",
+          "agent_workflow.md::chunk_1",
           "agent_workflow.md::chunk_5"
         ],
         "hit_at_k": true,
-        "reciprocal_rank": 0.5
+        "reciprocal_rank": 1.0
       },
       {
         "case_id": "tool_execution_path",
@@ -63,12 +63,12 @@
           "agent_workflow.md::chunk_3"
         ],
         "retrieved_chunk_ids": [
-          "agent_workflow.md::chunk_1",
-          "agent_workflow.md::chunk_4",
-          "agent_workflow.md::chunk_6"
+          "agent_workflow.md::chunk_3",
+          "agent_workflow.md::chunk_2",
+          "agent_workflow.md::chunk_1"
         ],
-        "hit_at_k": false,
-        "reciprocal_rank": 0.0
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
       },
       {
         "case_id": "clarification_step",
@@ -78,12 +78,12 @@
           "agent_workflow.md::chunk_4"
         ],
         "retrieved_chunk_ids": [
-          "agent_workflow.md::chunk_4",
           "agent_workflow.md::chunk_1",
-          "agent_workflow.md::chunk_6"
+          "agent_workflow.md::chunk_6",
+          "agent_workflow.md::chunk_4"
         ],
         "hit_at_k": true,
-        "reciprocal_rank": 1.0
+        "reciprocal_rank": 0.333333
       },
       {
         "case_id": "failure_handling",
@@ -108,12 +108,12 @@
           "agent_workflow.md::chunk_6"
         ],
         "retrieved_chunk_ids": [
-          "agent_workflow.md::chunk_1",
-          "agent_workflow.md::chunk_4",
-          "agent_workflow.md::chunk_5"
+          "agent_workflow.md::chunk_6",
+          "agent_workflow.md::chunk_0",
+          "agent_workflow.md::chunk_1"
         ],
-        "hit_at_k": false,
-        "reciprocal_rank": 0.0
+        "hit_at_k": true,
+        "reciprocal_rank": 1.0
       },
       {
         "case_id": "workflow_evaluation",

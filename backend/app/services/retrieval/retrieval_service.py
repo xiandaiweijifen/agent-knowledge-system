@@ -51,6 +51,21 @@ def tokenize_query(text: str) -> list[str]:
     return [token for token in tokens if token not in stopwords and len(token) > 1]
 
 
+def build_query_phrases(tokens: list[str], max_length: int = 3) -> set[str]:
+    """Build normalized contiguous query phrases for phrase-level lexical bonuses."""
+    normalized_tokens = [normalize_token(token) for token in tokens]
+    phrases: set[str] = set()
+
+    for phrase_length in range(2, max_length + 1):
+        for start_index in range(0, len(normalized_tokens) - phrase_length + 1):
+            phrase_tokens = normalized_tokens[start_index : start_index + phrase_length]
+            if len(set(phrase_tokens)) == 1:
+                continue
+            phrases.add(" ".join(phrase_tokens))
+
+    return phrases
+
+
 def normalize_token(token: str) -> str:
     """Normalize lexical variants for lightweight matching."""
     if token.startswith("rerank"):
@@ -87,9 +102,11 @@ def compute_rerank_bonus(query_text: str, chunk_content: str) -> float:
     query_terms = tokenize_query(query_text)
     normalized_query_terms = [normalize_token(term) for term in query_terms]
     normalized_content_terms = build_normalized_token_set(chunk_content)
+    normalized_content = " ".join(normalize_token(token) for token in re.findall(r"[a-z0-9]+", content_lower))
     heading_window = content_lower[:160]
     intro_window = content_lower[:240]
     first_line = content_lower.splitlines()[0] if content_lower.splitlines() else ""
+    query_phrases = build_query_phrases(query_terms)
     bonus = 0.0
 
     if query_lower and query_lower in content_lower:
@@ -101,6 +118,17 @@ def compute_rerank_bonus(query_text: str, chunk_content: str) -> float:
         )
         overlap_ratio = matched_terms / len(normalized_query_terms)
         bonus += 0.02 * overlap_ratio
+
+        for term in normalized_query_terms:
+            if len(term) >= 8 and term in heading_window:
+                bonus += 0.02
+            elif len(term) >= 8 and term in intro_window:
+                bonus += 0.01
+
+        for phrase in query_phrases:
+            if phrase in normalized_content:
+                phrase_length = len(phrase.split())
+                bonus += 0.03 if phrase_length == 2 else 0.08
 
         if all(term in heading_window for term in query_terms):
             bonus += 0.03
