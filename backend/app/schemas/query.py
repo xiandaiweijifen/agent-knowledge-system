@@ -124,6 +124,8 @@ class AgentWorkflowResponse(BaseModel):
     source_run_id: str | None = None
     resume_source_type: str | None = None
     resume_strategy: str | None = None
+    resumed_from_step_index: int | None = None
+    reused_step_indices: list[int] = Field(default_factory=list)
     applied_clarification_fields: list[str] = Field(default_factory=list)
     question_rewritten: bool = False
     overridden_plan_arguments: list[str] = Field(default_factory=list)
@@ -180,6 +182,8 @@ class AgentWorkflowRunSummary(BaseModel):
     source_run_id: str | None = None
     resume_source_type: str | None = None
     resume_strategy: str | None = None
+    resumed_from_step_index: int | None = None
+    reused_step_indices: list[int] = Field(default_factory=list)
     applied_clarification_fields: list[str] = Field(default_factory=list)
     question_rewritten: bool = False
     overridden_plan_arguments: list[str] = Field(default_factory=list)

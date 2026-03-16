@@ -3484,6 +3484,143 @@ def test_resume_agent_endpoint_supports_run_id_as_resume_source(
     assert resumed_payload["tool_plan"]["arguments"]["filename"] == "rag_overview.md"
 
 
+def test_resume_agent_endpoint_can_resume_failed_search_then_ticket_from_step_two(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "rag_overview.md").write_text(
+        "RAG reduces hallucinations and improves factual grounding.",
+        encoding="utf-8",
+    )
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    initial_response = client.post(
+        "/api/query/agent",
+        json={
+            "question": (
+                "Search docs for RAG and create a high severity ticket "
+                "for payment-service"
+            ),
+            "debug_fault_injection": {
+                "tool_execution_failures": [
+                    {
+                        "tool_name": "ticketing",
+                        "action": "create",
+                        "fail_count": 2,
+                        "message": "debug injected persistent failure",
+                    }
+                ]
+            },
+        },
+    )
+
+    assert initial_response.status_code == 200
+    initial_payload = initial_response.json()
+    assert initial_payload["workflow_status"] == "failed"
+    assert initial_payload["step_count"] == 2
+    assert initial_payload["tool_chain"][0]["step_status"] == "completed"
+    assert initial_payload["tool_chain"][1]["step_status"] == "failed"
+
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "run_id": initial_payload["run_id"],
+            "clarification_context": {},
+        },
+    )
+
+    assert resumed_response.status_code == 200
+    resumed_payload = resumed_response.json()
+    assert resumed_payload["workflow_status"] == "completed"
+    assert resumed_payload["source_run_id"] == initial_payload["run_id"]
+    assert resumed_payload["resume_source_type"] == "run_id"
+    assert resumed_payload["resume_strategy"] == "search_then_ticket_failed_step_resume"
+    assert resumed_payload["resumed_from_step_index"] == 2
+    assert resumed_payload["reused_step_indices"] == [1]
+    assert resumed_payload["question_rewritten"] is False
+    assert resumed_payload["applied_clarification_fields"] == []
+    assert resumed_payload["tool_chain"][0]["step_index"] == 2
+    assert resumed_payload["tool_chain"][0]["tool_plan"]["tool_name"] == "ticketing"
+    assert resumed_payload["tool_chain"][0]["tool_execution"]["output"]["supporting_query"] == "RAG"
+    assert any(event["stage"] == "resume_reuse" for event in resumed_payload["workflow_trace"])
+
+
+def test_resume_agent_endpoint_can_resume_failed_status_then_ticket_from_step_two(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    workflow_run_store_path = workspace_tmp_path / "workflow_runs.json"
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+
+    monkeypatch.setattr(
+        "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
+        workflow_run_store_path,
+    )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    initial_response = client.post(
+        "/api/query/agent",
+        json={
+            "question": (
+                "Check system status for payment-service and create a high severity ticket "
+                "for payment-service"
+            ),
+            "debug_fault_injection": {
+                "tool_execution_failures": [
+                    {
+                        "tool_name": "ticketing",
+                        "action": "create",
+                        "fail_count": 2,
+                        "message": "debug injected persistent failure",
+                    }
+                ]
+            },
+        },
+    )
+
+    assert initial_response.status_code == 200
+    initial_payload = initial_response.json()
+    assert initial_payload["workflow_status"] == "failed"
+    assert initial_payload["tool_chain"][0]["step_status"] == "completed"
+    assert initial_payload["tool_chain"][1]["step_status"] == "failed"
+
+    resumed_response = client.post(
+        "/api/query/agent/resume",
+        json={
+            "run_id": initial_payload["run_id"],
+            "clarification_context": {
+                "environment": "production",
+            },
+        },
+    )
+
+    assert resumed_response.status_code == 200
+    resumed_payload = resumed_response.json()
+    assert resumed_payload["workflow_status"] == "completed"
+    assert resumed_payload["resume_strategy"] == "status_then_ticket_failed_step_resume"
+    assert resumed_payload["resumed_from_step_index"] == 2
+    assert resumed_payload["reused_step_indices"] == [1]
+    assert resumed_payload["applied_clarification_fields"] == ["environment"]
+    assert resumed_payload["overridden_plan_arguments"] == ["environment"]
+    assert resumed_payload["tool_chain"][0]["step_index"] == 2
+    assert resumed_payload["tool_chain"][0]["tool_plan"]["arguments"]["supporting_status"] == "ok"
+    assert resumed_payload["tool_chain"][0]["tool_execution"]["output"]["environment"] == "production"
+    assert "supporting_summary" in resumed_payload["tool_chain"][0]["tool_execution"]["output"]
+    assert any(event["stage"] == "tool_context" for event in resumed_payload["workflow_trace"])
+
+
 def test_resume_agent_endpoint_requires_original_question_or_run_id():
     client = TestClient(app)
     response = client.post(

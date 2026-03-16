@@ -129,6 +129,16 @@ def _normalize_persisted_workflow_step_records(
 def _normalize_persisted_workflow_run(run: dict) -> dict:
     normalized_run = dict(run)
     normalized_run["tool_chain"] = _normalize_persisted_workflow_step_records(normalized_run)
+    normalized_run["resumed_from_step_index"] = _coerce_non_negative_int(
+        normalized_run.get("resumed_from_step_index")
+    )
+    existing_reused_step_indices = normalized_run.get("reused_step_indices")
+    if isinstance(existing_reused_step_indices, list):
+        normalized_run["reused_step_indices"] = [
+            step for step in existing_reused_step_indices if isinstance(step, int) and step > 0
+        ]
+    else:
+        normalized_run["reused_step_indices"] = []
     normalized_run["step_count"] = _backfill_step_count(normalized_run)
     normalized_run["started_at"] = _backfill_started_at(normalized_run)
     normalized_run["completed_at"] = _backfill_completed_at(normalized_run)
@@ -844,6 +854,8 @@ def list_persisted_workflow_runs(limit: int = 20) -> AgentWorkflowRunListRespons
                 source_run_id=run.source_run_id,
                 resume_source_type=run.resume_source_type,
                 resume_strategy=run.resume_strategy,
+                resumed_from_step_index=run.resumed_from_step_index,
+                reused_step_indices=run.reused_step_indices,
                 applied_clarification_fields=run.applied_clarification_fields,
                 question_rewritten=run.question_rewritten,
                 overridden_plan_arguments=run.overridden_plan_arguments,
@@ -1427,6 +1439,242 @@ def _extract_resume_ticket_overrides(clarification_context: dict[str, str]) -> d
     return overrides
 
 
+def _can_resume_from_failed_step(source_run: AgentWorkflowResponse) -> bool:
+    if source_run.workflow_status != "failed":
+        return False
+    if source_run.failure_stage != "tool_execution":
+        return False
+    if len(source_run.tool_chain) < 2:
+        return False
+
+    reusable_step = source_run.tool_chain[0]
+    failed_step = source_run.tool_chain[-1]
+    if reusable_step.step_index != 1 or reusable_step.step_status != "completed":
+        return False
+    if failed_step.step_index != 2 or failed_step.step_status != "failed":
+        return False
+
+    workflow_kind, _, _, _ = _resolve_multistep_workflow(source_run.question)
+    return workflow_kind in {"search_then_ticket", "status_then_ticket"}
+
+
+def _resume_failed_step_run(
+    *,
+    source_run: AgentWorkflowResponse,
+    clarification_context: dict[str, str],
+    top_k: int,
+    debug_fault_injection: dict[str, object] | None = None,
+) -> AgentWorkflowResponse:
+    del top_k
+    workflow_started_at = build_utc_timestamp()
+    tool_planning_latency_ms = 0
+    debug_fault_injection_state = _normalize_debug_fault_injection(debug_fault_injection)
+    workflow_kind, workflow_search_question, workflow_follow_up_question, _ = _resolve_multistep_workflow(
+        source_run.question
+    )
+    if workflow_kind not in {"search_then_ticket", "status_then_ticket"}:
+        raise ValueError("failed_step_resume_not_supported")
+    if not workflow_search_question or not workflow_follow_up_question:
+        raise ValueError("failed_step_resume_not_supported")
+
+    reusable_step = source_run.tool_chain[0]
+    failed_step = source_run.tool_chain[-1]
+    reusable_output = (
+        reusable_step.tool_execution.get("output", {})
+        if isinstance(reusable_step.tool_execution, dict)
+        else {}
+    )
+    if workflow_kind == "search_then_ticket":
+        inherited_context = _build_search_context_arguments(reusable_output)
+        reuse_detail = (
+            "Reused completed search step from the source workflow run and continued from "
+            "the failed ticket step."
+        )
+    else:
+        inherited_context = _build_status_context_arguments(reusable_output)
+        reuse_detail = (
+            "Reused completed system status step from the source workflow run and continued "
+            "from the failed ticket step."
+        )
+
+    workflow_trace = [
+        WorkflowTraceEvent(
+            stage="resume_reuse",
+            status="completed",
+            timestamp=build_utc_timestamp(),
+            detail=reuse_detail,
+        )
+    ]
+    ticket_resume_overrides = _extract_resume_ticket_overrides(clarification_context)
+    step_started_at = build_utc_timestamp()
+    tool_planner_started_at = time.perf_counter()
+    try:
+        tool_plan = plan_tool_request(workflow_follow_up_question)
+    except ValueError:
+        tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+        raise
+    except Exception as exc:
+        tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+        failed_at = build_utc_timestamp()
+        failure_message = _format_failure_message(exc)
+        workflow_trace.append(
+            WorkflowTraceEvent(
+                stage="tool_planning",
+                status="failed",
+                timestamp=failed_at,
+                detail=f"Step 2: tool planning failed during failed-step resume: {failure_message}.",
+            )
+        )
+        response = _build_failed_workflow_response(
+            question=source_run.question,
+            route=source_run.route,
+            workflow_trace=workflow_trace,
+            filename=source_run.filename,
+            started_at=workflow_started_at,
+            failed_at=failed_at,
+            terminal_reason="tool_planning_failed",
+            failure_stage="tool_planning",
+            failure_message=failure_message,
+            step_count=2,
+            tool_chain=[
+                _build_failed_workflow_step_record(
+                    step_index=2,
+                    step_question=failed_step.question,
+                    started_at=step_started_at,
+                    completed_at=failed_at,
+                    failure_message=failure_message,
+                )
+            ],
+            tool_planning_latency_ms=tool_planning_latency_ms,
+        )
+        response.resumed_from_step_index = 2
+        response.reused_step_indices = [1]
+        return response
+    tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+    if inherited_context:
+        tool_plan.arguments = {
+            **inherited_context,
+            **tool_plan.arguments,
+        }
+        workflow_trace.append(
+            WorkflowTraceEvent(
+                stage="tool_context",
+                status="completed",
+                timestamp=build_utc_timestamp(),
+                detail="Step 2 reused supporting context from the completed step 1 output.",
+            )
+        )
+    if ticket_resume_overrides:
+        tool_plan.arguments = {
+            **tool_plan.arguments,
+            **ticket_resume_overrides,
+        }
+        workflow_trace.append(
+            WorkflowTraceEvent(
+                stage="resume_context",
+                status="completed",
+                timestamp=build_utc_timestamp(),
+                detail="Applied structured clarification fields while resuming the failed ticket step.",
+            )
+        )
+    workflow_trace.append(
+        WorkflowTraceEvent(
+            stage="tool_planning",
+            status="completed",
+            timestamp=build_utc_timestamp(),
+            detail=(
+                f"Step 2: replanned {tool_plan.tool_name}:{tool_plan.action} for "
+                f"{tool_plan.target} during failed-step resume."
+            ),
+        )
+    )
+    tool_response, failed_at, failure_message, attempt_count = _execute_tool_request_with_retry(
+        tool_request=ToolExecutionRequest(
+            tool_name=tool_plan.tool_name,
+            action=tool_plan.action,
+            target=tool_plan.target,
+            arguments=tool_plan.arguments,
+        ),
+        workflow_trace=workflow_trace,
+        step_index=2,
+        debug_fault_injection=debug_fault_injection_state,
+    )
+    if tool_response is None:
+        response = _build_failed_workflow_response(
+            question=source_run.question,
+            route=source_run.route,
+            workflow_trace=workflow_trace,
+            filename=source_run.filename,
+            started_at=workflow_started_at,
+            failed_at=failed_at,
+            terminal_reason="tool_execution_failed",
+            failure_stage="tool_execution",
+            failure_message=failure_message,
+            step_count=2,
+            tool_plan=tool_plan.model_dump(),
+            tool_chain=[
+                _build_failed_workflow_step_record(
+                    step_index=2,
+                    step_question=failed_step.question,
+                    started_at=step_started_at,
+                    completed_at=failed_at,
+                    failure_message=failure_message,
+                    tool_plan=tool_plan.model_dump(),
+                    attempt_count=attempt_count,
+                )
+            ],
+            tool_planning_latency_ms=tool_planning_latency_ms,
+        )
+        response.resumed_from_step_index = 2
+        response.reused_step_indices = [1]
+        return response
+
+    step_completed_at = build_utc_timestamp()
+    workflow_trace.append(
+        WorkflowTraceEvent(
+            stage="tool_execution",
+            status="completed",
+            timestamp=step_completed_at,
+            detail=(
+                f"Step 2: executed {tool_response['execution_mode']} tool "
+                f"{tool_response['tool_name']}:{tool_response['action']} with status "
+                f"{tool_response['execution_status']}"
+                + (f" after {attempt_count} attempt(s)." if attempt_count > 1 else ".")
+            ),
+        )
+    )
+    response = AgentWorkflowResponse(
+        question=source_run.question,
+        workflow_status="completed",
+        step_count=2,
+        route=source_run.route,
+        workflow_trace=workflow_trace,
+        filename=source_run.filename,
+        tool_plan=tool_plan.model_dump(),
+        tool_execution=tool_response,
+        tool_chain=[
+            _build_workflow_step_record(
+                step_index=2,
+                step_question=failed_step.question,
+                tool_plan=tool_plan.model_dump(),
+                tool_execution=tool_response,
+                started_at=step_started_at,
+                completed_at=step_completed_at,
+                attempt_count=attempt_count,
+            )
+        ],
+        resumed_from_step_index=2,
+        reused_step_indices=[1],
+        tool_planning_latency_ms=tool_planning_latency_ms,
+    )
+    return _finalize_workflow_response(
+        response,
+        started_at=workflow_started_at,
+        terminal_reason="tool_execution_completed",
+        completed_at=step_completed_at,
+    )
+
+
 def _extract_applied_clarification_fields(
     clarification_context: dict[str, str],
 ) -> list[str]:
@@ -1582,12 +1830,62 @@ def resume_agent_request(
     top_k: int = 3,
     debug_fault_injection: dict[str, object] | None = None,
 ) -> AgentWorkflowResponse:
+    source_run: AgentWorkflowResponse | None = None
+    if run_id and run_id.strip():
+        source_run = get_persisted_workflow_run(run_id.strip())
+        source_question = source_run.question
+        source_filename = source_run.filename
+        source_run_id = source_run.run_id
+        resume_source_type = "run_id"
+    else:
+        if not clarification_context:
+            raise ValueError("clarification_context_required")
+        source_question, source_filename, source_run_id, resume_source_type = _resolve_resume_source(
+            original_question, run_id
+        )
+
+    if (
+        source_run is not None
+        and _can_resume_from_failed_step(source_run)
+    ):
+        applied_clarification_fields = _extract_applied_clarification_fields(clarification_context)
+        overridden_plan_arguments = _extract_overridden_plan_arguments(clarification_context)
+        resume_strategy = f"{_resolve_multistep_workflow(source_run.question)[0]}_failed_step_resume"
+        response = _resume_failed_step_run(
+            source_run=source_run,
+            clarification_context=clarification_context,
+            top_k=top_k,
+            debug_fault_injection=debug_fault_injection,
+        )
+        response.workflow_trace.insert(
+            0,
+            WorkflowTraceEvent(
+                stage="workflow_resume",
+                status="completed",
+                timestamp=build_utc_timestamp(),
+                detail=(
+                    f"Resumed workflow from failed step 2 of '{source_question}' via {resume_source_type} "
+                    f"using {resume_strategy} with fields: "
+                    f"{', '.join(applied_clarification_fields) if applied_clarification_fields else 'none'}; "
+                    f"overridden arguments: "
+                    f"{', '.join(overridden_plan_arguments) if overridden_plan_arguments else 'none'}."
+                ),
+            ),
+        )
+        response.resume_source_type = resume_source_type
+        response.resume_strategy = resume_strategy
+        response.applied_clarification_fields = applied_clarification_fields
+        response.question_rewritten = False
+        response.overridden_plan_arguments = overridden_plan_arguments
+        return _persist_workflow_response(
+            response=response,
+            resumed_from_question=source_question,
+            source_run_id=source_run_id,
+        )
+
     if not clarification_context:
         raise ValueError("clarification_context_required")
 
-    source_question, source_filename, source_run_id, resume_source_type = _resolve_resume_source(
-        original_question, run_id
-    )
     resumed_question = source_question.strip()
     applied_clarification_fields = _extract_applied_clarification_fields(clarification_context)
     overridden_plan_arguments = _extract_overridden_plan_arguments(clarification_context)
