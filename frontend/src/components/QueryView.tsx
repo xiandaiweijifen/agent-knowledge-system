@@ -368,6 +368,25 @@ export function QueryView({
     }
   }
 
+  function formatResumeStrategyLabel(strategy: string) {
+    switch (strategy) {
+      case "search_then_ticket_failed_step_resume":
+        return locale === "zh" ? "搜索后工单失败步骤恢复" : "Search Then Ticket Failed-Step Resume";
+      case "status_then_ticket_failed_step_resume":
+        return locale === "zh" ? "状态后工单失败步骤恢复" : "Status Then Ticket Failed-Step Resume";
+      case "search_then_summarize_failed_step_resume":
+        return locale === "zh" ? "搜索后总结失败步骤恢复" : "Search Then Summarize Failed-Step Resume";
+      case "status_then_summarize_failed_step_resume":
+        return locale === "zh" ? "状态后总结失败步骤恢复" : "Status Then Summarize Failed-Step Resume";
+      case "manual_retrigger_recovery":
+        return locale === "zh" ? "人工重触发恢复" : "Manual Retrigger Recovery";
+      case "retry_recovery":
+        return locale === "zh" ? "重试恢复" : "Retry Recovery";
+      default:
+        return strategy;
+    }
+  }
+
   function renderRecoveryActions(actions: string[] | undefined, mutedWhenEmpty = false) {
     if (!actions || actions.length === 0) {
       return (
@@ -786,11 +805,11 @@ export function QueryView({
                 <div className="trace-grid workflow-record-grid">
                   <div>
                     <span className="trace-label">{queryCopy.runId}</span>
-                    <strong>{agentQueryResult.run_id ?? queryCopy.notPersisted}</strong>
+                    <strong className="trace-code">{agentQueryResult.run_id ?? queryCopy.notPersisted}</strong>
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.rootRun}</span>
-                    <strong>{agentQueryResult.root_run_id ?? queryCopy.notLinked}</strong>
+                    <strong className="trace-code">{agentQueryResult.root_run_id ?? queryCopy.notLinked}</strong>
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.recoveryDepth}</span>
@@ -802,7 +821,7 @@ export function QueryView({
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.sourceRun}</span>
-                    <strong>{agentQueryResult.source_run_id ?? queryCopy.notLinked}</strong>
+                    <strong className="trace-code">{agentQueryResult.source_run_id ?? queryCopy.notLinked}</strong>
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.recoveredVia}</span>
@@ -814,7 +833,10 @@ export function QueryView({
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.resumeType}</span>
-                    <strong>{agentQueryResult.resume_strategy ?? queryCopy.notResumed}</strong>
+                    <strong>{agentQueryResult.resume_strategy ? formatResumeStrategyLabel(agentQueryResult.resume_strategy) : queryCopy.notResumed}</strong>
+                    {agentQueryResult.resume_strategy && (
+                      <small className="trace-code trace-code-subtle">{agentQueryResult.resume_strategy}</small>
+                    )}
                   </div>
                   <div>
                     <span className="trace-label">{queryCopy.resumedStep}</span>

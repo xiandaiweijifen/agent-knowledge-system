@@ -930,11 +930,30 @@ textarea {
   line-height: 1.45;
 }
 
+.trace-code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.94em;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.trace-code-subtle {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .workflow-record-grid > div,
 .workflow-record-grid strong {
   min-width: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.workflow-record-grid > div {
+  align-self: start;
 }
 
 .answer-card {

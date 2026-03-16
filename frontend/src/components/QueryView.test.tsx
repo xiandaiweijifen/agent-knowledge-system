@@ -779,6 +779,7 @@ describe("QueryView", () => {
     expect(screen.getAllByText("Step 2").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recovered Via").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Resume From Failed Step").length).toBeGreaterThan(0);
+    expect(screen.getByText("Search Then Ticket Failed-Step Resume")).toBeInTheDocument();
     expect(screen.getByText("search_then_ticket_failed_step_resume")).toBeInTheDocument();
     expect(screen.getAllByText("source-run").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1").length).toBeGreaterThan(0);
