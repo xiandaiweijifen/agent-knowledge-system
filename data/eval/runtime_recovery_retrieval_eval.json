@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "case_id": "runtime_step_records",
+      "filename": "workflow_runtime_notes.md",
+      "question": "What fields should every workflow step record preserve?",
+      "expected_chunk_ids": [
+        "workflow_runtime_notes.md::chunk_1"
+      ]
+    },
+    {
+      "case_id": "runtime_run_backfill",
+      "filename": "workflow_runtime_notes.md",
+      "question": "Why does the runtime need backfill support for older workflow runs?",
+      "expected_chunk_ids": [
+        "workflow_runtime_notes.md::chunk_2"
+      ]
+    },
+    {
+      "case_id": "runtime_resume_metadata",
+      "filename": "workflow_runtime_notes.md",
+      "question": "What metadata should a resumed run expose after clarification or resume?",
+      "expected_chunk_ids": [
+        "workflow_runtime_notes.md::chunk_3"
+      ]
+    },
+    {
+      "case_id": "runtime_failure_stage_tracking",
+      "filename": "workflow_runtime_notes.md",
+      "question": "Which workflow stages should failure semantics distinguish between?",
+      "expected_chunk_ids": [
+        "workflow_runtime_notes.md::chunk_4"
+      ]
+    },
+    {
+      "case_id": "runtime_maintenance_ops",
+      "filename": "workflow_runtime_notes.md",
+      "question": "Which maintenance operations should remain deterministic in the workflow state layer?",
+      "expected_chunk_ids": [
+        "workflow_runtime_notes.md::chunk_5"
+      ]
+    },
+    {
+      "case_id": "workflow_evaluation_scope",
+      "filename": "agent_workflow.md",
+      "question": "What should workflow evaluation measure beyond answer quality?",
+      "expected_chunk_ids": [
+        "agent_workflow.md::chunk_7"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "case_id": "payment_timeout_symptoms",
+      "filename": "payment_service_runbook.md",
+      "question": "What payment-service symptoms usually point to gateway timeout or retry spikes?",
+      "expected_chunk_ids": [
+        "payment_service_runbook.md::chunk_1"
+      ]
+    },
+    {
+      "case_id": "payment_ticket_threshold",
+      "filename": "payment_service_runbook.md",
+      "question": "When should engineers create a high severity production ticket for payment-service?",
+      "expected_chunk_ids": [
+        "payment_service_runbook.md::chunk_3"
+      ]
+    },
+    {
+      "case_id": "payment_mitigation_guardrail",
+      "filename": "payment_service_runbook.md",
+      "question": "What quick fix should responders avoid during a payment-service outage?",
+      "expected_chunk_ids": [
+        "payment_service_runbook.md::chunk_4"
+      ]
+    },
+    {
+      "case_id": "checkout_not_payment_outage",
+      "filename": "checkout_service_runbook.md",
+      "question": "When should checkout incidents not be classified as a payment outage?",
+      "expected_chunk_ids": [
+        "checkout_service_runbook.md::chunk_3"
+      ]
+    },
+    {
+      "case_id": "checkout_mitigation_path",
+      "filename": "checkout_service_runbook.md",
+      "question": "What degraded-mode mitigation can reduce checkout recomputation pressure?",
+      "expected_chunk_ids": [
+        "checkout_service_runbook.md::chunk_4"
+      ]
+    },
+    {
+      "case_id": "incident_escalation_payment",
+      "filename": "incident_playbook.md",
+      "question": "When should a payment-related outage trigger a high severity ticket and on-call page?",
+      "expected_chunk_ids": [
+        "incident_playbook.md::chunk_2"
+      ]
+    },
+    {
+      "case_id": "incident_supporting_evidence",
+      "filename": "incident_playbook.md",
+      "question": "What supporting evidence should responders attach to an incident ticket?",
+      "expected_chunk_ids": [
+        "incident_playbook.md::chunk_3"
+      ]
+    },
+    {
+      "case_id": "incident_resolution_linking",
+      "filename": "incident_playbook.md",
+      "question": "What should responders update after mitigation and when should they link older incidents?",
+      "expected_chunk_ids": [
+        "incident_playbook.md::chunk_4"
+      ]
+    }
+  ]
+}

@@ -17,6 +17,22 @@
       "expected_workflow_status": "completed"
     },
     {
+      "case_id": "workflow_knowledge_3",
+      "question": "What metadata should a clarification-required run preserve?",
+      "filename": "workflow_runtime_notes.md",
+      "top_k": 3,
+      "expected_route_type": "knowledge_retrieval",
+      "expected_workflow_status": "completed"
+    },
+    {
+      "case_id": "workflow_knowledge_4",
+      "question": "When should checkout issues not be classified as a payment outage?",
+      "filename": "checkout_service_runbook.md",
+      "top_k": 3,
+      "expected_route_type": "knowledge_retrieval",
+      "expected_workflow_status": "completed"
+    },
+    {
       "case_id": "workflow_tool_1",
       "question": "Create a ticket for the payment service outage",
       "expected_route_type": "tool_execution",
@@ -115,6 +131,36 @@
       "expected_final_output_keys": ["returned_count", "top_match_document"]
     },
     {
+      "case_id": "workflow_tool_14",
+      "question": "Search docs for gateway timeout and show top 2 results",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "document_search",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["returned_count", "top_match_document"]
+    },
+    {
+      "case_id": "workflow_tool_15",
+      "question": "Search payment_service_runbook.md for idempotency limit to 1",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "document_search",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["filename_filter", "max_results", "matched_documents"]
+    },
+    {
+      "case_id": "workflow_tool_16",
+      "question": "Search docs for checkout-service and create a medium severity ticket for checkout-service",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_tool_chain_length": 2,
+      "expected_final_tool_name": "ticketing",
+      "expected_final_action": "create",
+      "expected_final_output_keys": ["ticket_id", "supporting_query", "supporting_summary"]
+    },
+    {
       "case_id": "workflow_guardrail_2",
       "question": "Search docs for payment-service outage and summarize top 2 results",
       "expected_route_type": "tool_execution",
@@ -127,6 +173,16 @@
     {
       "case_id": "workflow_guardrail_1",
       "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "clarification_required",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "document_search",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["matched_count"]
+    },
+    {
+      "case_id": "workflow_guardrail_3",
+      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
       "expected_route_type": "tool_execution",
       "expected_workflow_status": "clarification_required",
       "expected_tool_chain_length": 1,
@@ -184,6 +240,22 @@
       "expected_final_output_keys": ["ticket_id", "environment"]
     },
     {
+      "case_id": "workflow_resume_4",
+      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
+      "clarification_context": {
+        "search_query_refinement": "gateway timeout"
+      },
+      "resume_via_run_id": true,
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_question": "Search docs for gateway timeout and create a high severity ticket for payment-service in production",
+      "expected_resume_trace": true,
+      "expected_tool_chain_length": 2,
+      "expected_final_tool_name": "ticketing",
+      "expected_final_action": "create",
+      "expected_final_output_keys": ["ticket_id", "environment", "supporting_summary"]
+    },
+    {
       "case_id": "workflow_clarification_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed",
@@ -192,6 +264,12 @@
     {
       "case_id": "workflow_clarification_2",
       "question": "Handle this in staging",
+      "expected_route_type": "clarification_needed",
+      "expected_workflow_status": "clarification_required"
+    },
+    {
+      "case_id": "workflow_clarification_3",
+      "question": "Resolve this for production",
       "expected_route_type": "clarification_needed",
       "expected_workflow_status": "clarification_required"
     }

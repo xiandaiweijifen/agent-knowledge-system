@@ -13,6 +13,24 @@
       "expected_route_type": "knowledge_retrieval"
     },
     {
+      "case_id": "knowledge_route_3",
+      "question": "What metadata should a clarification-required run preserve?",
+      "filename": "workflow_runtime_notes.md",
+      "expected_route_type": "knowledge_retrieval"
+    },
+    {
+      "case_id": "knowledge_route_4",
+      "question": "When should checkout incidents not be classified as a payment outage?",
+      "filename": "checkout_service_runbook.md",
+      "expected_route_type": "knowledge_retrieval"
+    },
+    {
+      "case_id": "knowledge_route_5",
+      "question": "What supporting evidence should responders attach to an incident ticket?",
+      "filename": "incident_playbook.md",
+      "expected_route_type": "knowledge_retrieval"
+    },
+    {
       "case_id": "tool_route_1",
       "question": "Create a ticket for the payment service outage",
       "expected_route_type": "tool_execution"
@@ -68,6 +86,26 @@
       "expected_route_type": "tool_execution"
     },
     {
+      "case_id": "tool_route_12",
+      "question": "Search docs for gateway timeout and show top 2 results",
+      "expected_route_type": "tool_execution"
+    },
+    {
+      "case_id": "tool_route_13",
+      "question": "Search payment_service_runbook.md for idempotency limit to 1",
+      "expected_route_type": "tool_execution"
+    },
+    {
+      "case_id": "tool_route_14",
+      "question": "Search docs for checkout-service and create a medium severity ticket for checkout-service",
+      "expected_route_type": "tool_execution"
+    },
+    {
+      "case_id": "tool_route_15",
+      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
+      "expected_route_type": "tool_execution"
+    },
+    {
       "case_id": "clarification_route_1",
       "question": "Please do that for production",
       "expected_route_type": "clarification_needed"
@@ -75,6 +113,11 @@
     {
       "case_id": "clarification_route_2",
       "question": "Handle this in staging",
+      "expected_route_type": "clarification_needed"
+    },
+    {
+      "case_id": "clarification_route_3",
+      "question": "Resolve this for production",
       "expected_route_type": "clarification_needed"
     }
   ]
