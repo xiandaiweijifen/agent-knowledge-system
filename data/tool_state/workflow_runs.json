@@ -14798,5 +14798,419 @@
         "failure_message": null
       }
     ]
+  },
+  {
+    "run_id": "7c9e43eff34f4b168f4789111e2bf017",
+    "root_run_id": "7c9e43eff34f4b168f4789111e2bf017",
+    "recovery_depth": 0,
+    "question": "Search docs for payment-service outage and summarize top 2 results",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "clarification_required",
+    "terminal_reason": "search_summary_miss_clarification",
+    "outcome_category": "clarification_required",
+    "is_recoverable": true,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "resume_with_clarification",
+    "available_recovery_actions": [
+      "resume_with_clarification"
+    ],
+    "recovery_action_details": {
+      "resume_with_clarification": {
+        "missing_fields": [
+          "search_query_refinement",
+          "document_scope"
+        ]
+      }
+    },
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T16:11:11.888545+00:00",
+    "completed_at": null,
+    "last_updated_at": "2026-03-16T16:11:23.231797+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": "llm_gemini",
+    "planner_call_count": 3,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 4589,
+    "tool_planning_latency_ms": 3598,
+    "clarification_planning_latency_ms": 3151,
+    "planner_latency_ms_total": 11338,
+    "llm_planner_layers": [
+      "workflow",
+      "tool",
+      "clarification"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:11:11.888583+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:11:16.477164+00:00",
+        "detail": "Planned search_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:11:20.075562+00:00",
+        "detail": "Planned document_search:query for payment-service outage."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:11:20.081226+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "clarification_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:11:23.231797+00:00",
+        "detail": "Search produced no supporting documents, so the workflow stopped before summary generation and requested clarification."
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "No supporting documents matched the search step, so the system needs clarification before generating a summary.",
+    "clarification_plan": {
+      "question": "payment-service outage",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "search_query_refinement",
+        "document_scope"
+      ],
+      "follow_up_questions": [
+        "I could not find supporting documents for 'payment-service outage'. Should I search a different phrase?",
+        "Should I narrow the search to a specific document or file?"
+      ],
+      "clarification_summary": "The workflow could not find supporting documents to summarize, so it should be clarified before continuing."
+    },
+    "tool_plan": {
+      "question": "Search docs for payment-service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "arguments": {
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for payment-service outage using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "payment-service outage",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "No documents matched 'payment-service outage'.",
+      "trace_id": "a552cf3dedbe4831bfb1aa16aabbe5ac",
+      "executed_at": "2026-03-16T16:11:20.081119+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "payment-service outage",
+        "item_count": "0",
+        "query": "payment-service outage",
+        "matched_count": "0",
+        "returned_count": "0",
+        "matched_documents": "",
+        "skipped_documents": "1",
+        "max_results": "2"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-03-16T16:11:16.477233+00:00",
+        "completed_at": "2026-03-16T16:11:20.081226+00:00",
+        "question": "Search docs for payment-service outage",
+        "tool_plan": {
+          "question": "Search docs for payment-service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "arguments": {
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for payment-service outage using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "payment-service outage",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "No documents matched 'payment-service outage'.",
+          "trace_id": "a552cf3dedbe4831bfb1aa16aabbe5ac",
+          "executed_at": "2026-03-16T16:11:20.081119+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "payment-service outage",
+            "item_count": "0",
+            "query": "payment-service outage",
+            "matched_count": "0",
+            "returned_count": "0",
+            "matched_documents": "",
+            "skipped_documents": "1",
+            "max_results": "2"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "adb1c6b937d54f839230d818507da671",
+    "root_run_id": "7c9e43eff34f4b168f4789111e2bf017",
+    "recovery_depth": 1,
+    "question": "Search rag_overview.md for RAG and summarize top 2 results",
+    "resumed_from_question": "Search docs for payment-service outage and summarize top 2 results",
+    "source_run_id": "7c9e43eff34f4b168f4789111e2bf017",
+    "recovered_via_action": "resume_with_clarification",
+    "resume_source_type": "run_id",
+    "resume_strategy": "search_then_summarize_resume",
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [
+      "document_scope",
+      "search_query_refinement"
+    ],
+    "question_rewritten": true,
+    "overridden_plan_arguments": [
+      "filename",
+      "target"
+    ],
+    "workflow_status": "completed",
+    "terminal_reason": "search_summary_completed",
+    "outcome_category": "completed",
+    "is_recoverable": false,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-03-16T16:15:09.115198+00:00",
+    "completed_at": "2026-03-16T16:15:14.813120+00:00",
+    "last_updated_at": "2026-03-16T16:15:14.813120+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": "llm_gemini",
+    "tool_planning_modes": [
+      "llm_gemini"
+    ],
+    "clarification_planning_mode": null,
+    "planner_call_count": 2,
+    "tool_planner_call_count": 1,
+    "workflow_planning_latency_ms": 2039,
+    "tool_planning_latency_ms": 3657,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 5696,
+    "llm_planner_layers": [
+      "workflow",
+      "tool"
+    ],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [
+      1
+    ],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The request asks the system to inspect, search, or check an external resource, so it should be routed toward tool execution.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "workflow_resume",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:15:14.813227+00:00",
+        "detail": "Resumed workflow from 'Search docs for payment-service outage and summarize top 2 results' via run_id using search_then_summarize_resume with fields: document_scope, search_query_refinement; overridden arguments: filename, target."
+      },
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:15:09.115316+00:00",
+        "detail": "Request routed to tool_execution."
+      },
+      {
+        "stage": "workflow_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:15:11.154365+00:00",
+        "detail": "Planned search_then_summarize workflow via llm_gemini."
+      },
+      {
+        "stage": "tool_planning",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:15:14.811615+00:00",
+        "detail": "Planned document_search:query for documents."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:15:14.813082+00:00",
+        "detail": "Executed local_adapter tool document_search:query with status completed."
+      },
+      {
+        "stage": "search_summary",
+        "status": "completed",
+        "timestamp": "2026-03-16T16:15:14.813113+00:00",
+        "detail": "Generated a local summary for search results in response to 'summarize top 2 results'."
+      }
+    ],
+    "filename": null,
+    "answer": "I searched 'rag_overview.md' for 'documents' and found 1 matching result(s). The strongest supporting document is rag_overview.md. Key evidence from rag_overview.md: Instead of asking a model to answer only from its training data, a RAG system retrieves relevant documents or chunks first and then asks the model to answer with that context.",
+    "answer_source": "local_search_summary",
+    "model": "local-heuristic-summary",
+    "answered_at": "2026-03-16T16:15:14.813120+00:00",
+    "answer_latency_ms": 0.0,
+    "chat_provider": "local",
+    "chat_model": "local-heuristic-summary",
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Search rag_overview.md for RAG",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "documents",
+      "arguments": {
+        "filename": "rag_overview.md",
+        "max_results": "2"
+      },
+      "plan_summary": "Plan document_search:query for documents using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "document_search",
+      "action": "query",
+      "target": "documents",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Found 1 matching document(s) for 'documents'.",
+      "trace_id": "98f5bc684f3e42c0aec14d8fb3ed77e9",
+      "executed_at": "2026-03-16T16:15:14.813037+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "search_results",
+        "resource_type": "document_match",
+        "target": "documents",
+        "item_count": "1",
+        "query": "documents",
+        "matched_count": "1",
+        "returned_count": "1",
+        "matched_documents": "rag_overview.md",
+        "skipped_documents": "0",
+        "filename_filter": "rag_overview.md",
+        "max_results": "2",
+        "snippets": "rag_overview.md: Instead of asking a model to answer only from its training data, a RAG system retrieves relevant documents or chunks first and then asks the model to answer with that context.",
+        "top_match_document": "rag_overview.md",
+        "top_match_score": "4.790",
+        "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-03-16T16:15:11.154401+00:00",
+        "completed_at": "2026-03-16T16:15:14.813082+00:00",
+        "question": "Search rag_overview.md for RAG",
+        "tool_plan": {
+          "question": "Search rag_overview.md for RAG",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "documents",
+          "arguments": {
+            "filename": "rag_overview.md",
+            "max_results": "2"
+          },
+          "plan_summary": "Plan document_search:query for documents using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "documents",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'documents'.",
+          "trace_id": "98f5bc684f3e42c0aec14d8fb3ed77e9",
+          "executed_at": "2026-03-16T16:15:14.813037+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "documents",
+            "item_count": "1",
+            "query": "documents",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "rag_overview.md",
+            "skipped_documents": "0",
+            "filename_filter": "rag_overview.md",
+            "max_results": "2",
+            "snippets": "rag_overview.md: Instead of asking a model to answer only from its training data, a RAG system retrieves relevant documents or chunks first and then asks the model to answer with that context.",
+            "top_match_document": "rag_overview.md",
+            "top_match_score": "4.790",
+            "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      }
+    ]
   }
 ]

@@ -858,5 +858,74 @@ describe("QueryView", () => {
       "resume_from_failed_step",
     );
   });
+
+  it("submits clarification recovery fields from the current workflow view", async () => {
+    const user = userEvent.setup();
+    const onRecoverAgentWorkflowRun = vi.fn();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Search docs for payment-service outage and summarize top 2 results"
+        topK={3}
+        activePresetQuestions={["Search docs for payment-service outage and summarize top 2 results"]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-clarify",
+          question: "Search docs for payment-service outage and summarize top 2 results",
+          workflow_status: "clarification_required",
+          recommended_recovery_action: "resume_with_clarification",
+          available_recovery_actions: ["resume_with_clarification"],
+          recovery_action_details: {
+            resume_with_clarification: {
+              missing_fields: ["search_query_refinement", "document_scope"],
+            },
+          },
+          clarification_plan: {
+            question: "Search docs for payment-service outage and summarize top 2 results",
+            planning_mode: "llm_gemini",
+            missing_fields: ["search_query_refinement", "document_scope"],
+            follow_up_questions: [
+              "What search query should I use?",
+              "Which document should I search?",
+            ],
+            clarification_summary: "The workflow needs a refined query and document scope.",
+          },
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Search requests should go through tool execution.",
+            filename: null,
+          },
+          workflow_trace: [],
+          tool_chain: [],
+        }}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={onRecoverAgentWorkflowRun}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    await user.type(screen.getByLabelText("Search Query Refinement"), "RAG");
+    await user.type(screen.getByLabelText("Document Scope"), "rag_overview.md");
+    await user.click(
+      screen.getByRole("button", { name: "Recover With Clarification: Resume With Clarification" }),
+    );
+
+    expect(onRecoverAgentWorkflowRun).toHaveBeenCalledWith("run-clarify", "resume_with_clarification", {
+      search_query_refinement: "RAG",
+      document_scope: "rag_overview.md",
+    });
+  });
 });
 

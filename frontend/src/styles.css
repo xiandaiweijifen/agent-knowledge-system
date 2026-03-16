@@ -979,6 +979,38 @@ textarea {
   border-radius: 4px;
 }
 
+.clarification-recovery-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(159, 58, 29, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 248, 240, 0.55);
+}
+
+.clarification-field-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.clarification-field {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.clarification-field input {
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+}
+
 .workflow-record-grid > div,
 .workflow-record-grid strong {
   min-width: 0;

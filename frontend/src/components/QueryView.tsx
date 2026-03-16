@@ -30,7 +30,11 @@ type QueryViewProps = {
   onSubmitQuery: (event: FormEvent<HTMLFormElement>) => void;
   onRunAgent: () => void;
   onLoadAgentWorkflowRun: (runId: string) => void;
-  onRecoverAgentWorkflowRun: (runId: string, recoveryAction?: string) => void;
+  onRecoverAgentWorkflowRun: (
+    runId: string,
+    recoveryAction?: string,
+    clarificationContext?: Record<string, string>,
+  ) => void;
   onRunDiagnostics: () => void;
 };
 
@@ -194,6 +198,10 @@ export function QueryView({
           recoverRecommended: "按推荐动作恢复",
           loadRun: "加载运行记录",
           clarificationRequired: "该恢复动作需要先补充澄清字段，当前界面暂不支持直接执行。",
+          clarificationInputs: "澄清字段",
+          clarificationResume: "补充后恢复",
+          clarificationResumeCopy: "填写缺失字段后，直接继续当前恢复动作。",
+          clarificationFieldPlaceholder: "请输入",
           recoveryDetails: "恢复详情",
           recoveryAction: "恢复动作",
           clearDiagnostics: "清空诊断",
@@ -345,6 +353,11 @@ export function QueryView({
           loadRun: "Load Run",
           clarificationRequired:
             "This recovery action requires clarification fields and cannot be executed directly from the current UI.",
+          clarificationInputs: "Clarification Fields",
+          clarificationResume: "Recover With Clarification",
+          clarificationResumeCopy:
+            "Provide the missing fields and continue the recovery action directly from the UI.",
+          clarificationFieldPlaceholder: "Enter",
           recoveryDetails: "Recovery Details",
           recoveryAction: "Recovery Action",
           clearDiagnostics: "Clear Diagnostics",
@@ -391,6 +404,60 @@ export function QueryView({
     }
   }
 
+  function formatClarificationFieldLabel(field: string) {
+    const labels =
+      locale === "zh"
+        ? {
+            search_query_refinement: "搜索词细化",
+            execution_confirmation: "执行确认",
+            document_scope: "文档范围",
+            environment: "环境",
+            fallback_action: "回退动作",
+            task_details: "任务详情",
+            target: "目标",
+            action: "动作",
+            priority: "优先级",
+            filename: "文件名",
+          }
+        : {
+            search_query_refinement: "Search Query Refinement",
+            execution_confirmation: "Execution Confirmation",
+            document_scope: "Document Scope",
+            environment: "Environment",
+            fallback_action: "Fallback Action",
+            task_details: "Task Details",
+            target: "Target",
+            action: "Action",
+            priority: "Priority",
+            filename: "Filename",
+          };
+    if (field in labels) {
+      return labels[field as keyof typeof labels];
+    }
+
+    return field
+      .split("_")
+      .filter(Boolean)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(" ");
+  }
+
+  function getClarificationFields(
+    recoveryActionDetails: AgentWorkflowResponse["recovery_action_details"] | undefined,
+    clarificationPlan?: AgentWorkflowResponse["clarification_plan"],
+  ) {
+    const detailFields = recoveryActionDetails?.resume_with_clarification?.missing_fields;
+    if (Array.isArray(detailFields)) {
+      return detailFields.filter((item): item is string => typeof item === "string" && item.length > 0);
+    }
+
+    if (clarificationPlan?.missing_fields) {
+      return clarificationPlan.missing_fields;
+    }
+
+    return [];
+  }
+
   function renderRecoveryActions(actions: string[] | undefined, mutedWhenEmpty = false) {
     if (!actions || actions.length === 0) {
       return (
@@ -424,38 +491,99 @@ export function QueryView({
     return String(value);
   }
 
+  function submitClarificationRecovery(
+    event: FormEvent<HTMLFormElement>,
+    runId: string,
+  ) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const clarificationContext = Object.fromEntries(
+      Array.from(form.entries())
+        .filter(([, value]) => typeof value === "string" && value.trim().length > 0)
+        .map(([key, value]) => [key, String(value).trim()]),
+    );
+    onRecoverAgentWorkflowRun(runId, "resume_with_clarification", clarificationContext);
+  }
+
+  function renderClarificationRecoveryForm(
+    runId: string | null | undefined,
+    recoveryActionDetails: AgentWorkflowResponse["recovery_action_details"] | undefined,
+    clarificationPlan?: AgentWorkflowResponse["clarification_plan"],
+  ) {
+    if (!runId) {
+      return null;
+    }
+
+    const missingFields = getClarificationFields(recoveryActionDetails, clarificationPlan);
+    if (missingFields.length === 0) {
+      return <p className="subsection-copy">{queryCopy.clarificationRequired}</p>;
+    }
+
+    return (
+      <form className="clarification-recovery-form" onSubmit={(event) => submitClarificationRecovery(event, runId)}>
+        <span className="trace-label">{queryCopy.clarificationInputs}</span>
+        <p className="subsection-copy">{queryCopy.clarificationResumeCopy}</p>
+        <div className="clarification-field-grid">
+          {missingFields.map((field) => (
+            <label key={field} className="clarification-field">
+              <span>{formatClarificationFieldLabel(field)}</span>
+              <input
+                type="text"
+                name={field}
+                placeholder={`${queryCopy.clarificationFieldPlaceholder} ${formatClarificationFieldLabel(field)}`}
+                disabled={queryBusy}
+              />
+            </label>
+          ))}
+        </div>
+        <div className="button-row">
+          <button type="submit" className="primary-button" disabled={queryBusy}>
+            {queryBusy
+              ? queryCopy.recovering
+              : `${queryCopy.clarificationResume}: ${formatRecoveryActionLabel("resume_with_clarification")}`}
+          </button>
+        </div>
+      </form>
+    );
+  }
+
   function renderRecoveryButtons(
     runId: string | null | undefined,
     actions: string[] | undefined,
     recommendedAction: string | null | undefined,
+    recoveryActionDetails?: AgentWorkflowResponse["recovery_action_details"],
+    clarificationPlan?: AgentWorkflowResponse["clarification_plan"],
   ) {
     if (!runId || !actions || actions.length === 0) {
       return null;
     }
 
     const executableActions = actions.filter(isRecoveryActionExecutable);
-
-    if (executableActions.length === 0) {
-      return <p className="subsection-copy">{queryCopy.clarificationRequired}</p>;
-    }
+    const needsClarification = actions.includes("resume_with_clarification");
 
     return (
-      <div className="button-row">
-        {executableActions.map((action) => (
-          <button
-            key={action}
-            type="button"
-            className={action === recommendedAction ? "primary-button" : "ghost-button"}
-            disabled={queryBusy}
-            aria-label={`${queryCopy.recover} ${runId} ${formatRecoveryActionLabel(action)}`}
-            onClick={() => onRecoverAgentWorkflowRun(runId, action)}
-          >
-            {queryBusy && action === recommendedAction
-              ? queryCopy.recovering
-              : `${queryCopy.recover}: ${formatRecoveryActionLabel(action)}`}
-          </button>
-        ))}
-      </div>
+      <>
+        {executableActions.length > 0 && (
+          <div className="button-row">
+            {executableActions.map((action) => (
+              <button
+                key={action}
+                type="button"
+                className={action === recommendedAction ? "primary-button" : "ghost-button"}
+                disabled={queryBusy}
+                aria-label={`${queryCopy.recover} ${runId} ${formatRecoveryActionLabel(action)}`}
+                onClick={() => onRecoverAgentWorkflowRun(runId, action)}
+              >
+                {queryBusy && action === recommendedAction
+                  ? queryCopy.recovering
+                  : `${queryCopy.recover}: ${formatRecoveryActionLabel(action)}`}
+              </button>
+            ))}
+          </div>
+        )}
+        {needsClarification &&
+          renderClarificationRecoveryForm(runId, recoveryActionDetails, clarificationPlan)}
+      </>
     );
   }
 
@@ -915,6 +1043,8 @@ export function QueryView({
                   agentQueryResult.run_id,
                   agentQueryResult.available_recovery_actions,
                   agentQueryResult.recommended_recovery_action,
+                  agentQueryResult.recovery_action_details,
+                  agentQueryResult.clarification_plan,
                 )}
                 {agentQueryResult.failure_message && (
                   <p className="subsection-copy">
@@ -1136,6 +1266,7 @@ export function QueryView({
                     run.run_id,
                     run.available_recovery_actions,
                     run.recommended_recovery_action,
+                    run.recovery_action_details,
                   )}
                 </article>
               ))}

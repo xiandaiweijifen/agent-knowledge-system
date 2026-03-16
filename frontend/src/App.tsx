@@ -528,12 +528,20 @@ function App() {
     }
   }
 
-  async function recoverAgentWorkflowRun(runId: string, recoveryAction?: string) {
+  async function recoverAgentWorkflowRun(
+    runId: string,
+    recoveryAction?: string,
+    clarificationContext?: Record<string, string>,
+  ) {
     setQueryBusy(true);
     setQueryError("");
 
     try {
-      const payload = await recoverAgentWorkflowRunRequest(runId, recoveryAction);
+      const payload = await recoverAgentWorkflowRunRequest(
+        runId,
+        recoveryAction,
+        clarificationContext,
+      );
       setAgentQueryResult(payload);
       await loadAgentWorkflowRuns();
     } catch (error) {
@@ -746,8 +754,8 @@ function App() {
           onSubmitQuery={submitQuery}
           onRunAgent={() => void runAgentQuery()}
           onLoadAgentWorkflowRun={(runId) => void loadAgentWorkflowRun(runId)}
-          onRecoverAgentWorkflowRun={(runId, recoveryAction) =>
-            void recoverAgentWorkflowRun(runId, recoveryAction)
+          onRecoverAgentWorkflowRun={(runId, recoveryAction, clarificationContext) =>
+            void recoverAgentWorkflowRun(runId, recoveryAction, clarificationContext)
           }
           onRunDiagnostics={() => void runDiagnostics()}
         />
