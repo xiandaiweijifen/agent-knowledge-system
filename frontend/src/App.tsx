@@ -8,6 +8,7 @@ import {
   fetchAgentWorkflowEvaluationDatasets,
   fetchDocuments,
   fetchEvaluationDatasets,
+  fetchEvaluationOverview,
   fetchPersistedChunks,
   fetchPersistedEmbeddings,
   fetchSystemHealth,
@@ -37,6 +38,7 @@ import type {
   DocumentPreview,
   EvalCaseFilter,
   EvalDatasetInfo,
+  EvaluationOverviewResponse,
   EvaluationMode,
   EvalReportResponse,
   PersistedChunkDocument,
@@ -85,6 +87,7 @@ function App() {
   const [agentRouteEvalResult, setAgentRouteEvalResult] = useState<AgentRouteEvalReportResponse | null>(null);
   const [agentWorkflowEvalResult, setAgentWorkflowEvalResult] =
     useState<AgentWorkflowEvalReportResponse | null>(null);
+  const [evaluationOverview, setEvaluationOverview] = useState<EvaluationOverviewResponse | null>(null);
   const [evalError, setEvalError] = useState("");
   const [evalBusy, setEvalBusy] = useState(false);
   const [evalCaseFilter, setEvalCaseFilter] = useState<EvalCaseFilter>("all");
@@ -430,10 +433,11 @@ function App() {
   async function loadEvaluationDatasets() {
     setEvalError("");
 
-    const [retrievalPayload, routePayload, workflowPayload] = await Promise.allSettled([
+    const [retrievalPayload, routePayload, workflowPayload, overviewPayload] = await Promise.allSettled([
       fetchEvaluationDatasets(),
       fetchAgentRouteEvaluationDatasets(),
       fetchAgentWorkflowEvaluationDatasets(),
+      fetchEvaluationOverview(),
     ]);
 
     setDatasets(retrievalPayload.status === "fulfilled" ? retrievalPayload.value.datasets : []);
@@ -441,11 +445,13 @@ function App() {
     setAgentWorkflowDatasets(
       workflowPayload.status === "fulfilled" ? workflowPayload.value.datasets : [],
     );
+    setEvaluationOverview(overviewPayload.status === "fulfilled" ? overviewPayload.value : null);
 
     const failures = [
       retrievalPayload.status === "rejected" ? "retrieval" : null,
       routePayload.status === "rejected" ? "agent-route" : null,
       workflowPayload.status === "rejected" ? "agent-workflow" : null,
+      overviewPayload.status === "rejected" ? "overview" : null,
     ].filter((item): item is string => item !== null);
 
     if (failures.length > 0) {
@@ -765,6 +771,7 @@ function App() {
         <EvaluationView
           locale={locale}
           evaluationMode={evaluationMode}
+          evaluationOverview={evaluationOverview}
           datasets={datasets}
           agentRouteDatasets={agentRouteDatasets}
           agentWorkflowDatasets={agentWorkflowDatasets}

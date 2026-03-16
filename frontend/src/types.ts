@@ -392,5 +392,35 @@ export type AgentWorkflowEvalReportResponse = {
   };
 };
 
+export type EvaluationOverviewResponse = {
+  generated_at: string;
+  retrieval: {
+    dataset_count: number;
+    total_cases: number;
+    mean_hit_rate_at_k: number;
+    mean_reciprocal_rank: number;
+    best_dataset_name?: string | null;
+    best_hit_rate_at_k: number;
+  };
+  workflow: {
+    total_run_count: number;
+    completed_run_count: number;
+    clarification_required_run_count: number;
+    failed_run_count: number;
+    completion_rate: number;
+    clarification_rate: number;
+    failed_rate: number;
+  };
+  recovery: {
+    recovered_run_count: number;
+    recovered_completed_run_count: number;
+    recovery_success_rate: number;
+    average_recovery_depth: number;
+    resume_from_failed_step_count: number;
+    manual_retrigger_count: number;
+    clarification_recovery_count: number;
+  };
+};
+
 export type EvalCaseFilter = "all" | "hit" | "miss";
 export type EvaluationMode = "retrieval" | "agent-route" | "agent-workflow";

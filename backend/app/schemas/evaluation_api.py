@@ -80,3 +80,39 @@ class ToolExecutionEvalResponse(BaseModel):
 
 class ToolExecutionEvalDatasetListResponse(BaseModel):
     datasets: list[ToolExecutionEvalDatasetInfo]
+
+
+class EvaluationOverviewRetrievalSummary(BaseModel):
+    dataset_count: int
+    total_cases: int
+    mean_hit_rate_at_k: float
+    mean_reciprocal_rank: float
+    best_dataset_name: str | None = None
+    best_hit_rate_at_k: float = 0.0
+
+
+class EvaluationOverviewWorkflowSummary(BaseModel):
+    total_run_count: int
+    completed_run_count: int
+    clarification_required_run_count: int
+    failed_run_count: int
+    completion_rate: float
+    clarification_rate: float
+    failed_rate: float
+
+
+class EvaluationOverviewRecoverySummary(BaseModel):
+    recovered_run_count: int
+    recovered_completed_run_count: int
+    recovery_success_rate: float
+    average_recovery_depth: float
+    resume_from_failed_step_count: int
+    manual_retrigger_count: int
+    clarification_recovery_count: int
+
+
+class EvaluationOverviewResponse(BaseModel):
+    generated_at: str
+    retrieval: EvaluationOverviewRetrievalSummary
+    workflow: EvaluationOverviewWorkflowSummary
+    recovery: EvaluationOverviewRecoverySummary

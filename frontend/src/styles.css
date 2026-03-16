@@ -198,6 +198,16 @@ textarea {
   margin-bottom: 18px;
 }
 
+.overview-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.overview-summary-strip {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin-bottom: 0;
+}
+
 .summary-card {
   padding: 16px;
   background: rgba(255, 251, 245, 0.88);

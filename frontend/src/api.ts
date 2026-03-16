@@ -8,6 +8,7 @@ import type {
   DocumentListResponse,
   DocumentPreview,
   EvalDatasetListResponse,
+  EvaluationOverviewResponse,
   EvalReportResponse,
   PersistedChunkDocument,
   PersistedEmbeddingDocument,
@@ -198,4 +199,8 @@ export function runAgentWorkflowEvaluation(datasetName: string) {
       dataset_name: datasetName,
     }),
   });
+}
+
+export function fetchEvaluationOverview() {
+  return apiFetch<EvaluationOverviewResponse>("/api/evaluation/overview");
 }

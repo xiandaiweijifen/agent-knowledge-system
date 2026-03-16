@@ -6,6 +6,7 @@ import type {
   AgentWorkflowEvalReportResponse,
   EvalCaseFilter,
   EvalDatasetInfo,
+  EvaluationOverviewResponse,
   EvaluationMode,
   EvalReportResponse,
   Locale,
@@ -18,6 +19,7 @@ function hasFilenames(dataset: EvalDatasetInfo | AgentEvalDatasetInfo): dataset 
 type EvaluationViewProps = {
   locale: Locale;
   evaluationMode: EvaluationMode;
+  evaluationOverview: EvaluationOverviewResponse | null;
   datasets: EvalDatasetInfo[];
   agentRouteDatasets: AgentEvalDatasetInfo[];
   agentWorkflowDatasets: AgentEvalDatasetInfo[];
@@ -43,6 +45,7 @@ type EvaluationViewProps = {
 export function EvaluationView({
   locale,
   evaluationMode,
+  evaluationOverview,
   datasets,
   agentRouteDatasets,
   agentWorkflowDatasets,
@@ -68,6 +71,26 @@ export function EvaluationView({
     locale === "zh"
       ? {
           workspace: "评测工作台",
+          overview: "评测总览",
+          overviewCopy: "汇总当前检索、workflow 与恢复能力的关键指标，便于快速评估系统成熟度。",
+          retrievalOverview: "检索概览",
+          workflowOverview: "工作流概览",
+          recoveryOverview: "恢复概览",
+          datasetCount: "数据集数",
+          totalCasesOverview: "总 Case 数",
+          meanHitRate: "平均 Hit@K",
+          meanMrr: "平均 MRR",
+          bestDataset: "最佳数据集",
+          totalRuns: "总运行数",
+          completionRate: "完成率",
+          clarificationRate: "澄清率",
+          failedRate: "失败率",
+          recoveredRuns: "恢复运行数",
+          recoverySuccessRate: "恢复成功率",
+          averageRecoveryDepth: "平均恢复深度",
+          recoveryMix: "恢复动作分布",
+          generatedAt: "生成时间",
+          unavailableMetric: "暂无数据",
           retrievalCopy: "运行预设检索基准并检查逐条 case 的排序结果。",
           routeCopy: "评估路由器是否选择了正确的工作流路径。",
           workflowCopy: "评估统一 agent workflow 是否落到预期状态。",
@@ -119,6 +142,27 @@ export function EvaluationView({
         }
       : {
           workspace: "Evaluation Workspace",
+          overview: "Evaluation Overview",
+          overviewCopy:
+            "Summarize retrieval, workflow, and recovery health in one place before drilling into individual benchmark suites.",
+          retrievalOverview: "Retrieval Overview",
+          workflowOverview: "Workflow Overview",
+          recoveryOverview: "Recovery Overview",
+          datasetCount: "Dataset Count",
+          totalCasesOverview: "Total Cases",
+          meanHitRate: "Mean Hit@K",
+          meanMrr: "Mean MRR",
+          bestDataset: "Best Dataset",
+          totalRuns: "Total Runs",
+          completionRate: "Completion Rate",
+          clarificationRate: "Clarification Rate",
+          failedRate: "Failed Rate",
+          recoveredRuns: "Recovered Runs",
+          recoverySuccessRate: "Recovery Success Rate",
+          averageRecoveryDepth: "Average Recovery Depth",
+          recoveryMix: "Recovery Action Mix",
+          generatedAt: "Generated At",
+          unavailableMetric: "Unavailable",
           retrievalCopy: "Run curated retrieval benchmarks and inspect per-case ranking outcomes.",
           routeCopy: "Evaluate whether the router selects the correct workflow path.",
           workflowCopy: "Evaluate whether the unified agent workflow ends in the expected state.",
@@ -195,6 +239,12 @@ export function EvaluationView({
       : evaluationMode === "agent-route"
         ? copy.routeTitle
         : copy.workflowTitle;
+  const overviewBestDataset = evaluationOverview?.retrieval.best_dataset_name
+    ? `${evaluationOverview.retrieval.best_dataset_name} (${evaluationOverview.retrieval.best_hit_rate_at_k.toFixed(3)})`
+    : copy.unavailableMetric;
+  const overviewGeneratedAt = evaluationOverview?.generated_at
+    ? new Date(evaluationOverview.generated_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")
+    : copy.unavailableMetric;
 
   return (
     <section className="panel-grid">
@@ -219,6 +269,104 @@ export function EvaluationView({
             <span>{activeReport ? copy.reportReady : copy.reportIdle}</span>
           </div>
         </div>
+      </article>
+
+      <article className="panel panel-span">
+        <div className="panel-heading">
+          <div>
+            <h2>{copy.overview}</h2>
+            <p className="panel-intro">{copy.overviewCopy}</p>
+          </div>
+          <span className="status-pill">
+            <span>{copy.generatedAt}</span>
+            <strong>{overviewGeneratedAt}</strong>
+          </span>
+        </div>
+        {evaluationOverview ? (
+          <div className="overview-grid">
+            <section className="subsection-card">
+              <span className="section-label">{copy.retrievalOverview}</span>
+              <div className="summary-strip overview-summary-strip">
+                <div className="summary-card">
+                  <span className="trace-label">{copy.datasetCount}</span>
+                  <strong>{evaluationOverview.retrieval.dataset_count}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.totalCasesOverview}</span>
+                  <strong>{evaluationOverview.retrieval.total_cases}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.meanHitRate}</span>
+                  <strong>{evaluationOverview.retrieval.mean_hit_rate_at_k.toFixed(3)}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.meanMrr}</span>
+                  <strong>{evaluationOverview.retrieval.mean_reciprocal_rank.toFixed(3)}</strong>
+                </div>
+              </div>
+              <div className="preview-meta">
+                <span className="trace-label">{copy.bestDataset}</span>
+                <strong>{overviewBestDataset}</strong>
+              </div>
+            </section>
+
+            <section className="subsection-card">
+              <span className="section-label">{copy.workflowOverview}</span>
+              <div className="summary-strip overview-summary-strip">
+                <div className="summary-card">
+                  <span className="trace-label">{copy.totalRuns}</span>
+                  <strong>{evaluationOverview.workflow.total_run_count}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.completionRate}</span>
+                  <strong>{evaluationOverview.workflow.completion_rate.toFixed(3)}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.clarificationRate}</span>
+                  <strong>{evaluationOverview.workflow.clarification_rate.toFixed(3)}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.failedRate}</span>
+                  <strong>{evaluationOverview.workflow.failed_rate.toFixed(3)}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section className="subsection-card">
+              <span className="section-label">{copy.recoveryOverview}</span>
+              <div className="summary-strip overview-summary-strip">
+                <div className="summary-card">
+                  <span className="trace-label">{copy.recoveredRuns}</span>
+                  <strong>{evaluationOverview.recovery.recovered_run_count}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.recoverySuccessRate}</span>
+                  <strong>{evaluationOverview.recovery.recovery_success_rate.toFixed(3)}</strong>
+                </div>
+                <div className="summary-card">
+                  <span className="trace-label">{copy.averageRecoveryDepth}</span>
+                  <strong>{evaluationOverview.recovery.average_recovery_depth.toFixed(2)}</strong>
+                </div>
+              </div>
+              <div className="pill-strip">
+                <span className="meta-pill">
+                  {copy.recoveryMix}: failed-step {evaluationOverview.recovery.resume_from_failed_step_count}
+                </span>
+                <span className="meta-pill">
+                  manual {evaluationOverview.recovery.manual_retrigger_count}
+                </span>
+                <span className="meta-pill">
+                  clarification {evaluationOverview.recovery.clarification_recovery_count}
+                </span>
+              </div>
+            </section>
+          </div>
+        ) : (
+          <div className="empty-state">
+            <strong>{copy.overview}</strong>
+            <p>{copy.unavailableMetric}</p>
+          </div>
+        )}
       </article>
 
       <article className="panel">

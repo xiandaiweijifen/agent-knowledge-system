@@ -5,6 +5,7 @@ from app.services.evaluation import (
     agent_route_eval_service,
     tool_execution_eval_service,
     agent_workflow_eval_service,
+    overview_service,
     retrieval_eval_service,
 )
 
@@ -317,3 +318,48 @@ def test_tool_execution_evaluation_dataset_list_endpoint_returns_datasets(monkey
     payload = response.json()
     assert len(payload["datasets"]) == 1
     assert payload["datasets"][0]["dataset_name"] == "agent_tool_execution_eval.json"
+
+
+def test_evaluation_overview_endpoint_returns_aggregated_metrics(monkeypatch):
+    client = TestClient(app)
+
+    def fake_overview():
+        return {
+            "generated_at": "2026-03-17T00:00:00+00:00",
+            "retrieval": {
+                "dataset_count": 2,
+                "total_cases": 12,
+                "mean_hit_rate_at_k": 0.875,
+                "mean_reciprocal_rank": 0.71,
+                "best_dataset_name": "rag_overview_retrieval_eval.json",
+                "best_hit_rate_at_k": 1.0,
+            },
+            "workflow": {
+                "total_run_count": 20,
+                "completed_run_count": 12,
+                "clarification_required_run_count": 3,
+                "failed_run_count": 5,
+                "completion_rate": 0.6,
+                "clarification_rate": 0.15,
+                "failed_rate": 0.25,
+            },
+            "recovery": {
+                "recovered_run_count": 6,
+                "recovered_completed_run_count": 5,
+                "recovery_success_rate": 0.8333333333,
+                "average_recovery_depth": 1.33,
+                "resume_from_failed_step_count": 3,
+                "manual_retrigger_count": 2,
+                "clarification_recovery_count": 1,
+            },
+        }
+
+    monkeypatch.setattr(overview_service, "get_evaluation_overview", fake_overview)
+
+    response = client.get("/api/evaluation/overview")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["retrieval"]["dataset_count"] == 2
+    assert payload["workflow"]["completion_rate"] == 0.6
+    assert payload["recovery"]["resume_from_failed_step_count"] == 3

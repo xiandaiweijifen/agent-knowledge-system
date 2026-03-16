@@ -4,6 +4,7 @@ from app.schemas.evaluation_api import (
     AgentRouteEvalDatasetListResponse,
     AgentRouteEvalRequest,
     AgentRouteEvalResponse,
+    EvaluationOverviewResponse,
     ToolExecutionEvalDatasetListResponse,
     ToolExecutionEvalRequest,
     ToolExecutionEvalResponse,
@@ -18,10 +19,16 @@ from app.services.evaluation import (
     agent_route_eval_service,
     tool_execution_eval_service,
     agent_workflow_eval_service,
+    overview_service,
     retrieval_eval_service,
 )
 
 router = APIRouter(tags=["evaluation"])
+
+
+@router.get("/evaluation/overview", response_model=EvaluationOverviewResponse)
+def get_evaluation_overview() -> EvaluationOverviewResponse:
+    return overview_service.get_evaluation_overview()
 
 
 @router.get("/evaluation/retrieval/datasets", response_model=RetrievalEvalDatasetListResponse)

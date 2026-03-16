@@ -1152,10 +1152,7 @@ def migrate_persisted_workflow_runs() -> AgentWorkflowMigrationResponse:
 
 
 def get_workflow_run_stats() -> AgentWorkflowRunStatsResponse:
-    persisted_runs = [
-        AgentWorkflowResponse.model_validate(_normalize_persisted_workflow_run(run))
-        for run in _load_workflow_runs()
-    ]
+    persisted_runs = get_all_persisted_workflow_runs()
     latest_run = persisted_runs[-1] if persisted_runs else None
 
     return AgentWorkflowRunStatsResponse(
@@ -1168,6 +1165,13 @@ def get_workflow_run_stats() -> AgentWorkflowRunStatsResponse:
         latest_run_id=latest_run.run_id if latest_run else None,
         latest_updated_at=latest_run.last_updated_at if latest_run else None,
     )
+
+
+def get_all_persisted_workflow_runs() -> list[AgentWorkflowResponse]:
+    return [
+        AgentWorkflowResponse.model_validate(_normalize_persisted_workflow_run(run))
+        for run in _load_workflow_runs()
+    ]
 
 
 def prune_persisted_workflow_runs(retain: int) -> AgentWorkflowRunPruneResponse:
