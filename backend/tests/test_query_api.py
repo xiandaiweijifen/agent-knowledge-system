@@ -2086,6 +2086,70 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
 
 
+def test_query_agent_endpoint_supports_search_then_ticket_update_workflow(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "notes.md").write_text(
+        "The payment-service outage requires a high severity response.",
+        encoding="utf-8",
+    )
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    ticket_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "ticket_id": "TICKET-0001",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-16T00:00:00+00:00",
+                    "updated_at": "2026-03-16T00:00:00+00:00",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": (
+                "Search docs for payment-service outage and update ticket TICKET-0001 "
+                "for payment-service status to closed"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
+    assert payload["step_count"] == 2
+    assert payload["workflow_trace"][1]["stage"] == "workflow_planning"
+    assert "search_then_ticket workflow" in payload["workflow_trace"][1]["detail"]
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][1]["tool_plan"]["action"] == "update"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["ticket_id"] == "TICKET-0001"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["status"] == "closed"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_query"] == "payment-service outage"
+    assert "notes.md" in payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_documents"]
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["ticket_id"] == "TICKET-0001"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["status"] == "closed"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_query"] == "payment-service outage"
+    assert "notes.md" in payload["tool_chain"][1]["tool_execution"]["output"]["supporting_documents"]
+    assert "payment-service outage" in payload["tool_chain"][1]["tool_execution"]["output"]["supporting_summary"]
+    assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
+
+
 def test_query_agent_endpoint_supports_status_then_ticket_multistep_workflow(
     workspace_tmp_path,
     monkeypatch,
@@ -2128,6 +2192,62 @@ def test_query_agent_endpoint_supports_status_then_ticket_multistep_workflow(
     assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
     assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_status"] == "ok"
     assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_status_target"] == "payment-service"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_status"] == "ok"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_status_target"] == "payment-service"
+    assert "System status snapshot for payment-service reported status ok" in (
+        payload["tool_chain"][1]["tool_execution"]["output"]["supporting_summary"]
+    )
+    assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
+
+
+def test_query_agent_endpoint_supports_status_then_ticket_close_workflow(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    ticket_store_path.write_text(
+        json.dumps(
+            [
+                {
+                    "ticket_id": "TICKET-0001",
+                    "target": "payment-service",
+                    "status": "open",
+                    "severity": "high",
+                    "environment": "production",
+                    "created_at": "2026-03-16T00:00:00+00:00",
+                    "updated_at": "2026-03-16T00:00:00+00:00",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": (
+                "Check system status for payment-service and close ticket TICKET-0001 "
+                "for payment-service"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "tool_execution_completed"
+    assert payload["step_count"] == 2
+    assert payload["workflow_trace"][1]["stage"] == "workflow_planning"
+    assert "status_then_ticket workflow" in payload["workflow_trace"][1]["detail"]
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
+    assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][1]["tool_plan"]["action"] == "close"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["ticket_id"] == "TICKET-0001"
+    assert payload["tool_chain"][1]["tool_plan"]["arguments"]["supporting_status"] == "ok"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["ticket_id"] == "TICKET-0001"
+    assert payload["tool_chain"][1]["tool_execution"]["output"]["status"] == "closed"
     assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_status"] == "ok"
     assert payload["tool_chain"][1]["tool_execution"]["output"]["supporting_status_target"] == "payment-service"
     assert "System status snapshot for payment-service reported status ok" in (
@@ -2195,6 +2315,8 @@ def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses
         and "Search produced no supporting documents" in event["detail"]
         for event in payload["workflow_trace"]
     )
+    assert "before the ticket step" in payload["workflow_trace"][-1]["detail"]
+    assert "before continuing to the ticket step" in payload["clarification_message"]
 
 
 def test_query_agent_endpoint_supports_capped_document_search_workflow(

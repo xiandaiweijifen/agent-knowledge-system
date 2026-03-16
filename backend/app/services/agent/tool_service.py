@@ -756,6 +756,12 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             if key == "ticket_id":
                 continue
             ticket[key] = value
+        supporting_summary = (
+            request.arguments.get("supporting_summary", "").strip()
+            or _build_supporting_summary(request.arguments)
+        )
+        if supporting_summary:
+            ticket["supporting_summary"] = supporting_summary
         ticket["updated_at"] = now
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
@@ -771,6 +777,16 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         )
 
     if action == "close":
+        for key, value in request.arguments.items():
+            if key == "ticket_id":
+                continue
+            ticket[key] = value
+        supporting_summary = (
+            request.arguments.get("supporting_summary", "").strip()
+            or _build_supporting_summary(request.arguments)
+        )
+        if supporting_summary:
+            ticket["supporting_summary"] = supporting_summary
         ticket["status"] = "closed"
         ticket["updated_at"] = now
         ticket["closed_at"] = now

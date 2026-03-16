@@ -86,22 +86,28 @@ def _build_workflow_planner_prompt(question: str) -> str:
         "workflow_kind must be one of: single_step, search_then_ticket, search_then_summarize, status_then_ticket. "
         "If workflow_kind is single_step, return empty strings for search_question and follow_up_question. "
         "If workflow_kind is search_then_ticket, search_question must contain the search step and "
-        "follow_up_question must contain the ticket action step. "
+        "follow_up_question must contain the ticket step, which may create, update, or close a ticket. "
         "If workflow_kind is search_then_summarize, search_question must contain the search step and "
         "follow_up_question must contain the summary step. "
         "If workflow_kind is status_then_ticket, search_question must contain the system status step and "
-        "follow_up_question must contain the ticket action step. "
+        "follow_up_question must contain the ticket step, which may create, update, or close a ticket. "
         "Use single_step if the request is not clearly a supported multi-step workflow. "
         "Good examples:\n"
         '- "Search docs for payment-service outage and create a high severity ticket for payment-service" '
         '-> {"workflow_kind":"search_then_ticket","search_question":"Search docs for payment-service outage",'
         '"follow_up_question":"create a high severity ticket for payment-service"}\n'
+        '- "Search docs for payment-service outage and update ticket TICKET-0010 for payment-service status to closed" '
+        '-> {"workflow_kind":"search_then_ticket","search_question":"Search docs for payment-service outage",'
+        '"follow_up_question":"update ticket TICKET-0010 for payment-service status to closed"}\n'
         '- "Look up docs about RAG, then summarize top 1 results" '
         '-> {"workflow_kind":"search_then_summarize","search_question":"Look up docs about RAG",'
         '"follow_up_question":"summarize top 1 results"}\n'
         '- "Check system status for payment-service, then create a high severity ticket for payment-service" '
         '-> {"workflow_kind":"status_then_ticket","search_question":"Check system status for payment-service",'
         '"follow_up_question":"create a high severity ticket for payment-service"}\n'
+        '- "Check system status for payment-service, then update ticket TICKET-0010 for payment-service status to closed" '
+        '-> {"workflow_kind":"status_then_ticket","search_question":"Check system status for payment-service",'
+        '"follow_up_question":"update ticket TICKET-0010 for payment-service status to closed"}\n'
         '- "Create a ticket for payment-service outage" '
         '-> {"workflow_kind":"single_step","search_question":"","follow_up_question":""}\n'
         "Preserve clear user constraints like filename, max_results, severity, environment, and target. "

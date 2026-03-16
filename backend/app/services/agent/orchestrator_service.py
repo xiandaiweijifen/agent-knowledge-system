@@ -37,7 +37,7 @@ WORKFLOW_RUN_DATA_DIR.mkdir(parents=True, exist_ok=True)
 WORKFLOW_RUN_STORE_PATH = WORKFLOW_RUN_DATA_DIR / "workflow_runs.json"
 
 SEARCH_AND_TICKET_PATTERN = re.compile(
-    r"(?P<search>^(?:search|find|lookup|look up).+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<ticket>(?:create|open).+\bticket\b.+)$",
+    r"(?P<search>^(?:search|find|lookup|look up).+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<ticket>(?:create|open|update|close).+\bticket\b.+)$",
     re.IGNORECASE,
 )
 SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
@@ -45,7 +45,7 @@ SEARCH_AND_SUMMARIZE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 STATUS_AND_TICKET_PATTERN = re.compile(
-    r"(?P<status>^(?:check|show|inspect|query).+?\b(?:status|health|configuration|config)\b.+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<ticket>(?:create|open).+\bticket\b.+)$",
+    r"(?P<status>^(?:check|show|inspect|query).+?\b(?:status|health|configuration|config)\b.+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<ticket>(?:create|open|update|close).+\bticket\b.+)$",
     re.IGNORECASE,
 )
 UNSUPPORTED_DIRECT_ACTION_PATTERN = re.compile(
@@ -907,6 +907,10 @@ def _build_status_context_arguments(tool_output: dict[str, str]) -> dict[str, st
     return arguments
 
 
+def _is_ticket_step_with_inherited_context(tool_name: str, action: str) -> bool:
+    return tool_name == "ticketing" and action in {"create", "update", "close"}
+
+
 def _split_search_snippets(snippets: str) -> list[tuple[str | None, str]]:
     parsed_snippets: list[tuple[str | None, str]] = []
     for raw_snippet in snippets.split(" | "):
@@ -1451,8 +1455,7 @@ def orchestrate_agent_request(
                 tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
                 if (
                     step_index == 2
-                    and tool_plan.tool_name == "ticketing"
-                    and tool_plan.action == "create"
+                    and _is_ticket_step_with_inherited_context(tool_plan.tool_name, tool_plan.action)
                     and prior_search_context
                 ):
                     tool_plan.arguments = {
@@ -1466,7 +1469,7 @@ def orchestrate_agent_request(
                             timestamp=build_utc_timestamp(),
                             detail=(
                                 "Step 2 inherited supporting search context from step 1 "
-                                "before ticket creation."
+                                "before the ticket step."
                             ),
                         )
                     )
@@ -1603,7 +1606,7 @@ def orchestrate_agent_request(
                             timestamp=build_utc_timestamp(),
                             detail=(
                                 "Search produced no supporting documents, so the workflow "
-                                "stopped before ticket creation and requested clarification."
+                                "stopped before the ticket step and requested clarification."
                             ),
                         )
                     )
@@ -1615,7 +1618,7 @@ def orchestrate_agent_request(
                         filename=filename,
                         clarification_message=(
                             "No supporting documents matched the search step, so the system "
-                            "needs clarification before creating a ticket."
+                            "needs clarification before continuing to the ticket step."
                         ),
                         clarification_plan=clarification_plan.model_dump(),
                         tool_plan=tool_plan.model_dump(),
@@ -1713,8 +1716,7 @@ def orchestrate_agent_request(
                 tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
                 if (
                     step_index == 2
-                    and tool_plan.tool_name == "ticketing"
-                    and tool_plan.action == "create"
+                    and _is_ticket_step_with_inherited_context(tool_plan.tool_name, tool_plan.action)
                     and prior_status_context
                 ):
                     tool_plan.arguments = {
@@ -1728,7 +1730,7 @@ def orchestrate_agent_request(
                             timestamp=build_utc_timestamp(),
                             detail=(
                                 "Step 2 inherited supporting system status context from step 1 "
-                                "before ticket creation."
+                                "before the ticket step."
                             ),
                         )
                     )
