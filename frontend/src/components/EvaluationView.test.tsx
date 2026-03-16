@@ -48,6 +48,7 @@ describe("EvaluationView", () => {
         ]}
         agentRouteDatasets={[]}
         agentWorkflowDatasets={[]}
+        toolExecutionDatasets={[]}
         datasetName="rag_overview_retrieval_eval.json"
         evalTopK={3}
         evaluationHistory={[
@@ -86,6 +87,7 @@ describe("EvaluationView", () => {
         }}
         agentRouteEvalResult={null}
         agentWorkflowEvalResult={null}
+        toolExecutionEvalResult={null}
         evalError=""
         evalBusy={false}
         evalCaseFilter="all"

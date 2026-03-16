@@ -317,6 +317,16 @@ def test_tool_execution_evaluation_endpoint_returns_report(monkeypatch):
         "evaluate_named_tool_execution_dataset",
         fake_eval,
     )
+    monkeypatch.setattr(
+        report_store_service,
+        "persist_tool_execution_report",
+        lambda dataset_name, report: {
+            "dataset_name": dataset_name,
+            "saved_at": "2026-03-17T01:15:00+00:00",
+            "report_source": "fresh",
+            "report": report,
+        },
+    )
 
     response = client.post(
         "/api/evaluation/tool-execution",
@@ -329,6 +339,7 @@ def test_tool_execution_evaluation_endpoint_returns_report(monkeypatch):
     payload = response.json()
     assert payload["dataset_name"] == "agent_tool_execution_eval.json"
     assert payload["report"]["summary"]["tool_accuracy"] == 1.0
+    assert payload["report_source"] == "fresh"
 
 
 def test_tool_execution_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):
@@ -560,3 +571,58 @@ def test_agent_workflow_evaluation_history_endpoint_returns_entries(monkeypatch)
 
     assert response.status_code == 200
     assert response.json()["entries"][0]["primary_metric_name"] == "workflow_accuracy"
+
+
+def test_latest_tool_execution_evaluation_endpoint_returns_saved_report(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "load_latest_tool_execution_report",
+        lambda dataset_name: {
+            "dataset_name": dataset_name,
+            "saved_at": "2026-03-17T02:20:00+00:00",
+            "report_source": "saved",
+            "report": {
+                "summary": {
+                    "total_cases": 5,
+                    "tool_accuracy": 0.8,
+                },
+                "cases": [],
+            },
+        },
+    )
+
+    response = client.get(
+        "/api/evaluation/tool-execution/latest?dataset_name=agent_tool_execution_eval.json",
+    )
+
+    assert response.status_code == 200
+    assert response.json()["report_source"] == "saved"
+
+
+def test_tool_execution_evaluation_history_endpoint_returns_entries(monkeypatch):
+    client = TestClient(app)
+
+    monkeypatch.setattr(
+        report_store_service,
+        "list_tool_execution_report_history",
+        lambda dataset_name, limit=5: [
+            {
+                "dataset_name": dataset_name,
+                "saved_at": "2026-03-17T02:20:00+00:00",
+                "report_source": "saved",
+                "top_k": None,
+                "primary_metric_name": "tool_accuracy",
+                "primary_metric_value": 0.8,
+                "case_count": 5,
+            }
+        ],
+    )
+
+    response = client.get(
+        "/api/evaluation/tool-execution/history?dataset_name=agent_tool_execution_eval.json",
+    )
+
+    assert response.status_code == 200
+    assert response.json()["entries"][0]["primary_metric_name"] == "tool_accuracy"

@@ -412,6 +412,32 @@ export type AgentWorkflowEvalReportResponse = {
   };
 };
 
+export type ToolExecutionEvalReportResponse = {
+  dataset_name: string;
+  saved_at?: string | null;
+  report_source?: string | null;
+  report: {
+    summary: {
+      total_cases: number;
+      tool_accuracy: number;
+    };
+    cases: Array<{
+      case_id: string;
+      question: string;
+      expected_tool_name: string;
+      actual_tool_name: string;
+      expected_action: string;
+      actual_action: string;
+      expected_execution_status: string;
+      actual_execution_status: string;
+      matched: boolean;
+      argument_matches: Record<string, boolean>;
+      output_matches: Record<string, boolean>;
+      output_key_matches: Record<string, boolean>;
+    }>;
+  };
+};
+
 export type EvaluationOverviewResponse = {
   generated_at: string;
   cache_status: string;
@@ -444,4 +470,4 @@ export type EvaluationOverviewResponse = {
 };
 
 export type EvalCaseFilter = "all" | "hit" | "miss";
-export type EvaluationMode = "retrieval" | "agent-route" | "agent-workflow";
+export type EvaluationMode = "retrieval" | "agent-route" | "agent-workflow" | "tool-execution";

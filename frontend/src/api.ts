@@ -4,6 +4,7 @@ import type {
   AgentEvalDatasetListResponse,
   AgentRouteEvalReportResponse,
   AgentWorkflowEvalReportResponse,
+  ToolExecutionEvalReportResponse,
   DiagnosticsResponse,
   DocumentListResponse,
   DocumentPreview,
@@ -231,8 +232,21 @@ export function fetchAgentWorkflowEvaluationDatasets() {
   return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/agent-workflow/datasets");
 }
 
+export function fetchToolExecutionEvaluationDatasets() {
+  return apiFetch<AgentEvalDatasetListResponse>("/api/evaluation/tool-execution/datasets");
+}
+
 export function runAgentWorkflowEvaluation(datasetName: string) {
   return apiFetch<AgentWorkflowEvalReportResponse>("/api/evaluation/agent-workflow", {
+    method: "POST",
+    body: JSON.stringify({
+      dataset_name: datasetName,
+    }),
+  });
+}
+
+export function runToolExecutionEvaluation(datasetName: string) {
+  return apiFetch<ToolExecutionEvalReportResponse>("/api/evaluation/tool-execution", {
     method: "POST",
     body: JSON.stringify({
       dataset_name: datasetName,
@@ -256,6 +270,25 @@ export function fetchAgentWorkflowEvaluationHistory(datasetName: string, limit =
   });
   return apiFetch<EvaluationReportHistoryResponse>(
     `/api/evaluation/agent-workflow/history?${searchParams.toString()}`,
+  );
+}
+
+export function fetchLatestToolExecutionEvaluation(datasetName: string) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+  });
+  return apiFetch<ToolExecutionEvalReportResponse>(
+    `/api/evaluation/tool-execution/latest?${searchParams.toString()}`,
+  );
+}
+
+export function fetchToolExecutionEvaluationHistory(datasetName: string, limit = 5) {
+  const searchParams = new URLSearchParams({
+    dataset_name: datasetName,
+    limit: String(limit),
+  });
+  return apiFetch<EvaluationReportHistoryResponse>(
+    `/api/evaluation/tool-execution/history?${searchParams.toString()}`,
   );
 }
 

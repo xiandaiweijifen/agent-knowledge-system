@@ -11,6 +11,7 @@ import type {
   EvaluationMode,
   EvalReportResponse,
   Locale,
+  ToolExecutionEvalReportResponse,
 } from "../types";
 
 function hasFilenames(dataset: EvalDatasetInfo | AgentEvalDatasetInfo): dataset is EvalDatasetInfo {
@@ -24,11 +25,13 @@ type EvaluationViewProps = {
   datasets: EvalDatasetInfo[];
   agentRouteDatasets: AgentEvalDatasetInfo[];
   agentWorkflowDatasets: AgentEvalDatasetInfo[];
+  toolExecutionDatasets: AgentEvalDatasetInfo[];
   datasetName: string;
   evalTopK: number;
   evalResult: EvalReportResponse | null;
   agentRouteEvalResult: AgentRouteEvalReportResponse | null;
   agentWorkflowEvalResult: AgentWorkflowEvalReportResponse | null;
+  toolExecutionEvalResult: ToolExecutionEvalReportResponse | null;
   evaluationHistory: EvaluationReportHistoryEntry[];
   evalError: string;
   evalBusy: boolean;
@@ -51,11 +54,13 @@ export function EvaluationView({
   datasets,
   agentRouteDatasets,
   agentWorkflowDatasets,
+  toolExecutionDatasets,
   datasetName,
   evalTopK,
   evalResult,
   agentRouteEvalResult,
   agentWorkflowEvalResult,
+  toolExecutionEvalResult,
   evaluationHistory,
   evalError,
   evalBusy,
@@ -100,9 +105,11 @@ export function EvaluationView({
           retrievalCopy: "运行预设检索基准并检查逐条 case 的排序结果。",
           routeCopy: "评估路由器是否选择了正确的工作流路径。",
           workflowCopy: "评估统一 agent workflow 是否落到预期状态。",
+          toolExecutionCopy: "评估工具规划与执行是否返回正确的结构化结果。",
           retrievalTitle: "检索质量基准",
           routeTitle: "路由准确率基准",
           workflowTitle: "Agent Workflow 结果基准",
+          toolExecutionTitle: "工具执行结果基准",
           datasets: "数据集",
           topKSummary: "top-k",
           noDataset: "未选择数据集",
@@ -121,6 +128,7 @@ export function EvaluationView({
           totalCases: "总 Case 数",
           routeAccuracy: "路由准确率",
           workflowAccuracy: "工作流准确率",
+          toolAccuracy: "工具准确率",
           matchedCases: "匹配 Case",
           hit: "命中",
           hits: "命中",
@@ -139,6 +147,7 @@ export function EvaluationView({
           retrievalMode: "检索",
           routeMode: "Agent 路由",
           workflowMode: "Agent 工作流",
+          toolExecutionMode: "工具执行",
           cases: "条 case",
           actual: "实际",
           hitAt: "Hit@",
@@ -186,9 +195,11 @@ export function EvaluationView({
           retrievalCopy: "Run curated retrieval benchmarks and inspect per-case ranking outcomes.",
           routeCopy: "Evaluate whether the router selects the correct workflow path.",
           workflowCopy: "Evaluate whether the unified agent workflow ends in the expected state.",
+          toolExecutionCopy: "Evaluate whether tool planning and execution return the expected structured results.",
           retrievalTitle: "Benchmark Retrieval Quality",
           routeTitle: "Benchmark Routing Accuracy",
           workflowTitle: "Benchmark Agent Workflow Outcomes",
+          toolExecutionTitle: "Benchmark Tool Execution Outcomes",
           datasets: "datasets",
           topKSummary: "top-k",
           noDataset: "no dataset",
@@ -207,6 +218,7 @@ export function EvaluationView({
           totalCases: "Total Cases",
           routeAccuracy: "Route Accuracy",
           workflowAccuracy: "Workflow Accuracy",
+          toolAccuracy: "Tool Accuracy",
           matchedCases: "Matched Cases",
           hit: "hit",
           hits: "Hits",
@@ -225,6 +237,7 @@ export function EvaluationView({
           retrievalMode: "Retrieval",
           routeMode: "Agent Route",
           workflowMode: "Agent Workflow",
+          toolExecutionMode: "Tool Execution",
           cases: "cases",
           actual: "actual",
           hitAt: "Hit@",
@@ -249,27 +262,35 @@ export function EvaluationView({
       ? datasets
       : evaluationMode === "agent-route"
         ? agentRouteDatasets
-        : agentWorkflowDatasets;
+        : evaluationMode === "agent-workflow"
+          ? agentWorkflowDatasets
+          : toolExecutionDatasets;
 
   const activeReport =
     evaluationMode === "retrieval"
       ? evalResult
       : evaluationMode === "agent-route"
         ? agentRouteEvalResult
-        : agentWorkflowEvalResult;
+        : evaluationMode === "agent-workflow"
+          ? agentWorkflowEvalResult
+          : toolExecutionEvalResult;
 
   const modeCopy =
     evaluationMode === "retrieval"
       ? copy.retrievalCopy
       : evaluationMode === "agent-route"
         ? copy.routeCopy
-        : copy.workflowCopy;
+        : evaluationMode === "agent-workflow"
+          ? copy.workflowCopy
+          : copy.toolExecutionCopy;
   const modeTitle =
     evaluationMode === "retrieval"
       ? copy.retrievalTitle
       : evaluationMode === "agent-route"
         ? copy.routeTitle
-        : copy.workflowTitle;
+        : evaluationMode === "agent-workflow"
+          ? copy.workflowTitle
+          : copy.toolExecutionTitle;
   const overviewBestDataset = evaluationOverview?.retrieval.best_dataset_name
     ? `${evaluationOverview.retrieval.best_dataset_name} (${evaluationOverview.retrieval.best_hit_rate_at_k.toFixed(3)})`
     : copy.unavailableMetric;
@@ -321,7 +342,9 @@ export function EvaluationView({
                 ? copy.retrievalMode
                 : evaluationMode === "agent-route"
                   ? copy.routeMode
-                  : copy.workflowMode}
+                  : evaluationMode === "agent-workflow"
+                    ? copy.workflowMode
+                    : copy.toolExecutionMode}
             </span>
             <span>{datasetName || copy.noDataset}</span>
             <span>{copy.topKSummary} {evalTopK}</span>
@@ -463,6 +486,13 @@ export function EvaluationView({
               onClick={() => onChangeEvaluationMode("agent-workflow")}
             >
               {copy.workflowMode}
+            </button>
+            <button
+              type="button"
+              className={`filter-chip${evaluationMode === "tool-execution" ? " active" : ""}`}
+              onClick={() => onChangeEvaluationMode("tool-execution")}
+            >
+              {copy.toolExecutionMode}
             </button>
           </div>
           <label>
@@ -777,6 +807,108 @@ export function EvaluationView({
             {filteredAgentWorkflowCases.length === 0 && (
               <p className="muted">{copy.noCases}</p>
             )}
+            {evaluationHistory.length > 0 && (
+              <div className="subsection-card">
+                <span className="section-label">{copy.reportHistory}</span>
+                <div className="dataset-list">
+                  {evaluationHistory.map((entry) => (
+                    <article key={`${entry.saved_at}-${entry.primary_metric_name}`} className="dataset-card">
+                      <strong>{new Date(entry.saved_at).toLocaleString(locale === "zh" ? "zh-CN" : "en-US")}</strong>
+                      <div className="meta-row">
+                        <span>{copy.metric} {entry.primary_metric_name}</span>
+                        <span>{entry.primary_metric_value.toFixed(3)}</span>
+                        <span>{copy.totalCases}: {entry.case_count}</span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : evaluationMode === "tool-execution" && toolExecutionEvalResult ? (
+          <>
+            <div className="summary-strip">
+              <div className="summary-card">
+                <span className="trace-label">{copy.totalCases}</span>
+                <strong>{toolExecutionEvalResult.report.summary.total_cases}</strong>
+              </div>
+              <div className="summary-card">
+                <span className="trace-label">{copy.toolAccuracy}</span>
+                <strong>{toolExecutionEvalResult.report.summary.tool_accuracy.toFixed(3)}</strong>
+              </div>
+              <div className="summary-card">
+                <span className="trace-label">{copy.matchedCases}</span>
+                <strong>
+                  {toolExecutionEvalResult.report.cases.filter((item) => item.matched).length}
+                </strong>
+              </div>
+            </div>
+            <div className="panel-heading case-toolbar">
+              <h3>{copy.caseResults}</h3>
+              <div className="filter-row">
+                <button
+                  type="button"
+                  className={`filter-chip${evalCaseFilter === "all" ? " active" : ""}`}
+                  onClick={() => onChangeEvalCaseFilter("all")}
+                >
+                  {copy.all}
+                </button>
+                <button
+                  type="button"
+                  className={`filter-chip${evalCaseFilter === "hit" ? " active" : ""}`}
+                  onClick={() => onChangeEvalCaseFilter("hit")}
+                >
+                  {copy.hits}
+                </button>
+                <button
+                  type="button"
+                  className={`filter-chip${evalCaseFilter === "miss" ? " active" : ""}`}
+                  onClick={() => onChangeEvalCaseFilter("miss")}
+                >
+                  {copy.misses}
+                </button>
+              </div>
+            </div>
+            <div className="case-list">
+              {toolExecutionEvalResult.report.cases
+                .filter((item) => {
+                  if (evalCaseFilter === "hit") {
+                    return item.matched;
+                  }
+                  if (evalCaseFilter === "miss") {
+                    return !item.matched;
+                  }
+                  return true;
+                })
+                .map((item) => (
+                  <article
+                    key={item.case_id}
+                    className={`case-card${item.matched ? " success" : " danger"}`}
+                  >
+                    <header>
+                      <strong>{item.case_id}</strong>
+                      <span>{item.matched ? copy.matched : copy.mismatch}</span>
+                    </header>
+                    <p>{item.question}</p>
+                    <div className="meta-row">
+                      <span>{copy.expected} {item.expected_tool_name}:{item.expected_action}</span>
+                      <span>{copy.actual} {item.actual_tool_name}:{item.actual_action}</span>
+                    </div>
+                    <small>
+                      {copy.statusLabel} {item.expected_execution_status} {"->"} {item.actual_execution_status}
+                    </small>
+                  </article>
+                ))}
+            </div>
+            {toolExecutionEvalResult.report.cases.filter((item) => {
+              if (evalCaseFilter === "hit") {
+                return item.matched;
+              }
+              if (evalCaseFilter === "miss") {
+                return !item.matched;
+              }
+              return true;
+            }).length === 0 && <p className="muted">{copy.noCases}</p>}
             {evaluationHistory.length > 0 && (
               <div className="subsection-card">
                 <span className="section-label">{copy.reportHistory}</span>

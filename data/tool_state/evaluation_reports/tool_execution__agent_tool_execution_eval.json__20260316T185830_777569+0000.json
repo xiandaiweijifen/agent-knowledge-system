@@ -1,0 +1,247 @@
+{
+  "dataset_name": "agent_tool_execution_eval.json",
+  "saved_at": "2026-03-16T18:58:30.777569+00:00",
+  "report_source": "fresh",
+  "report": {
+    "summary": {
+      "total_cases": 9,
+      "tool_accuracy": 1.0
+    },
+    "cases": [
+      {
+        "case_id": "tool_eval_1",
+        "question": "Search docs for RAG",
+        "expected_tool_name": "document_search",
+        "actual_tool_name": "document_search",
+        "expected_action": "query",
+        "actual_action": "query",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {},
+        "output_matches": {},
+        "output_key_matches": {
+          "schema_version": true,
+          "output_kind": true,
+          "resource_type": true,
+          "item_count": true,
+          "query": true,
+          "matched_count": true,
+          "matched_documents": true
+        }
+      },
+      {
+        "case_id": "tool_eval_2",
+        "question": "Check system status",
+        "expected_tool_name": "system_status",
+        "actual_tool_name": "system_status",
+        "expected_action": "query",
+        "actual_action": "query",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {},
+        "output_matches": {},
+        "output_key_matches": {
+          "schema_version": true,
+          "output_kind": true,
+          "resource_type": true,
+          "status": true,
+          "embedding_provider": true,
+          "chat_provider": true
+        }
+      },
+      {
+        "case_id": "tool_eval_3",
+        "question": "Create a high severity ticket for payment-service in production",
+        "expected_tool_name": "ticketing",
+        "actual_tool_name": "ticketing",
+        "expected_action": "create",
+        "actual_action": "create",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {
+          "severity": true,
+          "environment": true
+        },
+        "output_matches": {
+          "status": true,
+          "severity": true,
+          "environment": true
+        },
+        "output_key_matches": {
+          "schema_version": true,
+          "output_kind": true,
+          "resource_type": true,
+          "resource_id": true,
+          "ticket_id": true,
+          "created_at": true
+        }
+      },
+      {
+        "case_id": "tool_eval_4",
+        "question": "List open tickets",
+        "expected_tool_name": "ticketing",
+        "actual_tool_name": "ticketing",
+        "expected_action": "list",
+        "actual_action": "list",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {
+          "status": true
+        },
+        "output_matches": {},
+        "output_key_matches": {
+          "schema_version": true,
+          "output_kind": true,
+          "resource_type": true,
+          "item_count": true,
+          "ticket_count": true,
+          "tickets": true,
+          "ticket_ids": true,
+          "tickets_json": true,
+          "ticket_records": true,
+          "status_filter": true
+        }
+      },
+      {
+        "case_id": "tool_eval_4b",
+        "question": "List open tickets for payment service",
+        "expected_tool_name": "ticketing",
+        "actual_tool_name": "ticketing",
+        "expected_action": "list",
+        "actual_action": "list",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {
+          "status": true,
+          "target_filter": true
+        },
+        "output_matches": {
+          "target_filter": true
+        },
+        "output_key_matches": {
+          "ticket_records": true,
+          "target_filter": true,
+          "ticket_ids": true
+        }
+      },
+      {
+        "case_id": "tool_eval_4c",
+        "question": "List high severity open tickets for payment service in production",
+        "expected_tool_name": "ticketing",
+        "actual_tool_name": "ticketing",
+        "expected_action": "list",
+        "actual_action": "list",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {
+          "status": true,
+          "target_filter": true,
+          "severity_filter": true,
+          "environment_filter": true
+        },
+        "output_matches": {
+          "target_filter": true,
+          "severity_filter": true,
+          "environment_filter": true
+        },
+        "output_key_matches": {
+          "ticket_records": true,
+          "target_filter": true,
+          "severity_filter": true,
+          "environment_filter": true,
+          "ticket_ids": true
+        }
+      },
+      {
+        "case_id": "tool_eval_4d",
+        "question": "List open tickets for payment service and show top 2 results",
+        "expected_tool_name": "ticketing",
+        "actual_tool_name": "ticketing",
+        "expected_action": "list",
+        "actual_action": "list",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {
+          "status": true,
+          "target_filter": true,
+          "max_results": true
+        },
+        "output_matches": {
+          "target_filter": true,
+          "max_results": true,
+          "sort_by": true,
+          "sort_order": true
+        },
+        "output_key_matches": {
+          "ticket_records": true,
+          "ticket_ids": true,
+          "matched_count": true,
+          "sort_by": true,
+          "sort_order": true,
+          "max_results": true
+        }
+      },
+      {
+        "case_id": "tool_eval_5",
+        "question": "Search docs for RAG and show top 2 results",
+        "expected_tool_name": "document_search",
+        "actual_tool_name": "document_search",
+        "expected_action": "query",
+        "actual_action": "query",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {
+          "max_results": true
+        },
+        "output_matches": {
+          "max_results": true
+        },
+        "output_key_matches": {
+          "schema_version": true,
+          "output_kind": true,
+          "resource_type": true,
+          "item_count": true,
+          "returned_count": true,
+          "top_match_document": true,
+          "top_match_reason": true
+        }
+      },
+      {
+        "case_id": "tool_eval_6",
+        "question": "Search rag_overview.md for reranking limit to 1",
+        "expected_tool_name": "document_search",
+        "actual_tool_name": "document_search",
+        "expected_action": "query",
+        "actual_action": "query",
+        "expected_execution_status": "completed",
+        "actual_execution_status": "completed",
+        "matched": true,
+        "argument_matches": {
+          "filename": true,
+          "max_results": true
+        },
+        "output_matches": {
+          "filename_filter": true,
+          "max_results": true
+        },
+        "output_key_matches": {
+          "schema_version": true,
+          "output_kind": true,
+          "resource_type": true,
+          "item_count": true,
+          "returned_count": true,
+          "matched_documents": true,
+          "top_match_document": true
+        }
+      }
+    ]
+  }
+}

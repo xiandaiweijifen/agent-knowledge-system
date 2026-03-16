@@ -132,6 +132,25 @@ def get_tool_execution_datasets() -> ToolExecutionEvalDatasetListResponse:
     )
 
 
+@router.get("/evaluation/tool-execution/latest", response_model=ToolExecutionEvalResponse)
+def get_latest_tool_execution_report(dataset_name: str) -> ToolExecutionEvalResponse:
+    payload = report_store_service.load_latest_tool_execution_report(dataset_name=dataset_name)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="evaluation_report_not_found")
+
+    return ToolExecutionEvalResponse.model_validate(payload)
+
+
+@router.get("/evaluation/tool-execution/history", response_model=EvaluationReportHistoryResponse)
+def get_tool_execution_report_history(dataset_name: str, limit: int = 5) -> EvaluationReportHistoryResponse:
+    return EvaluationReportHistoryResponse(
+        entries=report_store_service.list_tool_execution_report_history(
+            dataset_name=dataset_name,
+            limit=limit,
+        ),
+    )
+
+
 @router.post("/evaluation/retrieval", response_model=RetrievalEvalResponse)
 def evaluate_retrieval(request: RetrievalEvalRequest) -> RetrievalEvalResponse:
     try:
@@ -217,7 +236,14 @@ def evaluate_tool_execution(request: ToolExecutionEvalRequest) -> ToolExecutionE
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
+    persisted = report_store_service.persist_tool_execution_report(
+        dataset_name=request.dataset_name,
+        report=report,
+    )
+
     return ToolExecutionEvalResponse(
         dataset_name=request.dataset_name,
         report=report,
+        saved_at=persisted["saved_at"],
+        report_source=persisted["report_source"],
     )

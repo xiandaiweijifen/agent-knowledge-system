@@ -83,3 +83,27 @@ def test_persist_and_load_latest_agent_workflow_report(workspace_tmp_path, monke
     assert report_store_service.list_agent_workflow_report_history("agent_workflow_eval.json")[0][
         "primary_metric_name"
     ] == "workflow_accuracy"
+
+
+def test_persist_and_load_latest_tool_execution_report(workspace_tmp_path, monkeypatch):
+    monkeypatch.setattr(report_store_service, "REPORT_STORE_DIR", workspace_tmp_path)
+
+    report_store_service.persist_tool_execution_report(
+        dataset_name="agent_tool_execution_eval.json",
+        report={
+            "summary": {
+                "total_cases": 5,
+                "tool_accuracy": 0.8,
+            },
+            "cases": [],
+        },
+    )
+
+    loaded = report_store_service.load_latest_tool_execution_report("agent_tool_execution_eval.json")
+
+    assert loaded is not None
+    assert loaded["dataset_name"] == "agent_tool_execution_eval.json"
+    assert loaded["report_source"] == "saved"
+    assert report_store_service.list_tool_execution_report_history("agent_tool_execution_eval.json")[0][
+        "primary_metric_name"
+    ] == "tool_accuracy"

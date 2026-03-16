@@ -15,14 +15,18 @@ import {
   fetchLatestAgentRouteEvaluation,
   fetchLatestAgentWorkflowEvaluation,
   fetchLatestEvaluation,
+  fetchLatestToolExecutionEvaluation,
   fetchPersistedChunks,
   fetchPersistedEmbeddings,
   fetchSystemHealth,
+  fetchToolExecutionEvaluationDatasets,
+  fetchToolExecutionEvaluationHistory,
   persistChunks as persistChunksRequest,
   persistEmbeddings as persistEmbeddingsRequest,
   recoverAgentWorkflowRun as recoverAgentWorkflowRunRequest,
   runAgentRouteEvaluation as runAgentRouteEvaluationRequest,
   runAgentWorkflowEvaluation as runAgentWorkflowEvaluationRequest,
+  runToolExecutionEvaluation as runToolExecutionEvaluationRequest,
   runAgentQuery as runAgentQueryRequest,
   runDiagnostics as runDiagnosticsRequest,
   runEvaluation as runEvaluationRequest,
@@ -48,6 +52,7 @@ import type {
   EvaluationOverviewResponse,
   EvaluationMode,
   EvalReportResponse,
+  ToolExecutionEvalReportResponse,
   PersistedChunkDocument,
   PersistedEmbeddingDocument,
   QueryResponse,
@@ -87,6 +92,7 @@ function App() {
   const [datasets, setDatasets] = useState<EvalDatasetInfo[]>([]);
   const [agentRouteDatasets, setAgentRouteDatasets] = useState<AgentEvalDatasetInfo[]>([]);
   const [agentWorkflowDatasets, setAgentWorkflowDatasets] = useState<AgentEvalDatasetInfo[]>([]);
+  const [toolExecutionDatasets, setToolExecutionDatasets] = useState<AgentEvalDatasetInfo[]>([]);
   const [evaluationMode, setEvaluationMode] = useState<EvaluationMode>("retrieval");
   const [datasetName, setDatasetName] = useState("");
   const [evalTopK, setEvalTopK] = useState(3);
@@ -94,6 +100,8 @@ function App() {
   const [agentRouteEvalResult, setAgentRouteEvalResult] = useState<AgentRouteEvalReportResponse | null>(null);
   const [agentWorkflowEvalResult, setAgentWorkflowEvalResult] =
     useState<AgentWorkflowEvalReportResponse | null>(null);
+  const [toolExecutionEvalResult, setToolExecutionEvalResult] =
+    useState<ToolExecutionEvalReportResponse | null>(null);
   const [evaluationOverview, setEvaluationOverview] = useState<EvaluationOverviewResponse | null>(null);
   const [evaluationHistory, setEvaluationHistory] = useState<EvaluationReportHistoryEntry[]>([]);
   const [evalError, setEvalError] = useState("");
@@ -203,7 +211,9 @@ function App() {
       ? datasets
       : evaluationMode === "agent-route"
         ? agentRouteDatasets
-        : agentWorkflowDatasets;
+        : evaluationMode === "agent-workflow"
+          ? agentWorkflowDatasets
+          : toolExecutionDatasets;
 
   useEffect(() => {
     void loadSystemHealth();
@@ -442,10 +452,11 @@ function App() {
   async function loadEvaluationDatasets(refreshOverview = false) {
     setEvalError("");
 
-    const [retrievalPayload, routePayload, workflowPayload, overviewPayload] = await Promise.allSettled([
+    const [retrievalPayload, routePayload, workflowPayload, toolExecutionPayload, overviewPayload] = await Promise.allSettled([
       fetchEvaluationDatasets(),
       fetchAgentRouteEvaluationDatasets(),
       fetchAgentWorkflowEvaluationDatasets(),
+      fetchToolExecutionEvaluationDatasets(),
       fetchEvaluationOverview(refreshOverview),
     ]);
 
@@ -454,12 +465,16 @@ function App() {
     setAgentWorkflowDatasets(
       workflowPayload.status === "fulfilled" ? workflowPayload.value.datasets : [],
     );
+    setToolExecutionDatasets(
+      toolExecutionPayload.status === "fulfilled" ? toolExecutionPayload.value.datasets : [],
+    );
     setEvaluationOverview(overviewPayload.status === "fulfilled" ? overviewPayload.value : null);
 
     const failures = [
       retrievalPayload.status === "rejected" ? "retrieval" : null,
       routePayload.status === "rejected" ? "agent-route" : null,
       workflowPayload.status === "rejected" ? "agent-workflow" : null,
+      toolExecutionPayload.status === "rejected" ? "tool-execution" : null,
       overviewPayload.status === "rejected" ? "overview" : null,
     ].filter((item): item is string => item !== null);
 
@@ -515,6 +530,18 @@ function App() {
           return;
         }
 
+        if (evaluationMode === "tool-execution") {
+          const [payload, historyPayload] = await Promise.all([
+            fetchLatestToolExecutionEvaluation(datasetName),
+            fetchToolExecutionEvaluationHistory(datasetName),
+          ]);
+          if (!cancelled) {
+            setToolExecutionEvalResult(payload);
+            setEvaluationHistory(historyPayload.entries);
+          }
+          return;
+        }
+
         const [payload, historyPayload] = await Promise.all([
           fetchLatestAgentWorkflowEvaluation(datasetName),
           fetchAgentWorkflowEvaluationHistory(datasetName),
@@ -532,6 +559,8 @@ function App() {
           setEvalResult(null);
         } else if (evaluationMode === "agent-route") {
           setAgentRouteEvalResult(null);
+        } else if (evaluationMode === "tool-execution") {
+          setToolExecutionEvalResult(null);
         } else {
           setAgentWorkflowEvalResult(null);
         }
@@ -639,6 +668,7 @@ function App() {
     setEvalResult(null);
     setAgentRouteEvalResult(null);
     setAgentWorkflowEvalResult(null);
+    setToolExecutionEvalResult(null);
 
     try {
       if (evaluationMode === "retrieval") {
@@ -647,6 +677,9 @@ function App() {
       } else if (evaluationMode === "agent-route") {
         const payload = await runAgentRouteEvaluationRequest(datasetName);
         setAgentRouteEvalResult(payload);
+      } else if (evaluationMode === "tool-execution") {
+        const payload = await runToolExecutionEvaluationRequest(datasetName);
+        setToolExecutionEvalResult(payload);
       } else {
         const payload = await runAgentWorkflowEvaluationRequest(datasetName);
         setAgentWorkflowEvalResult(payload);
@@ -699,7 +732,12 @@ function App() {
             </div>
             <div className="stat-card">
               <span>{appCopy.evalDatasets}</span>
-              <strong>{datasets.length + agentRouteDatasets.length + agentWorkflowDatasets.length}</strong>
+              <strong>
+                {datasets.length +
+                  agentRouteDatasets.length +
+                  agentWorkflowDatasets.length +
+                  toolExecutionDatasets.length}
+              </strong>
             </div>
             <div className="stat-card">
               <span>{appCopy.defaultTopK}</span>
@@ -850,11 +888,13 @@ function App() {
           datasets={datasets}
           agentRouteDatasets={agentRouteDatasets}
           agentWorkflowDatasets={agentWorkflowDatasets}
+          toolExecutionDatasets={toolExecutionDatasets}
           datasetName={datasetName}
           evalTopK={evalTopK}
           evalResult={evalResult}
           agentRouteEvalResult={agentRouteEvalResult}
           agentWorkflowEvalResult={agentWorkflowEvalResult}
+          toolExecutionEvalResult={toolExecutionEvalResult}
           evaluationHistory={evaluationHistory}
           evalError={evalError}
           evalBusy={evalBusy}

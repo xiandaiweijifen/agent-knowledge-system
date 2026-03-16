@@ -87,6 +87,16 @@ def _agent_workflow_history_report_path(dataset_name: str, saved_at: str) -> Pat
     return REPORT_STORE_DIR / f"agent_workflow__{safe_name}__{_history_timestamp(saved_at)}.json"
 
 
+def _tool_execution_report_path(dataset_name: str) -> Path:
+    safe_name = _sanitize_segment(dataset_name)
+    return REPORT_STORE_DIR / f"tool_execution__{safe_name}.json"
+
+
+def _tool_execution_history_report_path(dataset_name: str, saved_at: str) -> Path:
+    safe_name = _sanitize_segment(dataset_name)
+    return REPORT_STORE_DIR / f"tool_execution__{safe_name}__{_history_timestamp(saved_at)}.json"
+
+
 def _history_entry(payload: dict[str, Any], primary_metric_name: str, primary_metric_value: float) -> dict[str, Any]:
     return {
         "dataset_name": payload["dataset_name"],
@@ -189,6 +199,34 @@ def list_agent_workflow_report_history(dataset_name: str, limit: int = 5) -> lis
             payload=payload,
             primary_metric_name="workflow_accuracy",
             primary_metric_value=payload["report"]["summary"]["workflow_accuracy"],
+        )
+        for payload in payloads
+    ]
+
+
+def persist_tool_execution_report(dataset_name: str, report: Any) -> dict[str, Any]:
+    payload = _report_payload(dataset_name=dataset_name, report=report, report_source="fresh")
+    _write_report(_tool_execution_history_report_path(dataset_name, payload["saved_at"]), payload)
+    return _write_report(_tool_execution_report_path(dataset_name), payload)
+
+
+def load_latest_tool_execution_report(dataset_name: str) -> dict[str, Any] | None:
+    payload = _read_report(_tool_execution_report_path(dataset_name))
+    if payload is None:
+        return None
+    payload["report_source"] = "saved"
+    return payload
+
+
+def list_tool_execution_report_history(dataset_name: str, limit: int = 5) -> list[dict[str, Any]]:
+    safe_name = _sanitize_segment(dataset_name)
+    pattern = f"tool_execution__{safe_name}__*.json"
+    payloads = _sorted_history_payloads(sorted(REPORT_STORE_DIR.glob(pattern)))[:limit]
+    return [
+        _history_entry(
+            payload=payload,
+            primary_metric_name="tool_accuracy",
+            primary_metric_value=payload["report"]["summary"]["tool_accuracy"],
         )
         for payload in payloads
     ]

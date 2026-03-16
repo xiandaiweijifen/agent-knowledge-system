@@ -3358,5 +3358,18 @@
     "supporting_snippets": "payment_service_runbook.md: Search results about payment-service incidents often mention production impact, charge attempts, idempotency keys, and gateway timeout behavior.",
     "supporting_match_count": "1",
     "supporting_summary": "Search for 'gateway timeout' matched 1 supporting document(s). Primary supporting documents: payment_service_runbook.md. Top supporting snippet: payment_service_runbook.md: Search results about payment-service incidents often mention production impact, charge attempts, idempotency keys, and gateway timeout behavior."
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0229",
+    "ticket_id": "TICKET-0229",
+    "status": "open",
+    "severity": "high",
+    "environment": "production",
+    "created_at": "2026-03-16T18:58:20.710680+00:00",
+    "updated_at": "2026-03-16T18:58:20.710680+00:00"
   }
 ]
