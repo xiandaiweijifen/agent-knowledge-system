@@ -83,9 +83,11 @@ export function EvaluationView({
       ? {
           workspace: "评测工作台",
           overview: "评测总览",
-          metricsSummary: "定稿指标摘要",
-          metricsSummaryCopy: "固定一版适合写入 README 和简历的核心指标，避免从不同报告里手动拼数。",
+          metricsSummary: "评测亮点",
+          metricsSummaryCopy: "汇总最值得关注的核心指标与代表性基准结果，用于快速判断当前系统质量。",
           summaryCacheStatus: "摘要缓存",
+          benchmarkLabel: "代表性基准",
+          benchmarkMetric: "主指标",
           overviewCopy: "汇总当前检索、workflow 与恢复能力的关键指标，便于快速评估系统成熟度。",
           retrievalOverview: "检索概览",
           workflowOverview: "工作流概览",
@@ -175,9 +177,12 @@ export function EvaluationView({
       : {
           workspace: "Evaluation Workspace",
           overview: "Evaluation Overview",
-          metricsSummary: "Resume-Ready Metrics Summary",
-          metricsSummaryCopy: "Pin down a stable set of headline metrics suitable for the README and resume without hand-assembling numbers from multiple reports.",
+          metricsSummary: "Evaluation Highlights",
+          metricsSummaryCopy:
+            "Surface the key headline metrics and showcase benchmarks that best represent current system quality.",
           summaryCacheStatus: "Summary Cache",
+          benchmarkLabel: "Showcase Benchmark",
+          benchmarkMetric: "Primary Metric",
           overviewCopy:
             "Summarize retrieval, workflow, and recovery health in one place before drilling into individual benchmark suites.",
           retrievalOverview: "Retrieval Overview",
@@ -380,28 +385,33 @@ export function EvaluationView({
         </div>
         {evaluationMetricsSummary ? (
           <div className="overview-grid">
-            <section className="subsection-card">
-              <span className="section-label">{copy.metricsSummary}</span>
-              <div className="summary-strip overview-summary-strip">
-                {evaluationMetricsSummary.highlights.map((highlight) => (
-                  <div key={highlight.label} className="summary-card">
-                    <span className="trace-label">{highlight.label}</span>
-                    <strong>{highlight.value}</strong>
-                    {highlight.detail ? <small>{highlight.detail}</small> : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-            {evaluationMetricsSummary.sections.map((section) => (
-              <section key={`${section.title}-${section.dataset_name ?? "none"}`} className="subsection-card">
-                <span className="section-label">{section.title}</span>
-                <div className="preview-meta">
-                  {section.dataset_name ? <span>{section.dataset_name}</span> : null}
-                  <strong>{section.formatted_value}</strong>
+            <div className="summary-strip overview-summary-strip">
+              {evaluationMetricsSummary.highlights.map((highlight) => (
+                <div key={highlight.label} className="summary-card">
+                  <span className="trace-label">{highlight.label}</span>
+                  <strong>{highlight.value}</strong>
+                  {highlight.detail ? <small>{highlight.detail}</small> : null}
                 </div>
-                {section.detail ? <p className="panel-intro">{section.detail}</p> : null}
-              </section>
-            ))}
+              ))}
+            </div>
+            <div className="highlights-benchmark-grid">
+              {evaluationMetricsSummary.sections.map((section) => (
+                <section key={`${section.title}-${section.dataset_name ?? "none"}`} className="subsection-card highlights-benchmark-card">
+                  <div className="highlights-benchmark-header">
+                    <div>
+                      <span className="section-label">{copy.benchmarkLabel}</span>
+                      <strong>{section.title}</strong>
+                    </div>
+                    <div className="highlights-benchmark-metric">
+                      <span className="trace-label">{copy.benchmarkMetric}</span>
+                      <strong>{section.formatted_value}</strong>
+                    </div>
+                  </div>
+                  {section.dataset_name ? <p className="highlights-dataset-name">{section.dataset_name}</p> : null}
+                  {section.detail ? <p className="panel-intro highlights-detail">{section.detail}</p> : null}
+                </section>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="empty-state">

@@ -125,7 +125,7 @@ describe("EvaluationView", () => {
     );
 
     expect(screen.getByText("Evaluation Overview")).toBeInTheDocument();
-    expect(screen.getAllByText("Resume-Ready Metrics Summary").length).toBeGreaterThan(0);
+    expect(screen.getByText("Evaluation Highlights")).toBeInTheDocument();
     expect(screen.getByText("Retrieval Overview")).toBeInTheDocument();
     expect(screen.getByText("Workflow Overview")).toBeInTheDocument();
     expect(screen.getByText("Recovery Overview")).toBeInTheDocument();
@@ -141,5 +141,6 @@ describe("EvaluationView", () => {
     expect(screen.getByText((content) => content.includes("Vs Previous: Improved 0.125"))).toBeInTheDocument();
     expect(screen.getByText("Recent Evaluation History")).toBeInTheDocument();
     expect(screen.getByText("Workflow Completion")).toBeInTheDocument();
+    expect(screen.getByText("Showcase Benchmark")).toBeInTheDocument();
   });
 });

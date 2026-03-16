@@ -47,7 +47,7 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
     if retrieval_report is not None:
         sections.append(
             EvaluationMetricsSummarySection(
-                title="Showcase Retrieval Benchmark",
+                title="Showcase Retrieval",
                 dataset_name=SHOWCASE_RETRIEVAL_DATASET,
                 metric_name="hit_rate_at_k",
                 metric_value=retrieval_report["report"]["summary"]["hit_rate_at_k"],
@@ -59,7 +59,7 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
     if route_report is not None:
         sections.append(
             EvaluationMetricsSummarySection(
-                title="Route Accuracy Benchmark",
+                title="Route Accuracy",
                 dataset_name=SHOWCASE_ROUTE_DATASET,
                 metric_name="route_accuracy",
                 metric_value=route_report["report"]["summary"]["route_accuracy"],
@@ -71,7 +71,7 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
     if workflow_report is not None:
         sections.append(
             EvaluationMetricsSummarySection(
-                title="Workflow Accuracy Benchmark",
+                title="Workflow Accuracy",
                 dataset_name=SHOWCASE_WORKFLOW_DATASET,
                 metric_name="workflow_accuracy",
                 metric_value=workflow_report["report"]["summary"]["workflow_accuracy"],
@@ -83,7 +83,7 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
     if tool_execution_report is not None:
         sections.append(
             EvaluationMetricsSummarySection(
-                title="Tool Execution Accuracy Benchmark",
+                title="Tool Execution Accuracy",
                 dataset_name=SHOWCASE_TOOL_EXECUTION_DATASET,
                 metric_name="tool_accuracy",
                 metric_value=tool_execution_report["report"]["summary"]["tool_accuracy"],
@@ -102,11 +102,6 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
             label="Recovery Success",
             value=_format_percentage(overview.recovery.recovery_success_rate),
             detail=f"{overview.recovery.recovered_completed_run_count}/{overview.recovery.recovered_run_count} recovered runs completed.",
-        ),
-        EvaluationMetricHighlight(
-            label="Retrieval Mean Hit@K",
-            value=_format_rate(overview.retrieval.mean_hit_rate_at_k),
-            detail=f"{overview.retrieval.dataset_count} datasets / {overview.retrieval.total_cases} cases.",
         ),
     ]
 

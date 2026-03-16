@@ -208,6 +208,56 @@ textarea {
   margin-bottom: 0;
 }
 
+.highlights-benchmark-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.highlights-benchmark-card {
+  gap: 10px;
+  align-content: start;
+}
+
+.highlights-benchmark-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.highlights-benchmark-header strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.highlights-benchmark-metric {
+  min-width: 92px;
+  text-align: right;
+}
+
+.highlights-benchmark-metric strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.25rem;
+  line-height: 1.1;
+}
+
+.highlights-dataset-name {
+  margin: 0;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.84rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.highlights-detail {
+  margin: 0;
+}
+
 .summary-card {
   padding: 16px;
   background: rgba(255, 251, 245, 0.88);
@@ -1349,6 +1399,10 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .highlights-benchmark-grid {
+    grid-template-columns: 1fr;
+  }
+
   .status-banner {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1422,6 +1476,15 @@ textarea {
   .panel-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .highlights-benchmark-header {
+    flex-direction: column;
+  }
+
+  .highlights-benchmark-metric {
+    min-width: 0;
+    text-align: left;
   }
 
   .card-title-row {
