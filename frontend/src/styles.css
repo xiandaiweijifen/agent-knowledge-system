@@ -897,6 +897,8 @@ textarea {
   background: rgba(255, 248, 240, 0.92);
   color: var(--accent-strong);
   font-size: 0.84rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .muted-pill {
@@ -916,6 +918,8 @@ textarea {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.82);
   color: var(--muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .trace-grid {
@@ -943,6 +947,11 @@ textarea {
   margin-top: 6px;
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.long-text-block {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .workflow-record-grid > div,
@@ -1114,6 +1123,8 @@ textarea {
   background: rgba(255, 255, 255, 0.82);
   color: var(--muted);
   line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .tool-output-card {

@@ -520,13 +520,13 @@ export function QueryView({
         {supportingDocuments && (
           <div className="supporting-block">
             <span className="trace-label">{queryCopy.documents}</span>
-            <p>{supportingDocuments}</p>
+            <p className="long-text-block">{supportingDocuments}</p>
           </div>
         )}
         {supportingSnippets && (
           <div className="supporting-block">
             <span className="trace-label">{queryCopy.searchSnippets}</span>
-            <p>{supportingSnippets}</p>
+            <p className="long-text-block">{supportingSnippets}</p>
           </div>
         )}
       </article>
@@ -561,7 +561,7 @@ export function QueryView({
           </div>
           <div>
             <span className="trace-label">{queryCopy.traceId}</span>
-            <strong>{toolExecution.trace_id}</strong>
+            <strong className="trace-code">{toolExecution.trace_id}</strong>
           </div>
         </div>
         <p className="subsection-copy">{toolExecution.result_summary}</p>
@@ -570,7 +570,7 @@ export function QueryView({
             <div className="trace-grid">
               <div>
                 <span className="trace-label">{queryCopy.ticketId}</span>
-                <strong>{toolExecution.output.ticket_id ?? queryCopy.notAvailable}</strong>
+                <strong className="trace-code">{toolExecution.output.ticket_id ?? queryCopy.notAvailable}</strong>
               </div>
               <div>
                 <span className="trace-label">{queryCopy.status}</span>
