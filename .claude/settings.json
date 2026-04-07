@@ -7,7 +7,8 @@
       "Bash(python -m pytest tests/test_llamaindex_ingestion.py -v)",
       "Bash(python -m pytest tests/test_llamaindex_ingestion.py tests/ -x -q)",
       "Bash(python -m pytest tests/ -q)",
-      "Bash(python -m pytest tests/test_llamaindex_retrieval.py tests/test_llamaindex_ingestion.py -v)"
+      "Bash(python -m pytest tests/test_llamaindex_retrieval.py tests/test_llamaindex_ingestion.py -v)",
+      "Bash(python -m pytest tests/test_agent_v2_graph.py -v)"
     ]
   }
 }

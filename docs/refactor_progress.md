@@ -75,7 +75,13 @@
 
 ### Phase 3：LangGraph 替换 Orchestrator（核心）
 
-- [ ] **Package 7** — 定义 `AgentState` 和基础 Graph 骨架
+- [x] **Package 7** — 定义 `AgentState` 和基础 Graph 骨架
+  - 新增：`services/agent_v2/state.py`（AgentState TypedDict，含 messages channel）
+  - 新增：`services/agent_v2/graph.py`（StateGraph，5 个节点，条件路由）
+  - 新增：`services/agent_v2/nodes/`（router / retrieval / tool_exec / clarify / answer，均为 stub）
+  - 新增：`tests/test_agent_v2_graph.py`（5 个测试，覆盖三条路径）
+  - 验证：196 tests passed
+  - Commit：`feat: add LangGraph AgentState and graph skeleton with stub nodes`
 - [ ] **Package 8** — LLM Function Calling 替换正则路由
 - [ ] **Package 9** — 工具节点迁移（ticketing / system_status / document_search）
 - [ ] **Package 10** — 恢复逻辑迁移（Checkpointer 自动处理 resume）
@@ -111,3 +117,4 @@
 | Package 4 后 | 181 | 0 | LlamaIndex 依赖不影响现有测试 |
 | Package 5 后 | 186 | 0 | 新增 5 个 LlamaIndex ingestion 测试 |
 | Package 6 后 | 191 | 0 | 新增 5 个 LlamaIndex retrieval 测试 |
+| Package 7 后 | 196 | 0 | 新增 5 个 LangGraph graph 测试 |
