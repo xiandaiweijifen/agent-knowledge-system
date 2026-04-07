@@ -6,7 +6,8 @@
       "Bash(python -c \"import llama_index.embeddings.google as g; print\\(dir\\(g\\)\\)\")",
       "Bash(python -m pytest tests/test_llamaindex_ingestion.py -v)",
       "Bash(python -m pytest tests/test_llamaindex_ingestion.py tests/ -x -q)",
-      "Bash(python -m pytest tests/ -q)"
+      "Bash(python -m pytest tests/ -q)",
+      "Bash(python -m pytest tests/test_llamaindex_retrieval.py tests/test_llamaindex_ingestion.py -v)"
     ]
   }
 }

@@ -63,7 +63,12 @@
   - 新增：`tests/test_llamaindex_ingestion.py`（5 个测试）
   - 验证：186 tests passed
   - Commit：`feat: add LlamaIndex ingestion pipeline alongside existing embedding service`
-- [ ] **Package 6** — LlamaIndex `VectorStoreIndex` + `SimpleVectorStore` 替换手写余弦相似度
+- [x] **Package 6** — LlamaIndex 检索替换手写余弦相似度
+  - 新增：`services/retrieval/llamaindex_retrieval_service.py`（适配 RetrievalResult schema，索引不存在时抛 FileNotFoundError）
+  - 更新：`query_service.py` 优先用 LlamaIndex，回退到旧余弦相似度
+  - 新增：`tests/test_llamaindex_retrieval.py`（5 个测试，覆盖回退逻辑）
+  - 验证：191 tests passed
+  - Commit：`feat: switch query path to LlamaIndex retrieval with legacy fallback`
 - [ ] **Package 6.5** — 切换 pgvector（网络恢复后）
 
 ---
@@ -93,7 +98,7 @@
 
 ## 当前状态
 
-**进行中**：Package 5 完成，准备进入 Package 6（LlamaIndex 检索替换手写余弦相似度）。
+**进行中**：Phase 2 完成，准备进入 Phase 3（LangGraph 替换 Orchestrator）。
 
 ## 测试基线
 
@@ -105,3 +110,4 @@
 | Package 3 后 | 181 | 0 | Redis client 不影响现有测试 |
 | Package 4 后 | 181 | 0 | LlamaIndex 依赖不影响现有测试 |
 | Package 5 后 | 186 | 0 | 新增 5 个 LlamaIndex ingestion 测试 |
+| Package 6 后 | 191 | 0 | 新增 5 个 LlamaIndex retrieval 测试 |
