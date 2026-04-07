@@ -117,6 +117,7 @@ def resume_agent_v2_query(
         checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
         return resume_agent_v2_request(
             run_id=request.run_id,
+            clarification_context=request.clarification_context,
             checkpointer=checkpointer,
         )
     except FileNotFoundError:

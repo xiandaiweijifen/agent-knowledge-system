@@ -115,7 +115,15 @@
   - 新增：`tests/test_agent_v2_run_store.py`，并扩展 `tests/test_agent_v2_api.py` / `tests/test_agent_v2_query_service.py`
   - 验证：220 tests passed
   - Commit：`feat: add checkpoint-backed run persistence and resume for agent_v2`
-- [ ] **Package 11** — 澄清节点（LangGraph `interrupt()` 替换 clarification_service）
+- [x] **Package 11** — 澄清节点（LangGraph `interrupt()` 替换 clarification_service）
+  - 更新：`services/agent_v2/nodes/clarify.py` 使用 `interrupt()` 发起澄清，并在 resume 后重写请求
+  - 更新：`services/agent_v2/graph.py` 将 `clarify -> END` 改为 `clarify -> router`，支持澄清后继续执行
+  - 更新：`services/agent_v2/query_service.py` 识别 interrupt 响应，并支持 `Command(resume=clarification_context)`
+  - 更新：`api/routes/query.py` 将 `clarification_context` 透传到 `/api/query/agent-v2/resume`
+  - 更新：`services/agent_v2/state.py` 增加 `clarification_plan` / `applied_clarification_fields` / `question_rewritten`
+  - 新增/更新：graph、query service、API、router、tool、retrieval 测试
+  - 验证：222 tests passed
+  - Commit：`feat: migrate clarification flow to langgraph interrupt`
 
 ---
 
@@ -142,8 +150,9 @@
 - 已完成：Package 9，`agent_v2` 工具路径已执行 ticketing / system_status
 - 已完成：Package 9.5，`agent_v2` knowledge retrieval 已直接运行检索 + answer pipeline
 - 已完成：Package 10，`agent_v2` 已支持 run 持久化、查询和 checkpoint resume 骨架
-- 当前下一步：Package 11（LangGraph interrupt 澄清流迁移）
-- 测试基线：220 tests passed，0 failed
+- 已完成：Package 11，`agent_v2` 已支持 clarification interrupt 与 resume 后继续执行
+- 当前下一步：Phase 4 / Package 12（LangSmith tracing）
+- 测试基线：222 tests passed，0 failed
 
 ## 测试基线
 
@@ -162,3 +171,4 @@
 | Package 9 后 | 212 | 0 | 新增 tool node 测试，工具路径打通 |
 | Package 9.5 后 | 214 | 0 | 新增 retrieval node 测试，agent_v2 检索路径打通 |
 | Package 10 后 | 220 | 0 | 新增 run store / resume API 测试，agent_v2 持久化链路打通 |
+| Package 11 后 | 222 | 0 | 新增 clarification interrupt / resume 测试，澄清后继续执行打通 |

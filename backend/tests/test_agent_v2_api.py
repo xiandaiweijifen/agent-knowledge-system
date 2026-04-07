@@ -65,7 +65,7 @@ def test_query_agent_v2_endpoint_returns_400_for_invalid_question():
 def test_resume_agent_v2_endpoint_returns_persisted_response(monkeypatch):
     monkeypatch.setattr(
         "app.api.routes.query.resume_agent_v2_request",
-        lambda run_id, checkpointer=None: __import__(
+        lambda run_id, clarification_context=None, checkpointer=None: __import__(
             "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
         ).AgentWorkflowResponse(
             run_id=run_id,

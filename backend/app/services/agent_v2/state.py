@@ -45,6 +45,9 @@ class AgentState(TypedDict):
     # Clarification                                                       #
     # ------------------------------------------------------------------ #
     clarification_question: str | None
+    clarification_plan: dict[str, Any] | None
+    applied_clarification_fields: list[str]
+    question_rewritten: bool
 
     # ------------------------------------------------------------------ #
     # Answer                                                              #

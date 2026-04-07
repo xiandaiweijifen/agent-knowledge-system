@@ -1,13 +1,16 @@
 import uuid
 from typing import Any
 
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import Command
+
 from app.schemas.query import (
     AgentWorkflowResponse,
     AgentWorkflowRunListResponse,
     RouteDecision,
     WorkflowTraceEvent,
 )
-from app.services.agent_v2.graph import agent_graph, build_graph
+from app.services.agent_v2.graph import build_graph
 from app.schemas.query import RetrievalResult
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.agent_v2.run_store import (
@@ -28,6 +31,9 @@ def _build_initial_state(question: str, filename: str | None, top_k: int) -> dic
         "retrieval_result": None,
         "tool_chain": [],
         "clarification_question": None,
+        "clarification_plan": None,
+        "applied_clarification_fields": [],
+        "question_rewritten": False,
         "answer": None,
         "answer_source": None,
         "model": None,
@@ -58,6 +64,16 @@ def _build_terminal_reason(final_state: dict[str, Any]) -> str:
     if final_state.get("route") == "knowledge_retrieval":
         return "knowledge_answer_generated"
     return "agent_v2_completed"
+
+
+def _resolve_terminal_reason(
+    *,
+    final_state: dict[str, Any],
+    interrupt_payload: dict[str, Any] | None,
+) -> str:
+    if interrupt_payload is not None:
+        return "clarification_requested"
+    return _build_terminal_reason(final_state)
 
 
 def _resolve_resumed_completed_at(
@@ -129,6 +145,16 @@ def _build_workflow_trace(
     return events
 
 
+def _extract_interrupt_payload(final_state: dict[str, Any]) -> dict[str, Any] | None:
+    interrupts = final_state.get("__interrupt__")
+    if not isinstance(interrupts, list) or not interrupts:
+        return None
+
+    interrupt_event = interrupts[0]
+    payload = getattr(interrupt_event, "value", None)
+    return payload if isinstance(payload, dict) else None
+
+
 def orchestrate_agent_v2_request(
     *,
     question: str,
@@ -143,7 +169,7 @@ def orchestrate_agent_v2_request(
     if top_k <= 0:
         raise ValueError("top_k_must_be_positive")
 
-    graph = build_graph(checkpointer=checkpointer) if checkpointer is not None else agent_graph
+    graph = build_graph(checkpointer=checkpointer or InMemorySaver())
     initial_state = _build_initial_state(
         question=normalized_question,
         filename=normalized_filename,
@@ -153,6 +179,7 @@ def orchestrate_agent_v2_request(
     invoke_config = _build_graph_invoke_config(run_id)
     final_state = graph.invoke(initial_state, config=invoke_config)
     timestamp = build_utc_timestamp()
+    interrupt_payload = _extract_interrupt_payload(final_state)
     route_type = final_state.get("route") or "knowledge_retrieval"
     route_reason = final_state.get("route_reason") or "Route selected by agent_v2."
     answer = final_state.get("answer")
@@ -175,14 +202,28 @@ def orchestrate_agent_v2_request(
             tool_execution = last_step.get("tool_execution")
 
     clarification_question = final_state.get("clarification_question")
+    clarification_plan = final_state.get("clarification_plan")
+
+    workflow_status = final_state.get("workflow_status") or "completed"
+    if interrupt_payload is not None:
+        workflow_status = "clarification_required"
+        route_type = "clarification_needed"
+        clarification_question = interrupt_payload.get("clarification_question")
+        clarification_plan = interrupt_payload.get("clarification_plan")
+        answer = None
+        answer_source = None
+        retrieval = None
 
     response = AgentWorkflowResponse(
         run_id=run_id,
         root_run_id=None,
         recovery_depth=0,
         question=normalized_question,
-        workflow_status=final_state.get("workflow_status") or "completed",
-        terminal_reason=_build_terminal_reason(final_state),
+        workflow_status=workflow_status,
+        terminal_reason=_resolve_terminal_reason(
+            final_state=final_state,
+            interrupt_payload=interrupt_payload,
+        ),
         started_at=timestamp,
         completed_at=timestamp,
         last_updated_at=timestamp,
@@ -208,6 +249,7 @@ def orchestrate_agent_v2_request(
         chat_model=chat_model,
         retrieval=retrieval,
         clarification_message=clarification_question,
+        clarification_plan=clarification_plan,
         tool_plan=tool_plan,
         tool_execution=tool_execution,
         tool_chain=tool_chain,
@@ -219,6 +261,7 @@ def orchestrate_agent_v2_request(
 def resume_agent_v2_request(
     *,
     run_id: str,
+    clarification_context: dict[str, str] | None = None,
     checkpointer=None,
 ) -> AgentWorkflowResponse:
     persisted_run = get_persisted_agent_v2_run(run_id)
@@ -231,8 +274,12 @@ def resume_agent_v2_request(
     if not snapshot.values:
         return persisted_run
 
-    resumed_state = graph.invoke(None, config=invoke_config)
+    if clarification_context:
+        resumed_state = graph.invoke(Command(resume=clarification_context), config=invoke_config)
+    else:
+        resumed_state = graph.invoke(None, config=invoke_config)
     timestamp = build_utc_timestamp()
+    interrupt_payload = _extract_interrupt_payload(resumed_state)
     route_type = resumed_state.get("route") or persisted_run.route.route_type
     route_reason = resumed_state.get("route_reason") or persisted_run.route.route_reason
     answer = resumed_state.get("answer") or persisted_run.answer
@@ -248,6 +295,18 @@ def resume_agent_v2_request(
             tool_plan = last_step.get("tool_plan") or tool_plan
             tool_execution = last_step.get("tool_execution") or tool_execution
 
+    workflow_status = resumed_state.get("workflow_status") or persisted_run.workflow_status
+    clarification_question = resumed_state.get("clarification_question") or persisted_run.clarification_message
+    clarification_plan = resumed_state.get("clarification_plan") or persisted_run.clarification_plan
+    if interrupt_payload is not None:
+        workflow_status = "clarification_required"
+        route_type = "clarification_needed"
+        clarification_question = interrupt_payload.get("clarification_question")
+        clarification_plan = interrupt_payload.get("clarification_plan")
+        answer = None
+        answer_source = None
+        retrieval = None
+
     response = AgentWorkflowResponse(
         run_id=persisted_run.run_id,
         root_run_id=persisted_run.root_run_id,
@@ -260,11 +319,12 @@ def resume_agent_v2_request(
         resume_strategy="checkpoint_resume",
         resumed_from_step_index=persisted_run.resumed_from_step_index,
         reused_step_indices=persisted_run.reused_step_indices,
-        applied_clarification_fields=persisted_run.applied_clarification_fields,
-        question_rewritten=persisted_run.question_rewritten,
         overridden_plan_arguments=persisted_run.overridden_plan_arguments,
-        workflow_status=resumed_state.get("workflow_status") or persisted_run.workflow_status,
-        terminal_reason=_build_terminal_reason(resumed_state),
+        workflow_status=workflow_status,
+        terminal_reason=_resolve_terminal_reason(
+            final_state=resumed_state,
+            interrupt_payload=interrupt_payload,
+        ),
         outcome_category=persisted_run.outcome_category,
         is_recoverable=persisted_run.is_recoverable,
         retry_state=persisted_run.retry_state,
@@ -306,7 +366,7 @@ def resume_agent_v2_request(
             resumed_state,
             timestamp=timestamp,
             answer_detail=answer,
-            clarification_detail=resumed_state.get("clarification_question") or persisted_run.clarification_message,
+            clarification_detail=clarification_question,
         ),
         filename=resumed_state.get("filename") or persisted_run.filename,
         answer=answer,
@@ -317,11 +377,13 @@ def resume_agent_v2_request(
         chat_provider=resumed_state.get("chat_provider") or persisted_run.chat_provider,
         chat_model=resumed_state.get("chat_model") or persisted_run.chat_model,
         retrieval=retrieval,
-        clarification_message=resumed_state.get("clarification_question") or persisted_run.clarification_message,
-        clarification_plan=persisted_run.clarification_plan,
+        clarification_message=clarification_question,
+        clarification_plan=clarification_plan,
         tool_plan=tool_plan,
         tool_execution=tool_execution,
         tool_chain=tool_chain,
+        applied_clarification_fields=resumed_state.get("applied_clarification_fields") or persisted_run.applied_clarification_fields,
+        question_rewritten=bool(resumed_state.get("question_rewritten") or persisted_run.question_rewritten),
     )
     persist_agent_v2_run(response)
     return response

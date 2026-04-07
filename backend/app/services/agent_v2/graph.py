@@ -47,7 +47,7 @@ def build_graph(checkpointer=None):
     builder.add_conditional_edges("router", route_decision)
     builder.add_edge("retrieval", "answer")
     builder.add_edge("tool_exec", "answer")
-    builder.add_edge("clarify", END)
+    builder.add_edge("clarify", "router")
     builder.add_edge("answer", END)
 
     return builder.compile(checkpointer=checkpointer)

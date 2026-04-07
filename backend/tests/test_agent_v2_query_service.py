@@ -1,3 +1,5 @@
+from langgraph.types import Command
+
 from app.services.agent_v2.query_service import orchestrate_agent_v2_request
 
 
@@ -7,8 +9,8 @@ def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
         lambda response: None,
     )
     monkeypatch.setattr(
-        "app.services.agent_v2.query_service.agent_graph",
-        type(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: type(
             "Graph",
             (),
             {
@@ -66,8 +68,8 @@ def test_orchestrate_agent_v2_request_returns_clarification_response(monkeypatch
         lambda response: None,
     )
     monkeypatch.setattr(
-        "app.services.agent_v2.query_service.agent_graph",
-        type(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: type(
             "Graph",
             (),
             {
@@ -76,8 +78,24 @@ def test_orchestrate_agent_v2_request_returns_clarification_response(monkeypatch
                     "route": "clarification_needed",
                     "route_reason": "Ambiguous request.",
                     "route_planning_mode": "heuristic_legacy_router",
-                    "workflow_status": "clarification_required",
-                    "clarification_question": "Could you clarify your question?",
+                    "__interrupt__": [
+                        type(
+                            "Interrupt",
+                            (),
+                            {
+                                "value": {
+                                    "clarification_question": "Could you clarify your question?",
+                                    "clarification_plan": {
+                                        "question": "Fix it",
+                                        "planning_mode": "heuristic_stub",
+                                        "missing_fields": ["task_details"],
+                                        "follow_up_questions": ["What exact action should the agent perform?"],
+                                        "clarification_summary": "Could you clarify your question?",
+                                    },
+                                }
+                            },
+                        )()
+                    ],
                 },
             },
         )(),
@@ -89,6 +107,7 @@ def test_orchestrate_agent_v2_request_returns_clarification_response(monkeypatch
     )
     assert response.workflow_status == "clarification_required"
     assert response.clarification_message == "Could you clarify your question?"
+    assert response.clarification_plan is not None
     assert response.terminal_reason == "clarification_requested"
 
 
@@ -150,8 +169,8 @@ def test_orchestrate_agent_v2_request_returns_tool_result(monkeypatch):
         lambda response: None,
     )
     monkeypatch.setattr(
-        "app.services.agent_v2.query_service.agent_graph",
-        type(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: type(
             "Graph",
             (),
             {
@@ -342,3 +361,76 @@ def test_resume_agent_v2_request_sets_completed_at_when_source_run_was_incomplet
     response = resume_agent_v2_request(run_id="run-456", checkpointer=object())
     assert response.completed_at == "2026-04-07T00:05:00+00:00"
     assert response.last_updated_at == "2026-04-07T00:05:00+00:00"
+
+
+def test_resume_agent_v2_request_uses_command_resume_for_clarification(monkeypatch):
+    from app.schemas.query import RouteDecision, AgentWorkflowResponse
+    from app.services.agent_v2.query_service import resume_agent_v2_request
+
+    persisted_run = AgentWorkflowResponse(
+        run_id="run-789",
+        question="Fix it",
+        workflow_status="clarification_required",
+        route=RouteDecision(
+            route_type="clarification_needed",
+            route_reason="Ambiguous request.",
+            filename=None,
+        ),
+        clarification_message="Could you clarify your question?",
+        clarification_plan={
+            "question": "Fix it",
+            "planning_mode": "heuristic_stub",
+            "missing_fields": ["task_details"],
+            "follow_up_questions": ["What exact action should the agent perform?"],
+            "clarification_summary": "Could you clarify your question?",
+        },
+        started_at="2026-04-07T00:00:00+00:00",
+        last_updated_at="2026-04-07T00:00:00+00:00",
+    )
+    captured = {}
+
+    class StubSnapshot:
+        values = {"question": "Fix it"}
+
+    class StubGraph:
+        def get_state(self, config):
+            return StubSnapshot()
+
+        def invoke(self, payload, config=None):
+            captured["payload"] = payload
+            return {
+                "question": "Fix it (environment: production)",
+                "filename": "",
+                "route": "knowledge_retrieval",
+                "route_reason": "Now specific enough.",
+                "workflow_status": "completed",
+                "answer": "resolved answer",
+                "answer_source": "fallback",
+                "applied_clarification_fields": ["environment"],
+                "question_rewritten": True,
+                "tool_chain": [],
+            }
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: persisted_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: StubGraph(),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+
+    response = resume_agent_v2_request(
+        run_id="run-789",
+        clarification_context={"environment": "production"},
+        checkpointer=object(),
+    )
+    assert isinstance(captured["payload"], Command)
+    assert captured["payload"].resume == {"environment": "production"}
+    assert response.answer == "resolved answer"
+    assert response.applied_clarification_fields == ["environment"]
+    assert response.question_rewritten is True
