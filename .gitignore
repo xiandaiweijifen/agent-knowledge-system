@@ -33,6 +33,8 @@ data/tool_state/workflow_planner_debug.json
 # Python test / cache
 .pytest_cache/
 .mypy_cache/
+pytest-cache-files-*/
+backend/pytest-cache-files-*/
 backend/tests/_tmp/
 backend/tests/.pytest_tmp/
 

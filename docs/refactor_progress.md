@@ -104,7 +104,11 @@
 
 ## 当前状态
 
-**进行中**：Phase 2 完成，准备进入 Phase 3（LangGraph 替换 Orchestrator）。
+**进行中**：Phase 3（LangGraph 替换 Orchestrator）。
+
+- 已完成：Package 7，LangGraph `AgentState` + graph skeleton 已落地
+- 当前下一步：Package 8（LLM Function Calling 替换 stub router）
+- 测试基线：196 tests passed，0 failed
 
 ## 测试基线
 
