@@ -57,7 +57,12 @@
   - 验证：181 tests passed
   - Commit：`chore: add LlamaIndex dependencies (Package 4)`
 
-- [ ] **Package 5** — LlamaIndex `IngestionPipeline` 替换 chunker + embedding_service
+- [x] **Package 5** — LlamaIndex `IngestionPipeline` 并行接入
+  - 新增：`services/ingestion/llamaindex_ingestion_service.py`（自定义 Embedding 适配器 + build/load/query）
+  - 更新：`persist_embeddings` 路由在原有 JSON pipeline 后额外构建 LlamaIndex 索引
+  - 新增：`tests/test_llamaindex_ingestion.py`（5 个测试）
+  - 验证：186 tests passed
+  - Commit：`feat: add LlamaIndex ingestion pipeline alongside existing embedding service`
 - [ ] **Package 6** — LlamaIndex `VectorStoreIndex` + `SimpleVectorStore` 替换手写余弦相似度
 - [ ] **Package 6.5** — 切换 pgvector（网络恢复后）
 
@@ -88,7 +93,7 @@
 
 ## 当前状态
 
-**进行中**：Package 4 完成，准备进入 Package 5（LlamaIndex IngestionPipeline）。
+**进行中**：Package 5 完成，准备进入 Package 6（LlamaIndex 检索替换手写余弦相似度）。
 
 ## 测试基线
 
@@ -99,3 +104,4 @@
 | Package 2 后 | 181 | 0 | FastAPI lifespan + checkpointer 不影响现有测试 |
 | Package 3 后 | 181 | 0 | Redis client 不影响现有测试 |
 | Package 4 后 | 181 | 0 | LlamaIndex 依赖不影响现有测试 |
+| Package 5 后 | 186 | 0 | 新增 5 个 LlamaIndex ingestion 测试 |

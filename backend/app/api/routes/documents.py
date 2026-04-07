@@ -14,6 +14,7 @@ from app.services.indexing.embedding_service import (
     load_persisted_embeddings,
     persist_document_embeddings,
 )
+from app.services.ingestion.llamaindex_ingestion_service import build_llamaindex_index
 
 router = APIRouter(tags=["documents"])
 
@@ -131,7 +132,14 @@ def get_persisted_chunks(filename: str):
 @router.post("/documents/{filename}/embeddings/persist")
 def persist_embeddings(filename: str):
     try:
-        return persist_document_embeddings(filename)
+        result = persist_document_embeddings(filename)
+        try:
+            llamaindex_result = build_llamaindex_index(filename)
+            result["llamaindex_node_count"] = llamaindex_result["node_count"]
+            result["llamaindex_store_path"] = llamaindex_result["store_path"]
+        except Exception as exc:
+            result["llamaindex_warning"] = str(exc)
+        return result
     except FileNotFoundError:
         raise HTTPException(
             status_code=404,
