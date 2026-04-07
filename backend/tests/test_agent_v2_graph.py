@@ -1,6 +1,6 @@
 """
-Tests for the LangGraph agent graph skeleton (Package 7).
-Verifies graph compilation and all three routing paths using stub nodes.
+Tests for the LangGraph agent graph skeleton.
+Verifies graph compilation and Package 8 router behavior.
 """
 
 import pytest
@@ -13,6 +13,8 @@ BASE_INPUT: AgentState = {
     "filename": "doc.txt",
     "top_k": 3,
     "route": "",
+    "route_reason": None,
+    "route_planning_mode": None,
     "retrieval_result": None,
     "tool_chain": [],
     "clarification_question": None,
@@ -38,7 +40,7 @@ def test_graph_compiles(graph):
     assert "answer" in graph.nodes
 
 
-def test_retrieval_path(graph):
+def test_retrieval_path(graph, monkeypatch):
     """Default route → retrieval → answer → END."""
     result = graph.invoke(BASE_INPUT)
     assert result["workflow_status"] == "completed"

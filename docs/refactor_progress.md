@@ -82,7 +82,13 @@
   - 新增：`tests/test_agent_v2_graph.py`（5 个测试，覆盖三条路径）
   - 验证：196 tests passed
   - Commit：`feat: add LangGraph AgentState and graph skeleton with stub nodes`
-- [ ] **Package 8** — LLM Function Calling 替换正则路由
+- [x] **Package 8** — LLM Function Calling 替换正则路由
+  - 新增：`services/llm/route_planner_service.py`（LLM-first route planner，含 OpenAI / Gemini provider、缓存与 fallback）
+  - 更新：`services/agent_v2/nodes/router.py` 接入 LLM route decision，失败时回退旧 `router_service`
+  - 更新：`services/agent_v2/state.py` 增加 `route_reason`、`route_planning_mode`
+  - 新增：`tests/test_route_planner_service.py`、`tests/test_agent_v2_router_node.py`
+  - 验证：205 tests passed
+  - Commit：`feat: add llm-backed router node for agent_v2 graph`
 - [ ] **Package 9** — 工具节点迁移（ticketing / system_status / document_search）
 - [ ] **Package 10** — 恢复逻辑迁移（Checkpointer 自动处理 resume）
 - [ ] **Package 11** — 澄清节点（LangGraph `interrupt()` 替换 clarification_service）
@@ -107,8 +113,9 @@
 **进行中**：Phase 3（LangGraph 替换 Orchestrator）。
 
 - 已完成：Package 7，LangGraph `AgentState` + graph skeleton 已落地
-- 当前下一步：Package 8（LLM Function Calling 替换 stub router）
-- 测试基线：196 tests passed，0 failed
+- 已完成：Package 8，`agent_v2` router 已切换为 LLM-first + legacy fallback
+- 当前下一步：Package 8.5（暴露 `agent_v2` 独立执行入口）
+- 测试基线：205 tests passed，0 failed
 
 ## 测试基线
 
@@ -122,3 +129,4 @@
 | Package 5 后 | 186 | 0 | 新增 5 个 LlamaIndex ingestion 测试 |
 | Package 6 后 | 191 | 0 | 新增 5 个 LlamaIndex retrieval 测试 |
 | Package 7 后 | 196 | 0 | 新增 5 个 LangGraph graph 测试 |
+| Package 8 后 | 205 | 0 | 新增 route planner 与 router node 测试 |

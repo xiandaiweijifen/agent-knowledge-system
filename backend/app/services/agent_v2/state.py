@@ -27,6 +27,10 @@ class AgentState(TypedDict):
     # ------------------------------------------------------------------ #
     # One of: "knowledge_retrieval" | "tool_execution" | "clarification_needed"
     route: str
+    route_reason: str | None
+    route_planning_mode: str | None
+    route_reason: str | None
+    route_planning_mode: str | None
 
     # ------------------------------------------------------------------ #
     # Retrieval                                                           #

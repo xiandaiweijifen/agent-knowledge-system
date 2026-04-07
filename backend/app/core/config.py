@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     app_port: int = 8000
     embedding_provider: str = "mock"
     chat_provider: str = "fallback"
+    route_planner_provider: str = "fallback"
     tool_planner_provider: str = "fallback"
     clarification_planner_provider: str = "fallback"
     workflow_planner_provider: str = "fallback"
@@ -21,6 +22,7 @@ class Settings(BaseSettings):
     planner_cache_max_entries: int = 256
     openai_api_key: str = ""
     openai_chat_model: str = "gpt-4o-mini"
+    openai_route_planner_model: str = ""
     openai_tool_planner_model: str = ""
     openai_clarification_planner_model: str = ""
     openai_workflow_planner_model: str = ""
@@ -28,6 +30,7 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_embedding_model: str = "gemini-embedding-001"
     gemini_chat_model: str = "gemini-2.5-flash-lite"
+    gemini_route_planner_model: str = ""
     gemini_tool_planner_model: str = ""
     gemini_clarification_planner_model: str = ""
     gemini_workflow_planner_model: str = ""

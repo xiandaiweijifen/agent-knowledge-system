@@ -1,15 +1,53 @@
 """Router node — decides which path to take next."""
 
+from app.services.agent.router_service import route_request
 from app.services.agent_v2.state import AgentState
+from app.services.llm.route_planner_service import generate_llm_route_decision
+
+
+SUPPORTED_ROUTES = {
+    "knowledge_retrieval",
+    "tool_execution",
+    "clarification_needed",
+}
 
 
 def router_node(state: AgentState) -> dict:
     """
-    Stub: passes through a pre-set route, defaults to knowledge_retrieval.
-    Package 8 will replace this with LLM Function Calling.
+    Route the request with an LLM-first strategy and deterministic fallback.
+    Explicit pre-set route values are preserved to keep tests and manual overrides stable.
     """
-    route = state.get("route") or "knowledge_retrieval"
-    return {"route": route, "workflow_status": "in_progress"}
+    preset_route = state.get("route")
+    if isinstance(preset_route, str) and preset_route in SUPPORTED_ROUTES:
+        return {
+            "route": preset_route,
+            "route_reason": state.get("route_reason") or "Precomputed route provided by caller.",
+            "route_planning_mode": state.get("route_planning_mode") or "precomputed",
+            "workflow_status": "in_progress",
+        }
+
+    planning_mode, route_payload = generate_llm_route_decision(
+        question=state["question"],
+        filename=state.get("filename"),
+    )
+    if route_payload is not None:
+        return {
+            "route": route_payload["route"],
+            "route_reason": route_payload["route_reason"],
+            "route_planning_mode": planning_mode,
+            "workflow_status": "in_progress",
+        }
+
+    fallback_decision = route_request(
+        question=state["question"],
+        filename=state.get("filename"),
+    )
+    return {
+        "route": fallback_decision.route_type,
+        "route_reason": fallback_decision.route_reason,
+        "route_planning_mode": planning_mode,
+        "workflow_status": "in_progress",
+    }
 
 
 def route_decision(state: AgentState) -> str:
