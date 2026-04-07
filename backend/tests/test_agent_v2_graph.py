@@ -20,6 +20,11 @@ BASE_INPUT: AgentState = {
     "clarification_question": None,
     "answer": None,
     "answer_source": None,
+    "model": None,
+    "answered_at": None,
+    "answer_latency_ms": None,
+    "chat_provider": None,
+    "chat_model": None,
     "workflow_status": "in_progress",
     "error": None,
     "messages": [],
@@ -42,9 +47,44 @@ def test_graph_compiles(graph):
 
 def test_retrieval_path(graph, monkeypatch):
     """Default route → retrieval → answer → END."""
+    monkeypatch.setattr(
+        "app.services.agent_v2.nodes.retrieval.run_query",
+        lambda filename, question, top_k: type(
+            "QueryResponse",
+            (),
+            {
+                "answer": "retrieved answer",
+                "answer_source": "fallback",
+                "model": "gemini-2.5-flash",
+                "answered_at": "2026-04-07T00:00:00+00:00",
+                "answer_latency_ms": 123.0,
+                "chat_provider": "gemini",
+                "chat_model": "gemini-2.5-flash",
+                "retrieval": type(
+                    "RetrievalResult",
+                    (),
+                    {
+                        "model_dump": lambda self: {
+                            "filename": filename,
+                            "embedding_provider": "gemini",
+                            "embedding_model": "gemini-embedding-001",
+                            "vector_dim": 3072,
+                            "question": question,
+                            "top_k": top_k,
+                            "retrieved_at": "2026-04-07T00:00:00+00:00",
+                            "retrieval_latency_ms": 50.0,
+                            "query_embedding_provider": "gemini",
+                            "query_embedding_model": "gemini-embedding-001",
+                            "matches": [],
+                        }
+                    },
+                )(),
+            },
+        )(),
+    )
     result = graph.invoke(BASE_INPUT)
     assert result["workflow_status"] == "completed"
-    assert result["answer"] is not None
+    assert result["answer"] == "retrieved answer"
     assert result["route"] == "knowledge_retrieval"
 
 
@@ -63,6 +103,6 @@ def test_clarification_path(graph):
 
 def test_state_fields_present(graph):
     """All expected fields survive graph execution."""
-    result = graph.invoke(BASE_INPUT)
+    result = graph.invoke({**BASE_INPUT, "route": "clarification_needed"})
     for field in ("question", "filename", "top_k", "route", "workflow_status"):
         assert field in result

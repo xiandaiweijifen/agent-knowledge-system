@@ -2,8 +2,8 @@ import uuid
 from typing import Any
 
 from app.schemas.query import AgentWorkflowResponse, RouteDecision, WorkflowTraceEvent
-from app.services.agent.query_service import run_query
 from app.services.agent_v2.graph import agent_graph, build_graph
+from app.schemas.query import RetrievalResult
 from app.services.ingestion.document_service import build_utc_timestamp
 
 
@@ -20,6 +20,11 @@ def _build_initial_state(question: str, filename: str | None, top_k: int) -> dic
         "clarification_question": None,
         "answer": None,
         "answer_source": None,
+        "model": None,
+        "answered_at": None,
+        "answer_latency_ms": None,
+        "chat_provider": None,
+        "chat_model": None,
         "workflow_status": "in_progress",
         "error": None,
         "messages": [],
@@ -127,31 +132,13 @@ def orchestrate_agent_v2_request(
     route_reason = final_state.get("route_reason") or "Route selected by agent_v2."
     answer = final_state.get("answer")
     answer_source = final_state.get("answer_source")
-    model = None
-    answered_at = timestamp if answer else None
-    answer_latency_ms = None
-    chat_provider = None
-    chat_model = None
-    retrieval = None
-    query_response = None
-
-    if route_type == "knowledge_retrieval" and normalized_filename:
-        try:
-            query_response = run_query(
-                filename=normalized_filename,
-                question=normalized_question,
-                top_k=top_k,
-            )
-            answer = query_response.answer
-            answer_source = query_response.answer_source
-            model = query_response.model
-            answered_at = query_response.answered_at
-            answer_latency_ms = query_response.answer_latency_ms
-            chat_provider = query_response.chat_provider
-            chat_model = query_response.chat_model
-            retrieval = query_response.retrieval
-        except FileNotFoundError:
-            pass
+    model = final_state.get("model")
+    answered_at = final_state.get("answered_at") or (timestamp if answer else None)
+    answer_latency_ms = final_state.get("answer_latency_ms")
+    chat_provider = final_state.get("chat_provider")
+    chat_model = final_state.get("chat_model")
+    retrieval_payload = final_state.get("retrieval_result")
+    retrieval = RetrievalResult.model_validate(retrieval_payload) if retrieval_payload else None
 
     tool_execution = None
     tool_plan = None

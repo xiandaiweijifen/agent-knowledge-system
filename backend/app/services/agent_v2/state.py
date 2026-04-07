@@ -29,8 +29,6 @@ class AgentState(TypedDict):
     route: str
     route_reason: str | None
     route_planning_mode: str | None
-    route_reason: str | None
-    route_planning_mode: str | None
 
     # ------------------------------------------------------------------ #
     # Retrieval                                                           #
@@ -53,6 +51,11 @@ class AgentState(TypedDict):
     # ------------------------------------------------------------------ #
     answer: str | None
     answer_source: str | None   # "llm" | "fallback" | "tool_result"
+    model: str | None
+    answered_at: str | None
+    answer_latency_ms: float | None
+    chat_provider: str | None
+    chat_model: str | None
 
     # ------------------------------------------------------------------ #
     # Workflow metadata                                                   #

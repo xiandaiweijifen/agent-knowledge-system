@@ -14,26 +14,27 @@ def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
                     "route_reason": "Knowledge question.",
                     "route_planning_mode": "llm_openai",
                     "workflow_status": "completed",
-                    "answer": "stub answer",
-                    "answer_source": "stub",
+                    "answer": "retrieved answer",
+                    "answer_source": "fallback",
+                    "model": "gemini-2.5-flash",
+                    "answered_at": "2026-04-07T00:00:00+00:00",
+                    "answer_latency_ms": 123.0,
+                    "chat_provider": "gemini",
+                    "chat_model": "gemini-2.5-flash",
+                    "retrieval_result": {
+                        "filename": "doc.txt",
+                        "embedding_provider": "gemini",
+                        "embedding_model": "gemini-embedding-001",
+                        "vector_dim": 3072,
+                        "question": "What is LangGraph?",
+                        "top_k": 3,
+                        "retrieved_at": "2026-04-07T00:00:00+00:00",
+                        "retrieval_latency_ms": 50.0,
+                        "query_embedding_provider": "gemini",
+                        "query_embedding_model": "gemini-embedding-001",
+                        "matches": [],
+                    },
                 },
-            },
-        )(),
-    )
-    monkeypatch.setattr(
-        "app.services.agent_v2.query_service.run_query",
-        lambda filename, question, top_k: type(
-            "QueryResponse",
-            (),
-            {
-                "answer": "retrieved answer",
-                "answer_source": "fallback",
-                "model": "gemini-2.5-flash",
-                "answered_at": "2026-04-07T00:00:00+00:00",
-                "answer_latency_ms": 123.0,
-                "chat_provider": "gemini",
-                "chat_model": "gemini-2.5-flash",
-                "retrieval": None,
             },
         )(),
     )
@@ -50,6 +51,8 @@ def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
     assert response.chat_model == "gemini-2.5-flash"
     assert response.answer_latency_ms == 123.0
     assert response.answered_at == "2026-04-07T00:00:00+00:00"
+    assert response.retrieval is not None
+    assert response.retrieval.filename == "doc.txt"
     assert response.workflow_trace[-1].detail == "retrieved answer"
 
 
@@ -93,20 +96,6 @@ def test_orchestrate_agent_v2_request_passes_thread_config_when_checkpointer_pre
                 "route_reason": "Knowledge question.",
                 "route_planning_mode": "llm_openai",
                 "workflow_status": "completed",
-                "answer": "stub answer",
-                "answer_source": "stub",
-            }
-
-    monkeypatch.setattr(
-        "app.services.agent_v2.query_service.build_graph",
-        lambda checkpointer=None: StubGraph(),
-    )
-    monkeypatch.setattr(
-        "app.services.agent_v2.query_service.run_query",
-        lambda filename, question, top_k: type(
-            "QueryResponse",
-            (),
-            {
                 "answer": "retrieved answer",
                 "answer_source": "fallback",
                 "model": "gemini-2.5-flash",
@@ -114,9 +103,24 @@ def test_orchestrate_agent_v2_request_passes_thread_config_when_checkpointer_pre
                 "answer_latency_ms": 123.0,
                 "chat_provider": "gemini",
                 "chat_model": "gemini-2.5-flash",
-                "retrieval": None,
-            },
-        )(),
+                "retrieval_result": {
+                    "filename": "doc.txt",
+                    "embedding_provider": "gemini",
+                    "embedding_model": "gemini-embedding-001",
+                    "vector_dim": 3072,
+                    "question": "What is LangGraph?",
+                    "top_k": 3,
+                    "retrieved_at": "2026-04-07T00:00:00+00:00",
+                    "retrieval_latency_ms": 50.0,
+                    "query_embedding_provider": "gemini",
+                    "query_embedding_model": "gemini-embedding-001",
+                    "matches": [],
+                },
+            }
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: StubGraph(),
     )
     response = orchestrate_agent_v2_request(
         question="What is LangGraph?",

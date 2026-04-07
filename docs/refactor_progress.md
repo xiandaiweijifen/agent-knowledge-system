@@ -95,7 +95,19 @@
   - 新增：`tests/test_agent_v2_api.py`、`tests/test_agent_v2_query_service.py`
   - 验证：209 tests passed
   - Commit：`feat: expose agent_v2 execution path behind separate api route`
-- [ ] **Package 9** — 工具节点迁移（ticketing / system_status / document_search）
+- [x] **Package 9** — 工具节点迁移（ticketing / system_status / document_search）
+  - 更新：`services/agent_v2/nodes/tool_exec.py` 接入现有 tool planner 和 executor
+  - 更新：`services/agent_v2/query_service.py` 透传 `tool_plan` / `tool_execution`
+  - 新增：`tests/test_agent_v2_tool_node.py`，并扩展 `tests/test_agent_v2_query_service.py`
+  - 验证：212 tests passed
+  - Commit：`feat: wire existing tool execution into agent_v2 tool node`
+- [x] **Package 9.5** — LlamaIndex 检索和 answer 节点接入
+  - 更新：`services/agent_v2/nodes/retrieval.py` 在 graph 内直接调用 `run_query()`
+  - 更新：`services/agent_v2/query_service.py` 直接从 `final_state` 对接 retrieval / answer metadata
+  - 更新：`services/agent_v2/state.py` 增加 answer metadata 字段
+  - 新增：`tests/test_agent_v2_retrieval_node.py`，并更新 graph / query service 测试
+  - 验证：214 tests passed
+  - Commit：`feat: connect llamaindex retrieval and answer nodes in agent_v2`
 - [ ] **Package 10** — 恢复逻辑迁移（Checkpointer 自动处理 resume）
 - [ ] **Package 11** — 澄清节点（LangGraph `interrupt()` 替换 clarification_service）
 
@@ -121,8 +133,10 @@
 - 已完成：Package 7，LangGraph `AgentState` + graph skeleton 已落地
 - 已完成：Package 8，`agent_v2` router 已切换为 LLM-first + legacy fallback
 - 已完成：Package 8.5，`agent_v2` 已可通过独立 API 路径调用
-- 当前下一步：Package 9（工具节点迁移）
-- 测试基线：209 tests passed，0 failed
+- 已完成：Package 9，`agent_v2` 工具路径已执行 ticketing / system_status
+- 已完成：Package 9.5，`agent_v2` knowledge retrieval 已直接运行检索 + answer pipeline
+- 当前下一步：Package 10（Checkpointer resume / recovery）
+- 测试基线：214 tests passed，0 failed
 
 ## 测试基线
 
@@ -138,3 +152,5 @@
 | Package 7 后 | 196 | 0 | 新增 5 个 LangGraph graph 测试 |
 | Package 8 后 | 205 | 0 | 新增 route planner 与 router node 测试 |
 | Package 8.5 后 | 209 | 0 | 新增 agent_v2 API 与 query service 测试 |
+| Package 9 后 | 212 | 0 | 新增 tool node 测试，工具路径打通 |
+| Package 9.5 后 | 214 | 0 | 新增 retrieval node 测试，agent_v2 检索路径打通 |
