@@ -1,4 +1,7 @@
+import json
+
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 
 from app.schemas.query import (
     AgentRecoverRequest,
@@ -35,6 +38,7 @@ from app.services.agent_v2.query_service import (
     list_agent_v2_runs,
     orchestrate_agent_v2_request,
     resume_agent_v2_request,
+    stream_agent_v2_request,
 )
 from app.schemas.tools import (
     ToolCatalogResponse,
@@ -101,6 +105,37 @@ def orchestrate_agent_v2_query(
         raise HTTPException(
             status_code=404,
             detail="Persisted embedding file not found. Generate embeddings first",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/agent-v2/stream")
+def stream_agent_v2_query(
+    request: AgentQueryRequest,
+    fastapi_request: Request,
+) -> StreamingResponse:
+    try:
+        checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+
+        def event_stream():
+            for event in stream_agent_v2_request(
+                question=request.question,
+                filename=request.filename,
+                top_k=request.top_k,
+                checkpointer=checkpointer,
+            ):
+                event_name = event.get("event_type", "message")
+                yield f"event: {event_name}\n"
+                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
+        return StreamingResponse(
+            event_stream(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+            },
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

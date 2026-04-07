@@ -95,6 +95,44 @@ def test_resume_agent_v2_endpoint_returns_persisted_response(monkeypatch):
     assert payload["answer"] == "Resumed answer"
 
 
+def test_query_agent_v2_stream_endpoint_returns_sse_events(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.routes.query.stream_agent_v2_request",
+        lambda question, filename=None, top_k=3, checkpointer=None: iter(
+            [
+                {
+                    "event_type": "status",
+                    "stage": "start",
+                    "status": "in_progress",
+                    "detail": "Agent workflow started.",
+                    "timestamp": "2026-04-08T00:00:00+00:00",
+                    "payload": {"question": question},
+                },
+                {
+                    "event_type": "result",
+                    "response": {
+                        "question": question,
+                        "workflow_status": "completed",
+                    },
+                },
+            ]
+        ),
+    )
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent-v2/stream",
+        json={
+            "question": "What is LangGraph?",
+            "filename": "doc.txt",
+            "top_k": 3,
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert "event: status" in response.text
+    assert "event: result" in response.text
+
+
 def test_list_agent_v2_runs_endpoint_returns_runs(monkeypatch):
     monkeypatch.setattr(
         "app.api.routes.query.list_agent_v2_runs",

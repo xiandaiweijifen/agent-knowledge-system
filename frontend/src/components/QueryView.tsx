@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type {
+  AgentStreamEvent,
   AgentWorkflowResponse,
   AgentWorkflowRunSummary,
   DiagnosticsResponse,
@@ -21,6 +22,7 @@ type QueryViewProps = {
   activePresetQuestions: string[];
   queryResult: QueryResponse | null;
   agentQueryResult: AgentWorkflowResponse | null;
+  agentStreamEvents?: AgentStreamEvent[];
   agentWorkflowRuns: AgentWorkflowRunSummary[];
   diagnosticsResult: DiagnosticsResponse | null;
   queryError: string;
@@ -49,6 +51,7 @@ export function QueryView({
   activePresetQuestions,
   queryResult,
   agentQueryResult,
+  agentStreamEvents = [],
   agentWorkflowRuns,
   diagnosticsResult,
   queryError,
@@ -68,6 +71,7 @@ export function QueryView({
   const [runRecoveryFilter, setRunRecoveryFilter] = useState("all");
   const [focusedChainRootRunId, setFocusedChainRootRunId] = useState<string | null>(null);
   const [collapsedChainRootRunIds, setCollapsedChainRootRunIds] = useState<string[]>([]);
+  const hasAgentWorkflowOutput = Boolean(agentQueryResult) || agentStreamEvents.length > 0;
   const queryCopy =
     locale === "zh"
       ? {
@@ -92,6 +96,8 @@ export function QueryView({
           noDocumentHint:
             "当前未选择文档上下文。仅检索类操作会被禁用，但 Agent 工具工作流仍可运行。",
           runningQuery: "正在运行查询工作流...",
+          liveExecution: "实时执行事件",
+          liveExecutionCopy: "展示 agent_v2 在路由、检索、工具执行和完成阶段发出的安全事件流。",
           agentWorkflow: "Agent 工作流",
           workflowStatus: "工作流状态",
           route: "路由",
@@ -264,6 +270,9 @@ export function QueryView({
           noDocumentHint:
             "No document context selected. Retrieval-only actions are disabled, but agent tool workflows can still run.",
           runningQuery: "Running query workflow...",
+          liveExecution: "Live Execution Events",
+          liveExecutionCopy:
+            "Shows the safe event stream emitted by agent_v2 during routing, retrieval, tool execution, and completion.",
           agentWorkflow: "Agent Workflow",
           workflowStatus: "Workflow Status",
           route: "Route",
@@ -1041,8 +1050,9 @@ export function QueryView({
           <div className="panel-heading">
             <h2>{queryCopy.agentWorkflow}</h2>
           </div>
-          {agentQueryResult ? (
+          {hasAgentWorkflowOutput ? (
             <div className="result-stack">
+              {agentQueryResult && (
               <div className="trace-grid">
                 <div>
                     <span className="trace-label">{queryCopy.workflowStatus}</span>
@@ -1061,7 +1071,29 @@ export function QueryView({
                     <strong>{agentQueryResult.tool_plan?.tool_name ?? queryCopy.notUsed}</strong>
                 </div>
               </div>
+              )}
 
+              {agentStreamEvents.length > 0 && (
+                <article className="subsection-card">
+                  <span className="section-label">{queryCopy.liveExecution}</span>
+                  <p className="subsection-copy">{queryCopy.liveExecutionCopy}</p>
+                  <div className="trace-event-list">
+                    {agentStreamEvents.map((event) => (
+                      <article key={event.event_id} className="trace-event-card">
+                        <header>
+                          <strong>{event.stage}</strong>
+                          <span>{event.status}</span>
+                        </header>
+                        <p>{event.detail}</p>
+                        <small>{event.timestamp}</small>
+                      </article>
+                    ))}
+                  </div>
+                </article>
+              )}
+
+              {agentQueryResult && (
+              <>
               <article className="subsection-card">
                 <span className="section-label">{queryCopy.routeReason}</span>
                 <p className="subsection-copy">{agentQueryResult.route.route_reason}</p>
@@ -1442,6 +1474,8 @@ export function QueryView({
                   </article>
                 ))}
               </div>
+              </>
+              )}
             </div>
           ) : (
             <div className="empty-state empty-state-large">

@@ -1327,5 +1327,56 @@ describe("QueryView", () => {
       document_scope: "rag_overview.md",
     });
   });
+
+  it("renders live execution events before the final workflow payload is available", () => {
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Create a ticket for payment-service outage"
+        topK={3}
+        activePresetQuestions={["Create a ticket for payment-service outage"]}
+        queryResult={null}
+        agentQueryResult={null}
+        agentStreamEvents={[
+          {
+            event_id: "evt-1",
+            event_type: "status",
+            stage: "start",
+            status: "in_progress",
+            detail: "Agent workflow started.",
+            timestamp: "2026-04-08T00:00:00+00:00",
+            payload: {},
+          },
+          {
+            event_id: "evt-2",
+            event_type: "node_update",
+            stage: "routing",
+            status: "in_progress",
+            detail: "Route selected: tool_execution. Execution request.",
+            timestamp: "2026-04-08T00:00:01+00:00",
+            payload: {},
+          },
+        ]}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={true}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Live Execution Events")).toBeInTheDocument();
+    expect(screen.getByText("Agent workflow started.")).toBeInTheDocument();
+    expect(screen.getByText(/Route selected: tool_execution/)).toBeInTheDocument();
+  });
 });
 

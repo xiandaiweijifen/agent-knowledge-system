@@ -116,6 +116,16 @@ export type WorkflowTraceEvent = {
   detail: string;
 };
 
+export type AgentStreamEvent = {
+  event_id: string;
+  event_type: string;
+  stage: string;
+  status: string;
+  detail: string;
+  timestamp: string;
+  payload: Record<string, unknown>;
+};
+
 export type RouteDecision = {
   route_type: string;
   route_reason: string;

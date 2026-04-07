@@ -136,7 +136,14 @@
   - 新增：`tests/test_agent_v2_tracing.py`，并扩展 `tests/test_agent_v2_query_service.py`
   - 验证：225 tests passed
   - Commit：`feat: add langsmith tracing for agent_v2 runtime`
-- [ ] **Package 13** — FastAPI SSE streaming，前端实时展示 Agent 思考过程
+- [x] **Package 13** — FastAPI SSE streaming，前端实时展示 Agent 执行事件
+  - 更新：`api/routes/query.py` 新增 `/api/query/agent-v2/stream`，以 `text/event-stream` 推送 agent_v2 执行事件
+  - 更新：`services/agent_v2/query_service.py` 新增流式执行路径，复用统一 response 构建逻辑，并在 stream 中发出 routing / retrieval / tool_execution / clarification / completed 事件
+  - 更新：`frontend/src/api.ts` 新增 `runAgentQueryStream()`，基于 `fetch + ReadableStream` 解析 SSE
+  - 更新：`frontend/src/App.tsx` / `frontend/src/components/QueryView.tsx`，前端实时展示执行事件流并在结束后落地最终 workflow 结果
+  - 新增/更新：后端 query service / API 测试、前端 QueryView 测试
+  - 验证：227 tests passed
+  - Commit：`feat: add sse streaming for agent_v2 execution events`
 
 ---
 
@@ -157,8 +164,8 @@
 - 已完成：Package 9.5，`agent_v2` knowledge retrieval 已直接运行检索 + answer pipeline
 - 已完成：Package 10，`agent_v2` 已支持 run 持久化、查询和 checkpoint resume 骨架
 - 已完成：Package 11，`agent_v2` 已支持 clarification interrupt 与 resume 后继续执行
-- 当前下一步：Phase 4 / Package 13（FastAPI SSE streaming）
-- 测试基线：225 tests passed，0 failed
+- 当前下一步：Phase 5 / Package 14（Supervisor + 专门子 Agent 拆分）
+- 测试基线：227 tests passed，0 failed
 
 ## 测试基线
 

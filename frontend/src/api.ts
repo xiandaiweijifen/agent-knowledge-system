@@ -1,4 +1,5 @@
 import type {
+  AgentStreamEvent,
   AgentWorkflowResponse,
   AgentWorkflowRunListResponse,
   AgentEvalDatasetListResponse,
@@ -36,6 +37,31 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   return response.json() as Promise<T>;
+}
+
+function parseSseBlock(block: string): { event: string; data: string } | null {
+  const lines = block
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    return null;
+  }
+
+  let eventName = "message";
+  const dataLines: string[] = [];
+  for (const line of lines) {
+    if (line.startsWith("event:")) {
+      eventName = line.slice("event:".length).trim();
+    } else if (line.startsWith("data:")) {
+      dataLines.push(line.slice("data:".length).trim());
+    }
+  }
+
+  return {
+    event: eventName,
+    data: dataLines.join("\n"),
+  };
 }
 
 export function fetchDocuments() {
@@ -140,6 +166,71 @@ export function runAgentQuery(filename: string, question: string, topK: number) 
       top_k: topK,
     }),
   });
+}
+
+export async function runAgentQueryStream(
+  filename: string,
+  question: string,
+  topK: number,
+  onEvent: (event: AgentStreamEvent) => void,
+) {
+  const response = await fetch("/api/query/agent-v2/stream", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      filename: filename || null,
+      question,
+      top_k: topK,
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Request failed: ${response.status}`);
+  }
+
+  if (!response.body) {
+    throw new Error("Streaming response body is not available");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let finalResponse: AgentWorkflowResponse | null = null;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+
+    buffer += decoder.decode(value, { stream: true });
+    const blocks = buffer.split("\n\n");
+    buffer = blocks.pop() ?? "";
+
+    for (const block of blocks) {
+      const parsed = parseSseBlock(block);
+      if (!parsed) {
+        continue;
+      }
+      const payload = JSON.parse(parsed.data);
+      if (parsed.event === "result") {
+        finalResponse = payload.response as AgentWorkflowResponse;
+      } else if (parsed.event === "error") {
+        throw new Error(payload.detail || "Agent stream failed");
+      } else {
+        onEvent(payload as AgentStreamEvent);
+      }
+    }
+  }
+
+  if (!finalResponse) {
+    throw new Error("Agent stream ended without a final result");
+  }
+
+  return finalResponse;
 }
 
 export function fetchAgentWorkflowRuns(limit = 10) {

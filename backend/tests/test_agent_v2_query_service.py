@@ -1,6 +1,6 @@
 from langgraph.types import Command
 
-from app.services.agent_v2.query_service import orchestrate_agent_v2_request
+from app.services.agent_v2.query_service import orchestrate_agent_v2_request, stream_agent_v2_request
 
 
 def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
@@ -281,6 +281,99 @@ def test_orchestrate_agent_v2_request_returns_tool_result(monkeypatch):
     assert response.tool_plan["tool_name"] == "ticketing"
     assert response.tool_execution["execution_status"] == "completed"
     assert response.workflow_trace[-1].detail == "Tool execution node completed in agent_v2."
+
+
+def test_stream_agent_v2_request_emits_updates_and_final_result(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.trace_agent_v2_run",
+        lambda **kwargs: type(
+            "TraceContext",
+            (),
+            {
+                "__enter__": lambda self: "stream-trace",
+                "__exit__": lambda self, exc_type, exc, tb: False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.finalize_agent_v2_trace",
+        lambda trace_run, *, response=None, error=None: None,
+    )
+
+    class StubGraph:
+        def stream(self, state, config=None, stream_mode=None):
+            assert stream_mode == "updates"
+            yield {
+                "router": {
+                    "route": "tool_execution",
+                    "route_reason": "Execution request.",
+                    "route_planning_mode": "llm_openai",
+                    "workflow_status": "in_progress",
+                }
+            }
+            yield {
+                "tool_exec": {
+                    "tool_chain": [
+                        {
+                            "step_id": "step_1",
+                            "step_index": 1,
+                            "step_status": "completed",
+                            "attempt_count": 1,
+                            "retried": False,
+                            "started_at": "2026-04-07T00:00:00+00:00",
+                            "completed_at": "2026-04-07T00:00:01+00:00",
+                            "question": "Create a ticket",
+                            "tool_plan": {
+                                "tool_name": "ticketing",
+                                "action": "create",
+                                "target": "payment-service",
+                                "arguments": {"severity": "high"},
+                            },
+                            "tool_execution": {
+                                "tool_name": "ticketing",
+                                "action": "create",
+                                "target": "payment-service",
+                                "execution_status": "completed",
+                                "result_summary": "Created ticket TICKET-0001 for payment-service.",
+                            },
+                        }
+                    ],
+                    "answer": "Created ticket TICKET-0001 for payment-service.",
+                    "answer_source": "tool_result",
+                    "workflow_status": "completed",
+                }
+            }
+            yield {
+                "answer": {
+                    "answer": "Created ticket TICKET-0001 for payment-service.",
+                    "answer_source": "tool_result",
+                    "workflow_status": "completed",
+                }
+            }
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: StubGraph(),
+    )
+
+    events = list(
+        stream_agent_v2_request(
+            question="Create a ticket",
+            filename=None,
+            top_k=3,
+        )
+    )
+
+    assert events[0]["stage"] == "start"
+    assert events[1]["stage"] == "routing"
+    assert events[2]["stage"] == "tool_execution"
+    assert events[-2]["stage"] == "workflow"
+    assert events[-1]["event_type"] == "result"
+    assert events[-1]["response"]["answer"] == "Created ticket TICKET-0001 for payment-service."
 
 
 def test_resume_agent_v2_request_rehydrates_from_checkpoint(monkeypatch):

@@ -30,6 +30,7 @@ import {
   runAgentWorkflowEvaluation as runAgentWorkflowEvaluationRequest,
   runToolExecutionEvaluation as runToolExecutionEvaluationRequest,
   runAgentQuery as runAgentQueryRequest,
+  runAgentQueryStream as runAgentQueryStreamRequest,
   runDiagnostics as runDiagnosticsRequest,
   runEvaluation as runEvaluationRequest,
   runQuery as runQueryRequest,
@@ -42,6 +43,7 @@ import { getViews, presetQuestions } from "./constants";
 import type {
   AgentWorkflowResponse,
   AgentWorkflowRunSummary,
+  AgentStreamEvent,
   AgentEvalDatasetInfo,
   AgentRouteEvalReportResponse,
   AgentWorkflowEvalReportResponse,
@@ -87,6 +89,7 @@ function App() {
   const [topK, setTopK] = useState(3);
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
   const [agentQueryResult, setAgentQueryResult] = useState<AgentWorkflowResponse | null>(null);
+  const [agentStreamEvents, setAgentStreamEvents] = useState<AgentStreamEvent[]>([]);
   const [agentWorkflowRuns, setAgentWorkflowRuns] = useState<AgentWorkflowRunSummary[]>([]);
   const [diagnosticsResult, setDiagnosticsResult] = useState<DiagnosticsResponse | null>(null);
   const [queryError, setQueryError] = useState("");
@@ -246,6 +249,7 @@ function App() {
   function resetQueryOutputs() {
     setQueryResult(null);
     setAgentQueryResult(null);
+    setAgentStreamEvents([]);
     setDiagnosticsResult(null);
     setQueryError("");
   }
@@ -622,13 +626,24 @@ function App() {
     setQueryBusy(true);
     setQueryError("");
     setAgentQueryResult(null);
+    setAgentStreamEvents([]);
 
     try {
-      const payload = await runAgentQueryRequest(queryFilename, question, topK);
+      const payload = await runAgentQueryStreamRequest(queryFilename, question, topK, (event) => {
+        setAgentStreamEvents((current) => [...current, event]);
+      });
       setAgentQueryResult(payload);
       await loadAgentWorkflowRuns();
     } catch (error) {
-      setQueryError(error instanceof Error ? error.message : "Failed to run agent workflow");
+      try {
+        const payload = await runAgentQueryRequest(queryFilename, question, topK);
+        setAgentQueryResult(payload);
+        await loadAgentWorkflowRuns();
+      } catch (fallbackError) {
+        setQueryError(
+          fallbackError instanceof Error ? fallbackError.message : "Failed to run agent workflow",
+        );
+      }
     } finally {
       setQueryBusy(false);
     }
@@ -898,6 +913,7 @@ function App() {
           activePresetQuestions={activePresetQuestions}
           queryResult={queryResult}
           agentQueryResult={agentQueryResult}
+          agentStreamEvents={agentStreamEvents}
           agentWorkflowRuns={agentWorkflowRuns}
           diagnosticsResult={diagnosticsResult}
           queryError={queryError}
