@@ -154,10 +154,12 @@ def orchestrate_agent_v2_request(
             pass
 
     tool_execution = None
+    tool_plan = None
     tool_chain = final_state.get("tool_chain") or []
     if tool_chain:
         last_step = tool_chain[-1]
         if isinstance(last_step, dict):
+            tool_plan = last_step.get("tool_plan")
             tool_execution = last_step.get("tool_execution")
 
     clarification_question = final_state.get("clarification_question")
@@ -194,6 +196,7 @@ def orchestrate_agent_v2_request(
         chat_model=chat_model,
         retrieval=retrieval,
         clarification_message=clarification_question,
+        tool_plan=tool_plan,
         tool_execution=tool_execution,
         tool_chain=tool_chain,
     )

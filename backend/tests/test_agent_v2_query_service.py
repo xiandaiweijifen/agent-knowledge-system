@@ -127,3 +127,60 @@ def test_orchestrate_agent_v2_request_passes_thread_config_when_checkpointer_pre
     assert response.run_id
     assert captured["config"]["configurable"]["thread_id"] == response.run_id
     assert captured["config"]["configurable"]["checkpoint_ns"] == "agent_v2"
+
+
+def test_orchestrate_agent_v2_request_returns_tool_result(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.agent_graph",
+        type(
+            "Graph",
+            (),
+            {
+                "invoke": lambda self, state, config=None: {
+                    **state,
+                    "route": "tool_execution",
+                    "route_reason": "Execution request.",
+                    "route_planning_mode": "llm_openai",
+                    "workflow_status": "completed",
+                    "answer": "Created ticket TICKET-0001 for payment-service.",
+                    "answer_source": "tool_result",
+                    "tool_chain": [
+                        {
+                            "step_id": "step_1",
+                            "step_index": 1,
+                            "step_status": "completed",
+                            "attempt_count": 1,
+                            "retried": False,
+                            "started_at": "2026-04-07T00:00:00+00:00",
+                            "completed_at": "2026-04-07T00:00:00+00:00",
+                            "question": "Create a ticket for payment-service outage",
+                            "tool_plan": {
+                                "tool_name": "ticketing",
+                                "action": "create",
+                                "target": "payment-service",
+                                "arguments": {"severity": "high"},
+                            },
+                            "tool_execution": {
+                                "tool_name": "ticketing",
+                                "action": "create",
+                                "target": "payment-service",
+                                "execution_status": "completed",
+                                "result_summary": "Created ticket TICKET-0001 for payment-service.",
+                            },
+                        }
+                    ],
+                },
+            },
+        )(),
+    )
+    response = orchestrate_agent_v2_request(
+        question="Create a ticket for payment-service outage",
+        filename=None,
+        top_k=3,
+    )
+    assert response.route.route_type == "tool_execution"
+    assert response.answer == "Created ticket TICKET-0001 for payment-service."
+    assert response.answer_source == "tool_result"
+    assert response.tool_plan["tool_name"] == "ticketing"
+    assert response.tool_execution["execution_status"] == "completed"
+    assert response.workflow_trace[-1].detail == "Tool execution node completed in agent_v2."

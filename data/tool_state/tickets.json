@@ -3618,5 +3618,57 @@
     "environment": "unspecified",
     "created_at": "2026-04-07T15:22:43.142809+00:00",
     "updated_at": "2026-04-07T15:22:43.142809+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0249",
+    "ticket_id": "TICKET-0249",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-07T15:33:07.932696+00:00",
+    "updated_at": "2026-04-07T15:33:07.932696+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0250",
+    "ticket_id": "TICKET-0250",
+    "status": "open",
+    "severity": "high",
+    "environment": "unspecified",
+    "created_at": "2026-04-07T15:36:03.568908+00:00",
+    "updated_at": "2026-04-07T15:36:03.568908+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0251",
+    "ticket_id": "TICKET-0251",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-07T15:39:08.549492+00:00",
+    "updated_at": "2026-04-07T15:39:08.549492+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0252",
+    "ticket_id": "TICKET-0252",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-07T15:41:11.675020+00:00",
+    "updated_at": "2026-04-07T15:41:11.675020+00:00"
   }
 ]
