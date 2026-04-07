@@ -3,6 +3,10 @@ from app.services.agent_v2.query_service import orchestrate_agent_v2_request
 
 def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
     monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+    monkeypatch.setattr(
         "app.services.agent_v2.query_service.agent_graph",
         type(
             "Graph",
@@ -57,6 +61,10 @@ def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
 
 
 def test_orchestrate_agent_v2_request_returns_clarification_response(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
     monkeypatch.setattr(
         "app.services.agent_v2.query_service.agent_graph",
         type(
@@ -122,6 +130,10 @@ def test_orchestrate_agent_v2_request_passes_thread_config_when_checkpointer_pre
         "app.services.agent_v2.query_service.build_graph",
         lambda checkpointer=None: StubGraph(),
     )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
     response = orchestrate_agent_v2_request(
         question="What is LangGraph?",
         filename="doc.txt",
@@ -130,10 +142,13 @@ def test_orchestrate_agent_v2_request_passes_thread_config_when_checkpointer_pre
     )
     assert response.run_id
     assert captured["config"]["configurable"]["thread_id"] == response.run_id
-    assert captured["config"]["configurable"]["checkpoint_ns"] == "agent_v2"
 
 
 def test_orchestrate_agent_v2_request_returns_tool_result(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
     monkeypatch.setattr(
         "app.services.agent_v2.query_service.agent_graph",
         type(
@@ -188,3 +203,75 @@ def test_orchestrate_agent_v2_request_returns_tool_result(monkeypatch):
     assert response.tool_plan["tool_name"] == "ticketing"
     assert response.tool_execution["execution_status"] == "completed"
     assert response.workflow_trace[-1].detail == "Tool execution node completed in agent_v2."
+
+
+def test_resume_agent_v2_request_rehydrates_from_checkpoint(monkeypatch):
+    from app.schemas.query import RouteDecision, AgentWorkflowResponse
+    from app.services.agent_v2.query_service import resume_agent_v2_request
+
+    persisted_run = AgentWorkflowResponse(
+        run_id="run-123",
+        question="What is LangGraph?",
+        workflow_status="completed",
+        route=RouteDecision(
+            route_type="knowledge_retrieval",
+            route_reason="Knowledge question.",
+            filename="doc.txt",
+        ),
+        answer="old answer",
+        answer_source="fallback",
+        model="gemini-2.5-flash",
+        answered_at="2026-04-07T00:00:00+00:00",
+        answer_latency_ms=123.0,
+        chat_provider="gemini",
+        chat_model="gemini-2.5-flash",
+        filename="doc.txt",
+        started_at="2026-04-07T00:00:00+00:00",
+        completed_at="2026-04-07T00:00:00+00:00",
+        last_updated_at="2026-04-07T00:00:00+00:00",
+    )
+
+    class StubSnapshot:
+        values = {
+            "question": "What is LangGraph?",
+            "filename": "doc.txt",
+            "route": "knowledge_retrieval",
+            "route_reason": "Knowledge question.",
+            "workflow_status": "completed",
+            "answer": "resumed answer",
+            "answer_source": "fallback",
+            "model": "gemini-2.5-flash",
+            "answered_at": "2026-04-07T00:00:01+00:00",
+            "answer_latency_ms": 99.0,
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "retrieval_result": None,
+            "tool_chain": [],
+        }
+
+    class StubGraph:
+        def get_state(self, config):
+            return StubSnapshot()
+
+        def invoke(self, payload, config=None):
+            assert payload is None
+            return dict(StubSnapshot.values)
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: persisted_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: StubGraph(),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+
+    response = resume_agent_v2_request(run_id="run-123", checkpointer=object())
+    assert response.run_id == "run-123"
+    assert response.resume_source_type == "run_id"
+    assert response.resume_strategy == "checkpoint_resume"
+    assert response.answer == "resumed answer"

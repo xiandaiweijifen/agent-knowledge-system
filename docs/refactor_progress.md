@@ -108,7 +108,13 @@
   - 新增：`tests/test_agent_v2_retrieval_node.py`，并更新 graph / query service 测试
   - 验证：214 tests passed
   - Commit：`feat: connect llamaindex retrieval and answer nodes in agent_v2`
-- [ ] **Package 10** — 恢复逻辑迁移（Checkpointer 自动处理 resume）
+- [x] **Package 10** — 恢复逻辑迁移（Checkpointer 自动处理 resume）
+  - 新增：`services/agent_v2/run_store.py`，独立持久化 `agent_v2` workflow runs
+  - 更新：`services/agent_v2/query_service.py` 持久化每次运行结果，并支持基于 checkpoint 的最小 resume
+  - 更新：`api/routes/query.py` 新增 `/api/query/agent-v2/resume`、`/api/query/agent-v2/runs`、`/api/query/agent-v2/runs/{run_id}`
+  - 新增：`tests/test_agent_v2_run_store.py`，并扩展 `tests/test_agent_v2_api.py` / `tests/test_agent_v2_query_service.py`
+  - 验证：220 tests passed
+  - Commit：`feat: add checkpoint-backed run persistence and resume for agent_v2`
 - [ ] **Package 11** — 澄清节点（LangGraph `interrupt()` 替换 clarification_service）
 
 ---
@@ -135,8 +141,9 @@
 - 已完成：Package 8.5，`agent_v2` 已可通过独立 API 路径调用
 - 已完成：Package 9，`agent_v2` 工具路径已执行 ticketing / system_status
 - 已完成：Package 9.5，`agent_v2` knowledge retrieval 已直接运行检索 + answer pipeline
-- 当前下一步：Package 10（Checkpointer resume / recovery）
-- 测试基线：214 tests passed，0 failed
+- 已完成：Package 10，`agent_v2` 已支持 run 持久化、查询和 checkpoint resume 骨架
+- 当前下一步：Package 11（LangGraph interrupt 澄清流迁移）
+- 测试基线：220 tests passed，0 failed
 
 ## 测试基线
 
@@ -154,3 +161,4 @@
 | Package 8.5 后 | 209 | 0 | 新增 agent_v2 API 与 query service 测试 |
 | Package 9 后 | 212 | 0 | 新增 tool node 测试，工具路径打通 |
 | Package 9.5 后 | 214 | 0 | 新增 retrieval node 测试，agent_v2 检索路径打通 |
+| Package 10 后 | 220 | 0 | 新增 run store / resume API 测试，agent_v2 持久化链路打通 |

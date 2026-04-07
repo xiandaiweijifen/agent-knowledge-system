@@ -30,7 +30,12 @@ from app.services.agent.orchestrator_service import (
     reset_persisted_workflow_runs,
     resume_agent_request,
 )
-from app.services.agent_v2.query_service import orchestrate_agent_v2_request
+from app.services.agent_v2.query_service import (
+    get_persisted_agent_v2_run,
+    list_agent_v2_runs,
+    orchestrate_agent_v2_request,
+    resume_agent_v2_request,
+)
 from app.schemas.tools import (
     ToolCatalogResponse,
     ToolExecutionRequest,
@@ -97,6 +102,43 @@ def orchestrate_agent_v2_query(
             status_code=404,
             detail="Persisted embedding file not found. Generate embeddings first",
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/agent-v2/resume", response_model=AgentWorkflowResponse)
+def resume_agent_v2_query(
+    request: AgentResumeRequest,
+    fastapi_request: Request,
+) -> AgentWorkflowResponse:
+    try:
+        if not request.run_id:
+            raise ValueError("run_id_required_for_agent_v2_resume")
+        checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+        return resume_agent_v2_request(
+            run_id=request.run_id,
+            checkpointer=checkpointer,
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/query/agent-v2/runs", response_model=AgentWorkflowRunListResponse)
+def list_agent_v2_workflow_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
+    try:
+        return list_agent_v2_runs(limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/query/agent-v2/runs/{run_id}", response_model=AgentWorkflowResponse)
+def get_agent_v2_workflow_run(run_id: str) -> AgentWorkflowResponse:
+    try:
+        return get_persisted_agent_v2_run(run_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
