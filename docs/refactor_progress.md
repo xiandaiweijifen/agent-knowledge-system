@@ -40,9 +40,12 @@
   - 验证：181 tests passed，DATABASE_URL 为空时优雅降级
   - Commit：`feat: init AsyncPostgresSaver in FastAPI lifespan (Package 2)`
 
-- [ ] **Package 3** — Redis 会话缓存接入
-  - 目标：planner cache 从内存改为 Redis
-  - 影响文件：`services/llm/planner_cache_service.py`
+- [x] **Package 3** — Redis 客户端基础设施
+  - 新增：`storage/cache/redis_client.py`（async client + lifespan）
+  - 更新：`main.py` lifespan 嵌套挂载 `app.state.redis`
+  - planner cache 暂保持内存实现（Phase 3 重写时整体替换）
+  - 验证：181 tests passed，REDIS_URL 为空时优雅降级
+  - Commit：`feat: add Redis async client to FastAPI lifespan (Package 3)`
 
 ---
 
@@ -79,7 +82,7 @@
 
 ## 当前状态
 
-**进行中**：Package 2 完成，准备进入 Package 3（Redis planner cache）。
+**进行中**：Package 3 完成，准备进入 Package 4（LlamaIndex RAG 管道）。
 
 ## 测试基线
 
@@ -88,3 +91,4 @@
 | 重构启动前 | 181 | 0 | 基线 |
 | Package 1 后 | 181 | 0 | LangGraph 依赖不影响现有测试 |
 | Package 2 后 | 181 | 0 | FastAPI lifespan + checkpointer 不影响现有测试 |
+| Package 3 后 | 181 | 0 | Redis client 不影响现有测试 |

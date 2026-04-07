@@ -11,13 +11,16 @@ from app.api.routes.evaluation import router as evaluation_router
 from app.api.routes.query import router as query_router
 from app.core.config import settings
 from app.storage.db.checkpoint import checkpointer_lifespan
+from app.storage.cache.redis_client import redis_lifespan
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with checkpointer_lifespan(settings.database_url) as checkpointer:
-        app.state.checkpointer = checkpointer
-        yield
+        async with redis_lifespan(settings.redis_url) as redis:
+            app.state.checkpointer = checkpointer
+            app.state.redis = redis
+            yield
 
 
 app = FastAPI(title="Agent Knowledge System", lifespan=lifespan)
