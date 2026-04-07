@@ -28,6 +28,11 @@ def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
             {
                 "answer": "retrieved answer",
                 "answer_source": "fallback",
+                "model": "gemini-2.5-flash",
+                "answered_at": "2026-04-07T00:00:00+00:00",
+                "answer_latency_ms": 123.0,
+                "chat_provider": "gemini",
+                "chat_model": "gemini-2.5-flash",
                 "retrieval": None,
             },
         )(),
@@ -40,6 +45,12 @@ def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
     assert response.route.route_type == "knowledge_retrieval"
     assert response.answer == "retrieved answer"
     assert response.workflow_planning_mode == "llm_openai"
+    assert response.model == "gemini-2.5-flash"
+    assert response.chat_provider == "gemini"
+    assert response.chat_model == "gemini-2.5-flash"
+    assert response.answer_latency_ms == 123.0
+    assert response.answered_at == "2026-04-07T00:00:00+00:00"
+    assert response.workflow_trace[-1].detail == "retrieved answer"
 
 
 def test_orchestrate_agent_v2_request_returns_clarification_response(monkeypatch):
@@ -98,6 +109,11 @@ def test_orchestrate_agent_v2_request_passes_thread_config_when_checkpointer_pre
             {
                 "answer": "retrieved answer",
                 "answer_source": "fallback",
+                "model": "gemini-2.5-flash",
+                "answered_at": "2026-04-07T00:00:00+00:00",
+                "answer_latency_ms": 123.0,
+                "chat_provider": "gemini",
+                "chat_model": "gemini-2.5-flash",
                 "retrieval": None,
             },
         )(),

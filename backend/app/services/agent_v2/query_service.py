@@ -46,7 +46,13 @@ def _build_terminal_reason(final_state: dict[str, Any]) -> str:
     return "agent_v2_completed"
 
 
-def _build_workflow_trace(final_state: dict[str, Any], timestamp: str) -> list[WorkflowTraceEvent]:
+def _build_workflow_trace(
+    final_state: dict[str, Any],
+    *,
+    timestamp: str,
+    answer_detail: str | None = None,
+    clarification_detail: str | None = None,
+) -> list[WorkflowTraceEvent]:
     route = final_state.get("route") or "knowledge_retrieval"
     route_reason = final_state.get("route_reason") or "No route reason provided."
     workflow_status = final_state.get("workflow_status") or "completed"
@@ -66,7 +72,9 @@ def _build_workflow_trace(final_state: dict[str, Any], timestamp: str) -> list[W
                 stage="clarification",
                 status=workflow_status,
                 timestamp=timestamp,
-                detail=final_state.get("clarification_question") or "Clarification requested.",
+                detail=clarification_detail
+                or final_state.get("clarification_question")
+                or "Clarification requested.",
             )
         )
     elif route == "tool_execution":
@@ -84,7 +92,7 @@ def _build_workflow_trace(final_state: dict[str, Any], timestamp: str) -> list[W
                 stage="answer",
                 status=workflow_status,
                 timestamp=timestamp,
-                detail=final_state.get("answer") or "Answer generated in agent_v2.",
+                detail=answer_detail or final_state.get("answer") or "Answer generated in agent_v2.",
             )
         )
 
@@ -119,7 +127,13 @@ def orchestrate_agent_v2_request(
     route_reason = final_state.get("route_reason") or "Route selected by agent_v2."
     answer = final_state.get("answer")
     answer_source = final_state.get("answer_source")
+    model = None
+    answered_at = timestamp if answer else None
+    answer_latency_ms = None
+    chat_provider = None
+    chat_model = None
     retrieval = None
+    query_response = None
 
     if route_type == "knowledge_retrieval" and normalized_filename:
         try:
@@ -130,6 +144,11 @@ def orchestrate_agent_v2_request(
             )
             answer = query_response.answer
             answer_source = query_response.answer_source
+            model = query_response.model
+            answered_at = query_response.answered_at
+            answer_latency_ms = query_response.answer_latency_ms
+            chat_provider = query_response.chat_provider
+            chat_model = query_response.chat_model
             retrieval = query_response.retrieval
         except FileNotFoundError:
             pass
@@ -159,11 +178,20 @@ def orchestrate_agent_v2_request(
             route_reason=route_reason,
             filename=normalized_filename,
         ),
-        workflow_trace=_build_workflow_trace(final_state, timestamp),
+        workflow_trace=_build_workflow_trace(
+            final_state,
+            timestamp=timestamp,
+            answer_detail=answer,
+            clarification_detail=clarification_question,
+        ),
         filename=normalized_filename,
         answer=answer,
         answer_source=answer_source,
-        answered_at=timestamp if answer else None,
+        model=model,
+        answered_at=answered_at,
+        answer_latency_ms=answer_latency_ms,
+        chat_provider=chat_provider,
+        chat_model=chat_model,
         retrieval=retrieval,
         clarification_message=clarification_question,
         tool_execution=tool_execution,
