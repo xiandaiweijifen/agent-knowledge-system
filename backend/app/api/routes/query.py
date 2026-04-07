@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from app.schemas.query import (
     AgentRecoverRequest,
@@ -30,6 +30,7 @@ from app.services.agent.orchestrator_service import (
     reset_persisted_workflow_runs,
     resume_agent_request,
 )
+from app.services.agent_v2.query_service import orchestrate_agent_v2_request
 from app.schemas.tools import (
     ToolCatalogResponse,
     ToolExecutionRequest,
@@ -68,6 +69,28 @@ def orchestrate_agent_query(request: AgentQueryRequest) -> AgentWorkflowResponse
             filename=request.filename,
             top_k=request.top_k,
             debug_fault_injection=request.debug_fault_injection,
+        )
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Persisted embedding file not found. Generate embeddings first",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/query/agent-v2", response_model=AgentWorkflowResponse)
+def orchestrate_agent_v2_query(
+    request: AgentQueryRequest,
+    fastapi_request: Request,
+) -> AgentWorkflowResponse:
+    try:
+        checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+        return orchestrate_agent_v2_request(
+            question=request.question,
+            filename=request.filename,
+            top_k=request.top_k,
+            checkpointer=checkpointer,
         )
     except FileNotFoundError:
         raise HTTPException(

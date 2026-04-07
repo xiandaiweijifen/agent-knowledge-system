@@ -89,6 +89,12 @@
   - 新增：`tests/test_route_planner_service.py`、`tests/test_agent_v2_router_node.py`
   - 验证：205 tests passed
   - Commit：`feat: add llm-backed router node for agent_v2 graph`
+- [x] **Package 8.5** — 暴露 `agent_v2` 独立执行入口
+  - 新增：`services/agent_v2/query_service.py`（调用 graph 并适配 `AgentWorkflowResponse`）
+  - 更新：`api/routes/query.py` 新增 `/api/query/agent-v2`
+  - 新增：`tests/test_agent_v2_api.py`、`tests/test_agent_v2_query_service.py`
+  - 验证：209 tests passed
+  - Commit：`feat: expose agent_v2 execution path behind separate api route`
 - [ ] **Package 9** — 工具节点迁移（ticketing / system_status / document_search）
 - [ ] **Package 10** — 恢复逻辑迁移（Checkpointer 自动处理 resume）
 - [ ] **Package 11** — 澄清节点（LangGraph `interrupt()` 替换 clarification_service）
@@ -114,8 +120,9 @@
 
 - 已完成：Package 7，LangGraph `AgentState` + graph skeleton 已落地
 - 已完成：Package 8，`agent_v2` router 已切换为 LLM-first + legacy fallback
-- 当前下一步：Package 8.5（暴露 `agent_v2` 独立执行入口）
-- 测试基线：205 tests passed，0 failed
+- 已完成：Package 8.5，`agent_v2` 已可通过独立 API 路径调用
+- 当前下一步：Package 9（工具节点迁移）
+- 测试基线：209 tests passed，0 failed
 
 ## 测试基线
 
@@ -130,3 +137,4 @@
 | Package 6 后 | 191 | 0 | 新增 5 个 LlamaIndex retrieval 测试 |
 | Package 7 后 | 196 | 0 | 新增 5 个 LangGraph graph 测试 |
 | Package 8 后 | 205 | 0 | 新增 route planner 与 router node 测试 |
+| Package 8.5 后 | 209 | 0 | 新增 agent_v2 API 与 query service 测试 |
