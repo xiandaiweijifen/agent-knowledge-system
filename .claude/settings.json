@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c ':*)"
+      "Bash(python -c ':*)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import llama_index.embeddings.google as g; print\\(dir\\(g\\)\\)\")"
     ]
   }
 }

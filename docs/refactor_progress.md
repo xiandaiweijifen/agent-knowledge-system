@@ -51,9 +51,15 @@
 
 ### Phase 2：LlamaIndex 接管 RAG
 
-- [ ] **Package 4** — LlamaIndex `IngestionPipeline` 替换 chunker + text_extractor
-- [ ] **Package 5** — LlamaIndex `VectorStoreIndex` + pgvector 替换 FAISS 本地文件
-- [ ] **Package 6** — 把 LlamaIndex `QueryEngine` 包成 LangGraph `ToolNode`
+- [x] **Package 4** — 安装 LlamaIndex 依赖 + 验证导入
+  - 新增：`llama-index-core`、`llama-index-embeddings-openai`、`llama-index-embeddings-google`
+  - pgvector 暂缓（Docker 镜像网络问题），改用 `SimpleVectorStore` 文件持久化
+  - 验证：181 tests passed
+  - Commit：`chore: add LlamaIndex dependencies (Package 4)`
+
+- [ ] **Package 5** — LlamaIndex `IngestionPipeline` 替换 chunker + embedding_service
+- [ ] **Package 6** — LlamaIndex `VectorStoreIndex` + `SimpleVectorStore` 替换手写余弦相似度
+- [ ] **Package 6.5** — 切换 pgvector（网络恢复后）
 
 ---
 
@@ -82,7 +88,7 @@
 
 ## 当前状态
 
-**进行中**：Package 3 完成，准备进入 Package 4（LlamaIndex RAG 管道）。
+**进行中**：Package 4 完成，准备进入 Package 5（LlamaIndex IngestionPipeline）。
 
 ## 测试基线
 
@@ -92,3 +98,4 @@
 | Package 1 后 | 181 | 0 | LangGraph 依赖不影响现有测试 |
 | Package 2 后 | 181 | 0 | FastAPI lifespan + checkpointer 不影响现有测试 |
 | Package 3 后 | 181 | 0 | Redis client 不影响现有测试 |
+| Package 4 后 | 181 | 0 | LlamaIndex 依赖不影响现有测试 |
