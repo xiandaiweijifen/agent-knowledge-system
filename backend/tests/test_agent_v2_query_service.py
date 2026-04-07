@@ -275,3 +275,70 @@ def test_resume_agent_v2_request_rehydrates_from_checkpoint(monkeypatch):
     assert response.resume_source_type == "run_id"
     assert response.resume_strategy == "checkpoint_resume"
     assert response.answer == "resumed answer"
+    assert response.completed_at == "2026-04-07T00:00:00+00:00"
+
+
+def test_resume_agent_v2_request_sets_completed_at_when_source_run_was_incomplete(monkeypatch):
+    from app.schemas.query import RouteDecision, AgentWorkflowResponse
+    from app.services.agent_v2.query_service import resume_agent_v2_request
+
+    persisted_run = AgentWorkflowResponse(
+        run_id="run-456",
+        question="What is LangGraph?",
+        workflow_status="in_progress",
+        route=RouteDecision(
+            route_type="knowledge_retrieval",
+            route_reason="Knowledge question.",
+            filename="doc.txt",
+        ),
+        answer=None,
+        answer_source=None,
+        filename="doc.txt",
+        started_at="2026-04-07T00:00:00+00:00",
+        completed_at=None,
+        last_updated_at="2026-04-07T00:00:00+00:00",
+    )
+
+    class StubSnapshot:
+        values = {
+            "question": "What is LangGraph?",
+            "filename": "doc.txt",
+        }
+
+    class StubGraph:
+        def get_state(self, config):
+            return StubSnapshot()
+
+        def invoke(self, payload, config=None):
+            assert payload is None
+            return {
+                "question": "What is LangGraph?",
+                "filename": "doc.txt",
+                "route": "knowledge_retrieval",
+                "route_reason": "Knowledge question.",
+                "workflow_status": "completed",
+                "answer": "resumed answer",
+                "answer_source": "fallback",
+                "tool_chain": [],
+            }
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: persisted_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: StubGraph(),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_utc_timestamp",
+        lambda: "2026-04-07T00:05:00+00:00",
+    )
+
+    response = resume_agent_v2_request(run_id="run-456", checkpointer=object())
+    assert response.completed_at == "2026-04-07T00:05:00+00:00"
+    assert response.last_updated_at == "2026-04-07T00:05:00+00:00"

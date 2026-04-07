@@ -60,6 +60,22 @@ def _build_terminal_reason(final_state: dict[str, Any]) -> str:
     return "agent_v2_completed"
 
 
+def _resolve_resumed_completed_at(
+    *,
+    persisted_run: AgentWorkflowResponse,
+    resumed_state: dict[str, Any],
+    timestamp: str,
+) -> str | None:
+    if persisted_run.completed_at:
+        return persisted_run.completed_at
+
+    resumed_workflow_status = resumed_state.get("workflow_status") or persisted_run.workflow_status
+    if resumed_workflow_status == "completed":
+        return timestamp
+
+    return None
+
+
 def _build_workflow_trace(
     final_state: dict[str, Any],
     *,
@@ -258,7 +274,11 @@ def resume_agent_v2_request(
         failure_stage=resumed_state.get("failure_stage") or persisted_run.failure_stage,
         failure_message=resumed_state.get("error") or persisted_run.failure_message,
         started_at=persisted_run.started_at,
-        completed_at=timestamp if (resumed_state.get("workflow_status") or persisted_run.workflow_status) == "completed" else persisted_run.completed_at,
+        completed_at=_resolve_resumed_completed_at(
+            persisted_run=persisted_run,
+            resumed_state=resumed_state,
+            timestamp=timestamp,
+        ),
         last_updated_at=timestamp,
         workflow_planning_mode=resumed_state.get("route_planning_mode") or persisted_run.workflow_planning_mode,
         tool_planning_mode=persisted_run.tool_planning_mode,
