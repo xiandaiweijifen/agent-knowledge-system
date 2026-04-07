@@ -62,6 +62,65 @@ def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
     assert response.workflow_trace[-1].detail == "retrieved answer"
 
 
+def test_orchestrate_agent_v2_request_finalizes_langsmith_trace(monkeypatch):
+    captured = {}
+
+    class StubTraceContext:
+        def __enter__(self):
+            captured["entered"] = True
+            return "trace-run"
+
+        def __exit__(self, exc_type, exc, tb):
+            captured["exited"] = True
+            return False
+
+    def stub_trace_agent_v2_run(**kwargs):
+        captured["trace_kwargs"] = kwargs
+        return StubTraceContext()
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.trace_agent_v2_run",
+        stub_trace_agent_v2_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.finalize_agent_v2_trace",
+        lambda trace_run, *, response=None, error=None: captured.setdefault(
+            "finalized",
+            {"trace_run": trace_run, "response": response, "error": error},
+        ),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: type(
+            "Graph",
+            (),
+            {
+                "invoke": lambda self, state, config=None: {
+                    **state,
+                    "route": "knowledge_retrieval",
+                    "route_reason": "Knowledge question.",
+                    "workflow_status": "completed",
+                    "answer": "retrieved answer",
+                    "answer_source": "fallback",
+                    "tool_chain": [],
+                },
+            },
+        )(),
+    )
+
+    response = orchestrate_agent_v2_request(question="What is LangGraph?", top_k=3)
+
+    assert captured["trace_kwargs"]["operation"] == "orchestrate"
+    assert captured["trace_kwargs"]["inputs"]["question"] == "What is LangGraph?"
+    assert captured["finalized"]["trace_run"] == "trace-run"
+    assert captured["finalized"]["response"] == response
+    assert captured["finalized"]["error"] is None
+
+
 def test_orchestrate_agent_v2_request_returns_clarification_response(monkeypatch):
     monkeypatch.setattr(
         "app.services.agent_v2.query_service.persist_agent_v2_run",
@@ -434,3 +493,89 @@ def test_resume_agent_v2_request_uses_command_resume_for_clarification(monkeypat
     assert response.answer == "resolved answer"
     assert response.applied_clarification_fields == ["environment"]
     assert response.question_rewritten is True
+
+
+def test_resume_agent_v2_request_finalizes_langsmith_trace(monkeypatch):
+    from app.schemas.query import RouteDecision, AgentWorkflowResponse
+    from app.services.agent_v2.query_service import resume_agent_v2_request
+
+    persisted_run = AgentWorkflowResponse(
+        run_id="run-trace",
+        question="Fix it",
+        workflow_status="clarification_required",
+        route=RouteDecision(
+            route_type="clarification_needed",
+            route_reason="Ambiguous request.",
+            filename=None,
+        ),
+        clarification_message="Could you clarify your question?",
+        started_at="2026-04-07T00:00:00+00:00",
+        last_updated_at="2026-04-07T00:00:00+00:00",
+    )
+    captured = {}
+
+    class StubSnapshot:
+        values = {"question": "Fix it"}
+
+    class StubTraceContext:
+        def __enter__(self):
+            return "resume-trace"
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    def stub_trace_agent_v2_run(**kwargs):
+        captured["trace_kwargs"] = kwargs
+        return StubTraceContext()
+
+    class StubGraph:
+        def get_state(self, config):
+            return StubSnapshot()
+
+        def invoke(self, payload, config=None):
+            return {
+                "question": "Fix it (environment: production)",
+                "route": "tool_execution",
+                "route_reason": "Specific enough.",
+                "workflow_status": "completed",
+                "answer": "resolved answer",
+                "answer_source": "tool_result",
+                "tool_chain": [],
+            }
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: persisted_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: StubGraph(),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.trace_agent_v2_run",
+        stub_trace_agent_v2_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.finalize_agent_v2_trace",
+        lambda trace_run, *, response=None, error=None: captured.setdefault(
+            "finalized",
+            {"trace_run": trace_run, "response": response, "error": error},
+        ),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+
+    response = resume_agent_v2_request(
+        run_id="run-trace",
+        clarification_context={"environment": "production"},
+        checkpointer=object(),
+    )
+
+    assert captured["trace_kwargs"]["operation"] == "resume"
+    assert captured["trace_kwargs"]["inputs"]["run_id"] == "run-trace"
+    assert captured["trace_kwargs"]["inputs"]["clarification_context_keys"] == ["environment"]
+    assert captured["finalized"]["trace_run"] == "resume-trace"
+    assert captured["finalized"]["response"] == response
+    assert captured["finalized"]["error"] is None

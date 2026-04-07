@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     gemini_workflow_planner_model: str = ""
     database_url: str = ""
     redis_url: str = ""
+    langsmith_tracing_enabled: bool = False
+    langsmith_api_key: str = ""
+    langsmith_project: str = "agent-knowledge-system"
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
 
     model_config = SettingsConfigDict(
         env_file=(

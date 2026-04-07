@@ -129,7 +129,13 @@
 
 ### Phase 4：Streaming + Tracing
 
-- [ ] **Package 12** — LangSmith tracing 接入
+- [x] **Package 12** — LangSmith tracing 接入
+  - 新增：`services/agent_v2/tracing.py`，统一封装 LangSmith client、trace context、trace finalize
+  - 更新：`services/agent_v2/query_service.py` 在 orchestrate / resume 外层增加 tracing，记录输入、关键 metadata 和结果摘要
+  - 更新：`app/core/config.py`、`.env.example` 增加 `LANGSMITH_TRACING_ENABLED / LANGSMITH_API_KEY / LANGSMITH_PROJECT / LANGSMITH_ENDPOINT`
+  - 新增：`tests/test_agent_v2_tracing.py`，并扩展 `tests/test_agent_v2_query_service.py`
+  - 验证：225 tests passed
+  - Commit：`feat: add langsmith tracing for agent_v2 runtime`
 - [ ] **Package 13** — FastAPI SSE streaming，前端实时展示 Agent 思考过程
 
 ---
@@ -151,8 +157,8 @@
 - 已完成：Package 9.5，`agent_v2` knowledge retrieval 已直接运行检索 + answer pipeline
 - 已完成：Package 10，`agent_v2` 已支持 run 持久化、查询和 checkpoint resume 骨架
 - 已完成：Package 11，`agent_v2` 已支持 clarification interrupt 与 resume 后继续执行
-- 当前下一步：Phase 4 / Package 12（LangSmith tracing）
-- 测试基线：222 tests passed，0 failed
+- 当前下一步：Phase 4 / Package 13（FastAPI SSE streaming）
+- 测试基线：225 tests passed，0 failed
 
 ## 测试基线
 
