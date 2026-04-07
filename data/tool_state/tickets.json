@@ -3553,5 +3553,18 @@
     "environment": "unspecified",
     "created_at": "2026-04-07T14:35:55.793408+00:00",
     "updated_at": "2026-04-07T14:35:55.793408+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0244",
+    "ticket_id": "TICKET-0244",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-07T14:42:51.569593+00:00",
+    "updated_at": "2026-04-07T14:42:51.569593+00:00"
   }
 ]
