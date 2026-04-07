@@ -9,6 +9,7 @@ python-dotenv
 # --- Database & Cache ---
 sqlalchemy
 psycopg2-binary
+psycopg[binary]
 asyncpg
 redis
 
@@ -17,6 +18,11 @@ httpx
 
 # --- Vector Search ---
 faiss-cpu
+
+# --- LangGraph (Phase 1) ---
+langgraph>=0.2
+langgraph-checkpoint-postgres
+langsmith
 
 # --- Testing ---
 pytest
