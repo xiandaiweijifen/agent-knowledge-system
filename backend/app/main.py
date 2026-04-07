@@ -1,10 +1,26 @@
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
+
+logging.basicConfig(level=logging.INFO)
+
 from app.api.routes.health import router as health_router
 from app.api.routes.documents import router as documents_router
 from app.api.routes.evaluation import router as evaluation_router
 from app.api.routes.query import router as query_router
+from app.core.config import settings
+from app.storage.db.checkpoint import checkpointer_lifespan
 
-app = FastAPI(title="Agent Knowledge System")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with checkpointer_lifespan(settings.database_url) as checkpointer:
+        app.state.checkpointer = checkpointer
+        yield
+
+
+app = FastAPI(title="Agent Knowledge System", lifespan=lifespan)
 
 app.include_router(health_router, prefix="/api")
 app.include_router(documents_router, prefix="/api")

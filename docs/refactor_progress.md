@@ -33,9 +33,12 @@
 
 ### Phase 1：替换持久化层
 
-- [ ] **Package 2** — LangGraph `AsyncPostgresSaver` 替换 `state_store.py`
-  - 目标：workflow runs 写入 Postgres，现有 JSON 逻辑保持兼容
-  - 影响文件：`services/agent/state_store.py`、`core/config.py`
+- [x] **Package 2** — LangGraph `AsyncPostgresSaver` 初始化
+  - 新增：`storage/db/checkpoint.py`（autocommit setup + pool + lifespan）
+  - 更新：`main.py` 加入 FastAPI lifespan，`app.state.checkpointer` 挂载
+  - Postgres 自动创建 4 张 checkpoint 表（checkpoints / blobs / writes / migrations）
+  - 验证：181 tests passed，DATABASE_URL 为空时优雅降级
+  - Commit：`feat: init AsyncPostgresSaver in FastAPI lifespan (Package 2)`
 
 - [ ] **Package 3** — Redis 会话缓存接入
   - 目标：planner cache 从内存改为 Redis
@@ -76,7 +79,7 @@
 
 ## 当前状态
 
-**进行中**：Phase 0 完成，准备进入 Phase 1 Package 2。
+**进行中**：Package 2 完成，准备进入 Package 3（Redis planner cache）。
 
 ## 测试基线
 
@@ -84,3 +87,4 @@
 |------|------|------|------|
 | 重构启动前 | 181 | 0 | 基线 |
 | Package 1 后 | 181 | 0 | LangGraph 依赖不影响现有测试 |
+| Package 2 后 | 181 | 0 | FastAPI lifespan + checkpointer 不影响现有测试 |

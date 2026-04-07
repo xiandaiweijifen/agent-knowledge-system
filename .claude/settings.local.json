@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(wc -l /d/project/agent-knowledge-system/backend/app/services/llm/*.py)"
+      "Bash(wc -l /d/project/agent-knowledge-system/backend/app/services/llm/*.py)",
+      "Bash(python -c ':*)"
     ]
   }
 }
