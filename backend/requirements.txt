@@ -1,12 +1,23 @@
+# --- Web Framework ---
 fastapi
 uvicorn[standard]
 pydantic
 pydantic-settings
 python-multipart
+python-dotenv
+
+# --- Database & Cache ---
 sqlalchemy
 psycopg2-binary
+asyncpg
 redis
-python-dotenv
+
+# --- HTTP ---
 httpx
+
+# --- Vector Search ---
 faiss-cpu
+
+# --- Testing ---
 pytest
+pytest-asyncio
