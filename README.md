@@ -260,6 +260,7 @@ Main implementation areas:
 - `POST /api/query/agent-v2`
 - `POST /api/query/agent-v2/stream`
 - `POST /api/query/agent-v2/resume`
+- `POST /api/query/agent-v2/recover`
 - `GET /api/query/agent-v2/runs`
 - `GET /api/query/agent-v2/runs/{run_id}`
 
@@ -268,6 +269,7 @@ Notes:
 - `/api/query/agent*` is the stable default surface.
 - `/api/query/agent-v2*` is the explicit v2 surface.
 - With `AGENT_DEFAULT_RUNTIME=v2`, the default `/api/query/agent*` surface routes normal query behavior through `agent_v2`.
+- Recovery-capable frontend flows should prefer `/api/query/agent-v2/recover` as the explicit v2 control-plane surface.
 - Legacy maintenance endpoints such as `runs/migrate`, `runs/stats`, `runs/prune`, and `runs/reset` still belong to the legacy control plane.
 
 ### Tools

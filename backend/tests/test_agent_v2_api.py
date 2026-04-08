@@ -95,6 +95,68 @@ def test_resume_agent_v2_endpoint_returns_persisted_response(monkeypatch):
     assert payload["answer"] == "Resumed answer"
 
 
+def test_recover_agent_v2_endpoint_returns_recovered_response(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.routes.query.recover_agent_v2_request",
+        lambda run_id, recovery_action=None, clarification_context=None, checkpointer=None, debug_fault_injection=None: __import__(
+            "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
+        ).AgentWorkflowResponse(
+            run_id="rerun-123",
+            root_run_id=run_id,
+            recovery_depth=1,
+            question="Create a ticket for payment-service outage",
+            source_run_id=run_id,
+            recovered_via_action="manual_retrigger",
+            resume_source_type="run_id",
+            resume_strategy="manual_retrigger_recovery",
+            workflow_status="completed",
+            route=__import__(
+                "app.schemas.query", fromlist=["RouteDecision"]
+            ).RouteDecision(
+                route_type="tool_execution",
+                route_reason="Recovered via explicit v2 endpoint.",
+                filename=None,
+            ),
+            answer="Recovered via v2 recover",
+            answer_source="tool_result",
+        ),
+    )
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent-v2/recover",
+        json={
+            "run_id": "run-failed-123",
+            "recovery_action": "manual_retrigger",
+            "clarification_context": {},
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"] == "rerun-123"
+    assert payload["recovered_via_action"] == "manual_retrigger"
+    assert payload["answer"] == "Recovered via v2 recover"
+
+
+def test_recover_agent_v2_endpoint_returns_400_for_invalid_action(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.routes.query.recover_agent_v2_request",
+        lambda run_id, recovery_action=None, clarification_context=None, checkpointer=None, debug_fault_injection=None: (_ for _ in ()).throw(
+            ValueError("recovery_action_not_supported_for_agent_v2")
+        ),
+    )
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent-v2/recover",
+        json={
+            "run_id": "run-failed-123",
+            "recovery_action": "manual_retrigger",
+            "clarification_context": {},
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "recovery_action_not_supported_for_agent_v2"
+
+
 def test_query_agent_v2_stream_endpoint_returns_sse_events(monkeypatch):
     monkeypatch.setattr(
         "app.api.routes.query.stream_agent_v2_request",

@@ -33,6 +33,13 @@
 - README and demo playbook now describe `agent_v2` as the primary runtime target.
 - Added explicit notes for `AGENT_DEFAULT_RUNTIME`, default entrypoint behavior, and current recovery boundaries.
 
+## Package 18
+
+- Status: completed
+- Commit: `refactor: expose explicit agent_v2 recovery endpoint`
+- Added `/api/query/agent-v2/recover` as the explicit recovery surface for `agent_v2`.
+- Frontend recovery calls now target the explicit v2 recovery endpoint instead of relying on the legacy compatibility path.
+
 ## Test Baseline
 
 - Backend: `241 passed, 0 failed`

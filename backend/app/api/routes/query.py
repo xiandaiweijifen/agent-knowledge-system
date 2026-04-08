@@ -190,6 +190,26 @@ def resume_agent_v2_query(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@router.post("/query/agent-v2/recover", response_model=AgentWorkflowResponse)
+def recover_agent_v2_query(
+    request: AgentRecoverRequest,
+    fastapi_request: Request,
+) -> AgentWorkflowResponse:
+    try:
+        checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+        return recover_agent_v2_request(
+            run_id=request.run_id,
+            recovery_action=request.recovery_action,
+            clarification_context=request.clarification_context,
+            checkpointer=checkpointer,
+            debug_fault_injection=request.debug_fault_injection,
+        )
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 @router.get("/query/agent-v2/runs", response_model=AgentWorkflowRunListResponse)
 def list_agent_v2_workflow_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
     try:
