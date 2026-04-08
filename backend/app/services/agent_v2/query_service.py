@@ -44,6 +44,8 @@ def _build_initial_state(question: str, filename: str | None, top_k: int) -> dic
         "route": "",
         "route_reason": None,
         "route_planning_mode": None,
+        "supervisor_agent": None,
+        "supervisor_reason": None,
         "retrieval_result": None,
         "tool_chain": [],
         "clarification_question": None,
@@ -127,6 +129,17 @@ def _build_workflow_trace(
             detail=f"Route selected: {route}. {route_reason}",
         )
     ]
+
+    if final_state.get("supervisor_agent"):
+        events.append(
+            WorkflowTraceEvent(
+                stage="supervisor",
+                status="completed",
+                timestamp=timestamp,
+                detail=final_state.get("supervisor_reason")
+                or f"Supervisor delegated to {final_state.get('supervisor_agent')}.",
+            )
+        )
 
     if route == "clarification_needed":
         events.append(
@@ -326,6 +339,65 @@ def _translate_stream_update_to_event(
             payload={
                 "match_count": len(matches),
                 "answer_source": payload.get("answer_source"),
+            },
+        )
+
+    if "supervisor" in update:
+        payload = update["supervisor"]
+        specialist = payload.get("supervisor_agent") or "unknown_specialist"
+        return _build_stream_event(
+            event_type="node_update",
+            stage="supervisor",
+            status=payload.get("workflow_status") or "in_progress",
+            detail=payload.get("supervisor_reason")
+            or f"Supervisor delegated to {specialist}.",
+            timestamp=timestamp,
+            payload={
+                "supervisor_agent": specialist,
+            },
+        )
+
+    if "knowledge_specialist" in update:
+        payload = update["knowledge_specialist"]
+        retrieval_result = payload.get("retrieval_result") or {}
+        matches = retrieval_result.get("matches") or []
+        return _build_stream_event(
+            event_type="node_update",
+            stage="knowledge_specialist",
+            status=payload.get("workflow_status") or "in_progress",
+            detail=f"Knowledge specialist retrieved {len(matches)} supporting chunk(s).",
+            timestamp=timestamp,
+            payload={"match_count": len(matches)},
+        )
+
+    if "operations_specialist" in update:
+        payload = update["operations_specialist"]
+        tool_chain = payload.get("tool_chain") or []
+        last_step = tool_chain[-1] if tool_chain else {}
+        tool_execution = last_step.get("tool_execution") if isinstance(last_step, dict) else {}
+        result_summary = tool_execution.get("result_summary") or "Operations specialist completed tool execution."
+        return _build_stream_event(
+            event_type="node_update",
+            stage="operations_specialist",
+            status=payload.get("workflow_status") or "completed",
+            detail=result_summary,
+            timestamp=timestamp,
+            payload={
+                "tool_name": tool_execution.get("tool_name"),
+                "execution_status": tool_execution.get("execution_status"),
+            },
+        )
+
+    if "clarification_specialist" in update:
+        payload = update["clarification_specialist"]
+        return _build_stream_event(
+            event_type="node_update",
+            stage="clarification_specialist",
+            status=payload.get("workflow_status") or "in_progress",
+            detail=payload.get("clarification_question") or "Clarification specialist resumed the workflow.",
+            timestamp=timestamp,
+            payload={
+                "question_rewritten": bool(payload.get("question_rewritten")),
             },
         )
 

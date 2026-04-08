@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 from functools import lru_cache
 from typing import Any
@@ -10,6 +11,8 @@ from app.schemas.query import AgentWorkflowResponse
 
 
 def is_langsmith_tracing_enabled() -> bool:
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        return False
     return settings.langsmith_tracing_enabled and bool(settings.langsmith_api_key.strip())
 
 

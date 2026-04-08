@@ -16,6 +16,8 @@ BASE_INPUT: AgentState = {
     "route": "",
     "route_reason": None,
     "route_planning_mode": None,
+    "supervisor_agent": None,
+    "supervisor_reason": None,
     "retrieval_result": None,
     "tool_chain": [],
     "clarification_question": None,
@@ -43,9 +45,10 @@ def graph():
 def test_graph_compiles(graph):
     assert graph is not None
     assert "router" in graph.nodes
-    assert "retrieval" in graph.nodes
-    assert "tool_exec" in graph.nodes
-    assert "clarify" in graph.nodes
+    assert "supervisor" in graph.nodes
+    assert "knowledge_specialist" in graph.nodes
+    assert "operations_specialist" in graph.nodes
+    assert "clarification_specialist" in graph.nodes
     assert "answer" in graph.nodes
 
 
@@ -90,6 +93,7 @@ def test_retrieval_path(graph, monkeypatch):
     assert result["workflow_status"] == "completed"
     assert result["answer"] == "retrieved answer"
     assert result["route"] == "knowledge_retrieval"
+    assert result["supervisor_agent"] == "knowledge_specialist"
 
 
 def test_tool_exec_path(graph):
@@ -99,6 +103,7 @@ def test_tool_exec_path(graph):
         config={"configurable": {"thread_id": "graph-test-tool"}},
     )
     assert result["workflow_status"] == "completed"
+    assert result["supervisor_agent"] == "operations_specialist"
 
 
 def test_clarification_path(graph):
@@ -109,6 +114,7 @@ def test_clarification_path(graph):
     )
     assert result["workflow_status"] == "in_progress"
     assert result["__interrupt__"]
+    assert result["supervisor_agent"] == "clarification_specialist"
 
 
 def test_state_fields_present(graph):
@@ -117,5 +123,5 @@ def test_state_fields_present(graph):
         {**BASE_INPUT, "route": "clarification_needed"},
         config={"configurable": {"thread_id": "graph-test-fields"}},
     )
-    for field in ("question", "filename", "top_k", "route", "workflow_status"):
+    for field in ("question", "filename", "top_k", "route", "workflow_status", "supervisor_agent"):
         assert field in result

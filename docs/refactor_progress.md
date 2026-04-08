@@ -149,7 +149,15 @@
 
 ### Phase 5：Multi-Agent（按需）
 
-- [ ] **Package 14** — Supervisor + 专门子 Agent 拆分
+- [x] **Package 14** — Supervisor + 专门子 Agent 拆分
+  - 新增：`services/agent_v2/nodes/supervisor.py`，基于 route 选择 `knowledge_specialist / operations_specialist / clarification_specialist`
+  - 新增：`services/agent_v2/nodes/specialists.py`，将知识检索、工具执行、澄清流程封装为专门子 agent 节点
+  - 更新：`services/agent_v2/graph.py`，拓扑改为 `router -> supervisor -> specialized agents`
+  - 更新：`services/agent_v2/state.py`、`services/agent_v2/query_service.py`，增加 supervisor metadata，并将 supervisor 写入 workflow trace 和 SSE 事件流
+  - 更新：`services/agent_v2/tracing.py`，pytest 环境自动禁用 LangSmith tracing，避免测试噪音
+  - 新增/更新：graph / query service / router / tracing / supervisor 测试
+  - 验证：230 tests passed
+  - Commit：`feat: add supervisor graph with specialized sub-agents`
 
 ---
 
@@ -164,8 +172,8 @@
 - 已完成：Package 9.5，`agent_v2` knowledge retrieval 已直接运行检索 + answer pipeline
 - 已完成：Package 10，`agent_v2` 已支持 run 持久化、查询和 checkpoint resume 骨架
 - 已完成：Package 11，`agent_v2` 已支持 clarification interrupt 与 resume 后继续执行
-- 当前下一步：Phase 5 / Package 14（Supervisor + 专门子 Agent 拆分）
-- 测试基线：227 tests passed，0 failed
+- 当前下一步：重构主线包已完成，可进入 v2 默认切流与旧接口收口
+- 测试基线：230 tests passed，0 failed
 
 ## 测试基线
 

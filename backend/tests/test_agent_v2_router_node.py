@@ -8,6 +8,8 @@ BASE_STATE = {
     "route": "",
     "route_reason": None,
     "route_planning_mode": None,
+    "supervisor_agent": None,
+    "supervisor_reason": None,
     "retrieval_result": None,
     "tool_chain": [],
     "clarification_question": None,

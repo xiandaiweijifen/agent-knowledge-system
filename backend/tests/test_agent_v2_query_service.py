@@ -316,7 +316,14 @@ def test_stream_agent_v2_request_emits_updates_and_final_result(monkeypatch):
                 }
             }
             yield {
-                "tool_exec": {
+                "supervisor": {
+                    "supervisor_agent": "operations_specialist",
+                    "supervisor_reason": "Supervisor delegated tool_execution to operations_specialist based on the current route decision.",
+                    "workflow_status": "in_progress",
+                }
+            }
+            yield {
+                "operations_specialist": {
                     "tool_chain": [
                         {
                             "step_id": "step_1",
@@ -370,7 +377,8 @@ def test_stream_agent_v2_request_emits_updates_and_final_result(monkeypatch):
 
     assert events[0]["stage"] == "start"
     assert events[1]["stage"] == "routing"
-    assert events[2]["stage"] == "tool_execution"
+    assert events[2]["stage"] == "supervisor"
+    assert events[3]["stage"] == "operations_specialist"
     assert events[-2]["stage"] == "workflow"
     assert events[-1]["event_type"] == "result"
     assert events[-1]["response"]["answer"] == "Created ticket TICKET-0001 for payment-service."

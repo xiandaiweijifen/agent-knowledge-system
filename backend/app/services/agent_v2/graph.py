@@ -14,12 +14,15 @@ persistence and resume support.
 
 from langgraph.graph import END, START, StateGraph
 
-from app.services.agent_v2.state import AgentState
 from app.services.agent_v2.nodes.answer import answer_node
-from app.services.agent_v2.nodes.clarify import clarify_node
-from app.services.agent_v2.nodes.retrieval import retrieval_node
 from app.services.agent_v2.nodes.router import route_decision, router_node
-from app.services.agent_v2.nodes.tool_exec import tool_exec_node
+from app.services.agent_v2.nodes.specialists import (
+    clarification_specialist_node,
+    knowledge_specialist_node,
+    operations_specialist_node,
+)
+from app.services.agent_v2.nodes.supervisor import supervisor_decision, supervisor_node
+from app.services.agent_v2.state import AgentState
 
 
 def build_graph(checkpointer=None):
@@ -37,17 +40,27 @@ def build_graph(checkpointer=None):
 
     # Nodes
     builder.add_node("router", router_node)
-    builder.add_node("retrieval", retrieval_node)
-    builder.add_node("tool_exec", tool_exec_node)
-    builder.add_node("clarify", clarify_node)
+    builder.add_node("supervisor", supervisor_node)
+    builder.add_node("knowledge_specialist", knowledge_specialist_node)
+    builder.add_node("operations_specialist", operations_specialist_node)
+    builder.add_node("clarification_specialist", clarification_specialist_node)
     builder.add_node("answer", answer_node)
 
     # Edges
     builder.add_edge(START, "router")
-    builder.add_conditional_edges("router", route_decision)
-    builder.add_edge("retrieval", "answer")
-    builder.add_edge("tool_exec", "answer")
-    builder.add_edge("clarify", "router")
+    builder.add_conditional_edges(
+        "router",
+        route_decision,
+        {
+            "retrieval": "supervisor",
+            "tool_exec": "supervisor",
+            "clarify": "supervisor",
+        },
+    )
+    builder.add_conditional_edges("supervisor", supervisor_decision)
+    builder.add_edge("knowledge_specialist", "answer")
+    builder.add_edge("operations_specialist", "answer")
+    builder.add_edge("clarification_specialist", "router")
     builder.add_edge("answer", END)
 
     return builder.compile(checkpointer=checkpointer)

@@ -29,6 +29,8 @@ class AgentState(TypedDict):
     route: str
     route_reason: str | None
     route_planning_mode: str | None
+    supervisor_agent: str | None
+    supervisor_reason: str | None
 
     # ------------------------------------------------------------------ #
     # Retrieval                                                           #
