@@ -184,3 +184,94 @@ def test_get_agent_v2_run_endpoint_returns_single_run(monkeypatch):
     assert response.status_code == 200
     payload = response.json()
     assert payload["run_id"] == "run-123"
+
+
+def test_query_agent_endpoint_uses_agent_v2_when_configured(monkeypatch):
+    monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    monkeypatch.setattr(
+        "app.api.routes.query.orchestrate_agent_v2_request",
+        lambda question, filename=None, top_k=3, checkpointer=None: __import__(
+            "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
+        ).AgentWorkflowResponse(
+            question=question,
+            workflow_status="completed",
+            route=__import__(
+                "app.schemas.query", fromlist=["RouteDecision"]
+            ).RouteDecision(
+                route_type="tool_execution",
+                route_reason="V2 route.",
+                filename=filename,
+            ),
+            answer="V2 answer",
+            answer_source="tool_result",
+        ),
+    )
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": "Create a ticket",
+            "filename": None,
+            "top_k": 3,
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["answer"] == "V2 answer"
+    assert payload["route"]["route_reason"] == "V2 route."
+
+
+def test_list_agent_runs_endpoint_uses_agent_v2_when_configured(monkeypatch):
+    monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    monkeypatch.setattr(
+        "app.api.routes.query.list_agent_v2_runs",
+        lambda limit=20: __import__(
+            "app.schemas.query", fromlist=["AgentWorkflowRunListResponse", "AgentWorkflowRunSummary"]
+        ).AgentWorkflowRunListResponse(
+            runs=[
+                __import__(
+                    "app.schemas.query", fromlist=["AgentWorkflowRunSummary"]
+                ).AgentWorkflowRunSummary(
+                    run_id="v2-run-123",
+                    question="Create a ticket",
+                    workflow_status="completed",
+                    route_type="tool_execution",
+                    route_reason="V2 route.",
+                )
+            ]
+        ),
+    )
+    client = TestClient(app)
+    response = client.get("/api/query/agent/runs?limit=1")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["runs"][0]["run_id"] == "v2-run-123"
+
+
+def test_get_agent_run_endpoint_uses_agent_v2_when_configured(monkeypatch):
+    monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    monkeypatch.setattr(
+        "app.api.routes.query.get_persisted_agent_v2_run",
+        lambda run_id: __import__(
+            "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
+        ).AgentWorkflowResponse(
+            run_id=run_id,
+            question="Create a ticket",
+            workflow_status="completed",
+            route=__import__(
+                "app.schemas.query", fromlist=["RouteDecision"]
+            ).RouteDecision(
+                route_type="tool_execution",
+                route_reason="V2 route.",
+                filename=None,
+            ),
+            answer="Stored v2 answer",
+            answer_source="tool_result",
+        ),
+    )
+    client = TestClient(app)
+    response = client.get("/api/query/agent/runs/v2-run-123")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"] == "v2-run-123"
+    assert payload["answer"] == "Stored v2 answer"

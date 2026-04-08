@@ -158,7 +158,7 @@ export function runDiagnostics(filename: string, question: string, topK: number)
 }
 
 export function runAgentQuery(filename: string, question: string, topK: number) {
-  return apiFetch<AgentWorkflowResponse>("/api/query/agent", {
+  return apiFetch<AgentWorkflowResponse>("/api/query/agent-v2", {
     method: "POST",
     body: JSON.stringify({
       filename: filename || null,

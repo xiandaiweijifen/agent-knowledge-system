@@ -3,6 +3,7 @@ import json
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
+from app.core.config import settings
 from app.schemas.query import (
     AgentRecoverRequest,
     AgentQueryRequest,
@@ -59,6 +60,10 @@ from app.services.retrieval.retrieval_service import retrieve_relevant_chunks_wi
 router = APIRouter(tags=["query"])
 
 
+def _use_agent_v2_as_default_runtime() -> bool:
+    return settings.agent_default_runtime.strip().lower() == "v2"
+
+
 @router.post("/query/route", response_model=RouteDecision)
 def route_query_request(request: QueryRouteRequest) -> RouteDecision:
     try:
@@ -71,8 +76,19 @@ def route_query_request(request: QueryRouteRequest) -> RouteDecision:
 
 
 @router.post("/query/agent", response_model=AgentWorkflowResponse)
-def orchestrate_agent_query(request: AgentQueryRequest) -> AgentWorkflowResponse:
+def orchestrate_agent_query(
+    request: AgentQueryRequest,
+    fastapi_request: Request,
+) -> AgentWorkflowResponse:
     try:
+        if _use_agent_v2_as_default_runtime():
+            checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+            return orchestrate_agent_v2_request(
+                question=request.question,
+                filename=request.filename,
+                top_k=request.top_k,
+                checkpointer=checkpointer,
+            )
         return orchestrate_agent_request(
             question=request.question,
             filename=request.filename,
@@ -180,8 +196,18 @@ def get_agent_v2_workflow_run(run_id: str) -> AgentWorkflowResponse:
 
 
 @router.post("/query/agent/resume", response_model=AgentWorkflowResponse)
-def resume_agent_query(request: AgentResumeRequest) -> AgentWorkflowResponse:
+def resume_agent_query(
+    request: AgentResumeRequest,
+    fastapi_request: Request,
+) -> AgentWorkflowResponse:
     try:
+        if _use_agent_v2_as_default_runtime() and request.run_id:
+            checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+            return resume_agent_v2_request(
+                run_id=request.run_id,
+                clarification_context=request.clarification_context,
+                checkpointer=checkpointer,
+            )
         return resume_agent_request(
             original_question=request.original_question,
             clarification_context=request.clarification_context,
@@ -219,6 +245,8 @@ def recover_agent_query(request: AgentRecoverRequest) -> AgentWorkflowResponse:
 @router.get("/query/agent/runs", response_model=AgentWorkflowRunListResponse)
 def list_agent_workflow_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
     try:
+        if _use_agent_v2_as_default_runtime():
+            return list_agent_v2_runs(limit=limit)
         return list_persisted_workflow_runs(limit=limit)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -257,6 +285,8 @@ def reset_agent_workflow_runs(
 @router.get("/query/agent/runs/{run_id}", response_model=AgentWorkflowResponse)
 def get_agent_workflow_run(run_id: str) -> AgentWorkflowResponse:
     try:
+        if _use_agent_v2_as_default_runtime():
+            return get_persisted_agent_v2_run(run_id)
         return get_persisted_workflow_run(run_id)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Workflow run not found")

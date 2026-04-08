@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_host: str = "127.0.0.1"
     app_port: int = 8000
+    agent_default_runtime: str = "legacy"
     embedding_provider: str = "mock"
     chat_provider: str = "fallback"
     route_planner_provider: str = "fallback"
