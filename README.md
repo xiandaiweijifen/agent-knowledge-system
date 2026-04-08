@@ -20,7 +20,15 @@ Today, the project already has a working backend, frontend console, local tool a
 
 ## Current State
 
-The repository is in a late build phase.
+The repository is in a late-stage refactor transition.
+
+The default engineering direction is now `agent_v2`, which is built on:
+
+- LangGraph for orchestration, checkpoints, interrupts, and state threading
+- LlamaIndex-backed retrieval on the query path
+- PostgreSQL/Redis hooks for runtime infrastructure
+- LangSmith tracing
+- SSE event streaming to the frontend query console
 
 Implemented and usable today:
 
@@ -32,6 +40,13 @@ Implemented and usable today:
 - local tool adapters for `document_search`, `system_status`, and `ticketing`
 - LLM-backed `tool planner`, `clarification planner`, and `workflow planner`
 - fallback behavior when planner calls fail or are unavailable
+- `agent_v2` runtime with:
+  - LLM-first route selection
+  - supervisor + specialist graph delegation
+  - streaming execution events
+  - checkpoint-backed resume
+  - clarification interrupts
+  - persisted run lookup and recovery lineage
 - multi-step workflows for:
   - `search_then_ticket`
   - `search_then_summarize`
@@ -39,7 +54,8 @@ Implemented and usable today:
   - `status_then_summarize`
 - retry semantics and retry-exhausted handling
 - clarification-driven continuation
-- failed-step resume for selected workflow shapes
+- failed-step resume for the current single-step `agent_v2` tool path
+- manual retrigger recovery for failed `agent_v2` runs
 - unified recovery entrypoint and recovery action semantics
 - persisted workflow runs with trace events, lineage metadata, and maintenance endpoints
 - retrieval, route, workflow, and tool-execution evaluation datasets with a frontend evaluation console
@@ -47,11 +63,26 @@ Implemented and usable today:
 
 Still intentionally unfinished:
 
-- richer runtime recovery such as more general rerun-from-step-N behavior
+- richer `agent_v2` recovery such as general rerun-from-step-N across true multi-step graphs
 - real external system adapters
-- a more formal database-backed state layer
-- broader workflow branching and policy logic
+- broader multi-step `agent_v2` workflow branching and policy logic
 - deeper cost and latency analytics
+
+### Runtime Modes
+
+The repository currently has two runtime surfaces:
+
+- `legacy agent runtime`
+  - still exists for backward compatibility, legacy maintenance endpoints, and older tests
+- `agent_v2 runtime`
+  - current default target for product behavior and active refactor work
+
+Runtime selection is controlled through:
+
+- `AGENT_DEFAULT_RUNTIME=legacy`
+- `AGENT_DEFAULT_RUNTIME=v2`
+
+When `AGENT_DEFAULT_RUNTIME=v2`, the default `/api/query/agent` entrypoints dispatch to `agent_v2` for normal execution, resume by `run_id`, run listing, and run lookup.
 
 ## Core Capabilities
 
@@ -136,10 +167,21 @@ The runtime distinguishes between:
 Supported recovery behavior today includes:
 
 - retry with retry-exhausted semantics
-- failed-step resume for selected workflow shapes
 - clarification-based continuation
-- manual retrigger recovery
+- failed-step resume for the current single-step `agent_v2` tool path
+- manual retrigger recovery for failed `agent_v2` runs
+- clarification-based continuation
 - persisted recovery lineage with `root_run_id`, `source_run_id`, `recovery_depth`, and `recovered_via_action`
+
+Current `agent_v2` recovery boundary:
+
+- supported:
+  - `resume_with_clarification`
+  - `resume_from_failed_step` for single-step failed tool execution
+  - `manual_retrigger`
+- not yet generalized:
+  - step-N replay across true multi-step LangGraph workflows
+  - legacy-style recovery semantics for every historical workflow shape
 
 The frontend exposes these semantics through:
 
@@ -208,12 +250,25 @@ Main implementation areas:
 - `POST /api/query/route`
 - `POST /api/query/agent`
 - `POST /api/query/agent/resume`
+- `POST /api/query/agent/recover`
 - `GET /api/query/agent/runs`
 - `GET /api/query/agent/runs/{run_id}`
 - `POST /api/query/agent/runs/migrate`
 - `GET /api/query/agent/runs/stats`
 - `POST /api/query/agent/runs/prune`
 - `POST /api/query/agent/runs/reset`
+- `POST /api/query/agent-v2`
+- `POST /api/query/agent-v2/stream`
+- `POST /api/query/agent-v2/resume`
+- `GET /api/query/agent-v2/runs`
+- `GET /api/query/agent-v2/runs/{run_id}`
+
+Notes:
+
+- `/api/query/agent*` is the stable default surface.
+- `/api/query/agent-v2*` is the explicit v2 surface.
+- With `AGENT_DEFAULT_RUNTIME=v2`, the default `/api/query/agent*` surface routes normal query behavior through `agent_v2`.
+- Legacy maintenance endpoints such as `runs/migrate`, `runs/stats`, `runs/prune`, and `runs/reset` still belong to the legacy control plane.
 
 ### Tools
 
@@ -246,9 +301,16 @@ Main implementation areas:
 
 - Backend: FastAPI
 - Frontend: React + Vite
+- Agent runtime: LangGraph + LangGraph checkpoints
+- Retrieval: LlamaIndex-backed query path with existing local artifacts
 - LLM access: Gemini and OpenAI APIs, with local fallback paths
-- Storage today: local files and JSON state
-- Optional infra hooks: PostgreSQL and Redis configuration fields exist, but they are not the primary runtime state path yet
+- State persistence today:
+  - `agent_v2` runs persisted in JSON for easy inspection
+  - LangGraph checkpointer wired for checkpoint resume
+- Infra hooks:
+  - PostgreSQL configuration for checkpoints
+  - Redis configuration for runtime cache/session support
+- Observability: LangSmith tracing + persisted local evaluation/report artifacts
 
 ## Local Setup
 
@@ -261,6 +323,12 @@ python -m venv .venv
 pip install -r requirements.txt
 $env:PYTHONPATH='.'
 uvicorn app.main:app --reload
+```
+
+Optional runtime switch:
+
+```powershell
+$env:AGENT_DEFAULT_RUNTIME='v2'
 ```
 
 Backend URLs:
@@ -342,13 +410,13 @@ Useful runtime flags:
 
 The strongest end-to-end demo path today is:
 
-1. Submit a multi-step agent request such as `Search docs for RAG and create a high severity ticket for payment-service`.
-2. Inject a persistent failure into the ticketing step.
-3. Observe the run fail with `retry_exhausted` and a structured recovery action.
+1. Submit an `agent_v2` ticketing request such as `Create a high severity ticket for payment-service outage`.
+2. Inject a persistent ticketing failure with `debug_fault_injection`.
+3. Observe the run fail with `retry_exhausted` and structured recovery actions such as `resume_from_failed_step`.
 4. Recover the run through the unified recovery entrypoint or the Query UI.
 5. Inspect:
    - the recovered run
-   - reused steps
+   - resumed or retried step metadata
    - recovery lineage
    - recovery chain navigation
 6. Open `Evaluation` and review benchmark highlights, overview metrics, and saved report history.

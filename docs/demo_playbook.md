@@ -15,7 +15,7 @@ Use it when you need to:
 
 The strongest default path is:
 
-1. Trigger a multi-step workflow failure.
+1. Trigger a failed `agent_v2` tool run.
 2. Observe retry exhaustion and structured recovery semantics.
 3. Recover the workflow from the Query UI or recovery API.
 4. Inspect lineage and recovery chain navigation.
@@ -23,7 +23,7 @@ The strongest default path is:
 
 This path demonstrates:
 
-- retrieval-backed workflow context
+- `agent_v2` runtime behavior
 - workflow persistence
 - retry handling
 - failed-step recovery
@@ -34,7 +34,7 @@ This path demonstrates:
 
 ### Goal
 
-Show that a multi-step workflow can fail, expose structured recovery actions, and complete after recovery without replaying the entire chain.
+Show that a failed `agent_v2` tool run can expose structured recovery actions and complete after recovery.
 
 ### API Setup
 
@@ -42,13 +42,13 @@ Request:
 
 ```json
 {
-  "question": "Search docs for RAG and create a high severity ticket for payment-service",
+  "question": "Create a high severity ticket for payment-service outage",
   "debug_fault_injection": {
     "tool_execution_failures": [
       {
         "tool_name": "ticketing",
         "action": "create",
-        "fail_count": 2,
+        "fail_count": 1,
         "message": "demo injected persistent failure"
       }
     ]
@@ -71,7 +71,9 @@ Recover with:
 
 ```json
 {
-  "run_id": "<source_run_id>"
+  "run_id": "<source_run_id>",
+  "recovery_action": "resume_from_failed_step",
+  "clarification_context": {}
 }
 ```
 
@@ -79,11 +81,12 @@ Expected recovered run shape:
 
 - `workflow_status = completed`
 - `recovered_via_action = resume_from_failed_step`
-- `resume_strategy = search_then_ticket_failed_step_resume`
+- `resume_strategy = failed_step_resume`
 - `source_run_id = <source_run_id>`
 - `root_run_id = <source_run_id>`
 - `recovery_depth = 1`
-- `reused_step_indices = [1]`
+- `resumed_from_step_index = 1`
+- `retried_step_indices = [1]`
 
 ### UI Checks
 
@@ -102,7 +105,7 @@ In `Query Lab`, verify:
 
 ### Goal
 
-Show that a paused run can collect missing fields and continue through the same recovery surface.
+Show that a paused `agent_v2` run can collect missing fields and continue through the same recovery surface.
 
 ### API Setup
 
@@ -110,7 +113,7 @@ Request:
 
 ```json
 {
-  "question": "Search docs for payment-service outage and summarize top 2 results"
+  "question": "Fix it"
 }
 ```
 
@@ -127,9 +130,10 @@ Fill the clarification form in `Query Lab` or call recovery with:
 ```json
 {
   "run_id": "<source_run_id>",
+  "recovery_action": "resume_with_clarification",
   "clarification_context": {
-    "search_query_refinement": "payment-service outage",
-    "document_scope": "incident_playbook.md"
+    "environment": "production",
+    "task_details": "check system status for payment-service"
   }
 }
 ```

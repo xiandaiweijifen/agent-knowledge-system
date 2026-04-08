@@ -12,7 +12,28 @@
   - `/api/query/agent/runs/{run_id}`
 - Frontend non-stream fallback now calls `/api/query/agent-v2` directly.
 
+## Package 15
+
+- Status: completed
+- Commit: `feat: add failed-run semantics and manual retrigger recovery for agent_v2`
+- `agent_v2` now persists structured failed runs for tool and retrieval failures.
+- Failed tool runs now expose `manual_retrigger` recovery.
+
+- Package 16
+
+- Status: completed
+- Commit: `feat: add failed-step resume semantics for agent_v2 recovery`
+- Failed single-step tool runs now expose `resume_from_failed_step` and `manual_retrigger`.
+- Recovery metadata now includes `resumed_from_step_index` and `retried_step_indices`.
+
+- Package 17
+
+- Status: completed
+- Commit: `docs: stabilize runtime docs around agent_v2 default mode`
+- README and demo playbook now describe `agent_v2` as the primary runtime target.
+- Added explicit notes for `AGENT_DEFAULT_RUNTIME`, default entrypoint behavior, and current recovery boundaries.
+
 ## Test Baseline
 
-- Backend: `233 passed, 0 failed`
+- Backend: `241 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`
