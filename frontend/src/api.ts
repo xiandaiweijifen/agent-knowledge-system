@@ -234,11 +234,11 @@ export async function runAgentQueryStream(
 }
 
 export function fetchAgentWorkflowRuns(limit = 10) {
-  return apiFetch<AgentWorkflowRunListResponse>(`/api/query/agent/runs?limit=${limit}`);
+  return apiFetch<AgentWorkflowRunListResponse>(`/api/query/agent-v2/runs?limit=${limit}`);
 }
 
 export function fetchAgentWorkflowRun(runId: string) {
-  return apiFetch<AgentWorkflowResponse>(`/api/query/agent/runs/${encodeURIComponent(runId)}`);
+  return apiFetch<AgentWorkflowResponse>(`/api/query/agent-v2/runs/${encodeURIComponent(runId)}`);
 }
 
 export function recoverAgentWorkflowRun(
