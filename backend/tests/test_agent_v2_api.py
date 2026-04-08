@@ -187,6 +187,7 @@ def test_get_agent_v2_run_endpoint_returns_single_run(monkeypatch):
 
 
 def test_query_agent_endpoint_uses_agent_v2_when_configured(monkeypatch):
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
     monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
     monkeypatch.setattr(
         "app.api.routes.query.orchestrate_agent_v2_request",
@@ -222,6 +223,7 @@ def test_query_agent_endpoint_uses_agent_v2_when_configured(monkeypatch):
 
 
 def test_list_agent_runs_endpoint_uses_agent_v2_when_configured(monkeypatch):
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
     monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
     monkeypatch.setattr(
         "app.api.routes.query.list_agent_v2_runs",
@@ -249,6 +251,7 @@ def test_list_agent_runs_endpoint_uses_agent_v2_when_configured(monkeypatch):
 
 
 def test_get_agent_run_endpoint_uses_agent_v2_when_configured(monkeypatch):
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
     monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
     monkeypatch.setattr(
         "app.api.routes.query.get_persisted_agent_v2_run",
@@ -275,3 +278,59 @@ def test_get_agent_run_endpoint_uses_agent_v2_when_configured(monkeypatch):
     payload = response.json()
     assert payload["run_id"] == "v2-run-123"
     assert payload["answer"] == "Stored v2 answer"
+
+
+def test_recover_agent_endpoint_uses_agent_v2_resume_for_clarification_when_configured(monkeypatch):
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
+    monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    monkeypatch.setattr(
+        "app.api.routes.query.resume_agent_v2_request",
+        lambda run_id, clarification_context=None, checkpointer=None: __import__(
+            "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
+        ).AgentWorkflowResponse(
+            run_id=run_id,
+            question="Fix it (environment: production)",
+            workflow_status="completed",
+            route=__import__(
+                "app.schemas.query", fromlist=["RouteDecision"]
+            ).RouteDecision(
+                route_type="tool_execution",
+                route_reason="Clarification applied.",
+                filename=None,
+            ),
+            answer="Recovered via v2 resume",
+            answer_source="tool_result",
+            recovered_via_action="resume_with_clarification",
+        ),
+    )
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/recover",
+        json={
+            "run_id": "run-clarify-123",
+            "recovery_action": "resume_with_clarification",
+            "clarification_context": {
+                "environment": "production",
+            },
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"] == "run-clarify-123"
+    assert payload["answer"] == "Recovered via v2 resume"
+
+
+def test_recover_agent_endpoint_rejects_unsupported_v2_recovery_action(monkeypatch):
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
+    monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/recover",
+        json={
+            "run_id": "run-failed-123",
+            "recovery_action": "manual_retrigger",
+            "clarification_context": {},
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "recovery_action_not_supported_for_agent_v2"

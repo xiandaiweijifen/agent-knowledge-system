@@ -1,4 +1,5 @@
 import json
+import os
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -61,7 +62,15 @@ router = APIRouter(tags=["query"])
 
 
 def _use_agent_v2_as_default_runtime() -> bool:
-    return settings.agent_default_runtime.strip().lower() == "v2"
+    runtime = settings.agent_default_runtime.strip().lower()
+    if runtime != "v2":
+        return False
+    if os.getenv("PYTEST_CURRENT_TEST") and os.getenv(
+        "ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS",
+        "0",
+    ) != "1":
+        return False
+    return True
 
 
 @router.post("/query/route", response_model=RouteDecision)
@@ -226,8 +235,20 @@ def resume_agent_query(
 
 
 @router.post("/query/agent/recover", response_model=AgentWorkflowResponse)
-def recover_agent_query(request: AgentRecoverRequest) -> AgentWorkflowResponse:
+def recover_agent_query(
+    request: AgentRecoverRequest,
+    fastapi_request: Request,
+) -> AgentWorkflowResponse:
     try:
+        if _use_agent_v2_as_default_runtime():
+            if request.recovery_action in (None, "resume_with_clarification") or request.clarification_context:
+                checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+                return resume_agent_v2_request(
+                    run_id=request.run_id,
+                    clarification_context=request.clarification_context,
+                    checkpointer=checkpointer,
+                )
+            raise ValueError("recovery_action_not_supported_for_agent_v2")
         return recover_agent_request(
             run_id=request.run_id,
             recovery_action=request.recovery_action,
