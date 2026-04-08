@@ -168,6 +168,13 @@ def test_orchestrate_agent_v2_request_returns_clarification_response(monkeypatch
     assert response.clarification_message == "Could you clarify your question?"
     assert response.clarification_plan is not None
     assert response.terminal_reason == "clarification_requested"
+    assert response.recommended_recovery_action == "resume_with_clarification"
+    assert response.available_recovery_actions == ["resume_with_clarification"]
+    assert response.recovery_action_details == {
+        "resume_with_clarification": {
+            "missing_fields": ["task_details"],
+        }
+    }
 
 
 def test_orchestrate_agent_v2_request_passes_thread_config_when_checkpointer_present(monkeypatch):
@@ -594,6 +601,8 @@ def test_resume_agent_v2_request_uses_command_resume_for_clarification(monkeypat
     assert response.answer == "resolved answer"
     assert response.applied_clarification_fields == ["environment"]
     assert response.question_rewritten is True
+    assert response.recommended_recovery_action == "none"
+    assert response.available_recovery_actions == []
 
 
 def test_resume_agent_v2_request_finalizes_langsmith_trace(monkeypatch):

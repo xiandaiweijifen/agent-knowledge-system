@@ -174,6 +174,32 @@ def _build_workflow_trace(
     return events
 
 
+def _build_recovery_metadata(
+    *,
+    workflow_status: str,
+    clarification_plan: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if workflow_status != "clarification_required":
+        return {
+            "recommended_recovery_action": "none",
+            "available_recovery_actions": [],
+            "recovery_action_details": {},
+            "is_recoverable": None,
+        }
+
+    missing_fields = clarification_plan.get("missing_fields", []) if isinstance(clarification_plan, dict) else []
+    return {
+        "recommended_recovery_action": "resume_with_clarification",
+        "available_recovery_actions": ["resume_with_clarification"],
+        "recovery_action_details": {
+            "resume_with_clarification": {
+                "missing_fields": missing_fields,
+            }
+        },
+        "is_recoverable": True,
+    }
+
+
 def _extract_interrupt_payload(final_state: dict[str, Any]) -> dict[str, Any] | None:
     interrupts = final_state.get("__interrupt__")
     if not isinstance(interrupts, (list, tuple)) or not interrupts:
@@ -232,6 +258,11 @@ def _build_agent_v2_response(
         answer_source = None
         retrieval = None
 
+    recovery_metadata = _build_recovery_metadata(
+        workflow_status=workflow_status,
+        clarification_plan=clarification_plan,
+    )
+
     return AgentWorkflowResponse(
         run_id=run_id,
         root_run_id=None,
@@ -242,6 +273,10 @@ def _build_agent_v2_response(
             final_state=final_state,
             interrupt_payload=interrupt_payload,
         ),
+        is_recoverable=recovery_metadata["is_recoverable"],
+        recommended_recovery_action=recovery_metadata["recommended_recovery_action"],
+        available_recovery_actions=recovery_metadata["available_recovery_actions"],
+        recovery_action_details=recovery_metadata["recovery_action_details"],
         started_at=started_at,
         completed_at=completed_at,
         last_updated_at=last_updated_at,
@@ -656,6 +691,11 @@ def resume_agent_v2_request(
                 answer_source = None
                 retrieval = None
 
+            recovery_metadata = _build_recovery_metadata(
+                workflow_status=workflow_status,
+                clarification_plan=clarification_plan,
+            )
+
             response = AgentWorkflowResponse(
                 run_id=persisted_run.run_id,
                 root_run_id=persisted_run.root_run_id,
@@ -675,11 +715,11 @@ def resume_agent_v2_request(
                     interrupt_payload=interrupt_payload,
                 ),
                 outcome_category=persisted_run.outcome_category,
-                is_recoverable=persisted_run.is_recoverable,
+                is_recoverable=recovery_metadata["is_recoverable"],
                 retry_state=persisted_run.retry_state,
-                recommended_recovery_action=persisted_run.recommended_recovery_action,
-                available_recovery_actions=persisted_run.available_recovery_actions,
-                recovery_action_details=persisted_run.recovery_action_details,
+                recommended_recovery_action=recovery_metadata["recommended_recovery_action"],
+                available_recovery_actions=recovery_metadata["available_recovery_actions"],
+                recovery_action_details=recovery_metadata["recovery_action_details"],
                 failure_stage=resumed_state.get("failure_stage") or persisted_run.failure_stage,
                 failure_message=resumed_state.get("error") or persisted_run.failure_message,
                 started_at=persisted_run.started_at,

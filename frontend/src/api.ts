@@ -246,6 +246,16 @@ export function recoverAgentWorkflowRun(
   recoveryAction?: string,
   clarificationContext?: Record<string, string>,
 ) {
+  if (recoveryAction === "resume_with_clarification" || Object.keys(clarificationContext ?? {}).length > 0) {
+    return apiFetch<AgentWorkflowResponse>("/api/query/agent-v2/resume", {
+      method: "POST",
+      body: JSON.stringify({
+        run_id: runId,
+        clarification_context: clarificationContext ?? {},
+      }),
+    });
+  }
+
   return apiFetch<AgentWorkflowResponse>("/api/query/agent/recover", {
     method: "POST",
     body: JSON.stringify({
