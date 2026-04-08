@@ -346,10 +346,11 @@ def test_orchestrate_agent_v2_request_returns_failed_tool_response(monkeypatch):
     assert response.terminal_reason == "tool_execution_failed"
     assert response.outcome_category == "failed"
     assert response.retry_state == "retry_exhausted"
-    assert response.recommended_recovery_action == "manual_retrigger"
-    assert response.available_recovery_actions == ["manual_retrigger"]
+    assert response.recommended_recovery_action == "resume_from_failed_step"
+    assert response.available_recovery_actions == ["resume_from_failed_step", "manual_retrigger"]
     assert response.failure_stage == "tool_execution"
     assert response.failure_message == "debug injected persistent failure"
+    assert response.step_count == 1
     assert response.tool_chain[0].step_status == "failed"
 
 
@@ -416,6 +417,93 @@ def test_recover_agent_v2_request_manual_retriggers_failed_run(monkeypatch):
     assert captured["kwargs"]["resume_strategy"] == "manual_retrigger_recovery"
     assert captured["kwargs"]["recovery_depth"] == 1
     assert response.run_id == "rerun-123"
+
+
+def test_recover_agent_v2_request_resumes_from_failed_step(monkeypatch):
+    from app.schemas.query import AgentWorkflowResponse, RouteDecision
+
+    source_run = AgentWorkflowResponse(
+        run_id="run-failed-456",
+        question="Create a ticket for payment-service outage",
+        workflow_status="failed",
+        route=RouteDecision(
+            route_type="tool_execution",
+            route_reason="Execution request.",
+            filename=None,
+        ),
+        failure_stage="tool_execution",
+        failure_message="debug injected persistent failure",
+        retry_state="retry_exhausted",
+        retry_count=1,
+        recommended_recovery_action="resume_from_failed_step",
+        available_recovery_actions=["resume_from_failed_step", "manual_retrigger"],
+        tool_chain=[
+            {
+                "step_id": "step_1",
+                "step_index": 1,
+                "step_status": "failed",
+                "attempt_count": 1,
+                "retried": False,
+                "started_at": "2026-04-07T00:00:00+00:00",
+                "completed_at": "2026-04-07T00:00:01+00:00",
+                "question": "Create a ticket for payment-service outage",
+                "tool_plan": {
+                    "tool_name": "ticketing",
+                    "action": "create",
+                    "target": "payment-service",
+                    "arguments": {"severity": "high"},
+                },
+                "tool_execution": None,
+                "failure_message": "debug injected persistent failure",
+            }
+        ],
+    )
+    captured = {}
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: source_run,
+    )
+
+    def stub_execute(**kwargs):
+        captured["kwargs"] = kwargs
+        return AgentWorkflowResponse(
+            run_id="rerun-step-123",
+            root_run_id=kwargs["root_run_id"],
+            recovery_depth=kwargs["recovery_depth"],
+            question=kwargs["question"],
+            source_run_id=kwargs["source_run_id"],
+            recovered_via_action=kwargs["recovered_via_action"],
+            resume_source_type=kwargs["resume_source_type"],
+            resume_strategy=kwargs["resume_strategy"],
+            resumed_from_step_index=kwargs["resumed_from_step_index"],
+            retried_step_indices=kwargs["retried_step_indices"],
+            workflow_status="completed",
+            route=RouteDecision(
+                route_type="tool_execution",
+                route_reason="Retried from failed step.",
+                filename=None,
+            ),
+            answer="Recovered via failed-step resume",
+            answer_source="tool_result",
+        )
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service._execute_agent_v2_workflow",
+        stub_execute,
+    )
+
+    response = recover_agent_v2_request(
+        run_id="run-failed-456",
+        recovery_action="resume_from_failed_step",
+        clarification_context={},
+        checkpointer=object(),
+    )
+    assert captured["kwargs"]["recovered_via_action"] == "resume_from_failed_step"
+    assert captured["kwargs"]["resume_strategy"] == "failed_step_resume"
+    assert captured["kwargs"]["resumed_from_step_index"] == 1
+    assert captured["kwargs"]["retried_step_indices"] == [1]
+    assert response.run_id == "rerun-step-123"
 
 
 def test_stream_agent_v2_request_emits_updates_and_final_result(monkeypatch):

@@ -383,3 +383,49 @@ def test_recover_agent_endpoint_uses_agent_v2_manual_retrigger_when_configured(m
     payload = response.json()
     assert payload["run_id"] == "rerun-123"
     assert payload["recovered_via_action"] == "manual_retrigger"
+
+
+def test_recover_agent_endpoint_uses_agent_v2_failed_step_resume_when_configured(monkeypatch):
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
+    monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    monkeypatch.setattr(
+        "app.api.routes.query.recover_agent_v2_request",
+        lambda run_id, recovery_action=None, clarification_context=None, checkpointer=None, debug_fault_injection=None: __import__(
+            "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
+        ).AgentWorkflowResponse(
+            run_id="rerun-step-123",
+            root_run_id=run_id,
+            recovery_depth=1,
+            question="Create a ticket for payment-service outage",
+            source_run_id=run_id,
+            recovered_via_action="resume_from_failed_step",
+            resume_source_type="run_id",
+            resume_strategy="failed_step_resume",
+            resumed_from_step_index=1,
+            retried_step_indices=[1],
+            workflow_status="completed",
+            route=__import__(
+                "app.schemas.query", fromlist=["RouteDecision"]
+            ).RouteDecision(
+                route_type="tool_execution",
+                route_reason="Retried from failed step.",
+                filename=None,
+            ),
+            answer="Recovered via failed-step resume",
+            answer_source="tool_result",
+        ),
+    )
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/recover",
+        json={
+            "run_id": "run-failed-456",
+            "recovery_action": "resume_from_failed_step",
+            "clarification_context": {},
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"] == "rerun-step-123"
+    assert payload["recovered_via_action"] == "resume_from_failed_step"
+    assert payload["resume_strategy"] == "failed_step_resume"

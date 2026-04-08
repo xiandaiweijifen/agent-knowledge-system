@@ -199,14 +199,24 @@ def _build_recovery_metadata(
     workflow_status: str,
     clarification_plan: dict[str, Any] | None,
     route_type: str | None = None,
+    tool_chain: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     if workflow_status != "clarification_required":
         if workflow_status == "failed":
             if route_type == "tool_execution":
+                failed_step_index = None
+                if tool_chain:
+                    last_step = tool_chain[-1]
+                    if isinstance(last_step, dict):
+                        failed_step_index = last_step.get("step_index")
                 return {
-                    "recommended_recovery_action": "manual_retrigger",
-                    "available_recovery_actions": ["manual_retrigger"],
+                    "recommended_recovery_action": "resume_from_failed_step",
+                    "available_recovery_actions": ["resume_from_failed_step", "manual_retrigger"],
                     "recovery_action_details": {
+                        "resume_from_failed_step": {
+                            "failed_step_index": failed_step_index,
+                            "strategy": "resume_single_failed_step",
+                        },
                         "manual_retrigger": {
                             "strategy": "restart_workflow_from_beginning",
                         }
@@ -305,6 +315,7 @@ def _build_agent_v2_response(
         workflow_status=workflow_status,
         clarification_plan=clarification_plan,
         route_type=route_type,
+        tool_chain=tool_chain,
     )
 
     return AgentWorkflowResponse(
@@ -355,6 +366,7 @@ def _build_agent_v2_response(
         tool_execution=tool_execution,
         tool_chain=tool_chain,
         retry_count=int(final_state.get("retry_count") or 0),
+        step_count=len(tool_chain),
         applied_clarification_fields=final_state.get("applied_clarification_fields") or [],
         question_rewritten=bool(final_state.get("question_rewritten")),
     )
@@ -546,6 +558,9 @@ def _execute_agent_v2_workflow(
     recovered_via_action: str | None = None,
     resume_source_type: str | None = None,
     resume_strategy: str | None = None,
+    resumed_from_step_index: int | None = None,
+    reused_step_indices: list[int] | None = None,
+    retried_step_indices: list[int] | None = None,
 ) -> AgentWorkflowResponse:
     normalized_question = _normalize_question(question)
     normalized_filename = filename.strip() if isinstance(filename, str) else None
@@ -590,6 +605,9 @@ def _execute_agent_v2_workflow(
             response.recovered_via_action = recovered_via_action
             response.resume_source_type = resume_source_type
             response.resume_strategy = resume_strategy
+            response.resumed_from_step_index = resumed_from_step_index
+            response.reused_step_indices = reused_step_indices or []
+            response.retried_step_indices = retried_step_indices or []
             persist_agent_v2_run(response)
             finalize_agent_v2_trace(trace_run, response=response)
             return response
@@ -778,6 +796,7 @@ def resume_agent_v2_request(
                 workflow_status=workflow_status,
                 clarification_plan=clarification_plan,
                 route_type=route_type,
+                tool_chain=tool_chain,
             )
 
             response = AgentWorkflowResponse(
@@ -829,7 +848,7 @@ def resume_agent_v2_request(
                 fallback_tool_planner_steps=persisted_run.fallback_tool_planner_steps,
                 retry_count=int(resumed_state.get("retry_count") or persisted_run.retry_count),
                 retried_step_indices=persisted_run.retried_step_indices,
-                step_count=persisted_run.step_count,
+                step_count=len(tool_chain),
                 route=RouteDecision(
                     route_type=route_type,
                     route_reason=route_reason,
@@ -885,14 +904,17 @@ def recover_agent_v2_request(
             clarification_context=clarification_context,
             checkpointer=checkpointer,
         )
-    if selected_action != "manual_retrigger":
+    if selected_action not in {"manual_retrigger", "resume_from_failed_step"}:
         raise ValueError("recovery_action_not_supported_for_agent_v2")
 
     source_run = get_persisted_agent_v2_run(run_id)
     if source_run.workflow_status != "failed":
-        raise ValueError("manual_retrigger_requires_failed_run")
+        raise ValueError(f"{selected_action}_requires_failed_run")
 
     top_k = source_run.retrieval.top_k if source_run.retrieval is not None else 3
+    failed_step_index = None
+    if source_run.tool_chain:
+        failed_step_index = source_run.tool_chain[-1].step_index
     return _execute_agent_v2_workflow(
         run_id=uuid.uuid4().hex,
         question=source_run.question,
@@ -903,7 +925,14 @@ def recover_agent_v2_request(
         root_run_id=source_run.root_run_id or source_run.run_id,
         recovery_depth=(source_run.recovery_depth or 0) + 1,
         source_run_id=source_run.run_id,
-        recovered_via_action="manual_retrigger",
+        recovered_via_action=selected_action,
         resume_source_type="run_id",
-        resume_strategy="manual_retrigger_recovery",
+        resume_strategy=(
+            "failed_step_resume"
+            if selected_action == "resume_from_failed_step"
+            else "manual_retrigger_recovery"
+        ),
+        resumed_from_step_index=failed_step_index if selected_action == "resume_from_failed_step" else None,
+        reused_step_indices=[],
+        retried_step_indices=[failed_step_index] if selected_action == "resume_from_failed_step" and failed_step_index is not None else [],
     )
