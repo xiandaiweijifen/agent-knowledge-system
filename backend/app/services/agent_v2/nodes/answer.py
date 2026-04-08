@@ -9,6 +9,14 @@ def answer_node(state: AgentState) -> dict:
     Otherwise return a placeholder answer for now.
     Package 9 will wire in generate_rag_answer().
     """
+    if state.get("workflow_status") == "failed":
+        return {
+            "workflow_status": "failed",
+            "error": state.get("error"),
+            "failure_stage": state.get("failure_stage"),
+            "retry_state": state.get("retry_state"),
+            "retry_count": state.get("retry_count", 0),
+        }
     if state.get("answer"):
         return {
             "answer": state["answer"],

@@ -21,6 +21,7 @@ class AgentState(TypedDict):
     question: str
     filename: str
     top_k: int
+    debug_fault_injection: dict[str, Any]
 
     # ------------------------------------------------------------------ #
     # Routing                                                             #
@@ -67,6 +68,9 @@ class AgentState(TypedDict):
     # ------------------------------------------------------------------ #
     # One of: "in_progress" | "completed" | "failed" | "clarification_required"
     workflow_status: str
+    failure_stage: str | None
+    retry_state: str | None
+    retry_count: int
     error: str | None
 
     # ------------------------------------------------------------------ #

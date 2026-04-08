@@ -6,7 +6,7 @@ from app.main import app
 def test_query_agent_v2_endpoint_returns_agent_workflow_response(monkeypatch):
     monkeypatch.setattr(
         "app.api.routes.query.orchestrate_agent_v2_request",
-        lambda question, filename=None, top_k=3, checkpointer=None: type(
+        lambda question, filename=None, top_k=3, checkpointer=None, debug_fault_injection=None: type(
             "Response",
             (),
             {
@@ -16,7 +16,7 @@ def test_query_agent_v2_endpoint_returns_agent_workflow_response(monkeypatch):
     )
     monkeypatch.setattr(
         "app.api.routes.query.orchestrate_agent_v2_request",
-        lambda question, filename=None, top_k=3, checkpointer=None: __import__(
+        lambda question, filename=None, top_k=3, checkpointer=None, debug_fault_injection=None: __import__(
             "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
         ).AgentWorkflowResponse(
             question=question,
@@ -98,7 +98,7 @@ def test_resume_agent_v2_endpoint_returns_persisted_response(monkeypatch):
 def test_query_agent_v2_stream_endpoint_returns_sse_events(monkeypatch):
     monkeypatch.setattr(
         "app.api.routes.query.stream_agent_v2_request",
-        lambda question, filename=None, top_k=3, checkpointer=None: iter(
+        lambda question, filename=None, top_k=3, checkpointer=None, debug_fault_injection=None: iter(
             [
                 {
                     "event_type": "status",
@@ -191,7 +191,7 @@ def test_query_agent_endpoint_uses_agent_v2_when_configured(monkeypatch):
     monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
     monkeypatch.setattr(
         "app.api.routes.query.orchestrate_agent_v2_request",
-        lambda question, filename=None, top_k=3, checkpointer=None: __import__(
+        lambda question, filename=None, top_k=3, checkpointer=None, debug_fault_injection=None: __import__(
             "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
         ).AgentWorkflowResponse(
             question=question,
@@ -284,8 +284,8 @@ def test_recover_agent_endpoint_uses_agent_v2_resume_for_clarification_when_conf
     monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
     monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
     monkeypatch.setattr(
-        "app.api.routes.query.resume_agent_v2_request",
-        lambda run_id, clarification_context=None, checkpointer=None: __import__(
+        "app.api.routes.query.recover_agent_v2_request",
+        lambda run_id, recovery_action=None, clarification_context=None, checkpointer=None, debug_fault_injection=None: __import__(
             "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
         ).AgentWorkflowResponse(
             run_id=run_id,
@@ -323,6 +323,12 @@ def test_recover_agent_endpoint_uses_agent_v2_resume_for_clarification_when_conf
 def test_recover_agent_endpoint_rejects_unsupported_v2_recovery_action(monkeypatch):
     monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
     monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    monkeypatch.setattr(
+        "app.api.routes.query.recover_agent_v2_request",
+        lambda run_id, recovery_action=None, clarification_context=None, checkpointer=None, debug_fault_injection=None: (_ for _ in ()).throw(
+            ValueError("recovery_action_not_supported_for_agent_v2")
+        ),
+    )
     client = TestClient(app)
     response = client.post(
         "/api/query/agent/recover",
@@ -334,3 +340,46 @@ def test_recover_agent_endpoint_rejects_unsupported_v2_recovery_action(monkeypat
     )
     assert response.status_code == 400
     assert response.json()["detail"] == "recovery_action_not_supported_for_agent_v2"
+
+
+def test_recover_agent_endpoint_uses_agent_v2_manual_retrigger_when_configured(monkeypatch):
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
+    monkeypatch.setattr("app.api.routes.query.settings.agent_default_runtime", "v2")
+    monkeypatch.setattr(
+        "app.api.routes.query.recover_agent_v2_request",
+        lambda run_id, recovery_action=None, clarification_context=None, checkpointer=None, debug_fault_injection=None: __import__(
+            "app.schemas.query", fromlist=["AgentWorkflowResponse", "RouteDecision"]
+        ).AgentWorkflowResponse(
+            run_id="rerun-123",
+            root_run_id=run_id,
+            recovery_depth=1,
+            question="Create a ticket for payment-service outage",
+            source_run_id=run_id,
+            recovered_via_action="manual_retrigger",
+            resume_source_type="run_id",
+            resume_strategy="manual_retrigger_recovery",
+            workflow_status="completed",
+            route=__import__(
+                "app.schemas.query", fromlist=["RouteDecision"]
+            ).RouteDecision(
+                route_type="tool_execution",
+                route_reason="Retried from failure.",
+                filename=None,
+            ),
+            answer="Recovered via manual retrigger",
+            answer_source="tool_result",
+        ),
+    )
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent/recover",
+        json={
+            "run_id": "run-failed-123",
+            "recovery_action": "manual_retrigger",
+            "clarification_context": {},
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"] == "rerun-123"
+    assert payload["recovered_via_action"] == "manual_retrigger"

@@ -41,6 +41,7 @@ def _build_initial_state(question: str, filename: str | None, top_k: int) -> dic
         "question": question,
         "filename": filename or "",
         "top_k": top_k,
+        "debug_fault_injection": {},
         "route": "",
         "route_reason": None,
         "route_planning_mode": None,
@@ -60,6 +61,9 @@ def _build_initial_state(question: str, filename: str | None, top_k: int) -> dic
         "chat_provider": None,
         "chat_model": None,
         "workflow_status": "in_progress",
+        "failure_stage": None,
+        "retry_state": None,
+        "retry_count": 0,
         "error": None,
         "messages": [],
     }
@@ -75,6 +79,13 @@ def _build_graph_invoke_config(thread_id: str) -> dict[str, dict[str, str]]:
 
 def _build_terminal_reason(final_state: dict[str, Any]) -> str:
     workflow_status = final_state.get("workflow_status")
+    if workflow_status == "failed":
+        failure_stage = final_state.get("failure_stage")
+        if failure_stage == "tool_execution":
+            return "tool_execution_failed"
+        if failure_stage == "knowledge_retrieval":
+            return "knowledge_retrieval_failed"
+        return "agent_v2_failed"
     if workflow_status == "clarification_required":
         return "clarification_requested"
     if final_state.get("route") == "tool_execution":
@@ -141,7 +152,16 @@ def _build_workflow_trace(
             )
         )
 
-    if route == "clarification_needed":
+    if workflow_status == "failed":
+        events.append(
+            WorkflowTraceEvent(
+                stage=final_state.get("failure_stage") or "workflow",
+                status="failed",
+                timestamp=timestamp,
+                detail=final_state.get("error") or "Workflow failed in agent_v2.",
+            )
+        )
+    elif route == "clarification_needed":
         events.append(
             WorkflowTraceEvent(
                 stage="clarification",
@@ -178,8 +198,31 @@ def _build_recovery_metadata(
     *,
     workflow_status: str,
     clarification_plan: dict[str, Any] | None,
+    route_type: str | None = None,
 ) -> dict[str, Any]:
     if workflow_status != "clarification_required":
+        if workflow_status == "failed":
+            if route_type == "tool_execution":
+                return {
+                    "recommended_recovery_action": "manual_retrigger",
+                    "available_recovery_actions": ["manual_retrigger"],
+                    "recovery_action_details": {
+                        "manual_retrigger": {
+                            "strategy": "restart_workflow_from_beginning",
+                        }
+                    },
+                    "is_recoverable": True,
+                }
+            return {
+                "recommended_recovery_action": "manual_investigation",
+                "available_recovery_actions": ["manual_investigation"],
+                "recovery_action_details": {
+                    "manual_investigation": {
+                        "reason": "workflow_requires_manual_investigation",
+                    }
+                },
+                "is_recoverable": False,
+            }
         return {
             "recommended_recovery_action": "none",
             "available_recovery_actions": [],
@@ -261,6 +304,7 @@ def _build_agent_v2_response(
     recovery_metadata = _build_recovery_metadata(
         workflow_status=workflow_status,
         clarification_plan=clarification_plan,
+        route_type=route_type,
     )
 
     return AgentWorkflowResponse(
@@ -273,10 +317,14 @@ def _build_agent_v2_response(
             final_state=final_state,
             interrupt_payload=interrupt_payload,
         ),
+        outcome_category=workflow_status,
         is_recoverable=recovery_metadata["is_recoverable"],
+        retry_state=final_state.get("retry_state"),
         recommended_recovery_action=recovery_metadata["recommended_recovery_action"],
         available_recovery_actions=recovery_metadata["available_recovery_actions"],
         recovery_action_details=recovery_metadata["recovery_action_details"],
+        failure_stage=final_state.get("failure_stage"),
+        failure_message=final_state.get("error"),
         started_at=started_at,
         completed_at=completed_at,
         last_updated_at=last_updated_at,
@@ -306,6 +354,7 @@ def _build_agent_v2_response(
         tool_plan=tool_plan,
         tool_execution=tool_execution,
         tool_chain=tool_chain,
+        retry_count=int(final_state.get("retry_count") or 0),
         applied_clarification_fields=final_state.get("applied_clarification_fields") or [],
         question_rewritten=bool(final_state.get("question_rewritten")),
     )
@@ -483,24 +532,32 @@ def _translate_stream_update_to_event(
     return None
 
 
-def orchestrate_agent_v2_request(
+def _execute_agent_v2_workflow(
     *,
+    run_id: str,
     question: str,
     filename: str | None = None,
     top_k: int = 3,
     checkpointer=None,
+    debug_fault_injection: dict[str, Any] | None = None,
+    root_run_id: str | None = None,
+    recovery_depth: int = 0,
+    source_run_id: str | None = None,
+    recovered_via_action: str | None = None,
+    resume_source_type: str | None = None,
+    resume_strategy: str | None = None,
 ) -> AgentWorkflowResponse:
     normalized_question = _normalize_question(question)
     normalized_filename = filename.strip() if isinstance(filename, str) else None
     top_k = _normalize_top_k(top_k)
 
-    run_id = uuid.uuid4().hex
     graph = build_graph(checkpointer=checkpointer or InMemorySaver())
     initial_state = _build_initial_state(
         question=normalized_question,
         filename=normalized_filename,
         top_k=top_k,
     )
+    initial_state["debug_fault_injection"] = debug_fault_injection or {}
     invoke_config = _build_graph_invoke_config(run_id)
 
     with trace_agent_v2_run(
@@ -527,6 +584,12 @@ def orchestrate_agent_v2_request(
                 completed_at=timestamp,
                 last_updated_at=timestamp,
             )
+            response.root_run_id = root_run_id
+            response.recovery_depth = recovery_depth
+            response.source_run_id = source_run_id
+            response.recovered_via_action = recovered_via_action
+            response.resume_source_type = resume_source_type
+            response.resume_strategy = resume_strategy
             persist_agent_v2_run(response)
             finalize_agent_v2_trace(trace_run, response=response)
             return response
@@ -535,12 +598,31 @@ def orchestrate_agent_v2_request(
             raise
 
 
+def orchestrate_agent_v2_request(
+    *,
+    question: str,
+    filename: str | None = None,
+    top_k: int = 3,
+    checkpointer=None,
+    debug_fault_injection: dict[str, Any] | None = None,
+) -> AgentWorkflowResponse:
+    return _execute_agent_v2_workflow(
+        run_id=uuid.uuid4().hex,
+        question=question,
+        filename=filename,
+        top_k=top_k,
+        checkpointer=checkpointer,
+        debug_fault_injection=debug_fault_injection,
+    )
+
+
 def stream_agent_v2_request(
     *,
     question: str,
     filename: str | None = None,
     top_k: int = 3,
     checkpointer=None,
+    debug_fault_injection: dict[str, Any] | None = None,
 ) -> Iterator[dict[str, Any]]:
     normalized_question = _normalize_question(question)
     normalized_filename = filename.strip() if isinstance(filename, str) else None
@@ -551,6 +633,7 @@ def stream_agent_v2_request(
         filename=normalized_filename,
         top_k=top_k,
     )
+    initial_state["debug_fault_injection"] = debug_fault_injection or {}
     run_id = uuid.uuid4().hex
     invoke_config = _build_graph_invoke_config(run_id)
     accumulated_state = copy.deepcopy(initial_state)
@@ -694,6 +777,7 @@ def resume_agent_v2_request(
             recovery_metadata = _build_recovery_metadata(
                 workflow_status=workflow_status,
                 clarification_plan=clarification_plan,
+                route_type=route_type,
             )
 
             response = AgentWorkflowResponse(
@@ -714,9 +798,9 @@ def resume_agent_v2_request(
                     final_state=resumed_state,
                     interrupt_payload=interrupt_payload,
                 ),
-                outcome_category=persisted_run.outcome_category,
+                outcome_category=resumed_state.get("workflow_status") or persisted_run.outcome_category,
                 is_recoverable=recovery_metadata["is_recoverable"],
-                retry_state=persisted_run.retry_state,
+                retry_state=resumed_state.get("retry_state") or persisted_run.retry_state,
                 recommended_recovery_action=recovery_metadata["recommended_recovery_action"],
                 available_recovery_actions=recovery_metadata["available_recovery_actions"],
                 recovery_action_details=recovery_metadata["recovery_action_details"],
@@ -743,7 +827,7 @@ def resume_agent_v2_request(
                 fallback_planner_layers=persisted_run.fallback_planner_layers,
                 llm_tool_planner_steps=persisted_run.llm_tool_planner_steps,
                 fallback_tool_planner_steps=persisted_run.fallback_tool_planner_steps,
-                retry_count=persisted_run.retry_count,
+                retry_count=int(resumed_state.get("retry_count") or persisted_run.retry_count),
                 retried_step_indices=persisted_run.retried_step_indices,
                 step_count=persisted_run.step_count,
                 route=RouteDecision(
@@ -784,3 +868,42 @@ def resume_agent_v2_request(
 
 def list_agent_v2_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
     return list_persisted_agent_v2_runs(limit=limit)
+
+
+def recover_agent_v2_request(
+    *,
+    run_id: str,
+    recovery_action: str | None,
+    clarification_context: dict[str, str] | None = None,
+    checkpointer=None,
+    debug_fault_injection: dict[str, Any] | None = None,
+) -> AgentWorkflowResponse:
+    selected_action = (recovery_action or "").strip() or "manual_retrigger"
+    if selected_action == "resume_with_clarification":
+        return resume_agent_v2_request(
+            run_id=run_id,
+            clarification_context=clarification_context,
+            checkpointer=checkpointer,
+        )
+    if selected_action != "manual_retrigger":
+        raise ValueError("recovery_action_not_supported_for_agent_v2")
+
+    source_run = get_persisted_agent_v2_run(run_id)
+    if source_run.workflow_status != "failed":
+        raise ValueError("manual_retrigger_requires_failed_run")
+
+    top_k = source_run.retrieval.top_k if source_run.retrieval is not None else 3
+    return _execute_agent_v2_workflow(
+        run_id=uuid.uuid4().hex,
+        question=source_run.question,
+        filename=source_run.filename,
+        top_k=top_k,
+        checkpointer=checkpointer,
+        debug_fault_injection=debug_fault_injection,
+        root_run_id=source_run.root_run_id or source_run.run_id,
+        recovery_depth=(source_run.recovery_depth or 0) + 1,
+        source_run_id=source_run.run_id,
+        recovered_via_action="manual_retrigger",
+        resume_source_type="run_id",
+        resume_strategy="manual_retrigger_recovery",
+    )

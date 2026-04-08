@@ -1,6 +1,10 @@
 from langgraph.types import Command
 
-from app.services.agent_v2.query_service import orchestrate_agent_v2_request, stream_agent_v2_request
+from app.services.agent_v2.query_service import (
+    orchestrate_agent_v2_request,
+    recover_agent_v2_request,
+    stream_agent_v2_request,
+)
 
 
 def test_orchestrate_agent_v2_request_returns_retrieval_response(monkeypatch):
@@ -288,6 +292,130 @@ def test_orchestrate_agent_v2_request_returns_tool_result(monkeypatch):
     assert response.tool_plan["tool_name"] == "ticketing"
     assert response.tool_execution["execution_status"] == "completed"
     assert response.workflow_trace[-1].detail == "Tool execution node completed in agent_v2."
+
+
+def test_orchestrate_agent_v2_request_returns_failed_tool_response(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: type(
+            "Graph",
+            (),
+            {
+                "invoke": lambda self, state, config=None: {
+                    **state,
+                    "route": "tool_execution",
+                    "route_reason": "Execution request.",
+                    "workflow_status": "failed",
+                    "failure_stage": "tool_execution",
+                    "retry_state": "retry_exhausted",
+                    "retry_count": 1,
+                    "error": "debug injected persistent failure",
+                    "tool_chain": [
+                        {
+                            "step_id": "step_1",
+                            "step_index": 1,
+                            "step_status": "failed",
+                            "attempt_count": 1,
+                            "retried": False,
+                            "started_at": "2026-04-07T00:00:00+00:00",
+                            "completed_at": "2026-04-07T00:00:01+00:00",
+                            "question": "Create a ticket",
+                            "tool_plan": {
+                                "tool_name": "ticketing",
+                                "action": "create",
+                                "target": "payment-service",
+                                "arguments": {"severity": "high"},
+                            },
+                            "tool_execution": None,
+                            "failure_message": "debug injected persistent failure",
+                        }
+                    ],
+                },
+            },
+        )(),
+    )
+    response = orchestrate_agent_v2_request(
+        question="Create a ticket for payment-service outage",
+        top_k=3,
+    )
+    assert response.workflow_status == "failed"
+    assert response.terminal_reason == "tool_execution_failed"
+    assert response.outcome_category == "failed"
+    assert response.retry_state == "retry_exhausted"
+    assert response.recommended_recovery_action == "manual_retrigger"
+    assert response.available_recovery_actions == ["manual_retrigger"]
+    assert response.failure_stage == "tool_execution"
+    assert response.failure_message == "debug injected persistent failure"
+    assert response.tool_chain[0].step_status == "failed"
+
+
+def test_recover_agent_v2_request_manual_retriggers_failed_run(monkeypatch):
+    from app.schemas.query import AgentWorkflowResponse, RouteDecision
+
+    source_run = AgentWorkflowResponse(
+        run_id="run-failed-123",
+        question="Create a ticket for payment-service outage",
+        workflow_status="failed",
+        route=RouteDecision(
+            route_type="tool_execution",
+            route_reason="Execution request.",
+            filename=None,
+        ),
+        failure_stage="tool_execution",
+        failure_message="debug injected persistent failure",
+        retry_state="retry_exhausted",
+        retry_count=1,
+        recommended_recovery_action="manual_retrigger",
+        available_recovery_actions=["manual_retrigger"],
+    )
+    captured = {}
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: source_run,
+    )
+
+    def stub_execute(**kwargs):
+        captured["kwargs"] = kwargs
+        return AgentWorkflowResponse(
+            run_id="rerun-123",
+            root_run_id=kwargs["root_run_id"],
+            recovery_depth=kwargs["recovery_depth"],
+            question=kwargs["question"],
+            source_run_id=kwargs["source_run_id"],
+            recovered_via_action=kwargs["recovered_via_action"],
+            resume_source_type=kwargs["resume_source_type"],
+            resume_strategy=kwargs["resume_strategy"],
+            workflow_status="completed",
+            route=RouteDecision(
+                route_type="tool_execution",
+                route_reason="Retried from failure.",
+                filename=None,
+            ),
+            answer="Recovered via manual retrigger",
+            answer_source="tool_result",
+        )
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service._execute_agent_v2_workflow",
+        stub_execute,
+    )
+
+    response = recover_agent_v2_request(
+        run_id="run-failed-123",
+        recovery_action="manual_retrigger",
+        clarification_context={},
+        checkpointer=object(),
+    )
+    assert captured["kwargs"]["source_run_id"] == "run-failed-123"
+    assert captured["kwargs"]["recovered_via_action"] == "manual_retrigger"
+    assert captured["kwargs"]["resume_strategy"] == "manual_retrigger_recovery"
+    assert captured["kwargs"]["recovery_depth"] == 1
+    assert response.run_id == "rerun-123"
 
 
 def test_stream_agent_v2_request_emits_updates_and_final_result(monkeypatch):

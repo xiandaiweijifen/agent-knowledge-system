@@ -39,6 +39,7 @@ from app.services.agent_v2.query_service import (
     get_persisted_agent_v2_run,
     list_agent_v2_runs,
     orchestrate_agent_v2_request,
+    recover_agent_v2_request,
     resume_agent_v2_request,
     stream_agent_v2_request,
 )
@@ -97,6 +98,7 @@ def orchestrate_agent_query(
                 filename=request.filename,
                 top_k=request.top_k,
                 checkpointer=checkpointer,
+                debug_fault_injection=request.debug_fault_injection,
             )
         return orchestrate_agent_request(
             question=request.question,
@@ -125,6 +127,7 @@ def orchestrate_agent_v2_query(
             filename=request.filename,
             top_k=request.top_k,
             checkpointer=checkpointer,
+            debug_fault_injection=request.debug_fault_injection,
         )
     except FileNotFoundError:
         raise HTTPException(
@@ -149,6 +152,7 @@ def stream_agent_v2_query(
                 filename=request.filename,
                 top_k=request.top_k,
                 checkpointer=checkpointer,
+                debug_fault_injection=request.debug_fault_injection,
             ):
                 event_name = event.get("event_type", "message")
                 yield f"event: {event_name}\n"
@@ -241,14 +245,14 @@ def recover_agent_query(
 ) -> AgentWorkflowResponse:
     try:
         if _use_agent_v2_as_default_runtime():
-            if request.recovery_action in (None, "resume_with_clarification") or request.clarification_context:
-                checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
-                return resume_agent_v2_request(
-                    run_id=request.run_id,
-                    clarification_context=request.clarification_context,
-                    checkpointer=checkpointer,
-                )
-            raise ValueError("recovery_action_not_supported_for_agent_v2")
+            checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
+            return recover_agent_v2_request(
+                run_id=request.run_id,
+                recovery_action=request.recovery_action,
+                clarification_context=request.clarification_context,
+                checkpointer=checkpointer,
+                debug_fault_injection=request.debug_fault_injection,
+            )
         return recover_agent_request(
             run_id=request.run_id,
             recovery_action=request.recovery_action,

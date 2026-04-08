@@ -17,11 +17,21 @@ def retrieval_node(state: AgentState) -> dict:
             "workflow_status": "in_progress",
         }
 
-    query_response = run_query(
-        filename=filename,
-        question=state["question"],
-        top_k=state["top_k"],
-    )
+    try:
+        query_response = run_query(
+            filename=filename,
+            question=state["question"],
+            top_k=state["top_k"],
+        )
+    except Exception as exc:
+        return {
+            "retrieval_result": None,
+            "workflow_status": "failed",
+            "failure_stage": "knowledge_retrieval",
+            "retry_state": "not_applicable",
+            "retry_count": 0,
+            "error": str(exc),
+        }
     return {
         "retrieval_result": query_response.retrieval.model_dump(),
         "answer": query_response.answer,
@@ -32,4 +42,7 @@ def retrieval_node(state: AgentState) -> dict:
         "chat_provider": query_response.chat_provider,
         "chat_model": query_response.chat_model,
         "workflow_status": "in_progress",
+        "failure_stage": None,
+        "retry_state": "not_applicable",
+        "retry_count": 0,
     }
