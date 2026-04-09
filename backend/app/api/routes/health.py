@@ -12,9 +12,12 @@ def health_check():
 
 @router.get("/health/system")
 def system_health():
+    runtime = settings.agent_default_runtime.strip().lower() or "legacy"
     return {
         "status": "ok",
         "app_env": settings.app_env,
+        "agent_default_runtime": runtime,
+        "default_agent_surface": "agent_v2" if runtime == "v2" else "legacy",
         "embedding_provider": settings.embedding_provider,
         "embedding_model": (
             settings.gemini_embedding_model

@@ -40,6 +40,13 @@
 - Added `/api/query/agent-v2/recover` as the explicit recovery surface for `agent_v2`.
 - Frontend recovery calls now target the explicit v2 recovery endpoint instead of relying on the legacy compatibility path.
 
+## Package 19
+
+- Status: completed
+- Commit: `feat: surface default agent runtime in system health`
+- Added `agent_default_runtime` and `default_agent_surface` to `/api/health/system`.
+- Frontend system snapshot now shows whether the current default runtime is `legacy` or `agent_v2`.
+
 ## Test Baseline
 
 - Backend: `241 passed, 0 failed`

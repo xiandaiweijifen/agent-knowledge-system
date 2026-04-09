@@ -136,6 +136,7 @@ function App() {
       systemSnapshot: "System Snapshot",
       systemSnapshotCopy:
         "Active providers and infrastructure readiness for the current backend session.",
+      agentRuntime: "Agent Runtime",
       backend: "Backend",
       environment: "Environment",
       embedding: "Embedding",
@@ -162,6 +163,7 @@ function App() {
       brand: "Agent Knowledge System",
       systemSnapshot: "系统快照",
       systemSnapshotCopy: "展示当前后端会话中的活跃提供方与基础设施就绪状态。",
+      agentRuntime: "Agent 运行时",
       backend: "后端",
       environment: "环境",
       embedding: "嵌入模型",
@@ -813,6 +815,14 @@ function App() {
           <div className="status-pill">
             <span>{appCopy.environment}</span>
             <strong>{systemHealth?.app_env ?? appCopy.unavailable}</strong>
+          </div>
+          <div className="status-pill">
+            <span>{appCopy.agentRuntime}</span>
+            <strong>
+              {systemHealth
+                ? `${systemHealth.agent_default_runtime} -> ${systemHealth.default_agent_surface}`
+                : appCopy.unavailable}
+            </strong>
           </div>
           <div className="status-pill">
             <span>{appCopy.embedding}</span>

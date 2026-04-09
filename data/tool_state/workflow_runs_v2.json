@@ -1,5 +1,657 @@
 [
   {
+    "run_id": "0d7a361ca8e2465fb4ba87487a1d1d73",
+    "root_run_id": "f60e79d500724992ab5585ddb60eb6be",
+    "recovery_depth": 1,
+    "question": "Create a high severity ticket for payment-service outage",
+    "resumed_from_question": null,
+    "source_run_id": "f60e79d500724992ab5585ddb60eb6be",
+    "recovered_via_action": "manual_retrigger",
+    "resume_source_type": "run_id",
+    "resume_strategy": "manual_retrigger_recovery",
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-08T12:30:36.412956+00:00",
+    "completed_at": "2026-04-08T12:30:36.412956+00:00",
+    "last_updated_at": "2026-04-08T12:30:36.412956+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user wants to create a ticket, which is an action that requires using a tool. The severity is specified, indicating a clear action to be taken.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:30:36.412956+00:00",
+        "detail": "Route selected: tool_execution. The user wants to create a ticket, which is an action that requires using a tool. The severity is specified, indicating a clear action to be taken."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:30:36.412956+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:30:36.412956+00:00",
+        "detail": "Tool execution node completed in agent_v2."
+      }
+    ],
+    "filename": null,
+    "answer": "Created local ticket TICKET-0262 for payment-service.",
+    "answer_source": "tool_result",
+    "model": null,
+    "answered_at": "2026-04-08T12:30:36.412956+00:00",
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a high severity ticket for payment-service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "severity": "high"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0262 for payment-service.",
+      "trace_id": "337ea25237f54f53aa8fd25e27881f08",
+      "executed_at": "2026-04-08T12:30:35.335720+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0262",
+        "ticket_id": "TICKET-0262",
+        "status": "open",
+        "severity": "high",
+        "environment": "unspecified",
+        "created_at": "2026-04-08T12:30:35.335720+00:00",
+        "updated_at": "2026-04-08T12:30:35.335720+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-08T12:30:35.310127+00:00",
+        "completed_at": "2026-04-08T12:30:35.335720+00:00",
+        "question": "Create a high severity ticket for payment-service outage",
+        "tool_plan": {
+          "question": "Create a high severity ticket for payment-service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "severity": "high"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0262 for payment-service.",
+          "trace_id": "337ea25237f54f53aa8fd25e27881f08",
+          "executed_at": "2026-04-08T12:30:35.335720+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0262",
+            "ticket_id": "TICKET-0262",
+            "status": "open",
+            "severity": "high",
+            "environment": "unspecified",
+            "created_at": "2026-04-08T12:30:35.335720+00:00",
+            "updated_at": "2026-04-08T12:30:35.335720+00:00"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "cabfecede0a44de195d168d9b8b5c7bb",
+    "root_run_id": "f60e79d500724992ab5585ddb60eb6be",
+    "recovery_depth": 1,
+    "question": "Create a high severity ticket for payment-service outage",
+    "resumed_from_question": null,
+    "source_run_id": "f60e79d500724992ab5585ddb60eb6be",
+    "recovered_via_action": "resume_from_failed_step",
+    "resume_source_type": "run_id",
+    "resume_strategy": "failed_step_resume",
+    "resumed_from_step_index": 1,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-08T12:30:03.717391+00:00",
+    "completed_at": "2026-04-08T12:30:03.717391+00:00",
+    "last_updated_at": "2026-04-08T12:30:03.717391+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [
+      1
+    ],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user wants to create a ticket, which is an action that requires using a tool. The severity is specified, indicating a clear action to be taken.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:30:03.717391+00:00",
+        "detail": "Route selected: tool_execution. The user wants to create a ticket, which is an action that requires using a tool. The severity is specified, indicating a clear action to be taken."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:30:03.717391+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:30:03.717391+00:00",
+        "detail": "Tool execution node completed in agent_v2."
+      }
+    ],
+    "filename": null,
+    "answer": "Created local ticket TICKET-0261 for payment-service.",
+    "answer_source": "tool_result",
+    "model": null,
+    "answered_at": "2026-04-08T12:30:03.717391+00:00",
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a high severity ticket for payment-service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "severity": "high"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Created local ticket TICKET-0261 for payment-service.",
+      "trace_id": "0e897f1dd6d54fa682ae923787036b0d",
+      "executed_at": "2026-04-08T12:30:02.613813+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0261",
+        "ticket_id": "TICKET-0261",
+        "status": "open",
+        "severity": "high",
+        "environment": "unspecified",
+        "created_at": "2026-04-08T12:30:02.613813+00:00",
+        "updated_at": "2026-04-08T12:30:02.613813+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-08T12:30:02.606631+00:00",
+        "completed_at": "2026-04-08T12:30:02.613813+00:00",
+        "question": "Create a high severity ticket for payment-service outage",
+        "tool_plan": {
+          "question": "Create a high severity ticket for payment-service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "severity": "high"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Created local ticket TICKET-0261 for payment-service.",
+          "trace_id": "0e897f1dd6d54fa682ae923787036b0d",
+          "executed_at": "2026-04-08T12:30:02.613813+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0261",
+            "ticket_id": "TICKET-0261",
+            "status": "open",
+            "severity": "high",
+            "environment": "unspecified",
+            "created_at": "2026-04-08T12:30:02.613813+00:00",
+            "updated_at": "2026-04-08T12:30:02.613813+00:00"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "f60e79d500724992ab5585ddb60eb6be",
+    "root_run_id": null,
+    "recovery_depth": 0,
+    "question": "Create a high severity ticket for payment-service outage",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "failed",
+    "terminal_reason": "tool_execution_failed",
+    "outcome_category": "failed",
+    "is_recoverable": true,
+    "retry_state": "retry_exhausted",
+    "recommended_recovery_action": "resume_from_failed_step",
+    "available_recovery_actions": [
+      "resume_from_failed_step",
+      "manual_retrigger"
+    ],
+    "recovery_action_details": {
+      "resume_from_failed_step": {
+        "failed_step_index": 1,
+        "strategy": "resume_single_failed_step"
+      },
+      "manual_retrigger": {
+        "strategy": "restart_workflow_from_beginning"
+      }
+    },
+    "failure_stage": "tool_execution",
+    "failure_message": "debug injected persistent failure",
+    "started_at": "2026-04-08T12:28:56.054806+00:00",
+    "completed_at": "2026-04-08T12:28:56.054806+00:00",
+    "last_updated_at": "2026-04-08T12:28:56.054806+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 1,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user wants to create a ticket, which is an action that requires using a tool. The severity is specified, indicating a clear action to be taken.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:28:56.054806+00:00",
+        "detail": "Route selected: tool_execution. The user wants to create a ticket, which is an action that requires using a tool. The severity is specified, indicating a clear action to be taken."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:28:56.054806+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "failed",
+        "timestamp": "2026-04-08T12:28:56.054806+00:00",
+        "detail": "debug injected persistent failure"
+      }
+    ],
+    "filename": null,
+    "answer": null,
+    "answer_source": null,
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Create a high severity ticket for payment-service outage",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "create",
+      "target": "payment-service",
+      "arguments": {
+        "severity": "high"
+      },
+      "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+    },
+    "tool_execution": null,
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "failed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-08T12:28:51.624885+00:00",
+        "completed_at": "2026-04-08T12:28:55.642909+00:00",
+        "question": "Create a high severity ticket for payment-service outage",
+        "tool_plan": {
+          "question": "Create a high severity ticket for payment-service outage",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "create",
+          "target": "payment-service",
+          "arguments": {
+            "severity": "high"
+          },
+          "plan_summary": "Plan ticketing:create for payment-service using a llm planner."
+        },
+        "tool_execution": null,
+        "failure_message": "debug injected persistent failure"
+      }
+    ]
+  },
+  {
+    "run_id": "eb7915c489fb4a508143aa1626c1d962",
+    "root_run_id": null,
+    "recovery_depth": 0,
+    "question": "Fix it (item to fix: production; description of problem: check system status for payment-service)",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": null,
+    "resume_source_type": "run_id",
+    "resume_strategy": "checkpoint_resume",
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [
+      "item_to_fix",
+      "description_of_problem"
+    ],
+    "question_rewritten": true,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-08T12:27:00.728854+00:00",
+    "completed_at": "2026-04-08T12:27:07.294984+00:00",
+    "last_updated_at": "2026-04-08T12:27:35.196276+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user is requesting an action ('Fix it') related to a specific item ('production') and provides a clear description of the task ('check system status for payment-service'), indicating a need to execute a tool or command.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:27:35.196276+00:00",
+        "detail": "Route selected: tool_execution. The user is requesting an action ('Fix it') related to a specific item ('production') and provides a clear description of the task ('check system status for payment-service'), indicating a need to execute a tool or command."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:27:35.196276+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-04-08T12:27:35.196276+00:00",
+        "detail": "Tool execution node completed in agent_v2."
+      }
+    ],
+    "filename": null,
+    "answer": "Collected local system status for payment-service with requested environment production.",
+    "answer_source": "tool_result",
+    "model": null,
+    "answered_at": null,
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": "To fix the item, I need to know what needs to be fixed and a description of the problem.",
+    "clarification_plan": {
+      "question": "Fix it",
+      "planning_mode": "llm_gemini",
+      "missing_fields": [
+        "item_to_fix",
+        "description_of_problem"
+      ],
+      "follow_up_questions": [
+        "What item needs to be fixed?",
+        "Can you describe the problem in more detail?"
+      ],
+      "clarification_summary": "To fix the item, I need to know what needs to be fixed and a description of the problem."
+    },
+    "tool_plan": {
+      "question": "Fix it (item to fix: production; description of problem: check system status for payment-service)",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "arguments": {
+        "environment": "production"
+      },
+      "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for payment-service with requested environment production.",
+      "trace_id": "faa8a52e390c4d1781d3161d4a726f1e",
+      "executed_at": "2026-04-08T12:27:34.770274+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "payment-service",
+        "status": "ok",
+        "app_env": "development",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "true",
+        "redis_configured": "true",
+        "requested_environment": "production"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-08T12:27:33.043579+00:00",
+        "completed_at": "2026-04-08T12:27:34.770274+00:00",
+        "question": "Fix it (item to fix: production; description of problem: check system status for payment-service)",
+        "tool_plan": {
+          "question": "Fix it (item to fix: production; description of problem: check system status for payment-service)",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {
+            "environment": "production"
+          },
+          "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service with requested environment production.",
+          "trace_id": "faa8a52e390c4d1781d3161d4a726f1e",
+          "executed_at": "2026-04-08T12:27:34.770274+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "ok",
+            "app_env": "development",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "true",
+            "redis_configured": "true",
+            "requested_environment": "production"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
     "run_id": "50206b1492ae490f8940bfba9e493fee",
     "root_run_id": "0a6027558ce240edb73f492e368a9b2e",
     "recovery_depth": 1,

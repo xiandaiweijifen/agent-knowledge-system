@@ -31,6 +31,8 @@ export type UploadDocumentResponse = {
 export type SystemHealthResponse = {
   status: string;
   app_env: string;
+  agent_default_runtime: string;
+  default_agent_surface: string;
   embedding_provider: string;
   embedding_model: string;
   chat_provider: string;
