@@ -22,7 +22,7 @@ def test_get_metrics_summary_reads_cached_payload(workspace_tmp_path, monkeypatc
       "metric_name": "hit_rate_at_k",
       "metric_value": 1.0,
       "formatted_value": "1.000",
-      "detail": "MRR 0.917 at top-3."
+      "detail": "MRR 0.917 | grounded 83.3% | citation 91.0% at top-3."
     }
   ]
 }
@@ -58,7 +58,7 @@ def test_get_metrics_summary_refresh_recomputes_and_persists(workspace_tmp_path,
                 metric_name="hit_rate_at_k",
                 metric_value=1.0,
                 formatted_value="1.000",
-                detail="MRR 0.917 at top-3.",
+                detail="MRR 0.917 | grounded 83.3% | citation 91.0% at top-3.",
             )
         ],
     )

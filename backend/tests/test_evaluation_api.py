@@ -25,6 +25,8 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
                 "total_cases": 2,
                 "hit_rate_at_k": 1.0,
                 "mean_reciprocal_rank": 0.75,
+                "grounded_case_rate": 1.0,
+                "mean_citation_coverage": 1.0,
             },
             "cases": [
                 {
@@ -35,6 +37,8 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
                     "retrieved_chunk_ids": ["rag_overview.md::chunk_0"],
                     "hit_at_k": True,
                     "reciprocal_rank": 1.0,
+                    "groundedness_status": "grounded",
+                    "citation_coverage": 1.0,
                 }
             ],
         }
@@ -388,6 +392,8 @@ def test_evaluation_overview_endpoint_returns_aggregated_metrics(monkeypatch):
                 "total_cases": 12,
                 "mean_hit_rate_at_k": 0.875,
                 "mean_reciprocal_rank": 0.71,
+                "grounded_case_rate": 0.75,
+                "mean_citation_coverage": 0.9,
                 "best_dataset_name": "rag_overview_retrieval_eval.json",
                 "best_hit_rate_at_k": 1.0,
             },
@@ -418,6 +424,7 @@ def test_evaluation_overview_endpoint_returns_aggregated_metrics(monkeypatch):
     assert response.status_code == 200
     payload = response.json()
     assert payload["retrieval"]["dataset_count"] == 2
+    assert payload["retrieval"]["grounded_case_rate"] == 0.75
     assert payload["workflow"]["completion_rate"] == 0.6
     assert payload["recovery"]["resume_from_failed_step_count"] == 3
     assert payload["cache_status"] == "cached"
@@ -446,7 +453,7 @@ def test_evaluation_metrics_summary_endpoint_returns_curated_metrics(monkeypatch
                     "metric_name": "hit_rate_at_k",
                     "metric_value": 1.0,
                     "formatted_value": "1.000",
-                    "detail": "MRR 0.917 at top-3.",
+                    "detail": "MRR 0.917 | grounded 83.3% | citation 91.0% at top-3.",
                 }
             ],
         },
@@ -477,6 +484,8 @@ def test_evaluation_export_bundle_endpoint_returns_showcase_payload(monkeypatch)
                     "total_cases": 28,
                     "mean_hit_rate_at_k": 0.76,
                     "mean_reciprocal_rank": 0.533,
+                    "grounded_case_rate": 0.68,
+                    "mean_citation_coverage": 0.84,
                     "best_dataset_name": "rag_overview_retrieval_eval.json",
                     "best_hit_rate_at_k": 1.0,
                 },
@@ -512,7 +521,7 @@ def test_evaluation_export_bundle_endpoint_returns_showcase_payload(monkeypatch)
                         "metric_name": "hit_rate_at_k",
                         "metric_value": 1.0,
                         "formatted_value": "1.000",
-                        "detail": "MRR 0.917 at top-3.",
+                        "detail": "MRR 0.917 | grounded 83.3% | citation 91.0% at top-3.",
                     }
                 ],
             },
@@ -550,6 +559,7 @@ def test_evaluation_export_bundle_endpoint_returns_showcase_payload(monkeypatch)
     assert response.status_code == 200
     payload = response.json()
     assert payload["metrics_summary"]["highlights"][0]["label"] == "Workflow Completion"
+    assert payload["overview"]["retrieval"]["grounded_case_rate"] == 0.68
     assert payload["reports"]["tool_execution"]["dataset_name"] == "agent_tool_execution_eval.json"
 
 
@@ -569,6 +579,8 @@ def test_latest_retrieval_evaluation_endpoint_returns_saved_report(monkeypatch):
                     "total_cases": 2,
                     "hit_rate_at_k": 0.5,
                     "mean_reciprocal_rank": 0.5,
+                    "grounded_case_rate": 0.0,
+                    "mean_citation_coverage": 0.0,
                 },
                 "cases": [],
             },

@@ -151,6 +151,8 @@ class EvaluationOverviewRetrievalSummary(BaseModel):
     total_cases: int
     mean_hit_rate_at_k: float
     mean_reciprocal_rank: float
+    grounded_case_rate: float = 0.0
+    mean_citation_coverage: float = 0.0
     best_dataset_name: str | None = None
     best_hit_rate_at_k: float = 0.0
 

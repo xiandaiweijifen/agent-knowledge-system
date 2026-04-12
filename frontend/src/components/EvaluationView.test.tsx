@@ -19,6 +19,8 @@ describe("EvaluationView", () => {
             total_cases: 12,
             mean_hit_rate_at_k: 0.875,
             mean_reciprocal_rank: 0.71,
+            grounded_case_rate: 0.833,
+            mean_citation_coverage: 0.91,
             best_dataset_name: "rag_overview_retrieval_eval.json",
             best_hit_rate_at_k: 1,
           },
@@ -139,6 +141,8 @@ describe("EvaluationView", () => {
     expect(screen.getByText("Runtime Source")).toBeInTheDocument();
     expect(screen.getByText("agent_v2")).toBeInTheDocument();
     expect(screen.getByText("Mean Hit@K")).toBeInTheDocument();
+    expect(screen.getByText("Mean Grounded Rate")).toBeInTheDocument();
+    expect(screen.getByText("Mean Citation Coverage")).toBeInTheDocument();
     expect(screen.getByText("Recovery Success Rate")).toBeInTheDocument();
     expect(screen.getByText("rag_overview_retrieval_eval.json (1.000)")).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes("Cache Status: Cached"))).toBeInTheDocument();
@@ -152,8 +156,8 @@ describe("EvaluationView", () => {
     expect(screen.getByText("Workflow Completion")).toBeInTheDocument();
     expect(screen.getByText("Grounded Rate")).toBeInTheDocument();
     expect(screen.getByText("Citation Coverage")).toBeInTheDocument();
-    expect(screen.getByText("83.3%")).toBeInTheDocument();
-    expect(screen.getByText("91.0%")).toBeInTheDocument();
+    expect(screen.getAllByText("83.3%").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("91.0%").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Showcase Benchmark")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Export Evaluation Bundle" }));
     expect(onExportBundle).toHaveBeenCalledTimes(1);

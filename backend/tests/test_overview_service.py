@@ -14,6 +14,8 @@ def test_get_evaluation_overview_reads_cached_payload(workspace_tmp_path, monkey
     "total_cases": 14,
     "mean_hit_rate_at_k": 1.0,
     "mean_reciprocal_rank": 1.0,
+    "grounded_case_rate": 0.75,
+    "mean_citation_coverage": 0.9,
     "best_dataset_name": "rag_overview_retrieval_eval.json",
     "best_hit_rate_at_k": 1.0
   },
@@ -45,6 +47,7 @@ def test_get_evaluation_overview_reads_cached_payload(workspace_tmp_path, monkey
 
     assert payload.cache_status == "cached"
     assert payload.retrieval.dataset_count == 2
+    assert payload.retrieval.grounded_case_rate == 0.75
     assert payload.workflow.total_run_count == 20
 
 
@@ -60,6 +63,8 @@ def test_get_evaluation_overview_refresh_recomputes_and_persists(workspace_tmp_p
             total_cases=6,
             mean_hit_rate_at_k=0.9,
             mean_reciprocal_rank=0.8,
+            grounded_case_rate=0.75,
+            mean_citation_coverage=0.9,
             best_dataset_name="rag_overview_retrieval_eval.json",
             best_hit_rate_at_k=0.9,
         ),
@@ -98,7 +103,20 @@ def test_build_evaluation_overview_prefers_agent_v2_runs_when_present(monkeypatc
     monkeypatch.setattr(
         overview_service.retrieval_eval_service,
         "list_retrieval_datasets",
-        lambda: [],
+        lambda: [SimpleNamespace(dataset_name="demo_retrieval_eval.json")],
+    )
+    monkeypatch.setattr(
+        overview_service.retrieval_eval_service,
+        "evaluate_named_retrieval_dataset",
+        lambda dataset_name, top_k: SimpleNamespace(
+            summary=SimpleNamespace(
+                total_cases=4,
+                hit_rate_at_k=1.0,
+                mean_reciprocal_rank=0.75,
+                grounded_case_rate=0.5,
+                mean_citation_coverage=0.625,
+            )
+        ),
     )
     monkeypatch.setattr(
         overview_service,
@@ -139,3 +157,5 @@ def test_build_evaluation_overview_prefers_agent_v2_runs_when_present(monkeypatc
     assert overview.workflow.failed_run_count == 1
     assert overview.recovery.recovered_run_count == 1
     assert overview.recovery.manual_retrigger_count == 1
+    assert overview.retrieval.grounded_case_rate == 0.5
+    assert overview.retrieval.mean_citation_coverage == 0.625

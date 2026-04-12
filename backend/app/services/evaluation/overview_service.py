@@ -52,6 +52,16 @@ def _build_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
         if retrieval_reports
         else 0.0
     )
+    grounded_case_rate = (
+        sum(report.summary.grounded_case_rate for report in retrieval_reports) / len(retrieval_reports)
+        if retrieval_reports
+        else 0.0
+    )
+    mean_citation_coverage = (
+        sum(report.summary.mean_citation_coverage for report in retrieval_reports) / len(retrieval_reports)
+        if retrieval_reports
+        else 0.0
+    )
     best_dataset = max(
         zip(retrieval_datasets, retrieval_reports),
         key=lambda item: item[1].summary.hit_rate_at_k,
@@ -77,6 +87,8 @@ def _build_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
             total_cases=total_retrieval_cases,
             mean_hit_rate_at_k=mean_hit_rate,
             mean_reciprocal_rank=mean_mrr,
+            grounded_case_rate=grounded_case_rate,
+            mean_citation_coverage=mean_citation_coverage,
             best_dataset_name=best_dataset[0].dataset_name if best_dataset else None,
             best_hit_rate_at_k=best_dataset[1].summary.hit_rate_at_k if best_dataset else 0.0,
         ),

@@ -102,6 +102,8 @@ export function EvaluationView({
           totalCasesOverview: "总 Case 数",
           meanHitRate: "平均 Hit@K",
           meanMrr: "平均 MRR",
+          meanGroundedRate: "平均 Grounded 占比",
+          meanCitationCoverage: "平均引用覆盖率",
           bestDataset: "最佳数据集",
           runtimeSource: "运行时来源",
           totalRuns: "总运行数",
@@ -204,6 +206,8 @@ export function EvaluationView({
           totalCasesOverview: "Total Cases",
           meanHitRate: "Mean Hit@K",
           meanMrr: "Mean MRR",
+          meanGroundedRate: "Mean Grounded Rate",
+          meanCitationCoverage: "Mean Citation Coverage",
           bestDataset: "Best Dataset",
           runtimeSource: "Runtime Source",
           totalRuns: "Total Runs",
@@ -470,11 +474,23 @@ export function EvaluationView({
                   <span className="trace-label">{copy.meanHitRate}</span>
                   <strong>{evaluationOverview.retrieval.mean_hit_rate_at_k.toFixed(3)}</strong>
                 </div>
-                <div className="summary-card">
-                  <span className="trace-label">{copy.meanMrr}</span>
-                  <strong>{evaluationOverview.retrieval.mean_reciprocal_rank.toFixed(3)}</strong>
+                  <div className="summary-card">
+                    <span className="trace-label">{copy.meanMrr}</span>
+                    <strong>{evaluationOverview.retrieval.mean_reciprocal_rank.toFixed(3)}</strong>
+                  </div>
+                  <div className="summary-card">
+                    <span className="trace-label">{copy.meanGroundedRate}</span>
+                    <strong>
+                      {(evaluationOverview.retrieval.grounded_case_rate * 100).toFixed(1)}%
+                    </strong>
+                  </div>
+                  <div className="summary-card">
+                    <span className="trace-label">{copy.meanCitationCoverage}</span>
+                    <strong>
+                      {(evaluationOverview.retrieval.mean_citation_coverage * 100).toFixed(1)}%
+                    </strong>
+                  </div>
                 </div>
-              </div>
               <div className="preview-meta">
                 <span className="trace-label">{copy.bestDataset}</span>
                 <strong>{overviewBestDataset}</strong>
@@ -678,11 +694,15 @@ export function EvaluationView({
               </div>
               <div className="summary-card">
                 <span className="trace-label">{copy.groundedRate}</span>
-                <strong>{(evalResult.report.summary.grounded_case_rate * 100).toFixed(1)}%</strong>
+                <strong>
+                  {(((evalResult.report.summary.grounded_case_rate ?? 0) as number) * 100).toFixed(1)}%
+                </strong>
               </div>
               <div className="summary-card">
                 <span className="trace-label">{copy.citationCoverage}</span>
-                <strong>{(evalResult.report.summary.mean_citation_coverage * 100).toFixed(1)}%</strong>
+                <strong>
+                  {(((evalResult.report.summary.mean_citation_coverage ?? 0) as number) * 100).toFixed(1)}%
+                </strong>
               </div>
             </div>
             <div className="panel-heading case-toolbar">
@@ -725,8 +745,10 @@ export function EvaluationView({
                   <div className="meta-row">
                     <span>{copy.reciprocalRank} {item.reciprocal_rank.toFixed(3)}</span>
                     <span>{copy.file} {item.filename}</span>
-                    <span>{copy.groundedness} {item.groundedness_status}</span>
-                    <span>{copy.citationCoverage} {(item.citation_coverage * 100).toFixed(0)}%</span>
+                    <span>{copy.groundedness} {item.groundedness_status ?? "unavailable"}</span>
+                    <span>
+                      {copy.citationCoverage} {(((item.citation_coverage ?? 0) as number) * 100).toFixed(0)}%
+                    </span>
                   </div>
                   <small>{copy.expected}: {item.expected_chunk_ids.join(", ")}</small>
                   <small>{copy.retrieved}: {item.retrieved_chunk_ids.join(", ")}</small>

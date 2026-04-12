@@ -489,6 +489,8 @@ export type EvaluationOverviewResponse = {
     total_cases: number;
     mean_hit_rate_at_k: number;
     mean_reciprocal_rank: number;
+    grounded_case_rate: number;
+    mean_citation_coverage: number;
     best_dataset_name?: string | null;
     best_hit_rate_at_k: number;
   };
