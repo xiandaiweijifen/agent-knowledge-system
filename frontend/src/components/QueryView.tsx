@@ -196,6 +196,12 @@ export function QueryView({
           embeddingProvider: "Embedding 提供方",
           queryProvider: "查询提供方",
           retrievalLatency: "检索耗时",
+          retrievalScope: "检索范围",
+          corpusDocuments: "语料文档",
+          scopeDocument: "单文档",
+          scopeCorpus: "多文档",
+          sourceDocument: "来源文档",
+          sourceSection: "来源章节",
           topChunks: "Top 检索片段",
           chars: "字符",
           vector: "向量",
@@ -375,6 +381,12 @@ export function QueryView({
           embeddingProvider: "Embedding Provider",
           queryProvider: "Query Provider",
           retrievalLatency: "Retrieval Latency",
+          retrievalScope: "Retrieval Scope",
+          corpusDocuments: "Corpus Documents",
+          scopeDocument: "Document",
+          scopeCorpus: "Corpus",
+          sourceDocument: "Source Document",
+          sourceSection: "Source Section",
           topChunks: "Top Retrieved Chunks",
           chars: "chars",
           vector: "vector",
@@ -466,6 +478,17 @@ export function QueryView({
       default:
         return strategy;
     }
+  }
+
+  function formatRetrievalScopeLabel(scope?: string) {
+    return scope === "corpus" ? queryCopy.scopeCorpus : queryCopy.scopeDocument;
+  }
+
+  function formatSectionPath(sectionPath?: string[]) {
+    if (!sectionPath || sectionPath.length === 0) {
+      return queryCopy.notAvailable;
+    }
+    return sectionPath.join(" / ");
   }
 
   function formatClarificationFieldLabel(field: string) {
@@ -1691,7 +1714,19 @@ export function QueryView({
                   <span className="trace-label">{queryCopy.retrievalLatency}</span>
                   <strong>{queryResult.retrieval.retrieval_latency_ms.toFixed(3)} ms</strong>
                 </div>
+                <div>
+                  <span className="trace-label">{queryCopy.retrievalScope}</span>
+                  <strong>{formatRetrievalScopeLabel(queryResult.retrieval.retrieval_scope)}</strong>
+                </div>
               </div>
+              {queryResult.retrieval.retrieval_scope === "corpus" &&
+                (queryResult.retrieval.corpus_filenames?.length ?? 0) > 0 && (
+                  <div className="pill-strip">
+                    <span className="meta-pill">
+                      {queryCopy.corpusDocuments}: {queryResult.retrieval.corpus_filenames?.join(", ")}
+                    </span>
+                  </div>
+                )}
               <blockquote className="answer-card">{queryResult.answer}</blockquote>
               <div className="section-label">{queryCopy.topChunks}</div>
               <div className="match-list compact">
@@ -1701,6 +1736,10 @@ export function QueryView({
                       <strong>{match.chunk_id}</strong>
                       <span>{match.score.toFixed(6)}</span>
                     </header>
+                    <div className="meta-row">
+                      <span>{queryCopy.sourceDocument} {match.source_filename}</span>
+                      <span>{queryCopy.sourceSection} {formatSectionPath(match.section_path)}</span>
+                    </div>
                     <div className="meta-row">
                       <span>{queryCopy.chars} {match.char_count}</span>
                       <span>{queryCopy.vector} {match.vector_score?.toFixed(6) ?? "-"}</span>
@@ -1759,6 +1798,10 @@ export function QueryView({
                       <strong>{match.chunk_id}</strong>
                       <span>{match.score.toFixed(6)}</span>
                     </header>
+                    <div className="meta-row">
+                      <span>{queryCopy.sourceDocument} {match.source_filename}</span>
+                      <span>{queryCopy.sourceSection} {formatSectionPath(match.section_path)}</span>
+                    </div>
                     <div className="meta-row">
                       <span>{queryCopy.vector} {match.vector_score?.toFixed(6) ?? "-"}</span>
                       <span>{queryCopy.bonus} {match.rerank_bonus?.toFixed(6) ?? "-"}</span>

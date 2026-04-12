@@ -1,9 +1,9 @@
 {
   "filename": "agent_workflow.md",
   "suffix": ".md",
-  "source_path": "..\\data\\raw\\agent_workflow.md",
-  "source_chunk_path": "..\\data\\chunks\\agent_workflow.chunks.json",
-  "created_at": "2026-03-14T14:06:20.072081+00:00",
+  "source_path": "D:\\project\\agent-knowledge-system\\data\\raw\\agent_workflow.md",
+  "source_chunk_path": "D:\\project\\agent-knowledge-system\\data\\chunks\\agent_workflow.chunks.json",
+  "created_at": "2026-04-12T15:37:05.453813+00:00",
   "pipeline_version": "indexing-v1",
   "embedding_provider": "gemini",
   "embedding_model": "gemini-embedding-001",
@@ -17,6 +17,11 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 428,
+      "section_title": "Enterprise Agent Workflow Guide",
+      "section_path": [
+        "Enterprise Agent Workflow Guide"
+      ],
+      "heading_level": 1,
       "content": "# Enterprise Agent Workflow Guide\n\n## System Objective\n\nAn enterprise agent workflow system should do more than answer questions. It\nshould interpret the user request, decide whether knowledge retrieval is\nenough, and then choose whether to call a tool, execute a structured task, or\nask for clarification. The workflow layer is responsible for turning language\nunderstanding into controlled system behavior.\n\n## Request Routing",
       "vector": [
         -0.011209186,
@@ -3100,6 +3105,12 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 426,
+      "section_title": "Request Routing",
+      "section_path": [
+        "Enterprise Agent Workflow Guide",
+        "Request Routing"
+      ],
+      "heading_level": 2,
       "content": "The first step in an agent workflow is request routing. A router examines the\nuser question and decides which path should handle it. Some requests are\nknowledge requests that only require retrieval and answer generation. Some are\nexecution requests that require tools, external APIs, or database access. Other\nrequests are ambiguous and should be sent to a clarification step before the\nsystem takes action.\n\n## Retrieval Path",
       "vector": [
         -0.0134382155,
@@ -6183,6 +6194,12 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 397,
+      "section_title": "Retrieval Path",
+      "section_path": [
+        "Enterprise Agent Workflow Guide",
+        "Retrieval Path"
+      ],
+      "heading_level": 2,
       "content": "If the router decides that the request is a knowledge question, the workflow\nenters the retrieval path. The system embeds the query, retrieves the most\nrelevant chunks, optionally reranks them, and then sends the ranked context to\nthe language model. This path is appropriate when the user wants explanation,\ndocumentation lookup, policy guidance, or architectural context.\n\n## Tool Execution Path",
       "vector": [
         -0.0049639298,
@@ -9266,6 +9283,12 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 413,
+      "section_title": "Tool Execution Path",
+      "section_path": [
+        "Enterprise Agent Workflow Guide",
+        "Tool Execution Path"
+      ],
+      "heading_level": 2,
       "content": "If the request requires action, the workflow should move into a tool execution\npath. The agent may call a ticketing tool, a deployment tool, a search API, or\nan internal service. Tool calls should be structured and validated because the\nagent is no longer only producing text; it is now affecting external systems.\nThe workflow should also record tool inputs, outputs, and execution status.\n\n## Clarification Step",
       "vector": [
         -0.00842508,
@@ -12349,6 +12372,12 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 399,
+      "section_title": "Clarification Step",
+      "section_path": [
+        "Enterprise Agent Workflow Guide",
+        "Clarification Step"
+      ],
+      "heading_level": 2,
       "content": "Clarification is necessary when the user intent is underspecified or when the\nsystem lacks enough context to act safely. For example, if a user asks the\nagent to create a ticket without naming the service, severity, or environment,\nthe workflow should ask follow-up questions instead of making risky\nassumptions. A strong agent should prefer clarification over incorrect action.\n\n## Failure Handling",
       "vector": [
         -0.009439614,
@@ -15432,6 +15461,12 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 376,
+      "section_title": "Failure Handling",
+      "section_path": [
+        "Enterprise Agent Workflow Guide",
+        "Failure Handling"
+      ],
+      "heading_level": 2,
       "content": "A production workflow needs failure handling at every stage. Retrieval may\nreturn weak context. A tool may fail because of authentication, timeout, or bad\nparameters. A downstream API may be temporarily unavailable. The workflow\nshould capture these failures, surface a clear status, and decide whether to\nretry, fall back, or ask the user for another input.\n\n## Observability",
       "vector": [
         -0.02061857,
@@ -18515,6 +18550,12 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 361,
+      "section_title": "Observability",
+      "section_path": [
+        "Enterprise Agent Workflow Guide",
+        "Observability"
+      ],
+      "heading_level": 2,
       "content": "Observability is critical in an agent workflow system. Engineers should log the\nroute decision, retrieval latency, tool latency, answer latency, provider\nselection, fallback behavior, and final action status. Without these traces, it\nis difficult to understand whether a bad answer came from weak retrieval, poor\nreasoning, or a failed tool call.\n\n## Evaluation",
       "vector": [
         -0.04336866,
@@ -21598,6 +21639,12 @@
       "source_filename": "agent_workflow.md",
       "source_suffix": ".md",
       "char_count": 350,
+      "section_title": "Evaluation",
+      "section_path": [
+        "Enterprise Agent Workflow Guide",
+        "Evaluation"
+      ],
+      "heading_level": 2,
       "content": "Workflow evaluation should measure more than answer quality. Engineers should\nevaluate routing accuracy, tool selection accuracy, task completion rate, and\nfailure recovery behavior. A useful evaluation dataset should contain both\nknowledge questions and execution-oriented requests so that the workflow can be\ntested across different decision paths.",
       "vector": [
         -0.019550681,

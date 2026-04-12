@@ -1,9 +1,9 @@
 {
   "filename": "incident_playbook.md",
   "suffix": ".md",
-  "source_path": "..\\data\\raw\\incident_playbook.md",
-  "source_chunk_path": "..\\data\\chunks\\incident_playbook.chunks.json",
-  "created_at": "2026-03-15T18:45:46.964152+00:00",
+  "source_path": "D:\\project\\agent-knowledge-system\\data\\raw\\incident_playbook.md",
+  "source_chunk_path": "D:\\project\\agent-knowledge-system\\data\\chunks\\incident_playbook.chunks.json",
+  "created_at": "2026-04-12T15:37:16.134499+00:00",
   "pipeline_version": "indexing-v1",
   "embedding_provider": "gemini",
   "embedding_model": "gemini-embedding-001",
@@ -17,6 +17,11 @@
       "source_filename": "incident_playbook.md",
       "source_suffix": ".md",
       "char_count": 293,
+      "section_title": "Incident Playbook",
+      "section_path": [
+        "Incident Playbook"
+      ],
+      "heading_level": 1,
       "content": "# Incident Playbook\n\n## Primary Objective\n\nThis playbook is used during service degradation, production outage, or high\nlatency incidents. The goal is to stabilize the affected service, identify the\nblast radius, and create clear escalation artifacts for the engineering team.\n\n## First Checks",
       "vector": [
         0.0004268532,
@@ -3100,6 +3105,12 @@
       "source_filename": "incident_playbook.md",
       "source_suffix": ".md",
       "char_count": 323,
+      "section_title": "First Checks",
+      "section_path": [
+        "Incident Playbook",
+        "First Checks"
+      ],
+      "heading_level": 2,
       "content": "During an outage, check whether the issue is isolated to production or also\npresent in staging. Confirm whether the incident is caused by timeout spikes,\nretry storms, queue buildup, or a recent configuration rollout. Capture the\nfirst observed timestamp and note whether customer impact is ongoing.\n\n## Escalation Guidance",
       "vector": [
         -0.011952894,
@@ -6183,6 +6194,12 @@
       "source_filename": "incident_playbook.md",
       "source_suffix": ".md",
       "char_count": 369,
+      "section_title": "Escalation Guidance",
+      "section_path": [
+        "Incident Playbook",
+        "Escalation Guidance"
+      ],
+      "heading_level": 2,
       "content": "If a payment-related outage affects transaction authorization or settlement,\nopen a high severity ticket immediately and page the on-call engineer. If the\nissue appears limited to checkout retries without confirmed payment failure,\nstart with a medium severity triage ticket and collect supporting evidence\nbefore escalating to incident command.\n\n## Supporting Evidence",
       "vector": [
         -0.0064247036,
@@ -9266,6 +9283,12 @@
       "source_filename": "incident_playbook.md",
       "source_suffix": ".md",
       "char_count": 288,
+      "section_title": "Supporting Evidence",
+      "section_path": [
+        "Incident Playbook",
+        "Supporting Evidence"
+      ],
+      "heading_level": 2,
       "content": "Useful evidence includes error rates, timeout metrics, retry counts, affected\nenvironments, recent deployment hashes, and links to logs. When a search\nworkflow is used before ticket creation, the resulting snippets should be\nattached to the ticket as supporting context.\n\n## Communication",
       "vector": [
         -0.0163419,
@@ -12349,6 +12372,12 @@
       "source_filename": "incident_playbook.md",
       "source_suffix": ".md",
       "char_count": 494,
+      "section_title": "Communication",
+      "section_path": [
+        "Incident Playbook",
+        "Communication"
+      ],
+      "heading_level": 2,
       "content": "Use short updates with environment, customer impact, and current mitigation\nstatus. Avoid saying that a service is fully recovered until retry pressure,\nerror rate, and latency have returned to baseline for at least fifteen\nminutes.\n\n## Resolution\n\nAfter mitigation, update the incident ticket with the root cause, the\nmitigation used, and any follow-up tasks. If the same timeout or rerouting\nissue has occurred before, link the older incident or workflow run so the team\ncan compare patterns.",
       "vector": [
         -0.027602065,

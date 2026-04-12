@@ -53,6 +53,9 @@ describe("QueryView", () => {
                 source_filename: "rag_overview.md",
                 source_suffix: ".md",
                 char_count: 400,
+                section_title: "What RAG Means",
+                section_path: ["Retrieval-Augmented Generation Overview", "What RAG Means"],
+                heading_level: 2,
                 content: "Retrieval-augmented generation, or RAG, is ...",
                 score: 0.95,
                 vector_score: 0.66,
@@ -144,6 +147,10 @@ describe("QueryView", () => {
     expect(screen.getByText("Ticket Id")).toBeInTheDocument();
     expect(screen.getAllByText("TICKET-0001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("open").length).toBeGreaterThan(0);
+    expect(screen.getByText("Source Document rag_overview.md")).toBeInTheDocument();
+    expect(
+      screen.getByText("Source Section Retrieval-Augmented Generation Overview / What RAG Means"),
+    ).toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", { name: "Why is chunking important in a RAG system?" }),
@@ -489,6 +496,93 @@ describe("QueryView", () => {
     expect(
       screen.getAllByText(/No document context selected\. Retrieval-only actions are disabled/i).length,
     ).toBeGreaterThan(0);
+  });
+
+  it("renders corpus retrieval scope and corpus document list", () => {
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="What are the common failure modes in RAG systems?"
+        topK={3}
+        activePresetQuestions={["What are the common failure modes in RAG systems?"]}
+        queryResult={{
+          filename: null,
+          question: "What are the common failure modes in RAG systems?",
+          answer: "Common failure modes include weak embeddings.",
+          answer_source: "gemini",
+          model: "gemini-2.5-flash-lite",
+          answered_at: "2026-04-12T00:00:00+00:00",
+          answer_latency_ms: 12.5,
+          chat_provider: "gemini",
+          chat_model: "gemini-2.5-flash-lite",
+          retrieval: {
+            filename: null,
+            retrieval_scope: "corpus",
+            corpus_filenames: ["agent_workflow.md", "rag_overview.md"],
+            embedding_provider: "llamaindex",
+            embedding_model: "llamaindex-simplestore",
+            vector_dim: 0,
+            question: "What are the common failure modes in RAG systems?",
+            top_k: 3,
+            retrieved_at: "2026-04-12T00:00:00+00:00",
+            retrieval_latency_ms: 18.2,
+            query_embedding_provider: "llamaindex",
+            query_embedding_model: "llamaindex-simplestore",
+            matches: [
+              {
+                chunk_id: "rag_overview.md::chunk_7",
+                chunk_index: 7,
+                source_filename: "rag_overview.md",
+                source_suffix: ".md",
+                char_count: 345,
+                section_title: "Common Failure Modes",
+                section_path: [
+                  "Retrieval-Augmented Generation Overview",
+                  "Common Failure Modes",
+                ],
+                heading_level: 2,
+                content: "Common RAG failure modes include poor chunk boundaries.",
+                score: 1.03,
+                vector_score: 0.73,
+                rerank_bonus: 0.3,
+              },
+            ],
+          },
+        }}
+        agentQueryResult={null}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    const corpusDocuments = screen.getByText(
+      "Corpus Documents: agent_workflow.md, rag_overview.md",
+    );
+    const answerTraceSection = corpusDocuments.closest("article");
+    expect(answerTraceSection).not.toBeNull();
+    const answerTrace = within(answerTraceSection as HTMLElement);
+
+    expect(answerTrace.getByText("Retrieval Scope")).toBeInTheDocument();
+    expect(answerTrace.getByText("Corpus")).toBeInTheDocument();
+    expect(answerTrace.getByText("Corpus Documents: agent_workflow.md, rag_overview.md")).toBeInTheDocument();
+    expect(answerTrace.getByText("Source Document rag_overview.md")).toBeInTheDocument();
+    expect(
+      answerTrace.getByText(
+        "Source Section Retrieval-Augmented Generation Overview / Common Failure Modes",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("renders recent workflow runs and loads a selected run", async () => {
