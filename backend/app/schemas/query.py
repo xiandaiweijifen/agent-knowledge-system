@@ -77,6 +77,9 @@ class RetrievedChunkMatch(BaseModel):
     source_filename: str
     source_suffix: str
     char_count: int
+    section_title: str = ""
+    section_path: list[str] = Field(default_factory=list)
+    heading_level: int | None = None
     content: str
     vector_score: float = 0.0
     rerank_bonus: float = 0.0

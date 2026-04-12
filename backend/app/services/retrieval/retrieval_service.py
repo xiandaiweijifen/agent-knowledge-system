@@ -16,6 +16,13 @@ from app.services.indexing.embedding_service import (
 from app.services.ingestion.document_service import build_utc_timestamp
 
 
+QUERY_PREFIX_PATTERNS = (
+    r"^\s*(please|kindly)\s+",
+    r"^\s*(can|could|would)\s+you\s+",
+    r"^\s*(tell|show|explain|describe)\s+me\s+",
+)
+
+
 def cosine_similarity(left: list[float], right: list[float]) -> float:
     """Compute cosine similarity for two vectors with the same dimension."""
     if len(left) != len(right):
@@ -49,6 +56,17 @@ def tokenize_query(text: str) -> list[str]:
     }
     tokens = re.findall(r"[a-z0-9]+", text.lower())
     return [token for token in tokens if token not in stopwords and len(token) > 1]
+
+
+def normalize_query_text(text: str) -> str:
+    """Normalize user phrasing before retrieval without changing intent."""
+    normalized = text.strip()
+
+    for pattern in QUERY_PREFIX_PATTERNS:
+        normalized = re.sub(pattern, "", normalized, flags=re.IGNORECASE)
+
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized.strip()
 
 
 def build_query_phrases(tokens: list[str], max_length: int = 3) -> set[str]:
@@ -95,14 +113,64 @@ def build_normalized_token_set(text: str) -> set[str]:
     }
 
 
-def compute_rerank_bonus(query_text: str, chunk_content: str) -> float:
+def _build_normalized_phrase_text(text: str) -> str:
+    return " ".join(
+        normalize_token(token)
+        for token in re.findall(r"[a-z0-9]+", text.lower())
+    )
+
+
+def _compute_section_metadata_bonus(
+    normalized_query_terms: list[str],
+    query_phrases: set[str],
+    section_title: str,
+    section_path: list[str],
+) -> float:
+    if not normalized_query_terms:
+        return 0.0
+
+    bonus = 0.0
+    normalized_section_title = _build_normalized_phrase_text(section_title)
+    normalized_section_path = [
+        _build_normalized_phrase_text(part)
+        for part in section_path
+        if part.strip()
+    ]
+
+    if normalized_section_title:
+        matched_title_terms = sum(
+            1 for term in normalized_query_terms if term in normalized_section_title
+        )
+        if matched_title_terms:
+            bonus += 0.02 * (matched_title_terms / len(normalized_query_terms))
+
+        for phrase in query_phrases:
+            if phrase in normalized_section_title:
+                bonus += 0.05
+
+    for path_part in normalized_section_path:
+        for phrase in query_phrases:
+            if phrase in path_part:
+                bonus += 0.03
+
+    return bonus
+
+
+def compute_rerank_bonus(
+    query_text: str,
+    chunk_content: str,
+    *,
+    section_title: str = "",
+    section_path: list[str] | None = None,
+) -> float:
     """Apply simple lexical bonuses on top of vector similarity."""
     content_lower = chunk_content.lower()
-    query_lower = query_text.lower().strip()
-    query_terms = tokenize_query(query_text)
+    normalized_query_text = normalize_query_text(query_text)
+    query_lower = normalized_query_text.lower().strip()
+    query_terms = tokenize_query(normalized_query_text)
     normalized_query_terms = [normalize_token(term) for term in query_terms]
     normalized_content_terms = build_normalized_token_set(chunk_content)
-    normalized_content = " ".join(normalize_token(token) for token in re.findall(r"[a-z0-9]+", content_lower))
+    normalized_content = _build_normalized_phrase_text(content_lower)
     heading_window = content_lower[:160]
     intro_window = content_lower[:240]
     first_line = content_lower.splitlines()[0] if content_lower.splitlines() else ""
@@ -158,6 +226,13 @@ def compute_rerank_bonus(query_text: str, chunk_content: str) -> float:
             if "rerank" in heading_window:
                 bonus += 0.04
 
+    bonus += _compute_section_metadata_bonus(
+        normalized_query_terms,
+        query_phrases,
+        section_title,
+        section_path or [],
+    )
+
     return round(bonus, 6)
 
 
@@ -171,6 +246,7 @@ def retrieve_relevant_chunks(
         raise ValueError("top_k_must_be_positive")
 
     normalized_query = query_text.strip()
+    normalized_retrieval_query = normalize_query_text(normalized_query)
 
     if not normalized_query:
         raise ValueError("question_must_not_be_empty")
@@ -178,6 +254,7 @@ def retrieve_relevant_chunks(
     retrieval_result, _, _ = build_retrieval_outputs(
         filename=filename,
         query_text=normalized_query,
+        retrieval_query_text=normalized_retrieval_query,
         top_k=top_k,
         candidate_count=top_k,
     )
@@ -187,6 +264,7 @@ def retrieve_relevant_chunks(
 def build_retrieval_outputs(
     filename: str,
     query_text: str,
+    retrieval_query_text: str,
     top_k: int,
     candidate_count: int,
 ) -> tuple[RetrievalResult, list[RetrievedChunkMatch], int]:
@@ -199,7 +277,7 @@ def build_retrieval_outputs(
         load_persisted_embeddings(filename)
     )
     query_embedding_provider, query_embedding_model, query_vector = generate_query_embedding(
-        query_text,
+        retrieval_query_text,
         embedding_provider=embedding_payload.embedding_provider,
         embedding_model=embedding_payload.embedding_model,
         vector_dim=embedding_payload.vector_dim,
@@ -208,7 +286,12 @@ def build_retrieval_outputs(
     scored_chunks = []
     for embedding in embedding_payload.embeddings:
         vector_score = round(cosine_similarity(query_vector, embedding.vector), 6)
-        rerank_bonus = compute_rerank_bonus(query_text, embedding.content)
+        rerank_bonus = compute_rerank_bonus(
+            retrieval_query_text,
+            embedding.content,
+            section_title=embedding.section_title,
+            section_path=embedding.section_path,
+        )
 
         scored_chunks.append(
             RetrievedChunkMatch(
@@ -217,6 +300,9 @@ def build_retrieval_outputs(
                 source_filename=embedding.source_filename,
                 source_suffix=embedding.source_suffix,
                 char_count=embedding.char_count,
+                section_title=embedding.section_title,
+                section_path=embedding.section_path,
+                heading_level=embedding.heading_level,
                 content=embedding.content,
                 vector_score=vector_score,
                 rerank_bonus=rerank_bonus,
@@ -257,6 +343,7 @@ def retrieve_relevant_chunks_with_diagnostics(
         raise ValueError("top_k_must_be_positive")
 
     normalized_query = query_text.strip()
+    normalized_retrieval_query = normalize_query_text(normalized_query)
 
     if not normalized_query:
         raise ValueError("question_must_not_be_empty")
@@ -264,6 +351,7 @@ def retrieve_relevant_chunks_with_diagnostics(
     retrieval_result, diagnostic_candidates, total_scored_chunks = build_retrieval_outputs(
         filename=filename,
         query_text=normalized_query,
+        retrieval_query_text=normalized_retrieval_query,
         top_k=top_k,
         candidate_count=candidate_count,
     )

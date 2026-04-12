@@ -6,7 +6,10 @@ from app.services.evaluation.retrieval_eval_service import (
     list_retrieval_datasets,
 )
 from app.services.indexing import embedding_service
-from app.services.retrieval.retrieval_service import compute_rerank_bonus
+from app.services.retrieval.retrieval_service import (
+    compute_rerank_bonus,
+    normalize_query_text,
+)
 
 
 def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
@@ -166,4 +169,27 @@ user question and decides which path should handle it.
     assert compute_rerank_bonus(query, observability_chunk) > compute_rerank_bonus(
         query,
         routing_chunk,
+    )
+
+
+def test_normalize_query_text_strips_polite_prefixes():
+    query = "Can you explain retrieval-augmented generation?"
+
+    assert normalize_query_text(query) == "explain retrieval-augmented generation?"
+
+
+def test_rerank_bonus_prefers_matching_section_metadata():
+    query = "What are the common failure modes in rag systems?"
+    generic_chunk = "This chunk discusses generic platform architecture details."
+
+    assert compute_rerank_bonus(
+        query,
+        generic_chunk,
+        section_title="Common Failure Modes",
+        section_path=["Retrieval-Augmented Generation Overview", "Common Failure Modes"],
+    ) > compute_rerank_bonus(
+        query,
+        generic_chunk,
+        section_title="Platform Overview",
+        section_path=["Platform Overview"],
     )

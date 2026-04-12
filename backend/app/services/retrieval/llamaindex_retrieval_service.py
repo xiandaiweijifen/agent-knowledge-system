@@ -17,6 +17,10 @@ from app.services.ingestion.llamaindex_ingestion_service import (
     LLAMAINDEX_STORE_DIR,
     query_llamaindex_index,
 )
+from app.services.retrieval.retrieval_service import (
+    compute_rerank_bonus,
+    normalize_query_text,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,23 +45,37 @@ def retrieve_with_llamaindex(
         raise FileNotFoundError(filename)
 
     started = perf_counter()
-    raw_results = query_llamaindex_index(filename, query_text, top_k=top_k)
+    normalized_query = normalize_query_text(query_text)
+    raw_results = query_llamaindex_index(filename, normalized_query, top_k=top_k)
     latency_ms = round((perf_counter() - started) * 1000, 3)
 
-    matches = [
-        RetrievedChunkMatch(
-            chunk_id=r["chunk_id"],
-            chunk_index=r["metadata"].get("chunk_index", 0),
-            source_filename=r["metadata"].get("source_filename", filename),
-            source_suffix=r["metadata"].get("source_suffix", ""),
-            char_count=r["metadata"].get("char_count", len(r["content"])),
-            content=r["content"],
-            vector_score=r["score"],
-            rerank_bonus=0.0,
-            score=r["score"],
+    matches = []
+    for result in raw_results:
+        metadata = result["metadata"]
+        rerank_bonus = compute_rerank_bonus(
+            normalized_query,
+            result["content"],
+            section_title=metadata.get("section_title", ""),
+            section_path=metadata.get("section_path", []),
         )
-        for r in raw_results
-    ]
+        matches.append(
+            RetrievedChunkMatch(
+                chunk_id=result["chunk_id"],
+                chunk_index=metadata.get("chunk_index", 0),
+                source_filename=metadata.get("source_filename", filename),
+                source_suffix=metadata.get("source_suffix", ""),
+                char_count=metadata.get("char_count", len(result["content"])),
+                section_title=metadata.get("section_title", ""),
+                section_path=metadata.get("section_path", []),
+                heading_level=metadata.get("heading_level"),
+                content=result["content"],
+                vector_score=result["score"],
+                rerank_bonus=rerank_bonus,
+                score=round(result["score"] + rerank_bonus, 6),
+            )
+        )
+
+    matches.sort(key=lambda match: match.score, reverse=True)
 
     return RetrievalResult(
         filename=filename,

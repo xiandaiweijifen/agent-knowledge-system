@@ -54,7 +54,14 @@ def test_retrieve_with_llamaindex_returns_retrieval_result(workspace_tmp_path, m
             "chunk_id": "mydoc.txt::chunk_0",
             "content": "LangGraph builds agents.",
             "score": 0.87,
-            "metadata": {"chunk_index": 0, "source_filename": "mydoc.txt", "char_count": 26},
+            "metadata": {
+                "chunk_index": 0,
+                "source_filename": "mydoc.txt",
+                "char_count": 26,
+                "section_title": "Agent Framework",
+                "section_path": ["Agent Framework"],
+                "heading_level": 2,
+            },
         }
     ]
     monkeypatch.setattr(
@@ -68,7 +75,58 @@ def test_retrieve_with_llamaindex_returns_retrieval_result(workspace_tmp_path, m
     assert result.embedding_provider == "llamaindex"
     assert len(result.matches) == 1
     assert result.matches[0].chunk_id == "mydoc.txt::chunk_0"
-    assert result.matches[0].score == 0.87
+    assert result.matches[0].section_title == "Agent Framework"
+    assert result.matches[0].section_path == ["Agent Framework"]
+    assert result.matches[0].heading_level == 2
+    assert result.matches[0].score >= 0.87
+
+
+def test_retrieve_with_llamaindex_uses_metadata_bonus_for_rerank(workspace_tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.LLAMAINDEX_STORE_DIR",
+        workspace_tmp_path,
+    )
+    index_dir = workspace_tmp_path / "mydoc"
+    index_dir.mkdir()
+    (index_dir / "index_store.json").write_text("{}")
+
+    mock_results = [
+        {
+            "chunk_id": "mydoc.txt::chunk_0",
+            "content": "This chunk covers generic platform notes.",
+            "score": 0.84,
+            "metadata": {
+                "chunk_index": 0,
+                "source_filename": "mydoc.txt",
+                "char_count": 33,
+                "section_title": "Overview",
+                "section_path": ["Overview"],
+                "heading_level": 1,
+            },
+        },
+        {
+            "chunk_id": "mydoc.txt::chunk_1",
+            "content": "This chunk also covers generic platform notes.",
+            "score": 0.8,
+            "metadata": {
+                "chunk_index": 1,
+                "source_filename": "mydoc.txt",
+                "char_count": 38,
+                "section_title": "Common Failure Modes",
+                "section_path": ["Overview", "Common Failure Modes"],
+                "heading_level": 2,
+            },
+        },
+    ]
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.query_llamaindex_index",
+        MagicMock(return_value=mock_results),
+    )
+
+    result = retrieve_with_llamaindex("mydoc.txt", "what are the common failure modes?", top_k=2)
+
+    assert result.matches[0].chunk_id == "mydoc.txt::chunk_1"
+    assert result.matches[0].rerank_bonus > 0.0
 
 
 def test_query_service_falls_back_to_legacy_in_debug_context(monkeypatch):

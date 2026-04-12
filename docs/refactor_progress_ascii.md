@@ -96,7 +96,15 @@
 - Embedding records now carry the same section metadata so legacy retrieval artifacts retain document structure.
 - LlamaIndex node metadata now includes source suffix plus section metadata, preparing the knowledge layer for metadata-aware retrieval, citation, and multi-file source display.
 
+## Package 26
+
+- Status: completed
+- Commit: `feat: add query normalization and metadata-aware retrieval groundwork`
+- Knowledge retrieval now normalizes user phrasing before vector lookup so polite prefixes do not fragment retrieval behavior.
+- Legacy retrieval scoring now factors section metadata (`section_title` / `section_path`) into lightweight rerank bonuses.
+- LlamaIndex retrieval results now surface section metadata through `RetrievedChunkMatch` and apply the same lightweight metadata bonus before final ranking.
+
 ## Test Baseline
 
-- Backend: `251 passed, 0 failed`
+- Backend: `254 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`
