@@ -206,9 +206,13 @@ def test_agent_route_evaluation_dataset_list_endpoint_returns_datasets(monkeypat
 
 def test_agent_workflow_evaluation_endpoint_returns_report(monkeypatch):
     client = TestClient(app)
+    sentinel_checkpointer = object()
+    app.state.checkpointer = sentinel_checkpointer
+    captured: dict[str, object] = {}
 
-    def fake_eval(dataset_name: str):
+    def fake_eval(dataset_name: str, *, checkpointer=None):
         assert dataset_name == "agent_workflow_eval.json"
+        captured["checkpointer"] = checkpointer
         return {
             "summary": {
                 "total_cases": 3,
@@ -257,6 +261,7 @@ def test_agent_workflow_evaluation_endpoint_returns_report(monkeypatch):
     assert payload["dataset_name"] == "agent_workflow_eval.json"
     assert payload["report"]["summary"]["workflow_accuracy"] == 1.0
     assert payload["report_source"] == "fresh"
+    assert captured["checkpointer"] is sentinel_checkpointer
 
 
 def test_agent_workflow_evaluation_dataset_list_endpoint_returns_datasets(monkeypatch):

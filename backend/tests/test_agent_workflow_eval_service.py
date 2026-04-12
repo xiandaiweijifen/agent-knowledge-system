@@ -142,7 +142,8 @@ def test_evaluate_agent_workflow_dataset_uses_agent_v2_semantics(workspace_tmp_p
         encoding="utf-8",
     )
 
-    def fake_orchestrate(question: str, filename=None, top_k=3, debug_fault_injection=None):
+    def fake_orchestrate(question: str, filename=None, top_k=3, checkpointer=None, debug_fault_injection=None):
+        assert checkpointer is None
         if question == "What is RAG?":
             return _build_response(
                 question=question,
@@ -197,7 +198,8 @@ def test_evaluate_agent_workflow_dataset_uses_agent_v2_semantics(workspace_tmp_p
             ).model_copy(update={"run_id": "clarify-run"})
         raise AssertionError(f"unexpected question: {question}")
 
-    def fake_resume(run_id: str, clarification_context: dict[str, str]):
+    def fake_resume(run_id: str, clarification_context: dict[str, str], checkpointer=None):
+        assert checkpointer is None
         assert run_id == "clarify-run"
         assert clarification_context["environment"] == "production"
         return _build_response(
@@ -222,7 +224,14 @@ def test_evaluate_agent_workflow_dataset_uses_agent_v2_semantics(workspace_tmp_p
             ],
         )
 
-    def fake_recover(run_id: str, recovery_action: str | None, clarification_context=None, debug_fault_injection=None):
+    def fake_recover(
+        run_id: str,
+        recovery_action: str | None,
+        clarification_context=None,
+        checkpointer=None,
+        debug_fault_injection=None,
+    ):
+        assert checkpointer is None
         if recovery_action == "resume_with_clarification":
             return fake_resume(run_id=run_id, clarification_context=clarification_context or {})
         assert run_id == "failed-run"

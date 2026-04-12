@@ -24,7 +24,11 @@ def load_agent_workflow_eval_cases(dataset_path: Path) -> list[AgentWorkflowEval
     return [AgentWorkflowEvalCase.model_validate(item) for item in payload["cases"]]
 
 
-def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalReport:
+def evaluate_agent_workflow_dataset(
+    dataset_path: Path,
+    *,
+    checkpointer=None,
+) -> AgentWorkflowEvalReport:
     """Evaluate final workflow behavior against the agent_v2 runtime."""
     cases = load_agent_workflow_eval_cases(dataset_path)
     case_results = []
@@ -35,12 +39,14 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 question=case.question,
                 filename=case.filename,
                 top_k=case.top_k,
+                checkpointer=checkpointer,
                 debug_fault_injection=case.debug_fault_injection,
             )
             response = recover_agent_v2_request(
                 run_id=initial_response.run_id or "",
                 recovery_action=case.recovery_action,
                 clarification_context=case.clarification_context,
+                checkpointer=checkpointer,
                 debug_fault_injection={},
             )
         elif case.clarification_context:
@@ -48,24 +54,28 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 question=case.question,
                 filename=case.filename,
                 top_k=case.top_k,
+                checkpointer=checkpointer,
                 debug_fault_injection=case.debug_fault_injection,
             )
             if case.resume_via_run_id:
                 response = resume_agent_v2_request(
                     run_id=initial_response.run_id or "",
                     clarification_context=case.clarification_context,
+                    checkpointer=checkpointer,
                 )
             else:
                 response = recover_agent_v2_request(
                     run_id=initial_response.run_id or "",
                     recovery_action="resume_with_clarification",
                     clarification_context=case.clarification_context,
+                    checkpointer=checkpointer,
                 )
         else:
             response = orchestrate_agent_v2_request(
                 question=case.question,
                 filename=case.filename,
                 top_k=case.top_k,
+                checkpointer=checkpointer,
                 debug_fault_injection=case.debug_fault_injection,
             )
         actual_tool_chain_length = len(response.tool_chain)
@@ -159,7 +169,11 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
     )
 
 
-def evaluate_named_agent_workflow_dataset(dataset_name: str) -> AgentWorkflowEvalReport:
+def evaluate_named_agent_workflow_dataset(
+    dataset_name: str,
+    *,
+    checkpointer=None,
+) -> AgentWorkflowEvalReport:
     """Evaluate workflow behavior for a named local dataset."""
     normalized_name = dataset_name.strip()
 
@@ -171,7 +185,10 @@ def evaluate_named_agent_workflow_dataset(dataset_name: str) -> AgentWorkflowEva
     if not dataset_path.exists() or not dataset_path.is_file():
         raise FileNotFoundError(dataset_name)
 
-    return evaluate_agent_workflow_dataset(dataset_path=dataset_path)
+    return evaluate_agent_workflow_dataset(
+        dataset_path=dataset_path,
+        checkpointer=checkpointer,
+    )
 
 
 def list_agent_workflow_datasets() -> list[AgentWorkflowEvalDatasetInfo]:

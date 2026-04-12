@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from app.schemas.evaluation_api import (
     AgentRouteEvalDatasetListResponse,
@@ -216,10 +216,15 @@ def evaluate_agent_route(request: AgentRouteEvalRequest) -> AgentRouteEvalRespon
 
 
 @router.post("/evaluation/agent-workflow", response_model=AgentWorkflowEvalResponse)
-def evaluate_agent_workflow(request: AgentWorkflowEvalRequest) -> AgentWorkflowEvalResponse:
+def evaluate_agent_workflow(
+    request: AgentWorkflowEvalRequest,
+    fastapi_request: Request,
+) -> AgentWorkflowEvalResponse:
     try:
+        checkpointer = getattr(fastapi_request.app.state, "checkpointer", None)
         report = agent_workflow_eval_service.evaluate_named_agent_workflow_dataset(
             dataset_name=request.dataset_name,
+            checkpointer=checkpointer,
         )
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Evaluation dataset not found")

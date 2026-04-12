@@ -506,6 +506,48 @@ def test_recover_agent_v2_request_resumes_from_failed_step(monkeypatch):
     assert response.run_id == "rerun-step-123"
 
 
+def test_recover_agent_v2_request_marks_clarification_recovery_metadata(monkeypatch):
+    from app.schemas.query import AgentWorkflowResponse, RouteDecision
+
+    resumed_response = AgentWorkflowResponse(
+        run_id="run-clarify-123",
+        question="Fix it (environment: production; task details: check system status for payment-service)",
+        workflow_status="completed",
+        route=RouteDecision(
+            route_type="tool_execution",
+            route_reason="Clarification applied.",
+            filename=None,
+        ),
+        answer="Recovered via clarification",
+        answer_source="tool_result",
+    )
+    persisted: dict[str, AgentWorkflowResponse] = {}
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.resume_agent_v2_request",
+        lambda run_id, clarification_context=None, checkpointer=None: resumed_response,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: persisted.setdefault("response", response),
+    )
+
+    response = recover_agent_v2_request(
+        run_id="run-clarify-123",
+        recovery_action="resume_with_clarification",
+        clarification_context={
+            "environment": "production",
+            "task_details": "check system status for payment-service",
+        },
+        checkpointer=object(),
+    )
+
+    assert response.recovered_via_action == "resume_with_clarification"
+    assert response.resume_source_type == "run_id"
+    assert response.resume_strategy == "clarification_recovery"
+    assert persisted["response"].recovered_via_action == "resume_with_clarification"
+
+
 def test_stream_agent_v2_request_emits_updates_and_final_result(monkeypatch):
     monkeypatch.setattr(
         "app.services.agent_v2.query_service.persist_agent_v2_run",

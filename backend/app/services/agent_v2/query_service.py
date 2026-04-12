@@ -899,11 +899,16 @@ def recover_agent_v2_request(
 ) -> AgentWorkflowResponse:
     selected_action = (recovery_action or "").strip() or "manual_retrigger"
     if selected_action == "resume_with_clarification":
-        return resume_agent_v2_request(
+        response = resume_agent_v2_request(
             run_id=run_id,
             clarification_context=clarification_context,
             checkpointer=checkpointer,
         )
+        response.recovered_via_action = selected_action
+        response.resume_source_type = "run_id"
+        response.resume_strategy = "clarification_recovery"
+        persist_agent_v2_run(response)
+        return response
     if selected_action not in {"manual_retrigger", "resume_from_failed_step"}:
         raise ValueError("recovery_action_not_supported_for_agent_v2")
 
