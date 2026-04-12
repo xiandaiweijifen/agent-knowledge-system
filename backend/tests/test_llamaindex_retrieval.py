@@ -11,6 +11,7 @@ from app.services.retrieval.llamaindex_retrieval_service import (
     _index_exists,
     _select_corpus_filenames,
 )
+from app.services.ingestion.document_service import infer_document_kind
 
 
 def test_index_exists_returns_false_when_missing(workspace_tmp_path, monkeypatch):
@@ -77,6 +78,7 @@ def test_retrieve_with_llamaindex_returns_retrieval_result(workspace_tmp_path, m
     assert result.embedding_provider == "llamaindex"
     assert len(result.matches) == 1
     assert result.matches[0].chunk_id == "mydoc.txt::chunk_0"
+    assert result.matches[0].document_kind == "reference"
     assert result.matches[0].section_title == "Agent Framework"
     assert result.matches[0].section_path == ["Agent Framework"]
     assert result.matches[0].heading_level == 2
@@ -284,6 +286,14 @@ def test_select_corpus_filenames_prefers_runbook_documents_for_runbook_queries()
     )
 
     assert selected == ["checkout_service_runbook.md"]
+
+
+def test_infer_document_kind_classifies_common_knowledge_documents():
+    assert infer_document_kind("checkout_service_runbook.md") == "runbook"
+    assert infer_document_kind("incident_playbook.md") == "incident"
+    assert infer_document_kind("workflow_runtime_notes.md") == "workflow"
+    assert infer_document_kind("rag_overview.md") == "overview"
+    assert infer_document_kind("architecture_notes.md") == "reference"
 
 
 def test_select_corpus_filenames_falls_back_to_all_documents_without_hints():

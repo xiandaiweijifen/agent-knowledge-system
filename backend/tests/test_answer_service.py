@@ -63,6 +63,7 @@ def test_build_answer_citations_prioritizes_chunks_aligned_with_answer_content()
     assert citations[0] == {
         "chunk_id": "checkout_service_runbook.md::chunk_4",
         "source_filename": "checkout_service_runbook.md",
+        "document_kind": "reference",
         "section_title": "Mitigation Notes",
         "section_path": ["Checkout Service Runbook", "Mitigation Notes"],
         "heading_level": 2,
@@ -95,6 +96,7 @@ def test_generate_rag_answer_fallback_includes_structured_citations(monkeypatch)
         {
             "chunk_id": "rag_overview.md::chunk_7",
             "source_filename": "rag_overview.md",
+            "document_kind": "reference",
             "section_title": "Common Failure Modes",
             "section_path": [
                 "Retrieval-Augmented Generation Overview",

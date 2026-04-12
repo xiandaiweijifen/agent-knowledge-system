@@ -23,6 +23,9 @@ def build_context_block(matches: list[dict]) -> str:
             f"[{match['chunk_id']}]",
             f"Source File: {match.get('source_filename', 'unknown')}",
         ]
+        document_kind = match.get("document_kind", "reference")
+        if document_kind:
+            metadata_lines.append(f"Source Kind: {document_kind}")
         if section_path:
             metadata_lines.append(f"Source Section: {section_path}")
         context_sections.append(
@@ -43,6 +46,29 @@ def _tokenize_overlap_text(value: str) -> set[str]:
         for token in re.findall(r"[a-z0-9]+", value.lower())
         if len(token) >= 4
     }
+
+
+def build_evidence_reference(match: dict) -> dict:
+    """Normalize shared evidence metadata for citations and verification."""
+    return {
+        "chunk_id": match.get("chunk_id", ""),
+        "source_filename": match.get("source_filename", ""),
+        "document_kind": match.get("document_kind", "reference"),
+        "section_title": match.get("section_title", ""),
+        "section_path": match.get("section_path", []),
+        "heading_level": match.get("heading_level"),
+    }
+
+
+def build_evidence_metadata_text(reference: dict) -> str:
+    return " ".join(
+        [
+            reference.get("source_filename", ""),
+            reference.get("document_kind", ""),
+            reference.get("section_title", ""),
+            " ".join(reference.get("section_path", [])),
+        ]
+    )
 
 
 def infer_answer_style(question: str, matches: list[dict]) -> str:
@@ -103,15 +129,7 @@ def build_answer_verification(answer: str, citations: list[dict]) -> dict:
     verification_notes: list[str] = []
 
     for citation in citations:
-        citation_tokens = _tokenize_overlap_text(
-            " ".join(
-                [
-                    citation.get("source_filename", ""),
-                    citation.get("section_title", ""),
-                    " ".join(citation.get("section_path", [])),
-                ]
-            )
-        )
+        citation_tokens = _tokenize_overlap_text(build_evidence_metadata_text(citation))
         if answer_tokens & citation_tokens:
             covered_citation_count += 1
 
@@ -187,15 +205,7 @@ def build_answer_citations(
         if not chunk_id or chunk_id in seen_chunk_ids:
             continue
 
-        citations.append(
-            {
-                "chunk_id": chunk_id,
-                "source_filename": match.get("source_filename", ""),
-                "section_title": match.get("section_title", ""),
-                "section_path": match.get("section_path", []),
-                "heading_level": match.get("heading_level"),
-            }
-        )
+        citations.append(build_evidence_reference(match))
         seen_chunk_ids.add(chunk_id)
 
         if len(citations) >= limit:

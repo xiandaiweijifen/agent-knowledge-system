@@ -58,6 +58,7 @@ def build_chunk_record(
     chunk_index: int,
     source_filename: str | None,
     source_suffix: str | None,
+    document_kind: str = "reference",
     start_char: int,
     end_char: int,
     content: str,
@@ -71,6 +72,7 @@ def build_chunk_record(
         "chunk_index": chunk_index,
         "source_filename": source_filename,
         "source_suffix": source_suffix,
+        "document_kind": document_kind,
         "start_char": start_char,
         "end_char": end_char,
         "char_count": len(content),
@@ -99,6 +101,7 @@ def chunk_text_by_character(
     chunk_overlap: int,
     source_filename: str | None,
     source_suffix: str | None,
+    document_kind: str,
     heading_contexts: list[dict] | None = None,
 ) -> list[dict]:
     """Split text into overlapping character-based chunks."""
@@ -122,6 +125,7 @@ def chunk_text_by_character(
                 chunk_index=chunk_index,
                 source_filename=source_filename,
                 source_suffix=source_suffix,
+                document_kind=document_kind,
                 start_char=start,
                 end_char=end,
                 section_title=heading_context["section_title"],
@@ -145,6 +149,7 @@ def chunk_text_by_paragraph(
     chunk_size: int,
     source_filename: str | None,
     source_suffix: str | None,
+    document_kind: str,
     heading_contexts: list[dict] | None = None,
 ) -> list[dict]:
     """Split text with paragraph-aware packing up to the target chunk size."""
@@ -189,6 +194,7 @@ def chunk_text_by_paragraph(
                 chunk_index=chunk_index,
                 source_filename=source_filename,
                 source_suffix=source_suffix,
+                document_kind=document_kind,
                 start_char=current_start,
                 end_char=current_start + len(current_content),
                 **resolve_heading_context(current_start, heading_contexts or []),
@@ -207,6 +213,7 @@ def chunk_text_by_paragraph(
                 chunk_overlap=0,
                 source_filename=source_filename,
                 source_suffix=source_suffix,
+                document_kind=document_kind,
                 heading_contexts=heading_contexts,
             )
 
@@ -220,6 +227,7 @@ def chunk_text_by_paragraph(
                         chunk_index=chunk_index,
                         source_filename=source_filename,
                         source_suffix=source_suffix,
+                        document_kind=document_kind,
                         start_char=paragraph_start + relative_start,
                         end_char=paragraph_start + relative_start + chunk_length,
                         **resolve_heading_context(paragraph_start + relative_start, heading_contexts or []),
@@ -239,6 +247,7 @@ def chunk_text_by_paragraph(
                 chunk_index=chunk_index,
                 source_filename=source_filename,
                 source_suffix=source_suffix,
+                document_kind=document_kind,
                 start_char=current_start,
                 end_char=current_start + len(current_content),
                 **resolve_heading_context(current_start, heading_contexts or []),
@@ -256,6 +265,7 @@ def chunk_text(
     chunk_strategy: str = "character",
     source_filename: str | None = None,
     source_suffix: str | None = None,
+    document_kind: str = "reference",
 ) -> list[dict]:
     """Split text into retrievable chunks with a configurable strategy."""
     validate_chunk_config(chunk_size, chunk_overlap)
@@ -275,6 +285,7 @@ def chunk_text(
             chunk_overlap=chunk_overlap,
             source_filename=source_filename,
             source_suffix=source_suffix,
+            document_kind=document_kind,
             heading_contexts=heading_contexts,
         )
 
@@ -284,6 +295,7 @@ def chunk_text(
             chunk_size=chunk_size,
             source_filename=source_filename,
             source_suffix=source_suffix,
+            document_kind=document_kind,
             heading_contexts=heading_contexts,
         )
 

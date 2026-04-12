@@ -14,6 +14,22 @@ CHUNK_DATA_DIR.mkdir(parents=True, exist_ok=True)
 LISTABLE_DOCUMENT_SUFFIXES = {".txt", ".md", ".pdf", ".docx"}
 CHUNK_PIPELINE_VERSION = "ingestion-v1"
 
+DOCUMENT_KIND_HINTS: list[tuple[str, tuple[str, ...]]] = [
+    ("runbook", ("runbook",)),
+    ("incident", ("playbook", "incident", "outage", "sev")),
+    ("workflow", ("workflow", "recovery", "resume", "clarification")),
+    ("overview", ("overview", "rag", "retrieval", "generation")),
+]
+
+
+def infer_document_kind(filename: str) -> str:
+    """Infer a stable document kind from filename semantics."""
+    lowered_name = filename.lower()
+    for document_kind, hints in DOCUMENT_KIND_HINTS:
+        if any(hint in lowered_name for hint in hints):
+            return document_kind
+    return "reference"
+
 
 def list_documents() -> list[dict]:
     """Return basic metadata for all uploaded documents."""
@@ -34,6 +50,7 @@ def list_documents() -> list[dict]:
                 "filename": file_path.name,
                 "size_bytes": file_path.stat().st_size,
                 "suffix": file_path.suffix,
+                "document_kind": infer_document_kind(file_path.name),
                 "knowledge_assets": build_document_asset_status(file_path.name),
             }
         )
@@ -117,6 +134,7 @@ def get_document_asset_status(filename: str) -> dict:
         "filename": document_path.name,
         "size_bytes": document_path.stat().st_size,
         "suffix": document_path.suffix,
+        "document_kind": infer_document_kind(document_path.name),
         "knowledge_assets": build_document_asset_status(document_path.name),
     }
 
@@ -168,6 +186,7 @@ def chunk_document_with_strategy(
 ) -> dict:
     """Load a text document and split it into retrievable chunks."""
     document = read_text_document(filename)
+    document_kind = infer_document_kind(document["filename"])
     chunks = chunk_text(
         text=document["content"],
         chunk_size=chunk_size,
@@ -175,12 +194,14 @@ def chunk_document_with_strategy(
         chunk_strategy=chunk_strategy,
         source_filename=document["filename"],
         source_suffix=document["suffix"],
+        document_kind=document_kind,
     )
 
     return {
         "filename": document["filename"],
         "suffix": document["suffix"],
         "size_bytes": document["size_bytes"],
+        "document_kind": document_kind,
         "chunk_strategy": chunk_strategy,
         "chunk_count": len(chunks),
         "chunks": chunks,
@@ -218,6 +239,7 @@ def persist_document_chunks(
         "filename": chunked_document["filename"],
         "suffix": chunked_document["suffix"],
         "size_bytes": chunked_document["size_bytes"],
+        "document_kind": chunked_document["document_kind"],
         "source_path": str(get_document_path(filename)),
         "created_at": build_utc_timestamp(),
         "pipeline_version": CHUNK_PIPELINE_VERSION,

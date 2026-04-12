@@ -23,6 +23,7 @@ def test_list_documents_filters_hidden_and_non_document_files(
             "filename": "design.md",
             "size_bytes": len("# title".encode("utf-8")),
             "suffix": ".md",
+            "document_kind": "reference",
             "knowledge_assets": {
                 "chunks_ready": False,
                 "embeddings_ready": False,
@@ -33,6 +34,7 @@ def test_list_documents_filters_hidden_and_non_document_files(
             "filename": "notes.txt",
             "size_bytes": len("hello".encode("utf-8")),
             "suffix": ".txt",
+            "document_kind": "reference",
             "knowledge_assets": {
                 "chunks_ready": False,
                 "embeddings_ready": False,

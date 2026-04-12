@@ -6,6 +6,7 @@ class ChunkRecord(BaseModel):
     chunk_index: int
     source_filename: str
     source_suffix: str
+    document_kind: str = "reference"
     start_char: int
     end_char: int
     char_count: int
@@ -19,6 +20,7 @@ class PersistedChunkDocument(BaseModel):
     filename: str
     suffix: str
     size_bytes: int
+    document_kind: str = "reference"
     source_path: str = ""
     created_at: str = ""
     pipeline_version: str = ""
@@ -35,6 +37,7 @@ class EmbeddingRecord(BaseModel):
     chunk_index: int
     source_filename: str
     source_suffix: str
+    document_kind: str = "reference"
     char_count: int
     section_title: str = ""
     section_path: list[str] = Field(default_factory=list)
@@ -46,6 +49,7 @@ class EmbeddingRecord(BaseModel):
 class PersistedEmbeddingDocument(BaseModel):
     filename: str
     suffix: str
+    document_kind: str = "reference"
     source_path: str = ""
     source_chunk_path: str = ""
     created_at: str = ""

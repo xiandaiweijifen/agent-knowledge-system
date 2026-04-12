@@ -6,6 +6,7 @@ export type DocumentItem = {
   filename: string;
   size_bytes: number;
   suffix: string;
+  document_kind?: string;
   knowledge_assets?: {
     chunks_ready: boolean;
     embeddings_ready: boolean;
@@ -84,6 +85,7 @@ export type RetrievalMatch = {
   chunk_index: number;
   source_filename: string;
   source_suffix: string;
+  document_kind?: string;
   char_count: number;
   section_title?: string;
   section_path?: string[];
@@ -123,6 +125,7 @@ export type QueryResponse = {
   answer_citations?: {
     chunk_id: string;
     source_filename: string;
+    document_kind?: string;
     section_title?: string;
     section_path?: string[];
     heading_level?: number | null;

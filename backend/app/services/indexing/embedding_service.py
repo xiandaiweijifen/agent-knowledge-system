@@ -222,6 +222,7 @@ def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:
                 chunk_index=chunk.chunk_index,
                 source_filename=chunk.source_filename,
                 source_suffix=chunk.source_suffix,
+                document_kind=chunk.document_kind,
                 char_count=chunk.char_count,
                 section_title=chunk.section_title,
                 section_path=chunk.section_path,
@@ -236,6 +237,7 @@ def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:
     return PersistedEmbeddingDocument(
         filename=chunk_payload.filename,
         suffix=chunk_payload.suffix,
+        document_kind=chunk_payload.document_kind,
         source_path=chunk_payload.source_path,
         source_chunk_path=str(get_chunk_output_path(filename)),
         created_at=build_utc_timestamp(),

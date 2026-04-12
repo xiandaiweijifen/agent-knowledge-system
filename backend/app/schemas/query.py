@@ -76,6 +76,7 @@ class RetrievedChunkMatch(BaseModel):
     chunk_index: int
     source_filename: str
     source_suffix: str
+    document_kind: str = "reference"
     char_count: int
     section_title: str = ""
     section_path: list[str] = Field(default_factory=list)
@@ -105,6 +106,7 @@ class RetrievalResult(BaseModel):
 class AnswerCitation(BaseModel):
     chunk_id: str
     source_filename: str
+    document_kind: str = "reference"
     section_title: str = ""
     section_path: list[str] = Field(default_factory=list)
     heading_level: int | None = None

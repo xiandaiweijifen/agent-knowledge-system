@@ -14,6 +14,7 @@ from time import perf_counter
 from app.schemas.query import RetrievalResult, RetrievedChunkMatch
 from app.services.ingestion.document_service import (
     build_utc_timestamp,
+    infer_document_kind,
     list_llamaindex_ready_documents,
 )
 from app.services.ingestion.llamaindex_ingestion_service import (
@@ -64,6 +65,10 @@ def _build_matches_from_raw_results(
                 chunk_index=metadata.get("chunk_index", 0),
                 source_filename=metadata.get("source_filename", fallback_filename),
                 source_suffix=metadata.get("source_suffix", ""),
+                document_kind=metadata.get(
+                    "document_kind",
+                    infer_document_kind(metadata.get("source_filename", fallback_filename)),
+                ),
                 char_count=metadata.get("char_count", len(result["content"])),
                 section_title=metadata.get("section_title", ""),
                 section_path=metadata.get("section_path", []),
@@ -124,9 +129,9 @@ def _select_corpus_filenames(
     lowered_query = normalized_query.lower()
 
     for filename in filenames:
-        lowered_filename = filename.lower()
+        document_kind = infer_document_kind(filename)
         if any(
-            hint in lowered_query and key in lowered_filename
+            hint in lowered_query and key == document_kind
             for key, hints in CORPUS_QUERY_HINTS.items()
             for hint in hints
         ):

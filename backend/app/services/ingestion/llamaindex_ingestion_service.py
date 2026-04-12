@@ -125,6 +125,7 @@ def build_llamaindex_index(filename: str) -> dict[str, Any]:
                 "chunk_index": chunk["chunk_index"],
                 "source_filename": chunk.get("source_filename", filename),
                 "source_suffix": chunk.get("source_suffix", ""),
+                "document_kind": chunk.get("document_kind", "reference"),
                 "char_count": chunk.get("char_count", len(chunk["content"])),
                 "section_title": chunk.get("section_title", ""),
                 "section_path": chunk.get("section_path", []),
