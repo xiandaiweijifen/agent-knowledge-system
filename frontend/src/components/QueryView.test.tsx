@@ -1,3 +1,5 @@
+import type { FormEvent } from "react";
+
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -457,7 +459,10 @@ describe("QueryView", () => {
     expect(screen.queryByText("supporting_query")).not.toBeInTheDocument();
   });
 
-  it("allows agent workflows without document context while keeping retrieval actions disabled", () => {
+  it("allows corpus queries without document context while keeping diagnostics disabled", async () => {
+    const user = userEvent.setup();
+    const onSubmitQuery = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
+
     render(
       <QueryView
         documents={[
@@ -481,7 +486,7 @@ describe("QueryView", () => {
         onChangeQuestion={vi.fn()}
         onChangeTopK={vi.fn()}
         onClearDiagnostics={vi.fn()}
-        onSubmitQuery={(event) => event.preventDefault()}
+        onSubmitQuery={onSubmitQuery}
         onRunAgent={vi.fn()}
         onLoadAgentWorkflowRun={vi.fn()}
         onRecoverAgentWorkflowRun={vi.fn()}
@@ -490,12 +495,18 @@ describe("QueryView", () => {
     );
 
     expect(screen.getAllByText("No document context (Agent optional)").length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("button", { name: "Run Query" }).at(-1)).toBeDisabled();
+    expect(screen.getAllByRole("button", { name: "Run Query" }).at(-1)).toBeEnabled();
     expect(screen.getAllByRole("button", { name: "Run Diagnostics" }).at(-1)).toBeDisabled();
     expect(screen.getAllByRole("button", { name: "Run Agent" }).at(-1)).toBeEnabled();
     expect(
-      screen.getAllByText(/No document context selected\. Retrieval-only actions are disabled/i).length,
+      screen.getAllByText(
+        /No document context selected\. `Run Query` will use corpus retrieval/i,
+      ).length,
     ).toBeGreaterThan(0);
+
+    await user.click(screen.getAllByRole("button", { name: "Run Query" }).at(-1)!);
+
+    expect(onSubmitQuery).toHaveBeenCalledTimes(1);
   });
 
   it("renders corpus retrieval scope and corpus document list", () => {

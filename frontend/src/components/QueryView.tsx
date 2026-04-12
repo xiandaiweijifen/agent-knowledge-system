@@ -88,13 +88,13 @@ export function QueryView({
           documentContext: "文档上下文",
           noDocumentContext: "无文档上下文（可选 Agent）",
           documentHint:
-            "`运行 Query` 和 `运行 Diagnostics` 需要文档。`运行 Agent` 可在没有文档时执行工具或澄清工作流。",
+            "`运行 Query` 可在没有文档时执行多文档知识检索；`运行 Diagnostics` 仍需要文档。`运行 Agent` 可在没有文档时执行工具或澄清工作流。",
           question: "问题",
           presetQuestions: "预设问题",
           topK: "Top-K",
           topKSummary: "top-k",
           noDocumentHint:
-            "当前未选择文档上下文。仅检索类操作会被禁用，但 Agent 工具工作流仍可运行。",
+            "当前未选择文档上下文。`运行 Query` 将执行多文档检索；`运行 Diagnostics` 仍需要文档。",
           runningQuery: "正在运行查询工作流...",
           liveExecution: "实时执行事件",
           liveExecutionCopy: "展示 agent_v2 在路由、检索、工具执行和完成阶段发出的安全事件流。",
@@ -268,13 +268,13 @@ export function QueryView({
           documentContext: "Document Context",
           noDocumentContext: "No document context (Agent optional)",
           documentHint:
-            "`Run Query` and `Run Diagnostics` require a document. `Run Agent` can operate without one for tool execution or clarification workflows.",
+            "`Run Query` can run corpus retrieval without a document. `Run Diagnostics` still requires a document. `Run Agent` can operate without one for tool execution or clarification workflows.",
           question: "Question",
           presetQuestions: "Preset Questions",
           topK: "Top-K",
           topKSummary: "top-k",
           noDocumentHint:
-            "No document context selected. Retrieval-only actions are disabled, but agent tool workflows can still run.",
+            "No document context selected. `Run Query` will use corpus retrieval, while `Run Diagnostics` still requires a document.",
           runningQuery: "Running query workflow...",
           liveExecution: "Live Execution Events",
           liveExecutionCopy:
@@ -1038,7 +1038,7 @@ export function QueryView({
             />
           </label>
           <div className="button-row">
-            <button type="submit" className="primary-button" disabled={queryBusy || !hasDocument || !hasQuestion}>
+            <button type="submit" className="primary-button" disabled={queryBusy || !hasQuestion}>
               {queryCopy.runQuery}
             </button>
             <button
