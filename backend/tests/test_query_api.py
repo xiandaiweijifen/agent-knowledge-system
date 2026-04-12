@@ -37,6 +37,8 @@ def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
     monkeypatch.setattr(settings, "chat_provider", "fallback")
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "auto")
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "auto")
 
     embedding_payload = {
         "filename": "sample.txt",
@@ -110,6 +112,23 @@ def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
     assert payload["retrieval"]["matches"][0]["score"] >= payload["retrieval"]["matches"][0]["vector_score"]
 
 
+def test_query_endpoint_requires_llamaindex_index_by_default(monkeypatch):
+    client = TestClient(app)
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "llamaindex")
+
+    response = client.post(
+        "/api/query",
+        json={
+            "filename": "missing.txt",
+            "question": "What is RAG?",
+            "top_k": 1,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "llamaindex_index_not_found"
+
+
 def test_query_diagnostics_endpoint_returns_ranked_candidates(
     workspace_tmp_path,
     monkeypatch,
@@ -119,6 +138,7 @@ def test_query_diagnostics_endpoint_returns_ranked_candidates(
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
     monkeypatch.setattr(settings, "chat_provider", "fallback")
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "auto")
 
     embedding_payload = {
         "filename": "sample.txt",
@@ -1915,6 +1935,7 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
     monkeypatch.setattr(settings, "chat_provider", "fallback")
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "auto")
 
     embedding_payload = {
         "filename": "sample.txt",

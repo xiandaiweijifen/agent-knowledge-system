@@ -1,5 +1,6 @@
 import logging
 
+from app.core.config import settings
 from app.schemas.query import QueryResponse
 from app.services.llm.answer_service import generate_rag_answer
 from app.services.retrieval.llamaindex_retrieval_service import retrieve_with_llamaindex
@@ -8,26 +9,65 @@ from app.services.retrieval.retrieval_service import retrieve_relevant_chunks
 logger = logging.getLogger(__name__)
 
 
-def run_query(filename: str, question: str, top_k: int = 3) -> QueryResponse:
-    """Execute the retrieval and answer-generation flow for a query.
+def _normalized_knowledge_retrieval_mode() -> str:
+    mode = settings.knowledge_retrieval_mode.strip().lower()
+    if mode not in {"llamaindex", "auto", "legacy"}:
+        raise ValueError("knowledge_retrieval_mode_invalid")
+    return mode
 
-    Uses LlamaIndex retrieval when an index exists for the document,
-    otherwise falls back to the legacy cosine-similarity retriever.
-    """
+
+def _retrieve_via_configured_mode(filename: str, question: str, top_k: int):
+    mode = _normalized_knowledge_retrieval_mode()
+
+    if mode == "legacy":
+        logger.debug("retrieval via legacy mode for %s", filename)
+        return retrieve_relevant_chunks(
+            filename=filename,
+            query_text=question,
+            top_k=top_k,
+        )
+
+    if mode == "llamaindex":
+        logger.debug("retrieval via explicit llamaindex mode for %s", filename)
+        try:
+            return retrieve_with_llamaindex(
+                filename=filename,
+                query_text=question,
+                top_k=top_k,
+            )
+        except FileNotFoundError as exc:
+            raise ValueError("llamaindex_index_not_found") from exc
+
     try:
         retrieval_result = retrieve_with_llamaindex(
             filename=filename,
             query_text=question,
             top_k=top_k,
         )
-        logger.debug("retrieval via llamaindex for %s", filename)
+        logger.debug("retrieval via llamaindex auto mode for %s", filename)
+        return retrieval_result
     except FileNotFoundError:
-        logger.debug("llamaindex index not found for %s, using legacy retriever", filename)
-        retrieval_result = retrieve_relevant_chunks(
+        logger.debug("llamaindex index not found for %s, using legacy retriever in auto mode", filename)
+        return retrieve_relevant_chunks(
             filename=filename,
             query_text=question,
             top_k=top_k,
         )
+
+
+def run_query(filename: str, question: str, top_k: int = 3) -> QueryResponse:
+    """Execute the retrieval and answer-generation flow for a query.
+
+    Retrieval path is selected by `knowledge_retrieval_mode`:
+    - `llamaindex`: require a persisted LlamaIndex index
+    - `auto`: prefer LlamaIndex and fall back to legacy retrieval
+    - `legacy`: force the legacy cosine-similarity retriever
+    """
+    retrieval_result = _retrieve_via_configured_mode(
+        filename=filename,
+        question=question,
+        top_k=top_k,
+    )
 
     answer_result = generate_rag_answer(
         question=retrieval_result.question,

@@ -4099,5 +4099,31 @@
     "environment": "unspecified",
     "created_at": "2026-04-12T13:51:35.632170+00:00",
     "updated_at": "2026-04-12T13:51:35.632170+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0286",
+    "ticket_id": "TICKET-0286",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T14:06:38.878067+00:00",
+    "updated_at": "2026-04-12T14:06:38.878067+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0287",
+    "ticket_id": "TICKET-0287",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T14:09:08.507468+00:00",
+    "updated_at": "2026-04-12T14:09:08.507468+00:00"
   }
 ]

@@ -63,7 +63,15 @@
 - Workflow evaluation cases now cover `agent_v2`-compatible scenarios: knowledge retrieval, single-step tool execution, clarification resume, failed-step resume, and manual retrigger recovery.
 - Workflow eval schema now records recovery action expectations so reports can distinguish plain resume traces from explicit recovery actions.
 
+## Package 22
+
+- Status: completed
+- Commit: `refactor: make llamaindex the explicit primary retrieval path`
+- Added `KNOWLEDGE_RETRIEVAL_MODE` with `llamaindex`, `auto`, and `legacy` modes.
+- Default knowledge queries now require a persisted LlamaIndex index in standard runtime mode.
+- Legacy retrieval remains available for migration, debug, and evaluation flows through explicit `auto` or `legacy` mode selection.
+
 ## Test Baseline
 
-- Backend: `244 passed, 0 failed`
+- Backend: `248 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`

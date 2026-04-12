@@ -95,6 +95,10 @@ def test_query_service_falls_back_to_legacy(monkeypatch):
         MagicMock(side_effect=FileNotFoundError("doc.txt")),
     )
     monkeypatch.setattr(
+        "app.services.agent.query_service.settings.knowledge_retrieval_mode",
+        "auto",
+    )
+    monkeypatch.setattr(
         "app.services.agent.query_service.retrieve_relevant_chunks",
         MagicMock(return_value=legacy_result),
     )
@@ -109,3 +113,70 @@ def test_query_service_falls_back_to_legacy(monkeypatch):
 
     result = run_query("doc.txt", "test question", top_k=3)
     assert result.filename == "doc.txt"
+
+
+def test_query_service_requires_llamaindex_by_default(monkeypatch):
+    from app.services.agent.query_service import run_query
+
+    monkeypatch.setattr(
+        "app.services.agent.query_service.settings.knowledge_retrieval_mode",
+        "llamaindex",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.retrieve_with_llamaindex",
+        MagicMock(side_effect=FileNotFoundError("doc.txt")),
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.retrieve_relevant_chunks",
+        MagicMock(),
+    )
+
+    with pytest.raises(ValueError, match="llamaindex_index_not_found"):
+        run_query("doc.txt", "test question", top_k=3)
+
+
+def test_query_service_legacy_mode_skips_llamaindex(monkeypatch):
+    from app.services.agent.query_service import run_query
+    from app.schemas.query import RetrievalResult
+
+    legacy_result = RetrievalResult(
+        filename="doc.txt",
+        embedding_provider="mock",
+        embedding_model="mock-v1",
+        vector_dim=8,
+        question="test question",
+        top_k=3,
+        retrieved_at="2024-01-01T00:00:00Z",
+        retrieval_latency_ms=1.0,
+        query_embedding_provider="mock",
+        query_embedding_model="mock-v1",
+        matches=[],
+    )
+
+    llamaindex_mock = MagicMock()
+    legacy_mock = MagicMock(return_value=legacy_result)
+    monkeypatch.setattr(
+        "app.services.agent.query_service.settings.knowledge_retrieval_mode",
+        "legacy",
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.retrieve_with_llamaindex",
+        llamaindex_mock,
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.retrieve_relevant_chunks",
+        legacy_mock,
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.generate_rag_answer",
+        MagicMock(return_value={
+            "answer": "test", "answer_source": "llm", "model": "mock",
+            "answered_at": "2024-01-01", "answer_latency_ms": 1.0,
+            "chat_provider": "mock", "chat_model": "mock",
+        }),
+    )
+
+    result = run_query("doc.txt", "test question", top_k=3)
+    assert result.filename == "doc.txt"
+    llamaindex_mock.assert_not_called()
+    legacy_mock.assert_called_once()

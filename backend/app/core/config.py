@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     tool_planner_provider: str = "fallback"
     clarification_planner_provider: str = "fallback"
     workflow_planner_provider: str = "fallback"
+    knowledge_retrieval_mode: str = "llamaindex"
     workflow_planner_debug_capture: bool = False
     planner_cache_ttl_seconds: int = 120
     planner_cache_max_entries: int = 256
