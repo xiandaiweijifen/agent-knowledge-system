@@ -27,6 +27,12 @@ from app.services.retrieval.retrieval_service import (
 
 logger = logging.getLogger(__name__)
 CORPUS_SOURCE_PENALTY = 0.08
+CORPUS_QUERY_HINTS: dict[str, tuple[str, ...]] = {
+    "runbook": ("runbook", "runbooks"),
+    "incident": ("incident", "incidents", "outage", "sev", "severity"),
+    "workflow": ("workflow", "recovery", "resume", "retry", "clarification"),
+    "overview": ("overview", "rag", "retrieval", "generation"),
+}
 
 
 def _index_exists(filename: str) -> bool:
@@ -106,6 +112,33 @@ def _select_diversified_corpus_matches(
     return selected
 
 
+def _select_corpus_filenames(
+    normalized_query: str,
+    filenames: list[str],
+) -> list[str]:
+    """Lightweight metadata-aware filtering using query hints and filename semantics."""
+    if not filenames:
+        return []
+
+    selected: list[str] = []
+    lowered_query = normalized_query.lower()
+
+    for filename in filenames:
+        lowered_filename = filename.lower()
+        if any(
+            hint in lowered_query and key in lowered_filename
+            for key, hints in CORPUS_QUERY_HINTS.items()
+            for hint in hints
+        ):
+            selected.append(filename)
+
+    if selected:
+        # Preserve original order while removing duplicates.
+        return list(dict.fromkeys(selected))
+
+    return filenames
+
+
 def retrieve_with_llamaindex(
     filename: str,
     query_text: str,
@@ -159,9 +192,10 @@ def retrieve_with_llamaindex_corpus(
 
     started = perf_counter()
     normalized_query = normalize_query_text(query_text)
+    scoped_filenames = _select_corpus_filenames(normalized_query, ready_filenames)
     all_matches: list[RetrievedChunkMatch] = []
 
-    for filename in ready_filenames:
+    for filename in scoped_filenames:
         raw_results = query_llamaindex_index(filename, normalized_query, top_k=top_k)
         all_matches.extend(
             _build_matches_from_raw_results(
@@ -178,7 +212,7 @@ def retrieve_with_llamaindex_corpus(
     return RetrievalResult(
         filename=None,
         retrieval_scope="corpus",
-        corpus_filenames=ready_filenames,
+        corpus_filenames=scoped_filenames,
         embedding_provider="llamaindex",
         embedding_model="llamaindex-simplestore",
         vector_dim=0,

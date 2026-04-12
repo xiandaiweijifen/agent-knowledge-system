@@ -9,6 +9,7 @@ from app.services.retrieval.llamaindex_retrieval_service import (
     retrieve_with_llamaindex,
     retrieve_with_llamaindex_corpus,
     _index_exists,
+    _select_corpus_filenames,
 )
 
 
@@ -268,6 +269,87 @@ def test_retrieve_with_llamaindex_corpus_diversifies_near_tied_sources(
     )
 
     assert [match.source_filename for match in result.matches] == ["doc_a.md", "doc_b.md"]
+
+
+def test_select_corpus_filenames_prefers_runbook_documents_for_runbook_queries():
+    filenames = [
+        "rag_overview.md",
+        "checkout_service_runbook.md",
+        "incident_playbook.md",
+    ]
+
+    selected = _select_corpus_filenames(
+        "show the runbook for checkout recovery",
+        filenames,
+    )
+
+    assert selected == ["checkout_service_runbook.md"]
+
+
+def test_select_corpus_filenames_falls_back_to_all_documents_without_hints():
+    filenames = [
+        "rag_overview.md",
+        "checkout_service_runbook.md",
+        "incident_playbook.md",
+    ]
+
+    selected = _select_corpus_filenames(
+        "summarize the available engineering notes",
+        filenames,
+    )
+
+    assert selected == filenames
+
+
+def test_retrieve_with_llamaindex_corpus_scopes_documents_from_query_hints(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.LLAMAINDEX_STORE_DIR",
+        workspace_tmp_path,
+    )
+    for stem in ("rag_overview", "checkout_service_runbook", "incident_playbook"):
+        index_dir = workspace_tmp_path / stem
+        index_dir.mkdir()
+        (index_dir / "index_store.json").write_text("{}")
+
+    query_mock = MagicMock(
+        side_effect=lambda filename, query_text, top_k: [
+            {
+                "chunk_id": f"{filename}::chunk_0",
+                "content": f"content for {filename}",
+                "score": 0.8,
+                "metadata": {
+                    "chunk_index": 0,
+                    "source_filename": filename,
+                    "source_suffix": ".md",
+                    "char_count": 20,
+                    "section_title": "Overview",
+                    "section_path": ["Overview"],
+                    "heading_level": 1,
+                },
+            }
+        ]
+    )
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.query_llamaindex_index",
+        query_mock,
+    )
+
+    result = retrieve_with_llamaindex_corpus(
+        "please show the runbook for checkout recovery",
+        top_k=2,
+        filenames=[
+            "rag_overview.md",
+            "checkout_service_runbook.md",
+            "incident_playbook.md",
+        ],
+    )
+
+    assert result.corpus_filenames == ["checkout_service_runbook.md"]
+    assert query_mock.call_count == 1
+    assert result.matches[0].source_filename == "checkout_service_runbook.md"
 
 
 def test_query_service_falls_back_to_legacy_in_debug_context(monkeypatch):
