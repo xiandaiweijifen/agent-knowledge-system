@@ -4,9 +4,6 @@ LlamaIndex-based retrieval service.
 Wraps query_llamaindex_index() and converts results into the existing
 RetrievalResult / RetrievedChunkMatch schema so the rest of the system
 (query_service, orchestrator, evaluation) requires zero changes.
-
-Falls back to the legacy cosine-similarity retriever when no LlamaIndex
-index has been built for the requested document.
 """
 
 from __future__ import annotations

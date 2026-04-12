@@ -9,6 +9,9 @@ class ChunkRecord(BaseModel):
     start_char: int
     end_char: int
     char_count: int
+    section_title: str = ""
+    section_path: list[str] = Field(default_factory=list)
+    heading_level: int | None = None
     content: str
 
 
@@ -33,6 +36,9 @@ class EmbeddingRecord(BaseModel):
     source_filename: str
     source_suffix: str
     char_count: int
+    section_title: str = ""
+    section_path: list[str] = Field(default_factory=list)
+    heading_level: int | None = None
     content: str
     vector: list[float] = Field(default_factory=list)
 

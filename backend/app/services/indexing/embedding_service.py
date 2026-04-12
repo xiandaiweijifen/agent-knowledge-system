@@ -223,6 +223,9 @@ def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:
                 source_filename=chunk.source_filename,
                 source_suffix=chunk.source_suffix,
                 char_count=chunk.char_count,
+                section_title=chunk.section_title,
+                section_path=chunk.section_path,
+                heading_level=chunk.heading_level,
                 content=chunk.content,
                 vector=vector,
             )

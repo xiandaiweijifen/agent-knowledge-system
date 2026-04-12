@@ -88,7 +88,15 @@
 - `/api/query` and knowledge retrieval inside agent workflows now require explicit LlamaIndex mode in normal runtime operation.
 - Legacy retrieval remains available through diagnostics and retrieval evaluation flows as the project baseline/debug path.
 
+## Package 25
+
+- Status: completed
+- Commit: `feat: add section-aware chunk metadata for knowledge nodes`
+- Chunk records now persist `section_title`, `section_path`, and `heading_level` derived from markdown heading context.
+- Embedding records now carry the same section metadata so legacy retrieval artifacts retain document structure.
+- LlamaIndex node metadata now includes source suffix plus section metadata, preparing the knowledge layer for metadata-aware retrieval, citation, and multi-file source display.
+
 ## Test Baseline
 
-- Backend: `250 passed, 0 failed`
+- Backend: `251 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`

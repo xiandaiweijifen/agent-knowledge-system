@@ -1,6 +1,58 @@
 import re
 
 
+def _normalize_heading_text(raw_heading: str) -> str:
+    return raw_heading.strip().strip("#").strip()
+
+
+def build_heading_context_map(text: str) -> list[dict]:
+    """Extract markdown heading context with character positions."""
+    contexts = []
+    stack: list[tuple[int, str]] = []
+
+    for match in re.finditer(r"(?m)^(#{1,6})\s+(.+?)\s*$", text):
+        level = len(match.group(1))
+        heading = _normalize_heading_text(match.group(2))
+
+        if not heading:
+            continue
+
+        while stack and stack[-1][0] >= level:
+            stack.pop()
+
+        stack.append((level, heading))
+        contexts.append(
+            {
+                "start_char": match.start(),
+                "heading_level": level,
+                "section_title": heading,
+                "section_path": [item[1] for item in stack],
+            }
+        )
+
+    return contexts
+
+
+def resolve_heading_context(start_char: int, heading_contexts: list[dict]) -> dict:
+    """Resolve the nearest heading context at or before a chunk start position."""
+    active_context = {
+        "section_title": "",
+        "section_path": [],
+        "heading_level": None,
+    }
+
+    for context in heading_contexts:
+        if context["start_char"] > start_char:
+            break
+        active_context = {
+            "section_title": context["section_title"],
+            "section_path": list(context["section_path"]),
+            "heading_level": context["heading_level"],
+        }
+
+    return active_context
+
+
 def build_chunk_record(
     *,
     chunk_index: int,
@@ -9,6 +61,9 @@ def build_chunk_record(
     start_char: int,
     end_char: int,
     content: str,
+    section_title: str = "",
+    section_path: list[str] | None = None,
+    heading_level: int | None = None,
 ) -> dict:
     """Build a normalized chunk payload."""
     return {
@@ -19,6 +74,9 @@ def build_chunk_record(
         "start_char": start_char,
         "end_char": end_char,
         "char_count": len(content),
+        "section_title": section_title,
+        "section_path": list(section_path or []),
+        "heading_level": heading_level,
         "content": content,
     }
 
@@ -41,6 +99,7 @@ def chunk_text_by_character(
     chunk_overlap: int,
     source_filename: str | None,
     source_suffix: str | None,
+    heading_contexts: list[dict] | None = None,
 ) -> list[dict]:
     """Split text into overlapping character-based chunks."""
     min_chunk_size = max(1, chunk_size // 5)
@@ -56,6 +115,7 @@ def chunk_text_by_character(
             end = len(text)
 
         chunk_content = text[start:end]
+        heading_context = resolve_heading_context(start, heading_contexts or [])
 
         chunks.append(
             build_chunk_record(
@@ -64,6 +124,9 @@ def chunk_text_by_character(
                 source_suffix=source_suffix,
                 start_char=start,
                 end_char=end,
+                section_title=heading_context["section_title"],
+                section_path=heading_context["section_path"],
+                heading_level=heading_context["heading_level"],
                 content=chunk_content,
             )
         )
@@ -82,6 +145,7 @@ def chunk_text_by_paragraph(
     chunk_size: int,
     source_filename: str | None,
     source_suffix: str | None,
+    heading_contexts: list[dict] | None = None,
 ) -> list[dict]:
     """Split text with paragraph-aware packing up to the target chunk size."""
     paragraphs = [
@@ -127,6 +191,7 @@ def chunk_text_by_paragraph(
                 source_suffix=source_suffix,
                 start_char=current_start,
                 end_char=current_start + len(current_content),
+                **resolve_heading_context(current_start, heading_contexts or []),
                 content=current_content,
             )
         )
@@ -142,6 +207,7 @@ def chunk_text_by_paragraph(
                 chunk_overlap=0,
                 source_filename=source_filename,
                 source_suffix=source_suffix,
+                heading_contexts=heading_contexts,
             )
 
             for paragraph_chunk in paragraph_chunks:
@@ -156,6 +222,7 @@ def chunk_text_by_paragraph(
                         source_suffix=source_suffix,
                         start_char=paragraph_start + relative_start,
                         end_char=paragraph_start + relative_start + chunk_length,
+                        **resolve_heading_context(paragraph_start + relative_start, heading_contexts or []),
                         content=chunk_content,
                     )
                 )
@@ -174,6 +241,7 @@ def chunk_text_by_paragraph(
                 source_suffix=source_suffix,
                 start_char=current_start,
                 end_char=current_start + len(current_content),
+                **resolve_heading_context(current_start, heading_contexts or []),
                 content=current_content,
             )
         )
@@ -198,6 +266,7 @@ def chunk_text(
         return []
 
     normalized_strategy = chunk_strategy.strip().lower()
+    heading_contexts = build_heading_context_map(normalized_text)
 
     if normalized_strategy == "character":
         return chunk_text_by_character(
@@ -206,6 +275,7 @@ def chunk_text(
             chunk_overlap=chunk_overlap,
             source_filename=source_filename,
             source_suffix=source_suffix,
+            heading_contexts=heading_contexts,
         )
 
     if normalized_strategy == "paragraph":
@@ -214,6 +284,7 @@ def chunk_text(
             chunk_size=chunk_size,
             source_filename=source_filename,
             source_suffix=source_suffix,
+            heading_contexts=heading_contexts,
         )
 
     raise ValueError("unsupported_chunk_strategy")

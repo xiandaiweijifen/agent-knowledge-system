@@ -17,21 +17,33 @@ MOCK_CHUNKS = {
             "chunk_id": "test_doc.txt::chunk_0",
             "chunk_index": 0,
             "source_filename": "test_doc.txt",
+            "source_suffix": ".txt",
             "char_count": 40,
+            "section_title": "Overview",
+            "section_path": ["Overview"],
+            "heading_level": 1,
             "content": "LangGraph is a framework for building agents.",
         },
         {
             "chunk_id": "test_doc.txt::chunk_1",
             "chunk_index": 1,
             "source_filename": "test_doc.txt",
+            "source_suffix": ".txt",
             "char_count": 38,
+            "section_title": "Retrieval",
+            "section_path": ["Overview", "Retrieval"],
+            "heading_level": 2,
             "content": "LlamaIndex handles RAG and data indexing.",
         },
         {
             "chunk_id": "test_doc.txt::chunk_2",
             "chunk_index": 2,
             "source_filename": "test_doc.txt",
+            "source_suffix": ".txt",
             "char_count": 35,
+            "section_title": "Storage",
+            "section_path": ["Overview", "Storage"],
+            "heading_level": 2,
             "content": "Postgres stores checkpoints and state.",
         },
     ],
@@ -72,6 +84,8 @@ def test_query_llamaindex_index_returns_ranked_results(mock_chunks):
     results = query_llamaindex_index("test_doc.txt", "agent framework", top_k=2)
     assert len(results) == 2
     assert all("chunk_id" in r and "content" in r and "score" in r for r in results)
+    assert "section_title" in results[0]["metadata"]
+    assert "section_path" in results[0]["metadata"]
 
 
 def test_query_llamaindex_index_top_k_respected(mock_chunks):
