@@ -110,6 +110,15 @@ class AnswerCitation(BaseModel):
     heading_level: int | None = None
 
 
+class AnswerVerification(BaseModel):
+    groundedness_status: str
+    citation_coverage: float
+    covered_citation_count: int
+    total_citation_count: int
+    insufficient_context_detected: bool = False
+    verification_notes: list[str] = Field(default_factory=list)
+
+
 class QueryResponse(BaseModel):
     filename: str | None = None
     question: str
@@ -121,6 +130,7 @@ class QueryResponse(BaseModel):
     chat_provider: str
     chat_model: str
     answer_citations: list[AnswerCitation] = Field(default_factory=list)
+    answer_verification: AnswerVerification
     retrieval: RetrievalResult
 
 

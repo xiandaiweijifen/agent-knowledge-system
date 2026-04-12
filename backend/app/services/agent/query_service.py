@@ -12,6 +12,17 @@ from app.services.retrieval.retrieval_service import retrieve_relevant_chunks
 logger = logging.getLogger(__name__)
 
 
+def _default_answer_verification() -> dict:
+    return {
+        "groundedness_status": "weakly_grounded",
+        "citation_coverage": 0.0,
+        "covered_citation_count": 0,
+        "total_citation_count": 0,
+        "insufficient_context_detected": False,
+        "verification_notes": [],
+    }
+
+
 def _normalized_knowledge_retrieval_mode() -> str:
     mode = settings.knowledge_retrieval_mode.strip().lower()
     if mode not in {"llamaindex", "auto", "legacy"}:
@@ -116,6 +127,7 @@ def run_query(filename: str | None, question: str, top_k: int = 3) -> QueryRespo
         chat_provider=answer_result["chat_provider"],
         chat_model=answer_result["chat_model"],
         answer_citations=answer_result.get("answer_citations", []),
+        answer_verification=answer_result.get("answer_verification", _default_answer_verification()),
         retrieval=retrieval_result,
     )
 
@@ -150,5 +162,6 @@ def run_query_with_context(
         chat_provider=answer_result["chat_provider"],
         chat_model=answer_result["chat_model"],
         answer_citations=answer_result.get("answer_citations", []),
+        answer_verification=answer_result.get("answer_verification", _default_answer_verification()),
         retrieval=retrieval_result,
     )

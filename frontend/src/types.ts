@@ -127,6 +127,14 @@ export type QueryResponse = {
     section_path?: string[];
     heading_level?: number | null;
   }[];
+  answer_verification: {
+    groundedness_status: string;
+    citation_coverage: number;
+    covered_citation_count: number;
+    total_citation_count: number;
+    insufficient_context_detected: boolean;
+    verification_notes: string[];
+  };
   retrieval: RetrievalResponse;
 };
 

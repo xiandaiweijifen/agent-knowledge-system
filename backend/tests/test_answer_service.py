@@ -1,6 +1,7 @@
 from app.services.llm.answer_service import (
     build_answer_citations,
     build_answer_instruction,
+    build_answer_verification,
     build_context_block,
     generate_rag_answer,
     infer_answer_style,
@@ -102,6 +103,29 @@ def test_generate_rag_answer_fallback_includes_structured_citations(monkeypatch)
             "heading_level": 2,
         }
     ]
+    assert result["answer_verification"]["groundedness_status"] in {
+        "grounded",
+        "partially_grounded",
+        "weakly_grounded",
+    }
+
+
+def test_build_answer_verification_marks_insufficient_context_and_coverage():
+    verification = build_answer_verification(
+        "The provided context does not contain a complete runbook, so the context is insufficient.",
+        [
+            {
+                "chunk_id": "checkout_service_runbook.md::chunk_4",
+                "source_filename": "checkout_service_runbook.md",
+                "section_title": "Mitigation Notes",
+                "section_path": ["Checkout Service Runbook", "Mitigation Notes"],
+            }
+        ],
+    )
+
+    assert verification["insufficient_context_detected"] is True
+    assert verification["total_citation_count"] == 1
+    assert verification["groundedness_status"] == "grounded"
 
 
 def test_infer_answer_style_prefers_runbook_for_runbook_queries():

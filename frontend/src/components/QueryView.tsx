@@ -203,6 +203,9 @@ export function QueryView({
           sourceDocument: "来源文档",
           sourceSection: "来源章节",
           answerCitations: "回答引用",
+          groundedness: "依据强度",
+          citationCoverage: "引用覆盖率",
+          verificationNotes: "验证备注",
           topChunks: "Top 检索片段",
           chars: "字符",
           vector: "向量",
@@ -389,6 +392,9 @@ export function QueryView({
           sourceDocument: "Source Document",
           sourceSection: "Source Section",
           answerCitations: "Answer Citations",
+          groundedness: "Groundedness",
+          citationCoverage: "Citation Coverage",
+          verificationNotes: "Verification Notes",
           topChunks: "Top Retrieved Chunks",
           chars: "chars",
           vector: "vector",
@@ -1720,6 +1726,19 @@ export function QueryView({
                   <span className="trace-label">{queryCopy.retrievalScope}</span>
                   <strong>{formatRetrievalScopeLabel(queryResult.retrieval.retrieval_scope)}</strong>
                 </div>
+                <div>
+                  <span className="trace-label">{queryCopy.groundedness}</span>
+                  <strong>{queryResult.answer_verification.groundedness_status}</strong>
+                </div>
+                <div>
+                  <span className="trace-label">{queryCopy.citationCoverage}</span>
+                  <strong>
+                    {(queryResult.answer_verification.citation_coverage * 100).toFixed(0)}%
+                    {" "}
+                    ({queryResult.answer_verification.covered_citation_count}/
+                    {queryResult.answer_verification.total_citation_count})
+                  </strong>
+                </div>
               </div>
               {queryResult.retrieval.retrieval_scope === "corpus" &&
                 (queryResult.retrieval.corpus_filenames?.length ?? 0) > 0 && (
@@ -1743,6 +1762,18 @@ export function QueryView({
                             ? ` / ${citation.section_title}`
                             : ""}
                       </span>
+                    ))}
+                  </div>
+                </>
+              )}
+              {(queryResult.answer_verification.verification_notes?.length ?? 0) > 0 && (
+                <>
+                  <div className="section-label">{queryCopy.verificationNotes}</div>
+                  <div className="stack-list">
+                    {queryResult.answer_verification.verification_notes.map((note) => (
+                      <p key={note} className="muted">
+                        {note}
+                      </p>
                     ))}
                   </div>
                 </>

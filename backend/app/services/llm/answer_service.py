@@ -96,6 +96,65 @@ def build_answer_instruction(answer_style: str) -> str:
     return f"{base_instruction} {style_instruction}"
 
 
+def build_answer_verification(answer: str, citations: list[dict]) -> dict:
+    """Build lightweight groundedness and citation-coverage signals."""
+    answer_tokens = _tokenize_overlap_text(answer)
+    covered_citation_count = 0
+    verification_notes: list[str] = []
+
+    for citation in citations:
+        citation_tokens = _tokenize_overlap_text(
+            " ".join(
+                [
+                    citation.get("source_filename", ""),
+                    citation.get("section_title", ""),
+                    " ".join(citation.get("section_path", [])),
+                ]
+            )
+        )
+        if answer_tokens & citation_tokens:
+            covered_citation_count += 1
+
+    total_citation_count = len(citations)
+    citation_coverage = round(
+        covered_citation_count / total_citation_count,
+        3,
+    ) if total_citation_count else 0.0
+
+    lowered_answer = answer.lower()
+    insufficient_context_detected = any(
+        phrase in lowered_answer
+        for phrase in (
+            "context is insufficient",
+            "provided context does not contain",
+            "no relevant context",
+            "does not provide",
+        )
+    )
+
+    if citation_coverage >= 0.67:
+        groundedness_status = "grounded"
+        verification_notes.append("Answer language overlaps with most cited source metadata.")
+    elif citation_coverage > 0.0:
+        groundedness_status = "partially_grounded"
+        verification_notes.append("Answer overlaps with some cited source metadata, but coverage is incomplete.")
+    else:
+        groundedness_status = "weakly_grounded"
+        verification_notes.append("Answer has limited lexical overlap with cited source metadata.")
+
+    if insufficient_context_detected:
+        verification_notes.append("Answer explicitly signals insufficient context.")
+
+    return {
+        "groundedness_status": groundedness_status,
+        "citation_coverage": citation_coverage,
+        "covered_citation_count": covered_citation_count,
+        "total_citation_count": total_citation_count,
+        "insufficient_context_detected": insufficient_context_detected,
+        "verification_notes": verification_notes,
+    }
+
+
 def build_answer_citations(
     answer: str,
     matches: list[dict],
@@ -167,6 +226,7 @@ def build_answer_result(
     answer_citations: list[dict] | None = None,
 ) -> dict:
     """Build a normalized answer payload with tracing metadata."""
+    citations = answer_citations or []
     return {
         "answer": answer,
         "answer_source": answer_source,
@@ -175,7 +235,8 @@ def build_answer_result(
         "chat_model": chat_model,
         "answered_at": build_utc_timestamp(),
         "answer_latency_ms": round((perf_counter() - answer_started) * 1000, 3),
-        "answer_citations": answer_citations or [],
+        "answer_citations": citations,
+        "answer_verification": build_answer_verification(answer, citations),
     }
 
 

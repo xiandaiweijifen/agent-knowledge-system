@@ -46,6 +46,16 @@ describe("QueryView", () => {
               heading_level: 2,
             },
           ],
+          answer_verification: {
+            groundedness_status: "grounded",
+            citation_coverage: 1,
+            covered_citation_count: 1,
+            total_citation_count: 1,
+            insufficient_context_detected: false,
+            verification_notes: [
+              "Answer language overlaps with most cited source metadata.",
+            ],
+          },
           retrieval: {
             filename: "rag_overview.md",
             embedding_provider: "gemini",
@@ -159,8 +169,14 @@ describe("QueryView", () => {
     expect(screen.getAllByText("TICKET-0001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("open").length).toBeGreaterThan(0);
     expect(screen.getByText("Answer Citations")).toBeInTheDocument();
+    expect(screen.getByText("Groundedness")).toBeInTheDocument();
+    expect(screen.getByText("grounded")).toBeInTheDocument();
+    expect(screen.getByText("100% (1/1)")).toBeInTheDocument();
     expect(
       screen.getByText("rag_overview.md / Retrieval-Augmented Generation Overview / What RAG Means"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Answer language overlaps with most cited source metadata."),
     ).toBeInTheDocument();
     expect(screen.getByText("Source Document rag_overview.md")).toBeInTheDocument();
     expect(
@@ -552,6 +568,16 @@ describe("QueryView", () => {
               heading_level: 2,
             },
           ],
+          answer_verification: {
+            groundedness_status: "grounded",
+            citation_coverage: 1,
+            covered_citation_count: 1,
+            total_citation_count: 1,
+            insufficient_context_detected: false,
+            verification_notes: [
+              "Answer language overlaps with most cited source metadata.",
+            ],
+          },
           retrieval: {
             filename: null,
             retrieval_scope: "corpus",
@@ -612,6 +638,8 @@ describe("QueryView", () => {
 
     expect(answerTrace.getByText("Retrieval Scope")).toBeInTheDocument();
     expect(answerTrace.getByText("Corpus")).toBeInTheDocument();
+    expect(answerTrace.getByText("Groundedness")).toBeInTheDocument();
+    expect(answerTrace.getByText("grounded")).toBeInTheDocument();
     expect(answerTrace.getByText("Corpus Documents: agent_workflow.md, rag_overview.md")).toBeInTheDocument();
     expect(
       answerTrace.getByText(
