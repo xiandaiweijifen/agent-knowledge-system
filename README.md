@@ -316,9 +316,23 @@ Notes:
 
 ## Local Setup
 
-### Backend
+### Standard Runtime Mode
 
-Minimal local backend startup:
+For normal project usage, start Docker first and treat PostgreSQL plus Redis as part of the standard runtime.
+
+1. Start Docker Desktop.
+2. From the repo root, start the infra services:
+
+```powershell
+docker compose up -d
+```
+
+This starts:
+
+- PostgreSQL on `localhost:5432`
+- Redis on `localhost:6379`
+
+3. Start the backend:
 
 ```powershell
 cd backend
@@ -329,7 +343,15 @@ $env:PYTHONPATH='.'
 uvicorn app.main:app
 ```
 
-Optional runtime switch:
+4. Start the frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Recommended runtime switch:
 
 ```powershell
 $env:AGENT_DEFAULT_RUNTIME='v2'
@@ -341,40 +363,33 @@ Use hot reload only when you are actively editing backend code:
 uvicorn app.main:app --reload
 ```
 
-Backend URLs:
+URLs:
 
-- API root: `http://127.0.0.1:8000/`
+- Backend API root: `http://127.0.0.1:8000/`
 - OpenAPI docs: `http://127.0.0.1:8000/docs`
+- Frontend console: `http://127.0.0.1:5173`
 
 Startup notes:
 
 - The backend is successfully started when you see:
   - `Application startup complete.`
   - `Uvicorn running on http://127.0.0.1:8000`
-- Warnings about Redis or the Postgres checkpointer do not block normal local startup.
-- For most local development and demo flows, Docker is optional.
+- In standard runtime mode, Docker is expected to be running so that Postgres-backed checkpoint persistence and Redis-backed runtime support are both available.
 
-### Optional Infra: Docker / Postgres / Redis
+### Minimal Development Mode
 
-Start Docker only if you want the optional infrastructure services:
+If you only want a lightweight local dev session, you can skip Docker and run in degraded mode.
+
+Backend:
 
 ```powershell
-docker compose up -d
+cd backend
+.\.venv\Scripts\activate
+$env:PYTHONPATH='.'
+uvicorn app.main:app
 ```
 
-That starts:
-
-- PostgreSQL on `localhost:5432`
-- Redis on `localhost:6379`
-
-These services are useful for:
-
-- Postgres-backed LangGraph checkpoint persistence
-- Redis-backed runtime cache/session support
-
-If Docker is not running and your `.env` still contains `DATABASE_URL` or `REDIS_URL`, the backend will log warnings and continue with those integrations disabled.
-
-### Frontend
+Frontend:
 
 ```powershell
 cd frontend
@@ -382,9 +397,12 @@ npm install
 npm run dev
 ```
 
-Frontend URL:
+In this mode:
 
-- Console: `http://127.0.0.1:5173`
+- leave `DATABASE_URL=` empty
+- leave `REDIS_URL=` empty
+- the backend still works for most query, evaluation, and frontend flows
+- checkpoint persistence and Redis-backed runtime support are disabled
 
 The frontend proxies `/api` requests to the local FastAPI backend by default.
 
@@ -392,7 +410,22 @@ The frontend proxies `/api` requests to the local FastAPI backend by default.
 
 Create a repo-root `.env` file based on `.env.example`.
 
-Minimal local fallback setup:
+Recommended standard runtime setup:
+
+```env
+APP_ENV=development
+AGENT_DEFAULT_RUNTIME=v2
+EMBEDDING_PROVIDER=gemini
+CHAT_PROVIDER=gemini
+ROUTE_PLANNER_PROVIDER=gemini
+TOOL_PLANNER_PROVIDER=gemini
+CLARIFICATION_PLANNER_PROVIDER=gemini
+WORKFLOW_PLANNER_PROVIDER=gemini
+DATABASE_URL=postgresql://postgres:password@localhost:5432/agent_knowledge_system
+REDIS_URL=redis://localhost:6379/0
+```
+
+Minimal development setup:
 
 ```env
 APP_ENV=development
@@ -407,7 +440,7 @@ DATABASE_URL=
 REDIS_URL=
 ```
 
-Example Gemini/OpenAI setup:
+Example Gemini/OpenAI model setup:
 
 ```env
 EMBEDDING_PROVIDER=gemini
@@ -431,14 +464,7 @@ OPENAI_CLARIFICATION_PLANNER_MODEL=
 OPENAI_WORKFLOW_PLANNER_MODEL=
 ```
 
-Infra-enabled local setup:
-
-```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/agent_knowledge_system
-REDIS_URL=redis://localhost:6379/0
-```
-
-Only set those two values when:
+Only set `DATABASE_URL` and `REDIS_URL` when:
 
 - Docker containers are already running, or
 - you already have reachable local Postgres/Redis instances
