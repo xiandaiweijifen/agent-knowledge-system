@@ -37,6 +37,15 @@ describe("QueryView", () => {
           answer_latency_ms: 12.5,
           chat_provider: "gemini",
           chat_model: "gemini-2.5-flash-lite",
+          answer_citations: [
+            {
+              chunk_id: "rag_overview.md::chunk_0",
+              source_filename: "rag_overview.md",
+              section_title: "What RAG Means",
+              section_path: ["Retrieval-Augmented Generation Overview", "What RAG Means"],
+              heading_level: 2,
+            },
+          ],
           retrieval: {
             filename: "rag_overview.md",
             embedding_provider: "gemini",
@@ -149,6 +158,10 @@ describe("QueryView", () => {
     expect(screen.getByText("Ticket Id")).toBeInTheDocument();
     expect(screen.getAllByText("TICKET-0001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("open").length).toBeGreaterThan(0);
+    expect(screen.getByText("Answer Citations")).toBeInTheDocument();
+    expect(
+      screen.getByText("rag_overview.md / Retrieval-Augmented Generation Overview / What RAG Means"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Source Document rag_overview.md")).toBeInTheDocument();
     expect(
       screen.getByText("Source Section Retrieval-Augmented Generation Overview / What RAG Means"),
@@ -527,6 +540,18 @@ describe("QueryView", () => {
           answer_latency_ms: 12.5,
           chat_provider: "gemini",
           chat_model: "gemini-2.5-flash-lite",
+          answer_citations: [
+            {
+              chunk_id: "rag_overview.md::chunk_7",
+              source_filename: "rag_overview.md",
+              section_title: "Common Failure Modes",
+              section_path: [
+                "Retrieval-Augmented Generation Overview",
+                "Common Failure Modes",
+              ],
+              heading_level: 2,
+            },
+          ],
           retrieval: {
             filename: null,
             retrieval_scope: "corpus",
@@ -588,6 +613,11 @@ describe("QueryView", () => {
     expect(answerTrace.getByText("Retrieval Scope")).toBeInTheDocument();
     expect(answerTrace.getByText("Corpus")).toBeInTheDocument();
     expect(answerTrace.getByText("Corpus Documents: agent_workflow.md, rag_overview.md")).toBeInTheDocument();
+    expect(
+      answerTrace.getByText(
+        "rag_overview.md / Retrieval-Augmented Generation Overview / Common Failure Modes",
+      ),
+    ).toBeInTheDocument();
     expect(answerTrace.getByText("Source Document rag_overview.md")).toBeInTheDocument();
     expect(
       answerTrace.getByText(

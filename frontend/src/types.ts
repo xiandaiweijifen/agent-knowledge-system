@@ -120,6 +120,13 @@ export type QueryResponse = {
   answer_latency_ms: number;
   chat_provider: string;
   chat_model: string;
+  answer_citations?: {
+    chunk_id: string;
+    source_filename: string;
+    section_title?: string;
+    section_path?: string[];
+    heading_level?: number | null;
+  }[];
   retrieval: RetrievalResponse;
 };
 

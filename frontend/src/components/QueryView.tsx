@@ -202,6 +202,7 @@ export function QueryView({
           scopeCorpus: "多文档",
           sourceDocument: "来源文档",
           sourceSection: "来源章节",
+          answerCitations: "回答引用",
           topChunks: "Top 检索片段",
           chars: "字符",
           vector: "向量",
@@ -387,6 +388,7 @@ export function QueryView({
           scopeCorpus: "Corpus",
           sourceDocument: "Source Document",
           sourceSection: "Source Section",
+          answerCitations: "Answer Citations",
           topChunks: "Top Retrieved Chunks",
           chars: "chars",
           vector: "vector",
@@ -1728,6 +1730,23 @@ export function QueryView({
                   </div>
                 )}
               <blockquote className="answer-card">{queryResult.answer}</blockquote>
+              {(queryResult.answer_citations?.length ?? 0) > 0 && (
+                <>
+                  <div className="section-label">{queryCopy.answerCitations}</div>
+                  <div className="pill-strip">
+                    {queryResult.answer_citations?.map((citation) => (
+                      <span key={citation.chunk_id} className="meta-pill">
+                        {citation.source_filename}
+                        {citation.section_path?.length
+                          ? ` / ${formatSectionPath(citation.section_path)}`
+                          : citation.section_title
+                            ? ` / ${citation.section_title}`
+                            : ""}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
               <div className="section-label">{queryCopy.topChunks}</div>
               <div className="match-list compact">
                 {queryResult.retrieval.matches.map((match) => (

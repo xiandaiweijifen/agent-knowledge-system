@@ -102,6 +102,14 @@ class RetrievalResult(BaseModel):
     matches: list[RetrievedChunkMatch] = Field(default_factory=list)
 
 
+class AnswerCitation(BaseModel):
+    chunk_id: str
+    source_filename: str
+    section_title: str = ""
+    section_path: list[str] = Field(default_factory=list)
+    heading_level: int | None = None
+
+
 class QueryResponse(BaseModel):
     filename: str | None = None
     question: str
@@ -112,6 +120,7 @@ class QueryResponse(BaseModel):
     answer_latency_ms: float
     chat_provider: str
     chat_model: str
+    answer_citations: list[AnswerCitation] = Field(default_factory=list)
     retrieval: RetrievalResult
 
 

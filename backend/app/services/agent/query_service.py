@@ -115,6 +115,7 @@ def run_query(filename: str | None, question: str, top_k: int = 3) -> QueryRespo
         answer_latency_ms=answer_result["answer_latency_ms"],
         chat_provider=answer_result["chat_provider"],
         chat_model=answer_result["chat_model"],
+        answer_citations=answer_result.get("answer_citations", []),
         retrieval=retrieval_result,
     )
 
@@ -148,5 +149,6 @@ def run_query_with_context(
         answer_latency_ms=answer_result["answer_latency_ms"],
         chat_provider=answer_result["chat_provider"],
         chat_model=answer_result["chat_model"],
+        answer_citations=answer_result.get("answer_citations", []),
         retrieval=retrieval_result,
     )
