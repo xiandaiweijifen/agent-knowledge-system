@@ -23,6 +23,7 @@ describe("EvaluationView", () => {
             best_hit_rate_at_k: 1,
           },
           workflow: {
+            runtime_source: "agent_v2",
             total_run_count: 20,
             completed_run_count: 12,
             clarification_required_run_count: 3,
@@ -133,6 +134,8 @@ describe("EvaluationView", () => {
     expect(screen.getByText("Retrieval Overview")).toBeInTheDocument();
     expect(screen.getByText("Workflow Overview")).toBeInTheDocument();
     expect(screen.getByText("Recovery Overview")).toBeInTheDocument();
+    expect(screen.getByText("Runtime Source")).toBeInTheDocument();
+    expect(screen.getByText("agent_v2")).toBeInTheDocument();
     expect(screen.getByText("Mean Hit@K")).toBeInTheDocument();
     expect(screen.getByText("Recovery Success Rate")).toBeInTheDocument();
     expect(screen.getByText("rag_overview_retrieval_eval.json (1.000)")).toBeInTheDocument();

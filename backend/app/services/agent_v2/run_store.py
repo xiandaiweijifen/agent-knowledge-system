@@ -50,6 +50,14 @@ def get_persisted_agent_v2_run(run_id: str) -> AgentWorkflowResponse:
     raise FileNotFoundError("agent_v2_run_not_found")
 
 
+def get_all_persisted_agent_v2_runs() -> list[AgentWorkflowResponse]:
+    return [
+        AgentWorkflowResponse.model_validate(run)
+        for run in _load_runs()
+        if isinstance(run, dict) and run.get("run_id")
+    ]
+
+
 def list_persisted_agent_v2_runs(limit: int = 20) -> AgentWorkflowRunListResponse:
     if limit <= 0:
         raise ValueError("limit_must_be_positive")

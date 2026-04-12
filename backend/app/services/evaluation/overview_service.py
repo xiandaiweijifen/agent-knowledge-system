@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 
-from app.core.config import DATA_ROOT
+from app.core.config import DATA_ROOT, settings
 from app.schemas.evaluation_api import (
     EvaluationOverviewRecoverySummary,
     EvaluationOverviewResponse,
@@ -9,6 +9,7 @@ from app.schemas.evaluation_api import (
     EvaluationOverviewWorkflowSummary,
 )
 from app.services.agent.orchestrator_service import get_all_persisted_workflow_runs
+from app.services.agent_v2.run_store import get_all_persisted_agent_v2_runs
 from app.services.evaluation import retrieval_eval_service
 
 OVERVIEW_CACHE_PATH = DATA_ROOT / "tool_state" / "evaluation_overview_cache.json"
@@ -18,6 +19,19 @@ def _safe_rate(numerator: int, denominator: int) -> float:
     if denominator <= 0:
         return 0.0
     return numerator / denominator
+
+
+def _select_workflow_run_source() -> tuple[str, list]:
+    configured_runtime = settings.agent_default_runtime.strip().lower() or "legacy"
+    agent_v2_runs = get_all_persisted_agent_v2_runs()
+
+    if configured_runtime == "v2":
+        return "agent_v2", agent_v2_runs
+
+    if agent_v2_runs:
+        return "agent_v2", agent_v2_runs
+
+    return "legacy", get_all_persisted_workflow_runs()
 
 
 def _build_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
@@ -44,7 +58,7 @@ def _build_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
         default=None,
     )
 
-    persisted_runs = get_all_persisted_workflow_runs()
+    runtime_source, persisted_runs = _select_workflow_run_source()
     total_run_count = len(persisted_runs)
     completed_run_count = sum(1 for run in persisted_runs if run.workflow_status == "completed")
     clarification_required_run_count = sum(
@@ -67,6 +81,7 @@ def _build_evaluation_overview(top_k: int = 3) -> EvaluationOverviewResponse:
             best_hit_rate_at_k=best_dataset[1].summary.hit_rate_at_k if best_dataset else 0.0,
         ),
         workflow=EvaluationOverviewWorkflowSummary(
+            runtime_source=runtime_source,
             total_run_count=total_run_count,
             completed_run_count=completed_run_count,
             clarification_required_run_count=clarification_required_run_count,

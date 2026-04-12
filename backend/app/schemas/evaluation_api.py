@@ -156,6 +156,7 @@ class EvaluationOverviewRetrievalSummary(BaseModel):
 
 
 class EvaluationOverviewWorkflowSummary(BaseModel):
+    runtime_source: str = "agent_v2"
     total_run_count: int
     completed_run_count: int
     clarification_required_run_count: int

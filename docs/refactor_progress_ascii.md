@@ -47,7 +47,15 @@
 - Added `agent_default_runtime` and `default_agent_surface` to `/api/health/system`.
 - Frontend system snapshot now shows whether the current default runtime is `legacy` or `agent_v2`.
 
+## Package 20
+
+- Status: completed
+- Commit: `refactor: align evaluation overview with agent_v2 run telemetry`
+- Evaluation overview now aggregates workflow and recovery metrics from `agent_v2` runs by default.
+- Overview falls back to legacy runs only when no `agent_v2` run history is available and the runtime has not been switched to `v2`.
+- Workflow overview responses now expose `runtime_source`, and the frontend evaluation panel surfaces that runtime label.
+
 ## Test Baseline
 
-- Backend: `241 passed, 0 failed`
+- Backend: `244 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`

@@ -462,6 +462,7 @@ export type EvaluationOverviewResponse = {
     best_hit_rate_at_k: number;
   };
   workflow: {
+    runtime_source?: string;
     total_run_count: number;
     completed_run_count: number;
     clarification_required_run_count: number;

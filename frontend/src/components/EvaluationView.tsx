@@ -103,6 +103,7 @@ export function EvaluationView({
           meanHitRate: "平均 Hit@K",
           meanMrr: "平均 MRR",
           bestDataset: "最佳数据集",
+          runtimeSource: "运行时来源",
           totalRuns: "总运行数",
           completionRate: "完成率",
           clarificationRate: "澄清率",
@@ -201,6 +202,7 @@ export function EvaluationView({
           meanHitRate: "Mean Hit@K",
           meanMrr: "Mean MRR",
           bestDataset: "Best Dataset",
+          runtimeSource: "Runtime Source",
           totalRuns: "Total Runs",
           completionRate: "Completion Rate",
           clarificationRate: "Clarification Rate",
@@ -492,6 +494,10 @@ export function EvaluationView({
                   <span className="trace-label">{copy.failedRate}</span>
                   <strong>{evaluationOverview.workflow.failed_rate.toFixed(3)}</strong>
                 </div>
+              </div>
+              <div className="preview-meta">
+                <span className="trace-label">{copy.runtimeSource}</span>
+                <strong>{evaluationOverview.workflow.runtime_source ?? "agent_v2"}</strong>
               </div>
             </section>
 

@@ -1,4 +1,5 @@
 from app.services.evaluation import overview_service
+from types import SimpleNamespace
 
 
 def test_get_evaluation_overview_reads_cached_payload(workspace_tmp_path, monkeypatch):
@@ -63,6 +64,7 @@ def test_get_evaluation_overview_refresh_recomputes_and_persists(workspace_tmp_p
             best_hit_rate_at_k=0.9,
         ),
         workflow=overview_service.EvaluationOverviewWorkflowSummary(
+            runtime_source="agent_v2",
             total_run_count=10,
             completed_run_count=6,
             clarification_required_run_count=2,
@@ -89,3 +91,51 @@ def test_get_evaluation_overview_refresh_recomputes_and_persists(workspace_tmp_p
     assert payload.cache_status == "fresh"
     assert cache_path.exists()
     assert "rag_overview_retrieval_eval.json" in cache_path.read_text(encoding="utf-8")
+
+
+def test_build_evaluation_overview_prefers_agent_v2_runs_when_present(monkeypatch):
+    monkeypatch.setattr(overview_service.settings, "agent_default_runtime", "legacy")
+    monkeypatch.setattr(
+        overview_service.retrieval_eval_service,
+        "list_retrieval_datasets",
+        lambda: [],
+    )
+    monkeypatch.setattr(
+        overview_service,
+        "get_all_persisted_agent_v2_runs",
+        lambda: [
+            SimpleNamespace(
+                workflow_status="completed",
+                source_run_id=None,
+                recovered_via_action=None,
+                recovery_depth=0,
+            ),
+            SimpleNamespace(
+                workflow_status="failed",
+                source_run_id="source-run",
+                recovered_via_action="manual_retrigger",
+                recovery_depth=1,
+            ),
+        ],
+    )
+    monkeypatch.setattr(
+        overview_service,
+        "get_all_persisted_workflow_runs",
+        lambda: [
+            SimpleNamespace(
+                workflow_status="clarification_required",
+                source_run_id=None,
+                recovered_via_action=None,
+                recovery_depth=0,
+            )
+        ],
+    )
+
+    overview = overview_service._build_evaluation_overview(top_k=3)
+
+    assert overview.workflow.runtime_source == "agent_v2"
+    assert overview.workflow.total_run_count == 2
+    assert overview.workflow.completed_run_count == 1
+    assert overview.workflow.failed_run_count == 1
+    assert overview.recovery.recovered_run_count == 1
+    assert overview.recovery.manual_retrigger_count == 1
