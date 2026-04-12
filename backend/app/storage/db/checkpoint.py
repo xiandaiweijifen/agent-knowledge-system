@@ -10,13 +10,16 @@ existing test suite (which runs without Postgres) is unaffected.
 """
 
 import asyncio
+import inspect
 import logging
 import sys
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import psycopg
-from psycopg_pool import AsyncConnectionPool
+from psycopg.rows import dict_row
+from psycopg_pool import AsyncConnectionPool, ConnectionPool
+from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 # psycopg3 async requires SelectorEventLoop on Windows.
@@ -44,9 +47,28 @@ async def _run_setup(conn_str: str) -> None:
         await AsyncPostgresSaver(conn).setup()
 
 
+def _build_sync_checkpointer(
+    conn_str: str,
+) -> tuple[PostgresSaver, ConnectionPool] | tuple[None, None]:
+    """
+    Windows-friendly sync fallback for psycopg/LangGraph checkpointing.
+    This avoids psycopg async's ProactorEventLoop incompatibility.
+    """
+    with psycopg.Connection.connect(
+        conn_str, autocommit=True, prepare_threshold=0, row_factory=dict_row
+    ) as conn:
+        PostgresSaver(conn).setup()
+    logger.info("LangGraph checkpoint tables ready")
+
+    pool = ConnectionPool(conninfo=conn_str, max_size=10, open=True)
+    checkpointer = PostgresSaver(pool)
+    logger.info("Postgres checkpointer ready (sync fallback)")
+    return checkpointer, pool
+
+
 async def build_checkpointer(
     database_url: str,
-) -> tuple[AsyncPostgresSaver, AsyncConnectionPool] | tuple[None, None]:
+) -> tuple[object, object] | tuple[None, None]:
     """
     1. Run setup() via an autocommit connection (idempotent DDL).
     2. Open a connection pool for runtime use.
@@ -61,6 +83,9 @@ async def build_checkpointer(
     conn_str = _normalize_url(database_url)
 
     try:
+        if sys.platform == "win32":
+            return _build_sync_checkpointer(conn_str)
+
         await _run_setup(conn_str)
         logger.info("LangGraph checkpoint tables ready")
 
@@ -79,7 +104,7 @@ async def build_checkpointer(
 @asynccontextmanager
 async def checkpointer_lifespan(
     database_url: str,
-) -> AsyncGenerator[AsyncPostgresSaver | None, None]:
+) -> AsyncGenerator[object | None, None]:
     """
     Async context manager for use inside FastAPI lifespan.
     Yields the checkpointer (or None if Postgres is unavailable).
@@ -89,5 +114,7 @@ async def checkpointer_lifespan(
         yield checkpointer
     finally:
         if pool is not None:
-            await pool.close()
+            close_result = pool.close()
+            if inspect.isawaitable(close_result):
+                await close_result
             logger.info("Postgres connection pool closed")
