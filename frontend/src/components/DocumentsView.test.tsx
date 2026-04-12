@@ -20,6 +20,11 @@ describe("DocumentsView", () => {
             filename: "rag_overview.md",
             size_bytes: 1024,
             suffix: ".md",
+            knowledge_assets: {
+              chunks_ready: true,
+              embeddings_ready: false,
+              llamaindex_ready: false,
+            },
           },
         ]}
         selectedFilename="rag_overview.md"
@@ -62,6 +67,9 @@ describe("DocumentsView", () => {
     expect(screen.getByText("ready")).toBeInTheDocument();
     expect(screen.getByText("missing")).toBeInTheDocument();
     expect(screen.getByText("Strategy: paragraph")).toBeInTheDocument();
+    expect(screen.getAllByText("chunks ready")).toHaveLength(2);
+    expect(screen.getAllByText("embeddings missing")).toHaveLength(2);
+    expect(screen.getByText("llamaindex missing")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Persist Chunks" }));
     expect(onPersistChunks).toHaveBeenCalledTimes(1);

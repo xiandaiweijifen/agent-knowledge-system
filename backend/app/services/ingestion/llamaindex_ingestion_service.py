@@ -43,11 +43,25 @@ LLAMAINDEX_STORE_DIR = DATA_ROOT / "llamaindex_store"
 LLAMAINDEX_STORE_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _store_path(filename: str) -> Path:
+def get_llamaindex_store_path(filename: str) -> Path:
     stem = Path(filename).stem
     path = LLAMAINDEX_STORE_DIR / stem
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def has_llamaindex_index(filename: str) -> bool:
+    path = LLAMAINDEX_STORE_DIR / Path(filename).stem
+    if not path.exists() or not path.is_dir():
+        return False
+
+    required_files = {
+        "docstore.json",
+        "index_store.json",
+        "vector_store.json",
+    }
+    present_files = {item.name for item in path.iterdir() if item.is_file()}
+    return required_files.issubset(present_files)
 
 
 # ---------------------------------------------------------------------------
@@ -129,7 +143,7 @@ def build_llamaindex_index(filename: str) -> dict[str, Any]:
         show_progress=False,
     )
 
-    persist_dir = str(_store_path(filename))
+    persist_dir = str(get_llamaindex_store_path(filename))
     index.storage_context.persist(persist_dir=persist_dir)
 
     logger.info(
@@ -146,7 +160,7 @@ def build_llamaindex_index(filename: str) -> dict[str, Any]:
 
 def load_llamaindex_index(filename: str) -> VectorStoreIndex:
     """Load a previously persisted VectorStoreIndex from disk."""
-    persist_dir = str(_store_path(filename))
+    persist_dir = str(get_llamaindex_store_path(filename))
     storage_context = StorageContext.from_defaults(persist_dir=persist_dir)
     return load_index_from_storage(
         storage_context,

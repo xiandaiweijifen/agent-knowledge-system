@@ -71,7 +71,16 @@
 - Default knowledge queries now require a persisted LlamaIndex index in standard runtime mode.
 - Legacy retrieval remains available for migration, debug, and evaluation flows through explicit `auto` or `legacy` mode selection.
 
+## Package 23
+
+- Status: completed
+- Commit: `feat: expose document knowledge asset readiness`
+- Document list responses now include `knowledge_assets` readiness for persisted chunks, persisted embeddings, and LlamaIndex index state.
+- Added `/api/documents/{filename}/assets` for explicit per-document knowledge asset status.
+- Document deletion now removes persisted LlamaIndex stores alongside chunk and embedding artifacts.
+- Frontend document cards now surface `chunks / embeddings / llamaindex` readiness directly instead of inferring state from 404 responses.
+
 ## Test Baseline
 
-- Backend: `248 passed, 0 failed`
+- Backend: `249 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`

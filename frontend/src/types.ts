@@ -6,7 +6,14 @@ export type DocumentItem = {
   filename: string;
   size_bytes: number;
   suffix: string;
+  knowledge_assets?: {
+    chunks_ready: boolean;
+    embeddings_ready: boolean;
+    llamaindex_ready: boolean;
+  };
 };
+
+export type DocumentAssetStatus = DocumentItem;
 
 export type DocumentListResponse = {
   count: number;

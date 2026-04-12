@@ -7,6 +7,7 @@ import {
   fetchAgentWorkflowEvaluationHistory,
   fetchAgentWorkflowRun,
   fetchAgentWorkflowRuns,
+  fetchDocumentAssetStatus,
   fetchDocumentPreview,
   fetchDocuments,
   fetchEvaluationDatasets,
@@ -384,13 +385,22 @@ function App() {
     setArtifactMessage("");
 
     try {
-      const [chunkResult, embeddingResult] = await Promise.allSettled([
+      const [chunkResult, embeddingResult, assetStatusResult] = await Promise.allSettled([
         fetchPersistedChunks(filename),
         fetchPersistedEmbeddings(filename),
+        fetchDocumentAssetStatus(filename),
       ]);
 
       setChunkArtifact(chunkResult.status === "fulfilled" ? chunkResult.value : null);
       setEmbeddingArtifact(embeddingResult.status === "fulfilled" ? embeddingResult.value : null);
+
+      if (assetStatusResult.status === "fulfilled") {
+        setDocuments((current) =>
+          current.map((item) =>
+            item.filename === filename ? assetStatusResult.value : item,
+          ),
+        );
+      }
     } finally {
       setArtifactBusy(false);
     }
@@ -410,6 +420,7 @@ function App() {
       setChunkArtifact(payload);
       setArtifactMessage("Persisted paragraph chunks successfully.");
       setEmbeddingArtifact(null);
+      await loadDocuments();
     } catch (error) {
       setDocumentsError(error instanceof Error ? error.message : "Failed to persist chunks");
     } finally {
@@ -430,6 +441,7 @@ function App() {
       const payload = await persistEmbeddingsRequest(selectedFilename);
       setEmbeddingArtifact(payload);
       setArtifactMessage("Persisted embeddings successfully.");
+      await loadDocuments();
     } catch (error) {
       setDocumentsError(error instanceof Error ? error.message : "Failed to persist embeddings");
     } finally {
@@ -454,6 +466,7 @@ function App() {
       setEmbeddingArtifact(embeddingPayload);
 
       setArtifactMessage("Generated chunks and embeddings successfully.");
+      await loadDocuments();
     } catch (error) {
       setDocumentsError(error instanceof Error ? error.message : "Failed to generate pipeline");
     } finally {

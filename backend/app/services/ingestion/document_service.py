@@ -34,6 +34,7 @@ def list_documents() -> list[dict]:
                 "filename": file_path.name,
                 "size_bytes": file_path.stat().st_size,
                 "suffix": file_path.suffix,
+                "knowledge_assets": build_document_asset_status(file_path.name),
             }
         )
 
@@ -77,6 +78,38 @@ def build_non_conflicting_path(filename: str) -> Path:
 def get_document_path(filename: str) -> Path:
     """Resolve a document path under the raw data directory."""
     return RAW_DATA_DIR / filename
+
+
+def build_document_asset_status(filename: str) -> dict:
+    """Return persisted asset readiness for a document."""
+    chunk_path = get_chunk_output_path(filename)
+
+    # Avoid top-level import cycles with the indexing and llamaindex services.
+    from app.services.indexing.embedding_service import get_embedding_output_path
+    from app.services.ingestion.llamaindex_ingestion_service import has_llamaindex_index
+
+    embedding_path = get_embedding_output_path(filename)
+
+    return {
+        "chunks_ready": chunk_path.exists() and chunk_path.is_file(),
+        "embeddings_ready": embedding_path.exists() and embedding_path.is_file(),
+        "llamaindex_ready": has_llamaindex_index(filename),
+    }
+
+
+def get_document_asset_status(filename: str) -> dict:
+    """Return document metadata plus knowledge asset readiness."""
+    document_path = get_document_path(filename)
+
+    if not document_path.exists() or not document_path.is_file():
+        raise FileNotFoundError(filename)
+
+    return {
+        "filename": document_path.name,
+        "size_bytes": document_path.stat().st_size,
+        "suffix": document_path.suffix,
+        "knowledge_assets": build_document_asset_status(document_path.name),
+    }
 
 
 def save_uploaded_document(filename: str, content: bytes) -> dict:
@@ -220,8 +253,10 @@ def delete_document_with_artifacts(filename: str) -> dict:
 
     # Avoid top-level import cycles with the indexing service.
     from app.services.indexing.embedding_service import get_embedding_output_path
+    from app.services.ingestion.llamaindex_ingestion_service import LLAMAINDEX_STORE_DIR
 
     embedding_path = get_embedding_output_path(filename)
+    llamaindex_store_path = LLAMAINDEX_STORE_DIR / Path(filename).stem
 
     document_path.unlink()
 
@@ -235,9 +270,18 @@ def delete_document_with_artifacts(filename: str) -> dict:
         embedding_path.unlink()
         deleted_embeddings = True
 
+    deleted_llamaindex_index = False
+    if llamaindex_store_path.exists() and llamaindex_store_path.is_dir():
+        for child in llamaindex_store_path.iterdir():
+            if child.is_file():
+                child.unlink()
+        llamaindex_store_path.rmdir()
+        deleted_llamaindex_index = True
+
     return {
         "filename": filename,
         "deleted_document": True,
         "deleted_chunks": deleted_chunks,
         "deleted_embeddings": deleted_embeddings,
+        "deleted_llamaindex_index": deleted_llamaindex_index,
     }

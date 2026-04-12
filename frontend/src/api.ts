@@ -7,6 +7,7 @@ import type {
   AgentWorkflowEvalReportResponse,
   ToolExecutionEvalReportResponse,
   DiagnosticsResponse,
+  DocumentAssetStatus,
   DocumentListResponse,
   DocumentPreview,
   EvalDatasetListResponse,
@@ -102,6 +103,10 @@ export async function uploadDocument(file: File) {
 
 export function fetchDocumentPreview(filename: string) {
   return apiFetch<DocumentPreview>(`/api/documents/${encodeURIComponent(filename)}`);
+}
+
+export function fetchDocumentAssetStatus(filename: string) {
+  return apiFetch<DocumentAssetStatus>(`/api/documents/${encodeURIComponent(filename)}/assets`);
 }
 
 export function fetchPersistedChunks(filename: string) {

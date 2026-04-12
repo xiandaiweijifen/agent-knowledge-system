@@ -66,6 +66,8 @@ export function DocumentsView({
           chunksMissing: "chunks 缺失",
           embeddingsReady: "embeddings 已就绪",
           embeddingsMissing: "embeddings 缺失",
+          llamaindexReady: "llamaindex 已就绪",
+          llamaindexMissing: "llamaindex 缺失",
           registry: "文档注册表",
           registryCopy: "在文档进入切块和 embedding 之前管理原始知识文件。",
           refresh: "刷新",
@@ -115,6 +117,8 @@ export function DocumentsView({
           chunksMissing: "chunks missing",
           embeddingsReady: "embeddings ready",
           embeddingsMissing: "embeddings missing",
+          llamaindexReady: "llamaindex ready",
+          llamaindexMissing: "llamaindex missing",
           registry: "Document Registry",
           registryCopy: "Manage raw knowledge files before they enter chunking and embedding.",
           refresh: "Refresh",
@@ -214,6 +218,21 @@ export function DocumentsView({
                   <span className="file-pill">{item.suffix}</span>
                 </div>
                 <small>{formatBytes(item.size_bytes)}</small>
+                <div className="meta-stack">
+                  <span>
+                    {item.knowledge_assets?.chunks_ready ? copy.chunksReady : copy.chunksMissing}
+                  </span>
+                  <span>
+                    {item.knowledge_assets?.embeddings_ready
+                      ? copy.embeddingsReady
+                      : copy.embeddingsMissing}
+                  </span>
+                  <span>
+                    {item.knowledge_assets?.llamaindex_ready
+                      ? copy.llamaindexReady
+                      : copy.llamaindexMissing}
+                  </span>
+                </div>
               </button>
             ))}
           </div>

@@ -23,11 +23,21 @@ def test_list_documents_filters_hidden_and_non_document_files(
             "filename": "design.md",
             "size_bytes": len("# title".encode("utf-8")),
             "suffix": ".md",
+            "knowledge_assets": {
+                "chunks_ready": False,
+                "embeddings_ready": False,
+                "llamaindex_ready": False,
+            },
         },
         {
             "filename": "notes.txt",
             "size_bytes": len("hello".encode("utf-8")),
             "suffix": ".txt",
+            "knowledge_assets": {
+                "chunks_ready": False,
+                "embeddings_ready": False,
+                "llamaindex_ready": False,
+            },
         },
     ]
 
@@ -52,9 +62,11 @@ def test_delete_document_with_artifacts_removes_related_files(
     raw_dir = workspace_tmp_path / "raw"
     chunk_dir = workspace_tmp_path / "chunks"
     embedding_dir = workspace_tmp_path / "embeddings"
+    llamaindex_dir = workspace_tmp_path / "llamaindex_store"
     raw_dir.mkdir()
     chunk_dir.mkdir()
     embedding_dir.mkdir()
+    (llamaindex_dir / "notes").mkdir(parents=True)
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
     monkeypatch.setattr(document_service, "CHUNK_DATA_DIR", chunk_dir)
@@ -64,16 +76,24 @@ def test_delete_document_with_artifacts_removes_related_files(
     (chunk_dir / "notes.chunks.json").write_text("{}", encoding="utf-8")
 
     from app.services.indexing import embedding_service
+    from app.services.ingestion import llamaindex_ingestion_service
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
+    monkeypatch.setattr(llamaindex_ingestion_service, "LLAMAINDEX_STORE_DIR", llamaindex_dir)
     (embedding_dir / "notes.embeddings.json").write_text("{}", encoding="utf-8")
+    (llamaindex_dir / "notes" / "docstore.json").write_text("{}", encoding="utf-8")
 
     removed_paths = []
+    removed_dirs = []
 
     def fake_unlink(self):
         removed_paths.append(str(self))
 
+    def fake_rmdir(self):
+        removed_dirs.append(str(self))
+
     monkeypatch.setattr(Path, "unlink", fake_unlink)
+    monkeypatch.setattr(Path, "rmdir", fake_rmdir)
 
     payload = document_service.delete_document_with_artifacts(target_name)
 
@@ -82,7 +102,10 @@ def test_delete_document_with_artifacts_removes_related_files(
         "deleted_document": True,
         "deleted_chunks": True,
         "deleted_embeddings": True,
+        "deleted_llamaindex_index": True,
     }
     assert str(raw_dir / target_name) in removed_paths
     assert str(chunk_dir / "notes.chunks.json") in removed_paths
     assert str(embedding_dir / "notes.embeddings.json") in removed_paths
+    assert str(llamaindex_dir / "notes" / "docstore.json") in removed_paths
+    assert str(llamaindex_dir / "notes") in removed_dirs

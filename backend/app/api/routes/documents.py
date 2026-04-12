@@ -4,6 +4,7 @@ from app.services.ingestion.document_service import (
     chunk_document,
     chunk_document_with_strategy,
     delete_document_with_artifacts,
+    get_document_asset_status,
     list_documents,
     load_persisted_chunks,
     persist_document_chunks,
@@ -55,6 +56,14 @@ def get_document_content(filename: str):
         raise HTTPException(status_code=404, detail="Document not found")
     except ValueError as exc:
         raise_document_value_error(exc)
+
+
+@router.get("/documents/{filename}/assets")
+def get_document_assets(filename: str):
+    try:
+        return get_document_asset_status(filename)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Document not found")
 
 
 @router.delete("/documents/{filename}")
