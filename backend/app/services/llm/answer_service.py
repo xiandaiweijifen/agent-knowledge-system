@@ -45,6 +45,57 @@ def _tokenize_overlap_text(value: str) -> set[str]:
     }
 
 
+def infer_answer_style(question: str, matches: list[dict]) -> str:
+    """Infer a lightweight answer style from the question and retrieved metadata."""
+    lowered_question = question.lower()
+    section_text = " ".join(
+        " ".join(match.get("section_path", [])) for match in matches
+    ).lower()
+
+    if any(keyword in lowered_question for keyword in ("runbook", "playbook")):
+        return "runbook"
+    if any(keyword in lowered_question for keyword in ("incident", "outage", "sev", "severity")):
+        return "incident"
+    if any(
+        keyword in lowered_question
+        for keyword in ("workflow", "recovery", "resume", "retry", "clarification")
+    ) or "workflow" in section_text:
+        return "workflow"
+    return "concept"
+
+
+def build_answer_instruction(answer_style: str) -> str:
+    base_instruction = (
+        "You are an enterprise knowledge assistant. Answer the question using "
+        "only the provided context. Synthesize across source files and section "
+        "titles when they are available. If the context is insufficient, say so "
+        "explicitly. Do not ignore directly relevant runbook or section content "
+        "that appears in the context."
+    )
+
+    style_instruction = {
+        "runbook": (
+            "Prefer a runbook-style answer: summarize actionable steps under short "
+            "headings such as scope, triage, mitigation, and recovery confirmation "
+            "when those sections exist in the context."
+        ),
+        "incident": (
+            "Prefer an incident summary: highlight symptoms, likely impact, and the "
+            "most relevant mitigation or response actions from the context."
+        ),
+        "workflow": (
+            "Prefer a workflow explanation: describe sequence, decision points, and "
+            "recovery or retry semantics in a structured way."
+        ),
+        "concept": (
+            "Prefer a concise explanatory answer: define the concept first, then "
+            "summarize the most important supporting details."
+        ),
+    }[answer_style]
+
+    return f"{base_instruction} {style_instruction}"
+
+
 def build_answer_citations(
     answer: str,
     matches: list[dict],
@@ -131,19 +182,14 @@ def build_answer_result(
 def generate_openai_answer(question: str, matches: list[dict], answer_started: float) -> dict:
     """Generate a RAG answer with OpenAI chat completions."""
     context_block = build_context_block(matches)
+    answer_style = infer_answer_style(question, matches)
     payload = {
         "model": settings.openai_chat_model,
         "temperature": 0.2,
         "messages": [
             {
                 "role": "system",
-                "content": (
-                    "You are an enterprise knowledge assistant. Answer the question "
-                    "using only the provided context. Synthesize across source files "
-                    "and section titles when they are available. If the context is "
-                    "insufficient, say so explicitly. Do not ignore directly relevant "
-                    "runbook or section content that appears in the context."
-                ),
+                "content": build_answer_instruction(answer_style),
             },
             {
                 "role": "user",
@@ -192,6 +238,7 @@ def generate_openai_answer(question: str, matches: list[dict], answer_started: f
 def generate_gemini_answer(question: str, matches: list[dict], answer_started: float) -> dict:
     """Generate a RAG answer with Gemini generateContent."""
     context_block = build_context_block(matches)
+    answer_style = infer_answer_style(question, matches)
     payload = {
         "contents": [
             {
@@ -199,12 +246,7 @@ def generate_gemini_answer(question: str, matches: list[dict], answer_started: f
                 "parts": [
                     {
                         "text": (
-                            "You are an enterprise knowledge assistant. Answer the "
-                            "question using only the provided context. Synthesize "
-                            "across source files and section titles when they are "
-                            "available. If the context is insufficient, say so "
-                            "explicitly. Do not ignore directly relevant runbook or "
-                            "section content that appears in the context.\n\n"
+                            f"{build_answer_instruction(answer_style)}\n\n"
                             f"Question:\n{question}\n\n"
                             f"Context:\n{context_block}"
                         )

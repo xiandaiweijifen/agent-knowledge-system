@@ -1,7 +1,9 @@
 from app.services.llm.answer_service import (
     build_answer_citations,
+    build_answer_instruction,
     build_context_block,
     generate_rag_answer,
+    infer_answer_style,
 )
 
 
@@ -100,3 +102,24 @@ def test_generate_rag_answer_fallback_includes_structured_citations(monkeypatch)
             "heading_level": 2,
         }
     ]
+
+
+def test_infer_answer_style_prefers_runbook_for_runbook_queries():
+    style = infer_answer_style(
+        "Please show the runbook for checkout recovery",
+        [
+            {
+                "section_path": ["Checkout Service Runbook", "Mitigation Notes"],
+            }
+        ],
+    )
+
+    assert style == "runbook"
+
+
+def test_build_answer_instruction_varies_by_answer_style():
+    runbook_instruction = build_answer_instruction("runbook")
+    workflow_instruction = build_answer_instruction("workflow")
+
+    assert "runbook-style answer" in runbook_instruction
+    assert "workflow explanation" in workflow_instruction
