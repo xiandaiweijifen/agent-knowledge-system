@@ -1,4 +1,5 @@
 import httpx
+import re
 from time import perf_counter
 
 from app.core.config import settings
@@ -36,12 +37,42 @@ def build_context_block(matches: list[dict]) -> str:
     return "\n\n".join(context_sections)
 
 
-def build_answer_citations(matches: list[dict], limit: int = 3) -> list[dict]:
-    """Build structured citations from the highest-ranked supporting chunks."""
+def _tokenize_overlap_text(value: str) -> set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", value.lower())
+        if len(token) >= 4
+    }
+
+
+def build_answer_citations(
+    answer: str,
+    matches: list[dict],
+    limit: int = 3,
+) -> list[dict]:
+    """Build structured citations ranked by retrieval score and answer alignment."""
     citations: list[dict] = []
     seen_chunk_ids: set[str] = set()
+    answer_tokens = _tokenize_overlap_text(answer)
+    ranked_matches: list[tuple[float, dict]] = []
 
-    for match in matches:
+    for index, match in enumerate(matches):
+        content_tokens = _tokenize_overlap_text(match.get("content", ""))
+        section_tokens = _tokenize_overlap_text(" ".join(match.get("section_path", [])))
+        overlap_count = len(answer_tokens & content_tokens)
+        section_overlap_count = len(answer_tokens & section_tokens)
+        match_score = float(match.get("score", 0.0))
+        citation_score = (
+            match_score
+            + (overlap_count * 0.05)
+            + (section_overlap_count * 0.08)
+            - (index * 0.001)
+        )
+        ranked_matches.append((citation_score, match))
+
+    ranked_matches.sort(key=lambda item: item[0], reverse=True)
+
+    for _, match in ranked_matches:
         chunk_id = match.get("chunk_id")
         if not chunk_id or chunk_id in seen_chunk_ids:
             continue
@@ -100,7 +131,6 @@ def build_answer_result(
 def generate_openai_answer(question: str, matches: list[dict], answer_started: float) -> dict:
     """Generate a RAG answer with OpenAI chat completions."""
     context_block = build_context_block(matches)
-    answer_citations = build_answer_citations(matches)
     payload = {
         "model": settings.openai_chat_model,
         "temperature": 0.2,
@@ -145,23 +175,23 @@ def generate_openai_answer(question: str, matches: list[dict], answer_started: f
             chat_provider="openai",
             chat_model=settings.openai_chat_model,
             answer_started=answer_started,
-            answer_citations=answer_citations,
+            answer_citations=build_answer_citations(answer, matches),
         )
     except (httpx.HTTPError, KeyError, IndexError, TypeError):
+        fallback_answer = build_fallback_answer(question, matches)
         return build_answer_result(
-            answer=build_fallback_answer(question, matches),
+            answer=fallback_answer,
             answer_source="fallback_after_openai_error",
             chat_provider="fallback_after_openai_error",
             chat_model=settings.openai_chat_model,
             answer_started=answer_started,
-            answer_citations=answer_citations,
+            answer_citations=build_answer_citations(fallback_answer, matches),
         )
 
 
 def generate_gemini_answer(question: str, matches: list[dict], answer_started: float) -> dict:
     """Generate a RAG answer with Gemini generateContent."""
     context_block = build_context_block(matches)
-    answer_citations = build_answer_citations(matches)
     payload = {
         "contents": [
             {
@@ -208,16 +238,17 @@ def generate_gemini_answer(question: str, matches: list[dict], answer_started: f
             chat_provider="gemini",
             chat_model=settings.gemini_chat_model,
             answer_started=answer_started,
-            answer_citations=answer_citations,
+            answer_citations=build_answer_citations(answer, matches),
         )
     except (httpx.HTTPError, KeyError, IndexError, TypeError):
+        fallback_answer = build_fallback_answer(question, matches)
         return build_answer_result(
-            answer=build_fallback_answer(question, matches),
+            answer=fallback_answer,
             answer_source="fallback_after_gemini_error",
             chat_provider="fallback_after_gemini_error",
             chat_model=settings.gemini_chat_model,
             answer_started=answer_started,
-            answer_citations=answer_citations,
+            answer_citations=build_answer_citations(fallback_answer, matches),
         )
 
 
@@ -225,47 +256,50 @@ def generate_rag_answer(question: str, matches: list[dict]) -> dict:
     """Generate a RAG answer from retrieved chunks."""
     answer_started = perf_counter()
     provider = settings.chat_provider.lower().strip()
-    answer_citations = build_answer_citations(matches)
 
     if provider == "fallback":
+        fallback_answer = build_fallback_answer(question, matches)
         return build_answer_result(
-            answer=build_fallback_answer(question, matches),
+            answer=fallback_answer,
             answer_source="fallback",
             chat_provider="fallback",
             chat_model="local-fallback",
             answer_started=answer_started,
-            answer_citations=answer_citations,
+            answer_citations=build_answer_citations(fallback_answer, matches),
         )
 
     if provider == "openai":
         if not settings.openai_api_key:
+            fallback_answer = build_fallback_answer(question, matches)
             return build_answer_result(
-                answer=build_fallback_answer(question, matches),
+                answer=fallback_answer,
                 answer_source="fallback_missing_openai_key",
                 chat_provider="fallback_missing_openai_key",
                 chat_model=settings.openai_chat_model,
                 answer_started=answer_started,
-                answer_citations=answer_citations,
+                answer_citations=build_answer_citations(fallback_answer, matches),
             )
         return generate_openai_answer(question, matches, answer_started)
 
     if provider == "gemini":
         if not settings.gemini_api_key:
+            fallback_answer = build_fallback_answer(question, matches)
             return build_answer_result(
-                answer=build_fallback_answer(question, matches),
+                answer=fallback_answer,
                 answer_source="fallback_missing_gemini_key",
                 chat_provider="fallback_missing_gemini_key",
                 chat_model=settings.gemini_chat_model,
                 answer_started=answer_started,
-                answer_citations=answer_citations,
+                answer_citations=build_answer_citations(fallback_answer, matches),
             )
         return generate_gemini_answer(question, matches, answer_started)
 
+    fallback_answer = build_fallback_answer(question, matches)
     return build_answer_result(
-        answer=build_fallback_answer(question, matches),
+        answer=fallback_answer,
         answer_source="fallback_unsupported_chat_provider",
         chat_provider="fallback_unsupported_chat_provider",
         chat_model="local-fallback",
         answer_started=answer_started,
-        answer_citations=answer_citations,
+        answer_citations=build_answer_citations(fallback_answer, matches),
     )
