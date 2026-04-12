@@ -1,30 +1,31 @@
 {
-  "generated_at": "2026-03-16T19:09:37.580483+00:00",
+  "generated_at": "2026-04-12T12:57:09.547660+00:00",
   "cache_status": "fresh",
   "retrieval": {
     "dataset_count": 4,
     "total_cases": 28,
-    "mean_hit_rate_at_k": 0.92708325,
-    "mean_reciprocal_rank": 0.81076375,
+    "mean_hit_rate_at_k": 1.0,
+    "mean_reciprocal_rank": 0.9427085,
     "best_dataset_name": "agent_workflow_retrieval_eval.json",
     "best_hit_rate_at_k": 1.0
   },
   "workflow": {
-    "total_run_count": 168,
-    "completed_run_count": 107,
-    "clarification_required_run_count": 39,
-    "failed_run_count": 22,
-    "completion_rate": 0.6369047619047619,
-    "clarification_rate": 0.23214285714285715,
-    "failed_rate": 0.13095238095238096
+    "runtime_source": "agent_v2",
+    "total_run_count": 18,
+    "completed_run_count": 14,
+    "clarification_required_run_count": 2,
+    "failed_run_count": 2,
+    "completion_rate": 0.7777777777777778,
+    "clarification_rate": 0.1111111111111111,
+    "failed_rate": 0.1111111111111111
   },
   "recovery": {
-    "recovered_run_count": 19,
-    "recovered_completed_run_count": 19,
+    "recovered_run_count": 3,
+    "recovered_completed_run_count": 3,
     "recovery_success_rate": 1.0,
     "average_recovery_depth": 1.0,
-    "resume_from_failed_step_count": 4,
+    "resume_from_failed_step_count": 2,
     "manual_retrigger_count": 1,
-    "clarification_recovery_count": 1
+    "clarification_recovery_count": 0
   }
 }
