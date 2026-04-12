@@ -104,7 +104,15 @@
 - Legacy retrieval scoring now factors section metadata (`section_title` / `section_path`) into lightweight rerank bonuses.
 - LlamaIndex retrieval results now surface section metadata through `RetrievedChunkMatch` and apply the same lightweight metadata bonus before final ranking.
 
+## Package 27
+
+- Status: completed
+- Commit: `feat: add corpus retrieval groundwork for multi-file knowledge queries`
+- `/api/query` now accepts `filename=null` and treats that as a corpus-scoped knowledge query in explicit LlamaIndex mode.
+- Added `retrieve_with_llamaindex_corpus()` to aggregate per-document LlamaIndex matches, merge them, and return a unified ranked result set.
+- Retrieval responses now expose `retrieval_scope` and `corpus_filenames`, so multi-file knowledge queries have an explicit result contract before full UI support lands.
+
 ## Test Baseline
 
-- Backend: `254 passed, 0 failed`
+- Backend: `256 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`

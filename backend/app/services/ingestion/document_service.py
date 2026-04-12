@@ -42,6 +42,15 @@ def list_documents() -> list[dict]:
     return documents
 
 
+def list_llamaindex_ready_documents() -> list[str]:
+    """Return filenames whose persisted knowledge assets include a LlamaIndex index."""
+    return [
+        item["filename"]
+        for item in list_documents()
+        if item.get("knowledge_assets", {}).get("llamaindex_ready")
+    ]
+
+
 def sanitize_filename(filename: str) -> str:
     """Normalize a filename for safe local storage."""
     cleaned_name = Path(filename).name.strip()

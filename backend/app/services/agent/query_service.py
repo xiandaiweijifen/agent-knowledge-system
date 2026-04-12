@@ -3,7 +3,10 @@ import logging
 from app.core.config import settings
 from app.schemas.query import QueryResponse
 from app.services.llm.answer_service import generate_rag_answer
-from app.services.retrieval.llamaindex_retrieval_service import retrieve_with_llamaindex
+from app.services.retrieval.llamaindex_retrieval_service import (
+    retrieve_with_llamaindex,
+    retrieve_with_llamaindex_corpus,
+)
 from app.services.retrieval.retrieval_service import retrieve_relevant_chunks
 
 logger = logging.getLogger(__name__)
@@ -17,7 +20,7 @@ def _normalized_knowledge_retrieval_mode() -> str:
 
 
 def _retrieve_via_configured_mode(
-    filename: str,
+    filename: str | None,
     question: str,
     top_k: int,
     execution_context: str,
@@ -31,6 +34,9 @@ def _retrieve_via_configured_mode(
     if normalized_context == "standard" and mode != "llamaindex":
         raise ValueError("knowledge_retrieval_mode_requires_debug_or_eval")
 
+    if filename is None and mode != "llamaindex":
+        raise ValueError("knowledge_retrieval_corpus_requires_llamaindex")
+
     if mode == "legacy":
         logger.debug("retrieval via legacy mode for %s", filename)
         return retrieve_relevant_chunks(
@@ -42,6 +48,11 @@ def _retrieve_via_configured_mode(
     if mode == "llamaindex":
         logger.debug("retrieval via explicit llamaindex mode for %s", filename)
         try:
+            if filename is None:
+                return retrieve_with_llamaindex_corpus(
+                    query_text=question,
+                    top_k=top_k,
+                )
             return retrieve_with_llamaindex(
                 filename=filename,
                 query_text=question,
@@ -51,6 +62,13 @@ def _retrieve_via_configured_mode(
             raise ValueError("llamaindex_index_not_found") from exc
 
     try:
+        if filename is None:
+            retrieval_result = retrieve_with_llamaindex_corpus(
+                query_text=question,
+                top_k=top_k,
+            )
+            logger.debug("retrieval via llamaindex corpus auto mode")
+            return retrieval_result
         retrieval_result = retrieve_with_llamaindex(
             filename=filename,
             query_text=question,
@@ -67,7 +85,7 @@ def _retrieve_via_configured_mode(
         )
 
 
-def run_query(filename: str, question: str, top_k: int = 3) -> QueryResponse:
+def run_query(filename: str | None, question: str, top_k: int = 3) -> QueryResponse:
     """Execute the retrieval and answer-generation flow for a query.
 
     Retrieval path is selected by `knowledge_retrieval_mode`:
@@ -102,7 +120,7 @@ def run_query(filename: str, question: str, top_k: int = 3) -> QueryResponse:
 
 
 def run_query_with_context(
-    filename: str,
+    filename: str | None,
     question: str,
     top_k: int = 3,
     execution_context: str = "standard",

@@ -143,7 +143,7 @@ export function runQuery(filename: string, question: string, topK: number) {
   return apiFetch<QueryResponse>("/api/query", {
     method: "POST",
     body: JSON.stringify({
-      filename,
+      filename: filename || null,
       question,
       top_k: topK,
     }),

@@ -3,7 +3,7 @@
   "suffix": ".md",
   "source_path": "D:\\project\\agent-knowledge-system\\data\\raw\\rag_overview.md",
   "source_chunk_path": "D:\\project\\agent-knowledge-system\\data\\chunks\\rag_overview.chunks.json",
-  "created_at": "2026-04-12T15:18:06.617132+00:00",
+  "created_at": "2026-04-12T15:29:35.181885+00:00",
   "pipeline_version": "indexing-v1",
   "embedding_provider": "gemini",
   "embedding_model": "gemini-embedding-001",

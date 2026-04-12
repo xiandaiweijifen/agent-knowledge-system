@@ -12,7 +12,10 @@ import logging
 from time import perf_counter
 
 from app.schemas.query import RetrievalResult, RetrievedChunkMatch
-from app.services.ingestion.document_service import build_utc_timestamp
+from app.services.ingestion.document_service import (
+    build_utc_timestamp,
+    list_llamaindex_ready_documents,
+)
 from app.services.ingestion.llamaindex_ingestion_service import (
     LLAMAINDEX_STORE_DIR,
     query_llamaindex_index,
@@ -28,8 +31,45 @@ logger = logging.getLogger(__name__)
 def _index_exists(filename: str) -> bool:
     """Return True if a persisted LlamaIndex index exists for this document."""
     from pathlib import Path
+
     stem = Path(filename).stem
     return (LLAMAINDEX_STORE_DIR / stem / "index_store.json").exists()
+
+
+def _build_matches_from_raw_results(
+    raw_results: list[dict],
+    normalized_query: str,
+    fallback_filename: str,
+) -> list[RetrievedChunkMatch]:
+    matches: list[RetrievedChunkMatch] = []
+
+    for result in raw_results:
+        metadata = result["metadata"]
+        rerank_bonus = compute_rerank_bonus(
+            normalized_query,
+            result["content"],
+            section_title=metadata.get("section_title", ""),
+            section_path=metadata.get("section_path", []),
+        )
+        matches.append(
+            RetrievedChunkMatch(
+                chunk_id=result["chunk_id"],
+                chunk_index=metadata.get("chunk_index", 0),
+                source_filename=metadata.get("source_filename", fallback_filename),
+                source_suffix=metadata.get("source_suffix", ""),
+                char_count=metadata.get("char_count", len(result["content"])),
+                section_title=metadata.get("section_title", ""),
+                section_path=metadata.get("section_path", []),
+                heading_level=metadata.get("heading_level"),
+                content=result["content"],
+                vector_score=result["score"],
+                rerank_bonus=rerank_bonus,
+                score=round(result["score"] + rerank_bonus, 6),
+            )
+        )
+
+    matches.sort(key=lambda match: match.score, reverse=True)
+    return matches
 
 
 def retrieve_with_llamaindex(
@@ -48,37 +88,16 @@ def retrieve_with_llamaindex(
     normalized_query = normalize_query_text(query_text)
     raw_results = query_llamaindex_index(filename, normalized_query, top_k=top_k)
     latency_ms = round((perf_counter() - started) * 1000, 3)
-
-    matches = []
-    for result in raw_results:
-        metadata = result["metadata"]
-        rerank_bonus = compute_rerank_bonus(
-            normalized_query,
-            result["content"],
-            section_title=metadata.get("section_title", ""),
-            section_path=metadata.get("section_path", []),
-        )
-        matches.append(
-            RetrievedChunkMatch(
-                chunk_id=result["chunk_id"],
-                chunk_index=metadata.get("chunk_index", 0),
-                source_filename=metadata.get("source_filename", filename),
-                source_suffix=metadata.get("source_suffix", ""),
-                char_count=metadata.get("char_count", len(result["content"])),
-                section_title=metadata.get("section_title", ""),
-                section_path=metadata.get("section_path", []),
-                heading_level=metadata.get("heading_level"),
-                content=result["content"],
-                vector_score=result["score"],
-                rerank_bonus=rerank_bonus,
-                score=round(result["score"] + rerank_bonus, 6),
-            )
-        )
-
-    matches.sort(key=lambda match: match.score, reverse=True)
+    matches = _build_matches_from_raw_results(
+        raw_results=raw_results,
+        normalized_query=normalized_query,
+        fallback_filename=filename,
+    )
 
     return RetrievalResult(
         filename=filename,
+        retrieval_scope="document",
+        corpus_filenames=[filename],
         embedding_provider="llamaindex",
         embedding_model="llamaindex-simplestore",
         vector_dim=0,
@@ -89,4 +108,50 @@ def retrieve_with_llamaindex(
         query_embedding_provider="llamaindex",
         query_embedding_model="llamaindex-simplestore",
         matches=matches,
+    )
+
+
+def retrieve_with_llamaindex_corpus(
+    query_text: str,
+    top_k: int = 3,
+    filenames: list[str] | None = None,
+) -> RetrievalResult:
+    """Retrieve and merge results across multiple LlamaIndex-ready documents."""
+    candidate_filenames = filenames or list_llamaindex_ready_documents()
+    ready_filenames = [filename for filename in candidate_filenames if _index_exists(filename)]
+
+    if not ready_filenames:
+        raise FileNotFoundError("llamaindex_corpus")
+
+    started = perf_counter()
+    normalized_query = normalize_query_text(query_text)
+    all_matches: list[RetrievedChunkMatch] = []
+
+    for filename in ready_filenames:
+        raw_results = query_llamaindex_index(filename, normalized_query, top_k=top_k)
+        all_matches.extend(
+            _build_matches_from_raw_results(
+                raw_results=raw_results,
+                normalized_query=normalized_query,
+                fallback_filename=filename,
+            )
+        )
+
+    all_matches.sort(key=lambda match: match.score, reverse=True)
+    latency_ms = round((perf_counter() - started) * 1000, 3)
+
+    return RetrievalResult(
+        filename=None,
+        retrieval_scope="corpus",
+        corpus_filenames=ready_filenames,
+        embedding_provider="llamaindex",
+        embedding_model="llamaindex-simplestore",
+        vector_dim=0,
+        question=query_text,
+        top_k=top_k,
+        retrieved_at=build_utc_timestamp(),
+        retrieval_latency_ms=latency_ms,
+        query_embedding_provider="llamaindex",
+        query_embedding_model="llamaindex-simplestore",
+        matches=all_matches[:top_k],
     )

@@ -85,6 +85,9 @@ export type RetrievalMatch = {
   source_filename: string;
   source_suffix: string;
   char_count: number;
+  section_title?: string;
+  section_path?: string[];
+  heading_level?: number | null;
   content: string;
   score: number;
   vector_score?: number;
@@ -92,7 +95,9 @@ export type RetrievalMatch = {
 };
 
 export type RetrievalResponse = {
-  filename: string;
+  filename?: string | null;
+  retrieval_scope?: string;
+  corpus_filenames?: string[];
   embedding_provider: string;
   embedding_model: string;
   vector_dim: number;
@@ -106,7 +111,7 @@ export type RetrievalResponse = {
 };
 
 export type QueryResponse = {
-  filename: string;
+  filename?: string | null;
   question: string;
   answer: string;
   answer_source: string;

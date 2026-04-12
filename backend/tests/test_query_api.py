@@ -110,6 +110,76 @@ def test_query_endpoint_requires_llamaindex_index_by_default(monkeypatch):
     assert response.json()["detail"] == "llamaindex_index_not_found"
 
 
+def test_query_endpoint_supports_corpus_retrieval_without_filename(monkeypatch):
+    client = TestClient(app)
+    from app.schemas.query import RetrievalResult
+
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "llamaindex")
+    monkeypatch.setattr(
+        "app.services.agent.query_service.retrieve_with_llamaindex_corpus",
+        lambda query_text, top_k: RetrievalResult.model_validate(
+            {
+                "filename": None,
+                "retrieval_scope": "corpus",
+                "corpus_filenames": ["doc_a.md", "doc_b.md"],
+                "embedding_provider": "llamaindex",
+                "embedding_model": "llamaindex-simplestore",
+                "vector_dim": 0,
+                "question": query_text,
+                "top_k": top_k,
+                "retrieved_at": "2026-04-12T00:00:00+00:00",
+                "retrieval_latency_ms": 12.0,
+                "query_embedding_provider": "llamaindex",
+                "query_embedding_model": "llamaindex-simplestore",
+                "matches": [
+                    {
+                        "chunk_id": "doc_b.md::chunk_0",
+                        "chunk_index": 0,
+                        "source_filename": "doc_b.md",
+                        "source_suffix": ".md",
+                        "char_count": 49,
+                        "section_title": "Common Failure Modes",
+                        "section_path": ["RAG", "Common Failure Modes"],
+                        "heading_level": 2,
+                        "content": "Common RAG failure modes include weak embeddings.",
+                        "vector_score": 0.79,
+                        "rerank_bonus": 0.12,
+                        "score": 0.91,
+                    }
+                ],
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.generate_rag_answer",
+        lambda question, matches: {
+            "answer": "Common failure modes include weak embeddings.",
+            "answer_source": "fallback",
+            "model": "fallback",
+            "answered_at": "2026-04-12T00:00:00+00:00",
+            "answer_latency_ms": 1.0,
+            "chat_provider": "fallback",
+            "chat_model": "fallback",
+        },
+    )
+
+    response = client.post(
+        "/api/query",
+        json={
+            "filename": None,
+            "question": "Explain the common failure modes",
+            "top_k": 1,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["filename"] is None
+    assert payload["retrieval"]["retrieval_scope"] == "corpus"
+    assert payload["retrieval"]["corpus_filenames"] == ["doc_a.md", "doc_b.md"]
+    assert payload["retrieval"]["matches"][0]["source_filename"] == "doc_b.md"
+
+
 def test_query_diagnostics_endpoint_returns_ranked_candidates(
     workspace_tmp_path,
     monkeypatch,

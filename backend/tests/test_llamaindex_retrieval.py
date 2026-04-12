@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 from app.services.retrieval.llamaindex_retrieval_service import (
     retrieve_with_llamaindex,
+    retrieve_with_llamaindex_corpus,
     _index_exists,
 )
 
@@ -127,6 +128,70 @@ def test_retrieve_with_llamaindex_uses_metadata_bonus_for_rerank(workspace_tmp_p
 
     assert result.matches[0].chunk_id == "mydoc.txt::chunk_1"
     assert result.matches[0].rerank_bonus > 0.0
+
+
+def test_retrieve_with_llamaindex_corpus_merges_multiple_documents(workspace_tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.LLAMAINDEX_STORE_DIR",
+        workspace_tmp_path,
+    )
+    for stem in ("doc_a", "doc_b"):
+        index_dir = workspace_tmp_path / stem
+        index_dir.mkdir()
+        (index_dir / "index_store.json").write_text("{}")
+
+    mock_results = {
+        "doc_a.md": [
+            {
+                "chunk_id": "doc_a.md::chunk_0",
+                "content": "Generic architecture notes.",
+                "score": 0.82,
+                "metadata": {
+                    "chunk_index": 0,
+                    "source_filename": "doc_a.md",
+                    "source_suffix": ".md",
+                    "char_count": 27,
+                    "section_title": "Overview",
+                    "section_path": ["Overview"],
+                    "heading_level": 1,
+                },
+            }
+        ],
+        "doc_b.md": [
+            {
+                "chunk_id": "doc_b.md::chunk_0",
+                "content": "Common RAG failure modes include weak embeddings.",
+                "score": 0.79,
+                "metadata": {
+                    "chunk_index": 0,
+                    "source_filename": "doc_b.md",
+                    "source_suffix": ".md",
+                    "char_count": 49,
+                    "section_title": "Common Failure Modes",
+                    "section_path": ["RAG", "Common Failure Modes"],
+                    "heading_level": 2,
+                },
+            }
+        ],
+    }
+
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.query_llamaindex_index",
+        MagicMock(side_effect=lambda filename, query_text, top_k: mock_results[filename]),
+    )
+
+    result = retrieve_with_llamaindex_corpus(
+        "please explain the common failure modes",
+        top_k=2,
+        filenames=["doc_a.md", "doc_b.md"],
+    )
+
+    assert result.filename is None
+    assert result.retrieval_scope == "corpus"
+    assert result.corpus_filenames == ["doc_a.md", "doc_b.md"]
+    assert len(result.matches) == 2
+    assert result.matches[0].source_filename == "doc_b.md"
+    assert result.matches[0].section_title == "Common Failure Modes"
 
 
 def test_query_service_falls_back_to_legacy_in_debug_context(monkeypatch):

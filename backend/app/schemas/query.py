@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class QueryRequest(BaseModel):
-    filename: str
+    filename: str | None = None
     question: str
     top_k: int = 3
 
@@ -87,7 +87,9 @@ class RetrievedChunkMatch(BaseModel):
 
 
 class RetrievalResult(BaseModel):
-    filename: str
+    filename: str | None = None
+    retrieval_scope: str = "document"
+    corpus_filenames: list[str] = Field(default_factory=list)
     embedding_provider: str
     embedding_model: str
     vector_dim: int
@@ -101,7 +103,7 @@ class RetrievalResult(BaseModel):
 
 
 class QueryResponse(BaseModel):
-    filename: str
+    filename: str | None = None
     question: str
     answer: str
     answer_source: str
