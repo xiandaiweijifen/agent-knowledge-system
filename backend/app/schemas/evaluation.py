@@ -65,11 +65,14 @@ class AgentWorkflowEvalCase(BaseModel):
     filename: str | None = None
     top_k: int = 3
     clarification_context: dict[str, str] = Field(default_factory=dict)
+    recovery_action: str | None = None
+    debug_fault_injection: dict[str, Any] = Field(default_factory=dict)
     resume_via_run_id: bool = False
     expected_route_type: str
     expected_workflow_status: str
     expected_question: str | None = None
     expected_resume_trace: bool | None = None
+    expected_recovered_via_action: str | None = None
     expected_tool_chain_length: int | None = None
     expected_final_tool_name: str | None = None
     expected_final_action: str | None = None
@@ -90,6 +93,8 @@ class AgentWorkflowEvalCaseResult(BaseModel):
     expected_question: str | None = None
     expected_resume_trace: bool | None = None
     resume_trace_present: bool = False
+    expected_recovered_via_action: str | None = None
+    actual_recovered_via_action: str | None = None
     expected_tool_chain_length: int | None = None
     actual_tool_chain_length: int = 0
     expected_final_tool_name: str | None = None

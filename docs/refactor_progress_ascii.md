@@ -55,6 +55,14 @@
 - Overview falls back to legacy runs only when no `agent_v2` run history is available and the runtime has not been switched to `v2`.
 - Workflow overview responses now expose `runtime_source`, and the frontend evaluation panel surfaces that runtime label.
 
+## Package 21
+
+- Status: completed
+- Commit: `refactor: migrate agent workflow evaluation dataset to agent_v2 semantics`
+- Agent workflow evaluation now executes through `agent_v2` orchestration, resume, and recover entrypoints.
+- Workflow evaluation cases now cover `agent_v2`-compatible scenarios: knowledge retrieval, single-step tool execution, clarification resume, failed-step resume, and manual retrigger recovery.
+- Workflow eval schema now records recovery action expectations so reports can distinguish plain resume traces from explicit recovery actions.
+
 ## Test Baseline
 
 - Backend: `244 passed, 0 failed`

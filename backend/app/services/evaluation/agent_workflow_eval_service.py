@@ -9,9 +9,10 @@ from app.schemas.evaluation import (
     AgentWorkflowEvalSummary,
 )
 from app.schemas.evaluation_api import AgentWorkflowEvalDatasetInfo
-from app.services.agent.orchestrator_service import (
-    orchestrate_agent_request,
-    resume_agent_request,
+from app.services.agent_v2.query_service import (
+    orchestrate_agent_v2_request,
+    recover_agent_v2_request,
+    resume_agent_v2_request,
 )
 
 EVAL_DATA_DIR = DATA_ROOT / "eval"
@@ -24,40 +25,51 @@ def load_agent_workflow_eval_cases(dataset_path: Path) -> list[AgentWorkflowEval
 
 
 def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalReport:
-    """Evaluate final workflow behavior for the unified agent endpoint logic."""
+    """Evaluate final workflow behavior against the agent_v2 runtime."""
     cases = load_agent_workflow_eval_cases(dataset_path)
     case_results = []
 
     for case in cases:
-        if case.clarification_context:
-            if case.resume_via_run_id:
-                initial_response = orchestrate_agent_request(
-                    question=case.question,
-                    filename=case.filename,
-                    top_k=case.top_k,
-                )
-                response = resume_agent_request(
-                    original_question=None,
-                    run_id=initial_response.run_id,
-                    clarification_context=case.clarification_context,
-                    filename=case.filename,
-                    top_k=case.top_k,
-                )
-            else:
-                response = resume_agent_request(
-                    original_question=case.question,
-                    clarification_context=case.clarification_context,
-                    filename=case.filename,
-                    top_k=case.top_k,
-                )
-        else:
-            response = orchestrate_agent_request(
+        if case.recovery_action:
+            initial_response = orchestrate_agent_v2_request(
                 question=case.question,
                 filename=case.filename,
                 top_k=case.top_k,
+                debug_fault_injection=case.debug_fault_injection,
+            )
+            response = recover_agent_v2_request(
+                run_id=initial_response.run_id or "",
+                recovery_action=case.recovery_action,
+                clarification_context=case.clarification_context,
+                debug_fault_injection={},
+            )
+        elif case.clarification_context:
+            initial_response = orchestrate_agent_v2_request(
+                question=case.question,
+                filename=case.filename,
+                top_k=case.top_k,
+                debug_fault_injection=case.debug_fault_injection,
+            )
+            if case.resume_via_run_id:
+                response = resume_agent_v2_request(
+                    run_id=initial_response.run_id or "",
+                    clarification_context=case.clarification_context,
+                )
+            else:
+                response = recover_agent_v2_request(
+                    run_id=initial_response.run_id or "",
+                    recovery_action="resume_with_clarification",
+                    clarification_context=case.clarification_context,
+                )
+        else:
+            response = orchestrate_agent_v2_request(
+                question=case.question,
+                filename=case.filename,
+                top_k=case.top_k,
+                debug_fault_injection=case.debug_fault_injection,
             )
         actual_tool_chain_length = len(response.tool_chain)
-        resume_trace_present = any(event.stage == "workflow_resume" for event in response.workflow_trace)
+        resume_trace_present = bool(response.resume_strategy or response.resume_source_type)
         final_tool_execution = response.tool_execution or {}
         actual_final_tool_name = (
             final_tool_execution.get("tool_name")
@@ -91,6 +103,10 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 or resume_trace_present == case.expected_resume_trace
             )
             and (
+                case.expected_recovered_via_action is None
+                or response.recovered_via_action == case.expected_recovered_via_action
+            )
+            and (
                 case.expected_tool_chain_length is None
                 or actual_tool_chain_length == case.expected_tool_chain_length
             )
@@ -119,6 +135,8 @@ def evaluate_agent_workflow_dataset(dataset_path: Path) -> AgentWorkflowEvalRepo
                 expected_question=case.expected_question,
                 expected_resume_trace=case.expected_resume_trace,
                 resume_trace_present=resume_trace_present,
+                expected_recovered_via_action=case.expected_recovered_via_action,
+                actual_recovered_via_action=response.recovered_via_action,
                 expected_tool_chain_length=case.expected_tool_chain_length,
                 actual_tool_chain_length=actual_tool_chain_length,
                 expected_final_tool_name=case.expected_final_tool_name,

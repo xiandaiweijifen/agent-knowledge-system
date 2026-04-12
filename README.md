@@ -477,8 +477,11 @@ Current local startup behavior:
 
 Windows note:
 
-- On Windows, the backend may still start successfully while logging a Postgres checkpointer warning from psycopg async event loop compatibility.
-- In that case, normal backend usage is still available, but Postgres-backed checkpoint persistence is not active in that session.
+- On Windows, the backend now uses a sync Postgres checkpointer fallback to avoid psycopg async event loop incompatibility.
+- A healthy Windows startup should show logs similar to:
+  - `LangGraph checkpoint tables ready`
+  - `Postgres checkpointer ready (sync fallback)`
+- If those logs do not appear, the backend can still start, but Postgres-backed checkpoint persistence is not active in that session.
 
 Useful runtime flags:
 

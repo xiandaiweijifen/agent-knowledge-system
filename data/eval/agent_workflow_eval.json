@@ -1,23 +1,15 @@
 {
   "cases": [
     {
-      "case_id": "workflow_knowledge_1",
-      "question": "What is RAG?",
+      "case_id": "workflow_knowledge_rag",
+      "question": "What is retrieval-augmented generation?",
       "filename": "rag_overview.md",
       "top_k": 3,
       "expected_route_type": "knowledge_retrieval",
       "expected_workflow_status": "completed"
     },
     {
-      "case_id": "workflow_knowledge_2",
-      "question": "What should engineers track for observability?",
-      "filename": "agent_workflow.md",
-      "top_k": 3,
-      "expected_route_type": "knowledge_retrieval",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_knowledge_3",
+      "case_id": "workflow_knowledge_runtime",
       "question": "What metadata should a clarification-required run preserve?",
       "filename": "workflow_runtime_notes.md",
       "top_k": 3,
@@ -25,253 +17,110 @@
       "expected_workflow_status": "completed"
     },
     {
-      "case_id": "workflow_knowledge_4",
-      "question": "When should checkout issues not be classified as a payment outage?",
-      "filename": "checkout_service_runbook.md",
-      "top_k": 3,
-      "expected_route_type": "knowledge_retrieval",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_1",
-      "question": "Create a ticket for the payment service outage",
+      "case_id": "workflow_tool_ticket_create",
+      "question": "Create a high severity ticket for payment-service outage",
       "expected_route_type": "tool_execution",
       "expected_workflow_status": "completed",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "ticketing",
+      "expected_final_action": "create",
+      "expected_final_output_keys": ["ticket_id", "status", "severity"]
+    },
+    {
+      "case_id": "workflow_tool_status_query",
+      "question": "Check system status for payment-service in production",
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "system_status",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["status", "requested_environment"]
+    },
+    {
+      "case_id": "workflow_clarification_required",
+      "question": "Fix it",
+      "expected_route_type": "clarification_needed",
+      "expected_workflow_status": "clarification_required"
+    },
+    {
+      "case_id": "workflow_clarification_resume_via_run",
+      "question": "Fix it",
+      "clarification_context": {
+        "environment": "production",
+        "task_details": "check system status for payment-service"
+      },
+      "resume_via_run_id": true,
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_question": "Fix it (environment: production; task details: check system status for payment-service)",
+      "expected_resume_trace": true,
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "system_status",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["status", "requested_environment"]
+    },
+    {
+      "case_id": "workflow_clarification_recover",
+      "question": "Fix it",
+      "clarification_context": {
+        "environment": "production",
+        "task_details": "check system status for payment-service"
+      },
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_question": "Fix it (environment: production; task details: check system status for payment-service)",
+      "expected_resume_trace": true,
+      "expected_recovered_via_action": "resume_with_clarification",
+      "expected_tool_chain_length": 1,
+      "expected_final_tool_name": "system_status",
+      "expected_final_action": "query",
+      "expected_final_output_keys": ["status", "requested_environment"]
+    },
+    {
+      "case_id": "workflow_failed_step_resume",
+      "question": "Create a high severity ticket for payment-service outage",
+      "recovery_action": "resume_from_failed_step",
+      "debug_fault_injection": {
+        "tool_execution_failures": [
+          {
+            "tool_name": "ticketing",
+            "action": "create",
+            "fail_count": 1,
+            "message": "debug injected persistent failure"
+          }
+        ]
+      },
+      "expected_route_type": "tool_execution",
+      "expected_workflow_status": "completed",
+      "expected_resume_trace": true,
+      "expected_recovered_via_action": "resume_from_failed_step",
       "expected_tool_chain_length": 1,
       "expected_final_tool_name": "ticketing",
       "expected_final_action": "create",
       "expected_final_output_keys": ["ticket_id", "status"]
     },
     {
-      "case_id": "workflow_tool_2",
-      "question": "Query the status for the recommendation service",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_3",
-      "question": "Search docs for RAG",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_4",
-      "question": "Check system status",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_5",
-      "question": "Close ticket TICKET-0007 for payment-service",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_6",
-      "question": "Update ticket TICKET-0009 for checkout-api to high severity",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_7",
-      "question": "Set ticket TICKET-0003 severity to medium",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_8",
-      "question": "Move ticket TICKET-0004 for payment-service to staging",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_9",
-      "question": "Update ticket TICKET-0010 for payment-service status to closed",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed"
-    },
-    {
-      "case_id": "workflow_tool_10",
-      "question": "Search docs for RAG and create a high severity ticket for payment-service",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_tool_chain_length": 2,
-      "expected_final_tool_name": "ticketing",
-      "expected_final_action": "create",
-      "expected_final_output_keys": ["ticket_id", "supporting_query", "supporting_summary"]
-    },
-    {
-      "case_id": "workflow_tool_11",
-      "question": "Search docs for RAG and show top 2 results",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["returned_count", "max_results", "top_match_document"]
-    },
-    {
-      "case_id": "workflow_tool_12",
-      "question": "Search rag_overview.md for reranking limit to 1",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["filename_filter", "max_results", "matched_documents"]
-    },
-    {
-      "case_id": "workflow_tool_13",
-      "question": "Search docs for RAG and summarize top 2 results",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["returned_count", "top_match_document"]
-    },
-    {
-      "case_id": "workflow_tool_14",
-      "question": "Search docs for gateway timeout and show top 2 results",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["returned_count", "top_match_document"]
-    },
-    {
-      "case_id": "workflow_tool_15",
-      "question": "Search payment_service_runbook.md for idempotency limit to 1",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["filename_filter", "max_results", "matched_documents"]
-    },
-    {
-      "case_id": "workflow_tool_16",
-      "question": "Search docs for checkout-service and create a medium severity ticket for checkout-service",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_tool_chain_length": 2,
-      "expected_final_tool_name": "ticketing",
-      "expected_final_action": "create",
-      "expected_final_output_keys": ["ticket_id", "supporting_query", "supporting_summary"]
-    },
-    {
-      "case_id": "workflow_guardrail_2",
-      "question": "Search docs for payment-service outage and summarize top 2 results",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "clarification_required",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["matched_count"]
-    },
-    {
-      "case_id": "workflow_guardrail_1",
-      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "clarification_required",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["matched_count"]
-    },
-    {
-      "case_id": "workflow_guardrail_3",
-      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "clarification_required",
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["matched_count"]
-    },
-    {
-      "case_id": "workflow_resume_1",
-      "question": "Search docs for payment-service outage and summarize top 2 results",
-      "clarification_context": {
-        "search_query_refinement": "RAG",
-        "document_scope": "rag_overview.md"
-      },
-      "resume_via_run_id": true,
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_question": "Search rag_overview.md for RAG and summarize top 2 results",
-      "expected_resume_trace": true,
-      "expected_tool_chain_length": 1,
-      "expected_final_tool_name": "document_search",
-      "expected_final_action": "query",
-      "expected_final_output_keys": ["filename_filter", "max_results", "returned_count"]
-    },
-    {
-      "case_id": "workflow_resume_2",
-      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
-      "clarification_context": {
-        "search_query_refinement": "RAG",
-        "environment": "production"
+      "case_id": "workflow_manual_retrigger",
+      "question": "Create a high severity ticket for payment-service outage",
+      "recovery_action": "manual_retrigger",
+      "debug_fault_injection": {
+        "tool_execution_failures": [
+          {
+            "tool_name": "ticketing",
+            "action": "create",
+            "fail_count": 1,
+            "message": "debug injected persistent failure"
+          }
+        ]
       },
       "expected_route_type": "tool_execution",
       "expected_workflow_status": "completed",
-      "expected_question": "Search docs for RAG and create a high severity ticket for payment-service in production",
       "expected_resume_trace": true,
-      "expected_tool_chain_length": 2,
+      "expected_recovered_via_action": "manual_retrigger",
+      "expected_tool_chain_length": 1,
       "expected_final_tool_name": "ticketing",
       "expected_final_action": "create",
-      "expected_final_output_keys": ["ticket_id", "environment", "supporting_summary"]
-    },
-    {
-      "case_id": "workflow_resume_3",
-      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service",
-      "clarification_context": {
-        "execution_confirmation": "yes",
-        "environment": "production"
-      },
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
-      "expected_resume_trace": true,
-      "expected_tool_chain_length": 2,
-      "expected_final_tool_name": "ticketing",
-      "expected_final_action": "create",
-      "expected_final_output_keys": ["ticket_id", "environment"]
-    },
-    {
-      "case_id": "workflow_resume_4",
-      "question": "Search docs for payment-service outage and create a high severity ticket for payment-service in production",
-      "clarification_context": {
-        "search_query_refinement": "gateway timeout"
-      },
-      "resume_via_run_id": true,
-      "expected_route_type": "tool_execution",
-      "expected_workflow_status": "completed",
-      "expected_question": "Search docs for gateway timeout and create a high severity ticket for payment-service in production",
-      "expected_resume_trace": true,
-      "expected_tool_chain_length": 2,
-      "expected_final_tool_name": "ticketing",
-      "expected_final_action": "create",
-      "expected_final_output_keys": ["ticket_id", "environment", "supporting_summary"]
-    },
-    {
-      "case_id": "workflow_clarification_1",
-      "question": "Please do that for production",
-      "expected_route_type": "clarification_needed",
-      "expected_workflow_status": "clarification_required"
-    },
-    {
-      "case_id": "workflow_clarification_2",
-      "question": "Handle this in staging",
-      "expected_route_type": "clarification_needed",
-      "expected_workflow_status": "clarification_required"
-    },
-    {
-      "case_id": "workflow_clarification_3",
-      "question": "Resolve this for production",
-      "expected_route_type": "clarification_needed",
-      "expected_workflow_status": "clarification_required"
+      "expected_final_output_keys": ["ticket_id", "status"]
     }
   ]
 }
