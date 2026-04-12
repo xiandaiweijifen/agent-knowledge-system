@@ -4411,5 +4411,18 @@
     "environment": "unspecified",
     "created_at": "2026-04-12T16:39:24.766947+00:00",
     "updated_at": "2026-04-12T16:39:24.766947+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0310",
+    "ticket_id": "TICKET-0310",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T16:49:31.187430+00:00",
+    "updated_at": "2026-04-12T16:49:31.187430+00:00"
   }
 ]

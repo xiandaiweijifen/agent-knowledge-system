@@ -141,6 +141,9 @@ export function EvaluationView({
           report: "评测报告",
           reportCopy: "对比基准汇总指标，并检查单个 case 的表现。",
           totalCases: "总 Case 数",
+          groundedRate: "Grounded 占比",
+          citationCoverage: "引用覆盖率",
+          groundedness: "Groundedness",
           routeAccuracy: "路由准确率",
           workflowAccuracy: "工作流准确率",
           toolAccuracy: "工具准确率",
@@ -240,6 +243,9 @@ export function EvaluationView({
           report: "Evaluation Report",
           reportCopy: "Compare benchmark summary metrics and inspect individual case behavior.",
           totalCases: "Total Cases",
+          groundedRate: "Grounded Rate",
+          citationCoverage: "Citation Coverage",
+          groundedness: "Groundedness",
           routeAccuracy: "Route Accuracy",
           workflowAccuracy: "Workflow Accuracy",
           toolAccuracy: "Tool Accuracy",
@@ -670,6 +676,14 @@ export function EvaluationView({
                 <span className="trace-label">MRR</span>
                 <strong>{evalResult.report.summary.mean_reciprocal_rank.toFixed(3)}</strong>
               </div>
+              <div className="summary-card">
+                <span className="trace-label">{copy.groundedRate}</span>
+                <strong>{(evalResult.report.summary.grounded_case_rate * 100).toFixed(1)}%</strong>
+              </div>
+              <div className="summary-card">
+                <span className="trace-label">{copy.citationCoverage}</span>
+                <strong>{(evalResult.report.summary.mean_citation_coverage * 100).toFixed(1)}%</strong>
+              </div>
             </div>
             <div className="panel-heading case-toolbar">
               <h3>{copy.caseResults}</h3>
@@ -711,6 +725,8 @@ export function EvaluationView({
                   <div className="meta-row">
                     <span>{copy.reciprocalRank} {item.reciprocal_rank.toFixed(3)}</span>
                     <span>{copy.file} {item.filename}</span>
+                    <span>{copy.groundedness} {item.groundedness_status}</span>
+                    <span>{copy.citationCoverage} {(item.citation_coverage * 100).toFixed(0)}%</span>
                   </div>
                   <small>{copy.expected}: {item.expected_chunk_ids.join(", ")}</small>
                   <small>{copy.retrieved}: {item.retrieved_chunk_ids.join(", ")}</small>

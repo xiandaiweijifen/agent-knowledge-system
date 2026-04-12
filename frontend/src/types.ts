@@ -394,6 +394,8 @@ export type EvalReportResponse = {
       total_cases: number;
       hit_rate_at_k: number;
       mean_reciprocal_rank: number;
+      grounded_case_rate: number;
+      mean_citation_coverage: number;
     };
     cases: Array<{
       case_id: string;
@@ -403,6 +405,8 @@ export type EvalReportResponse = {
       retrieved_chunk_ids: string[];
       hit_at_k: boolean;
       reciprocal_rank: number;
+      groundedness_status: string;
+      citation_coverage: number;
     }>;
   };
 };

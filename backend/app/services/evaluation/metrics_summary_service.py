@@ -52,7 +52,12 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
                 metric_name="hit_rate_at_k",
                 metric_value=retrieval_report["report"]["summary"]["hit_rate_at_k"],
                 formatted_value=_format_rate(retrieval_report["report"]["summary"]["hit_rate_at_k"]),
-                detail=f"MRR {_format_rate(retrieval_report['report']['summary']['mean_reciprocal_rank'])} at top-{retrieval_report.get('top_k', SHOWCASE_RETRIEVAL_TOP_K)}.",
+                detail=(
+                    f"MRR {_format_rate(retrieval_report['report']['summary']['mean_reciprocal_rank'])} "
+                    f"| grounded {_format_percentage(retrieval_report['report']['summary'].get('grounded_case_rate', 0.0))} "
+                    f"| citation {_format_percentage(retrieval_report['report']['summary'].get('mean_citation_coverage', 0.0))} "
+                    f"at top-{retrieval_report.get('top_k', SHOWCASE_RETRIEVAL_TOP_K)}."
+                ),
             )
         )
 
@@ -104,6 +109,18 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
             detail=f"{overview.recovery.recovered_completed_run_count}/{overview.recovery.recovered_run_count} recovered runs completed.",
         ),
     ]
+
+    if retrieval_report is not None:
+        highlights.append(
+            EvaluationMetricHighlight(
+                label="Retrieval Groundedness",
+                value=_format_percentage(retrieval_report["report"]["summary"].get("grounded_case_rate", 0.0)),
+                detail=(
+                    "Mean citation coverage "
+                    f"{_format_percentage(retrieval_report['report']['summary'].get('mean_citation_coverage', 0.0))}."
+                ),
+            )
+        )
 
     return EvaluationMetricsSummaryResponse(
         generated_at=datetime.now(timezone.utc).isoformat(),

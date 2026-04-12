@@ -59,7 +59,7 @@ describe("EvaluationView", () => {
               metric_name: "hit_rate_at_k",
               metric_value: 1,
               formatted_value: "1.000",
-              detail: "MRR 0.917 at top-3.",
+              detail: "MRR 0.917 | grounded 83.3% | citation 91.0% at top-3.",
             },
           ],
         }}
@@ -105,6 +105,8 @@ describe("EvaluationView", () => {
               total_cases: 6,
               hit_rate_at_k: 0.875,
               mean_reciprocal_rank: 0.71,
+              grounded_case_rate: 0.833,
+              mean_citation_coverage: 0.91,
             },
             cases: [],
           },
@@ -148,6 +150,10 @@ describe("EvaluationView", () => {
     expect(screen.getByText((content) => content.includes("Vs Previous: Improved 0.125"))).toBeInTheDocument();
     expect(screen.getByText("Recent Evaluation History")).toBeInTheDocument();
     expect(screen.getByText("Workflow Completion")).toBeInTheDocument();
+    expect(screen.getByText("Grounded Rate")).toBeInTheDocument();
+    expect(screen.getByText("Citation Coverage")).toBeInTheDocument();
+    expect(screen.getByText("83.3%")).toBeInTheDocument();
+    expect(screen.getByText("91.0%")).toBeInTheDocument();
     expect(screen.getByText("Showcase Benchmark")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Export Evaluation Bundle" }));
     expect(onExportBundle).toHaveBeenCalledTimes(1);

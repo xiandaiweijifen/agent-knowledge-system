@@ -9,7 +9,7 @@ from app.schemas.evaluation import (
     RetrievalEvalReport,
     RetrievalEvalSummary,
 )
-from app.services.retrieval.retrieval_service import retrieve_relevant_chunks
+from app.services.agent.query_service import run_query_with_context
 
 EVAL_DATA_DIR = DATA_ROOT / "eval"
 
@@ -40,11 +40,13 @@ def evaluate_retrieval_dataset(dataset_path: Path, top_k: int = 3) -> RetrievalE
     case_results = []
 
     for case in cases:
-        retrieval_result = retrieve_relevant_chunks(
+        query_result = run_query_with_context(
             filename=case.filename,
-            query_text=case.question,
+            question=case.question,
             top_k=top_k,
+            execution_context="eval",
         )
+        retrieval_result = query_result.retrieval
         retrieved_chunk_ids = [match.chunk_id for match in retrieval_result.matches]
         expected_set = set(case.expected_chunk_ids)
         hit_at_k = any(chunk_id in expected_set for chunk_id in retrieved_chunk_ids)
@@ -62,17 +64,27 @@ def evaluate_retrieval_dataset(dataset_path: Path, top_k: int = 3) -> RetrievalE
                 retrieved_chunk_ids=retrieved_chunk_ids,
                 hit_at_k=hit_at_k,
                 reciprocal_rank=reciprocal_rank,
+                groundedness_status=query_result.answer_verification.groundedness_status,
+                citation_coverage=query_result.answer_verification.citation_coverage,
             )
         )
 
     total_cases = len(case_results)
     hit_count = sum(1 for result in case_results if result.hit_at_k)
     reciprocal_rank_sum = sum(result.reciprocal_rank for result in case_results)
+    grounded_case_count = sum(
+        1 for result in case_results if result.groundedness_status == "grounded"
+    )
+    citation_coverage_sum = sum(result.citation_coverage for result in case_results)
 
     summary = RetrievalEvalSummary(
         total_cases=total_cases,
         hit_rate_at_k=round(hit_count / total_cases, 6) if total_cases else 0.0,
         mean_reciprocal_rank=round(reciprocal_rank_sum / total_cases, 6)
+        if total_cases
+        else 0.0,
+        grounded_case_rate=round(grounded_case_count / total_cases, 6) if total_cases else 0.0,
+        mean_citation_coverage=round(citation_coverage_sum / total_cases, 6)
         if total_cases
         else 0.0,
     )

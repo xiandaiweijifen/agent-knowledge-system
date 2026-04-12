@@ -18,12 +18,16 @@ class RetrievalEvalCaseResult(BaseModel):
     retrieved_chunk_ids: list[str] = Field(default_factory=list)
     hit_at_k: bool
     reciprocal_rank: float
+    groundedness_status: str = "weakly_grounded"
+    citation_coverage: float = 0.0
 
 
 class RetrievalEvalSummary(BaseModel):
     total_cases: int
     hit_rate_at_k: float
     mean_reciprocal_rank: float
+    grounded_case_rate: float = 0.0
+    mean_citation_coverage: float = 0.0
 
 
 class RetrievalEvalReport(BaseModel):
