@@ -26,6 +26,7 @@ from app.services.retrieval.retrieval_service import (
 )
 
 logger = logging.getLogger(__name__)
+CORPUS_SOURCE_PENALTY = 0.08
 
 
 def _index_exists(filename: str) -> bool:
@@ -70,6 +71,39 @@ def _build_matches_from_raw_results(
 
     matches.sort(key=lambda match: match.score, reverse=True)
     return matches
+
+
+def _select_diversified_corpus_matches(
+    matches: list[RetrievedChunkMatch],
+    top_k: int,
+    source_penalty: float = CORPUS_SOURCE_PENALTY,
+) -> list[RetrievedChunkMatch]:
+    """Greedily diversify corpus results without overpowering base relevance."""
+    if len(matches) <= top_k:
+        return matches
+
+    remaining = list(matches)
+    selected: list[RetrievedChunkMatch] = []
+    selected_by_source: dict[str, int] = {}
+
+    while remaining and len(selected) < top_k:
+        best_index = 0
+        best_adjusted_score = float("-inf")
+
+        for index, match in enumerate(remaining):
+            prior_hits = selected_by_source.get(match.source_filename, 0)
+            adjusted_score = match.score - (prior_hits * source_penalty)
+            if adjusted_score > best_adjusted_score:
+                best_adjusted_score = adjusted_score
+                best_index = index
+
+        chosen = remaining.pop(best_index)
+        selected.append(chosen)
+        selected_by_source[chosen.source_filename] = (
+            selected_by_source.get(chosen.source_filename, 0) + 1
+        )
+
+    return selected
 
 
 def retrieve_with_llamaindex(
@@ -138,6 +172,7 @@ def retrieve_with_llamaindex_corpus(
         )
 
     all_matches.sort(key=lambda match: match.score, reverse=True)
+    selected_matches = _select_diversified_corpus_matches(all_matches, top_k=top_k)
     latency_ms = round((perf_counter() - started) * 1000, 3)
 
     return RetrievalResult(
@@ -153,5 +188,5 @@ def retrieve_with_llamaindex_corpus(
         retrieval_latency_ms=latency_ms,
         query_embedding_provider="llamaindex",
         query_embedding_model="llamaindex-simplestore",
-        matches=all_matches[:top_k],
+        matches=selected_matches,
     )

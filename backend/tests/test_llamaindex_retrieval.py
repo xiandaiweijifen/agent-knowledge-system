@@ -194,6 +194,82 @@ def test_retrieve_with_llamaindex_corpus_merges_multiple_documents(workspace_tmp
     assert result.matches[0].section_title == "Common Failure Modes"
 
 
+def test_retrieve_with_llamaindex_corpus_diversifies_near_tied_sources(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.LLAMAINDEX_STORE_DIR",
+        workspace_tmp_path,
+    )
+    for stem in ("doc_a", "doc_b"):
+        index_dir = workspace_tmp_path / stem
+        index_dir.mkdir()
+        (index_dir / "index_store.json").write_text("{}")
+
+    mock_results = {
+        "doc_a.md": [
+            {
+                "chunk_id": "doc_a.md::chunk_0",
+                "content": "Common failure modes overview for system A.",
+                "score": 0.91,
+                "metadata": {
+                    "chunk_index": 0,
+                    "source_filename": "doc_a.md",
+                    "source_suffix": ".md",
+                    "char_count": 42,
+                    "section_title": "Common Failure Modes",
+                    "section_path": ["Overview", "Common Failure Modes"],
+                    "heading_level": 2,
+                },
+            },
+            {
+                "chunk_id": "doc_a.md::chunk_1",
+                "content": "Common failure modes examples for system A.",
+                "score": 0.9,
+                "metadata": {
+                    "chunk_index": 1,
+                    "source_filename": "doc_a.md",
+                    "source_suffix": ".md",
+                    "char_count": 42,
+                    "section_title": "Common Failure Modes",
+                    "section_path": ["Overview", "Common Failure Modes"],
+                    "heading_level": 2,
+                },
+            },
+        ],
+        "doc_b.md": [
+            {
+                "chunk_id": "doc_b.md::chunk_0",
+                "content": "Common failure modes overview for system B.",
+                "score": 0.89,
+                "metadata": {
+                    "chunk_index": 0,
+                    "source_filename": "doc_b.md",
+                    "source_suffix": ".md",
+                    "char_count": 42,
+                    "section_title": "Common Failure Modes",
+                    "section_path": ["RAG", "Common Failure Modes"],
+                    "heading_level": 2,
+                },
+            }
+        ],
+    }
+
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.query_llamaindex_index",
+        MagicMock(side_effect=lambda filename, query_text, top_k: mock_results[filename]),
+    )
+
+    result = retrieve_with_llamaindex_corpus(
+        "common failure modes",
+        top_k=2,
+        filenames=["doc_a.md", "doc_b.md"],
+    )
+
+    assert [match.source_filename for match in result.matches] == ["doc_a.md", "doc_b.md"]
+
+
 def test_query_service_falls_back_to_legacy_in_debug_context(monkeypatch):
     """query_service.run_query_with_context may fall back to legacy in debug mode."""
     from app.services.agent.query_service import run_query_with_context
