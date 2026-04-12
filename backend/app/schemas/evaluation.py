@@ -20,6 +20,8 @@ class RetrievalEvalCaseResult(BaseModel):
     reciprocal_rank: float
     groundedness_status: str = "weakly_grounded"
     citation_coverage: float = 0.0
+    top_document_kind: str = "reference"
+    citation_document_kinds: list[str] = Field(default_factory=list)
 
 
 class RetrievalEvalSummary(BaseModel):

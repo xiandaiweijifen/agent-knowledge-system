@@ -42,21 +42,26 @@ def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
     query_results = {
         "rag systems": SimpleNamespace(
             retrieval=SimpleNamespace(
-                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_0")]
+                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_0", document_kind="overview")]
             ),
             answer_verification=SimpleNamespace(
                 groundedness_status="grounded",
                 citation_coverage=1.0,
             ),
+            answer_citations=[SimpleNamespace(document_kind="overview")],
         ),
         "agent system": SimpleNamespace(
             retrieval=SimpleNamespace(
-                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_1")]
+                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_1", document_kind="workflow")]
             ),
             answer_verification=SimpleNamespace(
                 groundedness_status="partially_grounded",
                 citation_coverage=0.5,
             ),
+            answer_citations=[
+                SimpleNamespace(document_kind="workflow"),
+                SimpleNamespace(document_kind="reference"),
+            ],
         ),
     }
 
@@ -76,6 +81,8 @@ def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
     assert all(case.hit_at_k for case in report.cases)
     assert report.cases[0].groundedness_status == "grounded"
     assert report.cases[1].citation_coverage == 0.5
+    assert report.cases[0].top_document_kind == "overview"
+    assert report.cases[1].citation_document_kinds == ["reference", "workflow"]
 
 
 def test_list_retrieval_datasets_only_includes_retrieval_eval_files(

@@ -26,6 +26,40 @@ def _format_percentage(value: float) -> str:
     return f"{value * 100:.1f}%"
 
 
+def _summarize_retrieval_document_kinds(report: dict) -> str | None:
+    cases = report.get("report", {}).get("cases", [])
+
+    if not cases:
+        return None
+
+    top_kind_counts: dict[str, int] = {}
+    cited_kind_counts: dict[str, int] = {}
+
+    for case in cases:
+        top_kind = case.get("top_document_kind")
+        if top_kind:
+            top_kind_counts[top_kind] = top_kind_counts.get(top_kind, 0) + 1
+
+        for kind in case.get("citation_document_kinds", []):
+            cited_kind_counts[kind] = cited_kind_counts.get(kind, 0) + 1
+
+    detail_parts: list[str] = []
+
+    if top_kind_counts:
+        dominant_top_kind = max(top_kind_counts.items(), key=lambda item: item[1])
+        detail_parts.append(
+            f"top kind {dominant_top_kind[0]} ({dominant_top_kind[1]}/{len(cases)} cases)"
+        )
+
+    if cited_kind_counts:
+        dominant_cited_kind = max(cited_kind_counts.items(), key=lambda item: item[1])
+        detail_parts.append(
+            f"citation kind {dominant_cited_kind[0]} ({dominant_cited_kind[1]} citations)"
+        )
+
+    return " | ".join(detail_parts) if detail_parts else None
+
+
 def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
     overview = overview_service.get_evaluation_overview(refresh=False)
     retrieval_report = report_store_service.load_latest_retrieval_report(
@@ -45,6 +79,7 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
     sections: list[EvaluationMetricsSummarySection] = []
 
     if retrieval_report is not None:
+        retrieval_kind_detail = _summarize_retrieval_document_kinds(retrieval_report)
         sections.append(
             EvaluationMetricsSummarySection(
                 title="Showcase Retrieval",
@@ -56,7 +91,8 @@ def _build_metrics_summary() -> EvaluationMetricsSummaryResponse:
                     f"MRR {_format_rate(retrieval_report['report']['summary']['mean_reciprocal_rank'])} "
                     f"| grounded {_format_percentage(retrieval_report['report']['summary'].get('grounded_case_rate', 0.0))} "
                     f"| citation {_format_percentage(retrieval_report['report']['summary'].get('mean_citation_coverage', 0.0))} "
-                    f"at top-{retrieval_report.get('top_k', SHOWCASE_RETRIEVAL_TOP_K)}."
+                    f"at top-{retrieval_report.get('top_k', SHOWCASE_RETRIEVAL_TOP_K)}"
+                    f"{f' | {retrieval_kind_detail}' if retrieval_kind_detail else ''}."
                 ),
             )
         )

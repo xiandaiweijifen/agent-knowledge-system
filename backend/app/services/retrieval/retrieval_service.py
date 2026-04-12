@@ -299,6 +299,7 @@ def build_retrieval_outputs(
                 chunk_index=embedding.chunk_index,
                 source_filename=embedding.source_filename,
                 source_suffix=embedding.source_suffix,
+                document_kind=embedding.document_kind,
                 char_count=embedding.char_count,
                 section_title=embedding.section_title,
                 section_path=embedding.section_path,

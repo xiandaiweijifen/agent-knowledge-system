@@ -146,6 +146,8 @@ export function EvaluationView({
           groundedRate: "Grounded 占比",
           citationCoverage: "引用覆盖率",
           groundedness: "Groundedness",
+          topKind: "主文档类型",
+          citationKinds: "引用文档类型",
           routeAccuracy: "路由准确率",
           workflowAccuracy: "工作流准确率",
           toolAccuracy: "工具准确率",
@@ -250,6 +252,8 @@ export function EvaluationView({
           groundedRate: "Grounded Rate",
           citationCoverage: "Citation Coverage",
           groundedness: "Groundedness",
+          topKind: "Top Kind",
+          citationKinds: "Citation Kinds",
           routeAccuracy: "Route Accuracy",
           workflowAccuracy: "Workflow Accuracy",
           toolAccuracy: "Tool Accuracy",
@@ -746,8 +750,12 @@ export function EvaluationView({
                     <span>{copy.reciprocalRank} {item.reciprocal_rank.toFixed(3)}</span>
                     <span>{copy.file} {item.filename}</span>
                     <span>{copy.groundedness} {item.groundedness_status ?? "unavailable"}</span>
+                    <span>{copy.topKind} {item.top_document_kind ?? "unavailable"}</span>
                     <span>
                       {copy.citationCoverage} {(((item.citation_coverage ?? 0) as number) * 100).toFixed(0)}%
+                    </span>
+                    <span>
+                      {copy.citationKinds} {(item.citation_document_kinds ?? []).join(", ") || "unavailable"}
                     </span>
                   </div>
                   <small>{copy.expected}: {item.expected_chunk_ids.join(", ")}</small>

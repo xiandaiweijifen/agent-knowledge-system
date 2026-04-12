@@ -48,6 +48,18 @@ def evaluate_retrieval_dataset(dataset_path: Path, top_k: int = 3) -> RetrievalE
         )
         retrieval_result = query_result.retrieval
         retrieved_chunk_ids = [match.chunk_id for match in retrieval_result.matches]
+        top_document_kind = (
+            retrieval_result.matches[0].document_kind
+            if retrieval_result.matches
+            else "reference"
+        )
+        citation_document_kinds = sorted(
+            {
+                citation.document_kind
+                for citation in getattr(query_result, "answer_citations", [])
+                if getattr(citation, "document_kind", "").strip()
+            }
+        )
         expected_set = set(case.expected_chunk_ids)
         hit_at_k = any(chunk_id in expected_set for chunk_id in retrieved_chunk_ids)
         reciprocal_rank = compute_reciprocal_rank(
@@ -66,6 +78,8 @@ def evaluate_retrieval_dataset(dataset_path: Path, top_k: int = 3) -> RetrievalE
                 reciprocal_rank=reciprocal_rank,
                 groundedness_status=query_result.answer_verification.groundedness_status,
                 citation_coverage=query_result.answer_verification.citation_coverage,
+                top_document_kind=top_document_kind,
+                citation_document_kinds=citation_document_kinds,
             )
         )
 

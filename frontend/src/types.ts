@@ -410,6 +410,8 @@ export type EvalReportResponse = {
       reciprocal_rank: number;
       groundedness_status: string;
       citation_coverage: number;
+      top_document_kind?: string;
+      citation_document_kinds?: string[];
     }>;
   };
 };

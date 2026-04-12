@@ -259,6 +259,7 @@ def test_query_diagnostics_endpoint_returns_ranked_candidates(
     assert len(payload["retrieval"]["matches"]) == 2
     assert len(payload["candidates"]) == 3
     assert payload["candidates"][0]["chunk_id"] == "sample.txt::chunk_0"
+    assert payload["candidates"][0]["document_kind"] == "reference"
     assert payload["candidates"][0]["score"] >= payload["candidates"][0]["vector_score"]
     assert payload["diagnostics"]["returned_candidate_count"] == 3
     assert payload["diagnostics"]["total_scored_chunks"] == 3

@@ -112,7 +112,70 @@
 - Added `retrieve_with_llamaindex_corpus()` to aggregate per-document LlamaIndex matches, merge them, and return a unified ranked result set.
 - Retrieval responses now expose `retrieval_scope` and `corpus_filenames`, so multi-file knowledge queries have an explicit result contract before full UI support lands.
 
+## Package 28
+
+- Status: completed
+- Commit: `feat: surface corpus retrieval scope and source metadata in query view`
+- Query results now surface corpus scope, participating corpus documents, and per-match source metadata in the frontend.
+
+## Package 29
+
+- Status: completed
+- Commit: `feat: enable corpus queries without document context`
+- The Query Lab now allows `Run Query` without a selected document and dispatches corpus retrieval in explicit LlamaIndex mode.
+
+## Package 30
+
+- Status: completed
+- Commit: `feat: add lightweight source diversification for corpus retrieval`
+- Corpus ranking now applies a light source-level penalty after initial scoring so near-tied results do not let a single document dominate every top-k slot.
+
+## Package 31
+
+- Status: completed
+- Commit: `feat: add metadata-aware corpus document filtering`
+- Corpus retrieval now narrows candidate documents with lightweight semantic hints such as `runbook`, `incident`, `workflow`, and `overview` before ranking.
+
+## Package 32
+
+- Status: completed
+- Commit: `feat: add grounded answer citations and source-aware synthesis`
+- Knowledge responses now return structured `answer_citations` and build answer prompts with explicit source file and source section context.
+
+## Package 33
+
+- Status: completed
+- Commit: `refactor: align answer citations with answer-content relevance`
+- Citation ranking now considers overlap between answer text, chunk content, and section metadata instead of truncating raw retrieval order.
+
+## Package 34
+
+- Status: completed
+- Commit: `feat: add structured answer verification signals for grounded responses`
+- Query responses now include `groundedness_status`, `citation_coverage`, and related verification notes so grounded answer quality is a first-class signal.
+
+## Package 35
+
+- Status: completed
+- Commit: `feat: integrate answer verification signals into retrieval evaluation`
+- Retrieval evaluation reports, overview, and metrics summary now distinguish retrieval quality from grounded answer quality with groundedness and citation coverage metrics.
+
+## Package 36
+
+- Status: completed
+- Commit: `feat: add document-kind metadata and unify evidence metadata across retrieval and grounding`
+- Documents, chunks, embeddings, retrieval matches, and citations now share a normalized `document_kind` such as `runbook`, `incident`, `workflow`, or `overview`.
+- Retrieval, citations, and verification now consume a shared evidence metadata layer instead of duplicating filename-only logic.
+
+## Package 37
+
+- Status: completed
+- Commit: `feat: push document-kind metadata into diagnostics and retrieval evaluation narrative`
+- Legacy retrieval diagnostics now propagate `document_kind` through ranked candidates.
+- Retrieval evaluation case results now record `top_document_kind` and `citation_document_kinds`.
+- Metrics summary retrieval copy now describes dominant document kinds alongside hit rate, MRR, groundedness, and citation coverage.
+
 ## Test Baseline
 
-- Backend: `256 passed, 0 failed`
-- Frontend: `16 passed, 0 failed`
+- Backend: `268 passed, 0 failed`
+- Frontend: `17 passed, 0 failed`
