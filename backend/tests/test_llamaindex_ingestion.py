@@ -79,6 +79,14 @@ def test_build_llamaindex_index_persists_files(mock_chunks):
     assert (store_dir / "index_store.json").exists()
 
 
+def test_has_llamaindex_index_accepts_default_vector_store_filename(mock_chunks):
+    from app.services.ingestion.llamaindex_ingestion_service import has_llamaindex_index
+
+    build_llamaindex_index("test_doc.txt")
+
+    assert has_llamaindex_index("test_doc.txt") is True
+
+
 def test_query_llamaindex_index_returns_ranked_results(mock_chunks):
     build_llamaindex_index("test_doc.txt")
     results = query_llamaindex_index("test_doc.txt", "agent framework", top_k=2)

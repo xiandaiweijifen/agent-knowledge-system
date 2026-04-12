@@ -11,7 +11,7 @@ switch the query route to use this index exclusively.
 Storage layout:
     data/llamaindex_store/<document_stem>/
         docstore.json
-        vector_store.json
+        default__vector_store.json
         index_store.json
         graph_store.json
 """
@@ -55,13 +55,10 @@ def has_llamaindex_index(filename: str) -> bool:
     if not path.exists() or not path.is_dir():
         return False
 
-    required_files = {
-        "docstore.json",
-        "index_store.json",
-        "vector_store.json",
-    }
     present_files = {item.name for item in path.iterdir() if item.is_file()}
-    return required_files.issubset(present_files)
+    has_core_files = {"docstore.json", "index_store.json"}.issubset(present_files)
+    has_vector_store = any(name.endswith("vector_store.json") for name in present_files)
+    return has_core_files and has_vector_store
 
 
 # ---------------------------------------------------------------------------
