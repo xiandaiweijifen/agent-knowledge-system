@@ -4138,5 +4138,70 @@
     "environment": "unspecified",
     "created_at": "2026-04-12T14:30:16.067162+00:00",
     "updated_at": "2026-04-12T14:30:16.067162+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0289",
+    "ticket_id": "TICKET-0289",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T14:50:37.387093+00:00",
+    "updated_at": "2026-04-12T14:50:37.387093+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0290",
+    "ticket_id": "TICKET-0290",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T14:51:54.437977+00:00",
+    "updated_at": "2026-04-12T14:51:54.437977+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0291",
+    "ticket_id": "TICKET-0291",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T14:53:37.621301+00:00",
+    "updated_at": "2026-04-12T14:53:37.621301+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0292",
+    "ticket_id": "TICKET-0292",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T14:54:03.184259+00:00",
+    "updated_at": "2026-04-12T14:54:03.184259+00:00"
+  },
+  {
+    "schema_version": "tool-output-v1",
+    "output_kind": "record",
+    "resource_type": "ticket",
+    "target": "payment-service",
+    "resource_id": "TICKET-0293",
+    "ticket_id": "TICKET-0293",
+    "status": "open",
+    "severity": "unspecified",
+    "environment": "unspecified",
+    "created_at": "2026-04-12T14:55:38.321097+00:00",
+    "updated_at": "2026-04-12T14:55:38.321097+00:00"
   }
 ]

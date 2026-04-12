@@ -71,9 +71,9 @@ def test_retrieve_with_llamaindex_returns_retrieval_result(workspace_tmp_path, m
     assert result.matches[0].score == 0.87
 
 
-def test_query_service_falls_back_to_legacy(monkeypatch):
-    """query_service.run_query falls back to legacy when no LlamaIndex index exists."""
-    from app.services.agent.query_service import run_query
+def test_query_service_falls_back_to_legacy_in_debug_context(monkeypatch):
+    """query_service.run_query_with_context may fall back to legacy in debug mode."""
+    from app.services.agent.query_service import run_query_with_context
     from app.schemas.query import RetrievalResult
 
     legacy_result = RetrievalResult(
@@ -111,7 +111,12 @@ def test_query_service_falls_back_to_legacy(monkeypatch):
         }),
     )
 
-    result = run_query("doc.txt", "test question", top_k=3)
+    result = run_query_with_context(
+        "doc.txt",
+        "test question",
+        top_k=3,
+        execution_context="debug",
+    )
     assert result.filename == "doc.txt"
 
 
@@ -135,8 +140,20 @@ def test_query_service_requires_llamaindex_by_default(monkeypatch):
         run_query("doc.txt", "test question", top_k=3)
 
 
-def test_query_service_legacy_mode_skips_llamaindex(monkeypatch):
+def test_query_service_standard_context_rejects_legacy_mode(monkeypatch):
     from app.services.agent.query_service import run_query
+
+    monkeypatch.setattr(
+        "app.services.agent.query_service.settings.knowledge_retrieval_mode",
+        "legacy",
+    )
+
+    with pytest.raises(ValueError, match="knowledge_retrieval_mode_requires_debug_or_eval"):
+        run_query("doc.txt", "test question", top_k=3)
+
+
+def test_query_service_legacy_mode_skips_llamaindex_in_eval_context(monkeypatch):
+    from app.services.agent.query_service import run_query_with_context
     from app.schemas.query import RetrievalResult
 
     legacy_result = RetrievalResult(
@@ -176,7 +193,12 @@ def test_query_service_legacy_mode_skips_llamaindex(monkeypatch):
         }),
     )
 
-    result = run_query("doc.txt", "test question", top_k=3)
+    result = run_query_with_context(
+        "doc.txt",
+        "test question",
+        top_k=3,
+        execution_context="eval",
+    )
     assert result.filename == "doc.txt"
     llamaindex_mock.assert_not_called()
     legacy_mock.assert_called_once()

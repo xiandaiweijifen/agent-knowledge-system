@@ -16,8 +16,20 @@ def _normalized_knowledge_retrieval_mode() -> str:
     return mode
 
 
-def _retrieve_via_configured_mode(filename: str, question: str, top_k: int):
+def _retrieve_via_configured_mode(
+    filename: str,
+    question: str,
+    top_k: int,
+    execution_context: str,
+):
     mode = _normalized_knowledge_retrieval_mode()
+    normalized_context = execution_context.strip().lower()
+
+    if normalized_context not in {"standard", "debug", "eval"}:
+        raise ValueError("knowledge_retrieval_execution_context_invalid")
+
+    if normalized_context == "standard" and mode != "llamaindex":
+        raise ValueError("knowledge_retrieval_mode_requires_debug_or_eval")
 
     if mode == "legacy":
         logger.debug("retrieval via legacy mode for %s", filename)
@@ -67,6 +79,40 @@ def run_query(filename: str, question: str, top_k: int = 3) -> QueryResponse:
         filename=filename,
         question=question,
         top_k=top_k,
+        execution_context="standard",
+    )
+
+    answer_result = generate_rag_answer(
+        question=retrieval_result.question,
+        matches=[match.model_dump() for match in retrieval_result.matches],
+    )
+
+    return QueryResponse(
+        filename=retrieval_result.filename,
+        question=retrieval_result.question,
+        answer=answer_result["answer"],
+        answer_source=answer_result["answer_source"],
+        model=answer_result["model"],
+        answered_at=answer_result["answered_at"],
+        answer_latency_ms=answer_result["answer_latency_ms"],
+        chat_provider=answer_result["chat_provider"],
+        chat_model=answer_result["chat_model"],
+        retrieval=retrieval_result,
+    )
+
+
+def run_query_with_context(
+    filename: str,
+    question: str,
+    top_k: int = 3,
+    execution_context: str = "standard",
+) -> QueryResponse:
+    """Execute the retrieval and answer-generation flow for a query with context-aware mode gating."""
+    retrieval_result = _retrieve_via_configured_mode(
+        filename=filename,
+        question=question,
+        top_k=top_k,
+        execution_context=execution_context,
     )
 
     answer_result = generate_rag_answer(

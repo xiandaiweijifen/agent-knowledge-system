@@ -28,7 +28,7 @@ from app.services.retrieval.retrieval_service import compute_rerank_bonus
 from app.schemas.tools import ToolExecutionRequest
 
 
-def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
+def test_query_endpoint_rejects_auto_mode_in_standard_context(
     workspace_tmp_path,
     monkeypatch,
 ):
@@ -89,27 +89,8 @@ def test_query_endpoint_returns_fallback_answer_with_retrieval_results(
         },
     )
 
-    assert response.status_code == 200
-
-    payload = response.json()
-    assert payload["filename"] == "sample.txt"
-    assert payload["answer_source"] == "fallback"
-    assert payload["model"] == "local-fallback"
-    assert payload["answered_at"]
-    assert payload["answer_latency_ms"] >= 0
-    assert payload["chat_provider"] == "fallback"
-    assert payload["chat_model"] == "local-fallback"
-    assert payload["retrieval"]["top_k"] == 1
-    assert payload["retrieval"]["embedding_provider"] == "mock"
-    assert payload["retrieval"]["embedding_model"] == "mock-embedding-v1"
-    assert payload["retrieval"]["vector_dim"] == 8
-    assert payload["retrieval"]["query_embedding_provider"] == "mock"
-    assert payload["retrieval"]["query_embedding_model"] == "mock-embedding-v1"
-    assert payload["retrieval"]["retrieved_at"]
-    assert payload["retrieval"]["retrieval_latency_ms"] >= 0
-    assert len(payload["retrieval"]["matches"]) == 1
-    assert payload["retrieval"]["matches"][0]["chunk_id"] == "sample.txt::chunk_0"
-    assert payload["retrieval"]["matches"][0]["score"] >= payload["retrieval"]["matches"][0]["vector_score"]
+    assert response.status_code == 400
+    assert response.json()["detail"] == "knowledge_retrieval_mode_requires_debug_or_eval"
 
 
 def test_query_endpoint_requires_llamaindex_index_by_default(monkeypatch):
@@ -1927,43 +1908,42 @@ def test_plan_clarification_falls_back_when_provider_is_unavailable(monkeypatch)
 
 
 def test_query_agent_endpoint_returns_knowledge_workflow_result(
-    workspace_tmp_path,
     monkeypatch,
 ):
-    embedding_dir = workspace_tmp_path / "embeddings"
-    embedding_dir.mkdir()
+    from app.schemas.query import RetrievalResult
 
-    monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
     monkeypatch.setattr(settings, "chat_provider", "fallback")
-    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "auto")
-
-    embedding_payload = {
-        "filename": "sample.txt",
-        "suffix": ".txt",
-        "embedding_provider": "mock",
-        "embedding_model": "mock-embedding-v1",
-        "vector_dim": 8,
-        "source_path": "../data/raw/sample.txt",
-        "source_chunk_path": "../data/chunks/sample.chunks.json",
-        "created_at": "2026-03-14T00:00:00+00:00",
-        "pipeline_version": "indexing-v1",
-        "chunk_count": 1,
-        "embeddings": [
-            {
-                "embedding_id": "sample.txt::chunk_0::embedding",
-                "chunk_id": "sample.txt::chunk_0",
-                "chunk_index": 0,
-                "source_filename": "sample.txt",
-                "source_suffix": ".txt",
-                "char_count": 11,
-                "content": "rag systems",
-                "vector": embedding_service.build_mock_embedding("rag systems"),
-            }
-        ],
-    }
-    (embedding_dir / "sample.embeddings.json").write_text(
-        json.dumps(embedding_payload),
-        encoding="utf-8",
+    monkeypatch.setattr(settings, "agent_default_runtime", "v2")
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "llamaindex")
+    monkeypatch.setenv("ALLOW_AGENT_V2_DEFAULT_RUNTIME_IN_TESTS", "1")
+    monkeypatch.setattr(app.state, "checkpointer", None, raising=False)
+    monkeypatch.setattr(
+        "app.services.agent.query_service.retrieve_with_llamaindex",
+        lambda filename, query_text, top_k: RetrievalResult(
+            filename=filename,
+            embedding_provider="llamaindex",
+            embedding_model="llamaindex",
+            vector_dim=3072,
+            question=query_text,
+            top_k=top_k,
+            retrieved_at="2026-03-14T00:00:00+00:00",
+            retrieval_latency_ms=1.0,
+            query_embedding_provider="llamaindex",
+            query_embedding_model="llamaindex",
+            matches=[],
+        ),
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.generate_rag_answer",
+        lambda **kwargs: {
+            "answer": "RAG uses retrieval before generation.",
+            "answer_source": "fallback",
+            "model": "local-fallback",
+            "answered_at": "2026-03-14T00:00:00+00:00",
+            "answer_latency_ms": 1.0,
+            "chat_provider": "fallback",
+            "chat_model": "local-fallback",
+        },
     )
 
     client = TestClient(app)
@@ -1981,7 +1961,7 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
     assert payload["workflow_status"] == "completed"
     assert payload["terminal_reason"] == "knowledge_answer_generated"
     assert payload["outcome_category"] == "completed"
-    assert payload["is_recoverable"] is False
+    assert payload["is_recoverable"] is None
     assert payload["retry_state"] == "not_applicable"
     assert payload["recommended_recovery_action"] == "none"
     assert payload["available_recovery_actions"] == []

@@ -80,7 +80,15 @@
 - Document deletion now removes persisted LlamaIndex stores alongside chunk and embedding artifacts.
 - Frontend document cards now surface `chunks / embeddings / llamaindex` readiness directly instead of inferring state from 404 responses.
 
+## Package 24
+
+- Status: completed
+- Commit: `refactor: limit legacy retrieval to debug and eval modes`
+- Standard knowledge query paths now reject `KNOWLEDGE_RETRIEVAL_MODE=auto|legacy` with `knowledge_retrieval_mode_requires_debug_or_eval`.
+- `/api/query` and knowledge retrieval inside agent workflows now require explicit LlamaIndex mode in normal runtime operation.
+- Legacy retrieval remains available through diagnostics and retrieval evaluation flows as the project baseline/debug path.
+
 ## Test Baseline
 
-- Backend: `249 passed, 0 failed`
+- Backend: `250 passed, 0 failed`
 - Frontend: `16 passed, 0 failed`
