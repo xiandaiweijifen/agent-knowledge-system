@@ -28,12 +28,23 @@ from app.services.retrieval.retrieval_service import (
 
 logger = logging.getLogger(__name__)
 CORPUS_SOURCE_PENALTY = 0.08
+CORPUS_KIND_MATCH_BONUS = 0.04
+CORPUS_FILENAME_MATCH_BONUS = 0.012
+CORPUS_DOCUMENT_SCORE_BONUS_CAP = 0.03
 CORPUS_QUERY_HINTS: dict[str, tuple[str, ...]] = {
     "runbook": ("runbook", "runbooks"),
     "incident": ("incident", "incidents", "outage", "sev", "severity"),
     "workflow": ("workflow", "recovery", "resume", "retry", "clarification"),
     "overview": ("overview", "rag", "retrieval", "generation"),
 }
+
+
+def _build_corpus_document_id(filename: str) -> str:
+    return filename.strip().lower()
+
+
+def _build_corpus_node_id(filename: str, chunk_id: str) -> str:
+    return f"{_build_corpus_document_id(filename)}::{chunk_id}"
 
 
 def _index_exists(filename: str) -> bool:
@@ -48,11 +59,14 @@ def _build_matches_from_raw_results(
     raw_results: list[dict],
     normalized_query: str,
     fallback_filename: str,
+    *,
+    corpus_bonus: float = 0.0,
 ) -> list[RetrievedChunkMatch]:
     matches: list[RetrievedChunkMatch] = []
 
     for result in raw_results:
         metadata = result["metadata"]
+        source_filename = metadata.get("source_filename", fallback_filename)
         rerank_bonus = compute_rerank_bonus(
             normalized_query,
             result["content"],
@@ -63,12 +77,14 @@ def _build_matches_from_raw_results(
             RetrievedChunkMatch(
                 chunk_id=result["chunk_id"],
                 chunk_index=metadata.get("chunk_index", 0),
-                source_filename=metadata.get("source_filename", fallback_filename),
+                source_filename=source_filename,
                 source_suffix=metadata.get("source_suffix", ""),
                 document_kind=metadata.get(
                     "document_kind",
-                    infer_document_kind(metadata.get("source_filename", fallback_filename)),
+                    infer_document_kind(source_filename),
                 ),
+                corpus_document_id=_build_corpus_document_id(source_filename),
+                corpus_node_id=_build_corpus_node_id(source_filename, result["chunk_id"]),
                 char_count=metadata.get("char_count", len(result["content"])),
                 section_title=metadata.get("section_title", ""),
                 section_path=metadata.get("section_path", []),
@@ -76,7 +92,8 @@ def _build_matches_from_raw_results(
                 content=result["content"],
                 vector_score=result["score"],
                 rerank_bonus=rerank_bonus,
-                score=round(result["score"] + rerank_bonus, 6),
+                corpus_bonus=corpus_bonus,
+                score=round(result["score"] + rerank_bonus + corpus_bonus, 6),
             )
         )
 
@@ -144,6 +161,48 @@ def _select_corpus_filenames(
     return filenames
 
 
+def _tokenize_filename_terms(filename: str) -> set[str]:
+    stem = filename.rsplit(".", 1)[0]
+    return {token for token in stem.lower().replace("-", "_").split("_") if len(token) > 2}
+
+
+def _matching_query_hints(normalized_query: str) -> set[str]:
+    lowered_query = normalized_query.lower()
+    matched_kinds: set[str] = set()
+
+    for document_kind, hints in CORPUS_QUERY_HINTS.items():
+        if any(hint in lowered_query for hint in hints):
+            matched_kinds.add(document_kind)
+
+    return matched_kinds
+
+
+def _compute_corpus_document_bonus(
+    filename: str,
+    normalized_query: str,
+    raw_results: list[dict],
+) -> float:
+    if not raw_results:
+        return 0.0
+
+    matched_kinds = _matching_query_hints(normalized_query)
+    document_kind = infer_document_kind(filename)
+    filename_terms = _tokenize_filename_terms(filename)
+    query_terms = set(normalized_query.lower().replace("-", " ").split())
+    max_vector_score = max(float(result["score"]) for result in raw_results)
+
+    bonus = min(max_vector_score * 0.04, CORPUS_DOCUMENT_SCORE_BONUS_CAP)
+
+    if document_kind in matched_kinds:
+        bonus += CORPUS_KIND_MATCH_BONUS
+
+    filename_overlap = len(filename_terms & query_terms)
+    if filename_overlap:
+        bonus += min(filename_overlap * CORPUS_FILENAME_MATCH_BONUS, 0.024)
+
+    return round(bonus, 6)
+
+
 def retrieve_with_llamaindex(
     filename: str,
     query_text: str,
@@ -202,11 +261,17 @@ def retrieve_with_llamaindex_corpus(
 
     for filename in scoped_filenames:
         raw_results = query_llamaindex_index(filename, normalized_query, top_k=top_k)
+        corpus_bonus = _compute_corpus_document_bonus(
+            filename=filename,
+            normalized_query=normalized_query,
+            raw_results=raw_results,
+        )
         all_matches.extend(
             _build_matches_from_raw_results(
                 raw_results=raw_results,
                 normalized_query=normalized_query,
                 fallback_filename=filename,
+                corpus_bonus=corpus_bonus,
             )
         )
 

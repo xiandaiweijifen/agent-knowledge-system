@@ -77,6 +77,8 @@ class RetrievedChunkMatch(BaseModel):
     source_filename: str
     source_suffix: str
     document_kind: str = "reference"
+    corpus_document_id: str = ""
+    corpus_node_id: str = ""
     char_count: int
     section_title: str = ""
     section_path: list[str] = Field(default_factory=list)
@@ -84,6 +86,7 @@ class RetrievedChunkMatch(BaseModel):
     content: str
     vector_score: float = 0.0
     rerank_bonus: float = 0.0
+    corpus_bonus: float = 0.0
     score: float
 
 

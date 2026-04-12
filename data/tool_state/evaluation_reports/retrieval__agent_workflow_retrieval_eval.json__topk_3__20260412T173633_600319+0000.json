@@ -1,6 +1,6 @@
 {
   "dataset_name": "agent_workflow_retrieval_eval.json",
-  "saved_at": "2026-04-12T17:40:37.185093+00:00",
+  "saved_at": "2026-04-12T17:36:33.600319+00:00",
   "report_source": "fresh",
   "report": {
     "top_k": 3,
@@ -27,11 +27,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       },
       {
         "case_id": "request_routing",
@@ -48,11 +44,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       },
       {
         "case_id": "retrieval_path",
@@ -69,11 +61,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       },
       {
         "case_id": "tool_execution_path",
@@ -90,11 +78,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       },
       {
         "case_id": "clarification_step",
@@ -111,11 +95,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       },
       {
         "case_id": "failure_handling",
@@ -132,11 +112,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       },
       {
         "case_id": "observability",
@@ -153,11 +129,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       },
       {
         "case_id": "workflow_evaluation",
@@ -174,11 +146,7 @@
         "hit_at_k": true,
         "reciprocal_rank": 1.0,
         "groundedness_status": "grounded",
-        "citation_coverage": 1.0,
-        "top_document_kind": "workflow",
-        "citation_document_kinds": [
-          "workflow"
-        ]
+        "citation_coverage": 1.0
       }
     ]
   },

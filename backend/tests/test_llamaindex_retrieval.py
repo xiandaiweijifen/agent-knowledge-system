@@ -79,6 +79,8 @@ def test_retrieve_with_llamaindex_returns_retrieval_result(workspace_tmp_path, m
     assert len(result.matches) == 1
     assert result.matches[0].chunk_id == "mydoc.txt::chunk_0"
     assert result.matches[0].document_kind == "reference"
+    assert result.matches[0].corpus_document_id == "mydoc.txt"
+    assert result.matches[0].corpus_node_id == "mydoc.txt::mydoc.txt::chunk_0"
     assert result.matches[0].section_title == "Agent Framework"
     assert result.matches[0].section_path == ["Agent Framework"]
     assert result.matches[0].heading_level == 2
@@ -194,6 +196,8 @@ def test_retrieve_with_llamaindex_corpus_merges_multiple_documents(workspace_tmp
     assert result.corpus_filenames == ["doc_a.md", "doc_b.md"]
     assert len(result.matches) == 2
     assert result.matches[0].source_filename == "doc_b.md"
+    assert result.matches[0].corpus_document_id == "doc_b.md"
+    assert result.matches[0].corpus_node_id == "doc_b.md::doc_b.md::chunk_0"
     assert result.matches[0].section_title == "Common Failure Modes"
 
 
@@ -360,6 +364,70 @@ def test_retrieve_with_llamaindex_corpus_scopes_documents_from_query_hints(
     assert result.corpus_filenames == ["checkout_service_runbook.md"]
     assert query_mock.call_count == 1
     assert result.matches[0].source_filename == "checkout_service_runbook.md"
+
+
+def test_retrieve_with_llamaindex_corpus_applies_document_bonus_for_better_corpus_identity(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.LLAMAINDEX_STORE_DIR",
+        workspace_tmp_path,
+    )
+    for stem in ("architecture_notes", "checkout_service_runbook"):
+        index_dir = workspace_tmp_path / stem
+        index_dir.mkdir()
+        (index_dir / "index_store.json").write_text("{}")
+
+    mock_results = {
+        "architecture_notes.md": [
+            {
+                "chunk_id": "architecture_notes.md::chunk_0",
+                "content": "Generic recovery notes for service architecture.",
+                "score": 0.72,
+                "metadata": {
+                    "chunk_index": 0,
+                    "source_filename": "architecture_notes.md",
+                    "source_suffix": ".md",
+                    "char_count": 44,
+                    "section_title": "Recovery Notes",
+                    "section_path": ["Architecture", "Recovery Notes"],
+                    "heading_level": 2,
+                },
+            }
+        ],
+        "checkout_service_runbook.md": [
+            {
+                "chunk_id": "checkout_service_runbook.md::chunk_0",
+                "content": "Checkout runbook recovery steps and mitigation notes.",
+                "score": 0.7,
+                "metadata": {
+                    "chunk_index": 0,
+                    "source_filename": "checkout_service_runbook.md",
+                    "source_suffix": ".md",
+                    "char_count": 49,
+                    "section_title": "Mitigation Notes",
+                    "section_path": ["Checkout Service Runbook", "Mitigation Notes"],
+                    "heading_level": 2,
+                },
+            }
+        ],
+    }
+
+    monkeypatch.setattr(
+        "app.services.retrieval.llamaindex_retrieval_service.query_llamaindex_index",
+        MagicMock(side_effect=lambda filename, query_text, top_k: mock_results[filename]),
+    )
+
+    result = retrieve_with_llamaindex_corpus(
+        "show checkout mitigation steps",
+        top_k=2,
+        filenames=["architecture_notes.md", "checkout_service_runbook.md"],
+    )
+
+    assert result.corpus_filenames == ["architecture_notes.md", "checkout_service_runbook.md"]
+    assert result.matches[0].source_filename == "checkout_service_runbook.md"
+    assert result.matches[0].corpus_bonus > result.matches[1].corpus_bonus
 
 
 def test_query_service_falls_back_to_legacy_in_debug_context(monkeypatch):

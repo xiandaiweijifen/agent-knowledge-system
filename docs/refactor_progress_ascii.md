@@ -175,7 +175,15 @@
 - Retrieval evaluation case results now record `top_document_kind` and `citation_document_kinds`.
 - Metrics summary retrieval copy now describes dominant document kinds alongside hit rate, MRR, groundedness, and citation coverage.
 
+## Package 38
+
+- Status: completed
+- Commit: `refactor: introduce corpus-native retrieval identity and ranking groundwork`
+- Corpus retrieval matches now carry stable cross-document identity fields: `corpus_document_id` and `corpus_node_id`.
+- Corpus ranking now adds an explicit `corpus_bonus`, so final ordering is no longer just per-document score merging plus diversification.
+- Document-level priors now account for document kind hints, filename overlap, and document-local top relevance before final corpus ranking.
+
 ## Test Baseline
 
-- Backend: `268 passed, 0 failed`
+- Backend: `269 passed, 0 failed`
 - Frontend: `17 passed, 0 failed`
