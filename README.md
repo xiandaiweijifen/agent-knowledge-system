@@ -68,6 +68,47 @@ Still intentionally unfinished:
 - broader multi-step `agent_v2` workflow branching and policy logic
 - deeper cost and latency analytics
 
+Knowledge-layer status today:
+
+- the project now uses an explicit `LlamaIndex` primary retrieval path in standard runtime mode
+- document assets expose readiness for:
+  - `chunks`
+  - `embeddings`
+  - `llamaindex`
+- chunking is now section-aware, and persisted knowledge nodes carry:
+  - `section_title`
+  - `section_path`
+  - `heading_level`
+  - `document_kind`
+- retrieval supports both:
+  - single-document lookup
+  - corpus queries with `filename = null`
+- retrieval ranking now includes:
+  - query normalization
+  - metadata-aware rerank bonus
+  - source diversification
+  - metadata-aware corpus filtering
+  - document-level corpus bonus
+- query results now surface grounded-answer features:
+  - `answer_citations`
+  - `groundedness_status`
+  - `citation_coverage`
+  - verification notes
+- retrieval evaluation now distinguishes:
+  - retrieval quality
+  - grounded answer quality
+
+Current knowledge-layer boundary:
+
+- verification is signal-heavy rather than a strong independent verifier
+- reranking is light-to-medium strength rather than a heavy second-stage ranker
+- chunk/node modeling is structurally upgraded, but not yet hierarchical
+- corpus retrieval is materially improved, but not yet fully corpus-native
+
+Next knowledge-layer priority:
+
+- continue pushing corpus retrieval toward a more corpus-native design over time
+
 ### Runtime Modes
 
 The repository currently has two runtime surfaces:
@@ -91,8 +132,12 @@ When `AGENT_DEFAULT_RUNTIME=v2`, the default `/api/query/agent` entrypoints disp
 - upload and preview local documents
 - persist chunk artifacts
 - persist embedding artifacts
-- retrieve relevant chunks for a question
+- expose knowledge asset readiness for chunks, embeddings, and LlamaIndex stores
+- retrieve relevant chunks for a question with explicit LlamaIndex primary mode
+- run corpus retrieval without a fixed document context
 - inspect retrieval diagnostics and ranked candidates
+- return section-aware matches with document kind and corpus identity metadata
+- generate grounded answers with citations and verification signals
 - run fallback answering when no live model answer path is configured
 
 ### 2. Agent Layer
@@ -136,6 +181,7 @@ The agent runtime already supports:
 ### 5. Evaluation and Observability
 
 - retrieval evaluation datasets and reports
+- retrieval groundedness and citation coverage metrics
 - agent route evaluation datasets and reports
 - agent workflow evaluation datasets and reports
 - tool execution evaluation datasets and reports
@@ -149,11 +195,13 @@ High-level backend flow:
 
 1. Documents are uploaded and stored locally.
 2. Text is chunked and embedding artifacts are persisted.
-3. Retrieval services score and rerank candidate chunks.
-4. Requests are routed into retrieval, clarification, or tool/workflow execution.
-5. Planner services decide tool or workflow behavior, with fallback paths if model planning fails.
-6. Workflow runs are persisted with trace events, lineage metadata, and planner diagnostics.
-7. Evaluation services aggregate benchmark results and persist latest/history reports for the dashboard.
+3. LlamaIndex-backed retrieval services score and rerank section-aware candidate chunks.
+4. Corpus queries can merge and rank candidates across multiple documents with explicit corpus metadata.
+5. Requests are routed into retrieval, clarification, or tool/workflow execution.
+6. Answer generation synthesizes grounded responses with citations and verification signals.
+7. Planner services decide tool or workflow behavior, with fallback paths if model planning fails.
+8. Workflow runs are persisted with trace events, lineage metadata, and planner diagnostics.
+9. Evaluation services aggregate benchmark results and persist latest/history reports for the dashboard.
 
 ## Recovery Model
 
@@ -304,7 +352,7 @@ Notes:
 - Backend: FastAPI
 - Frontend: React + Vite
 - Agent runtime: LangGraph + LangGraph checkpoints
-- Retrieval: LlamaIndex-backed query path with existing local artifacts
+- Retrieval: LlamaIndex-backed knowledge backbone with corpus retrieval, structured metadata, grounded citations, and verification signals
 - LLM access: Gemini and OpenAI APIs, with local fallback paths
 - State persistence today:
   - `agent_v2` runs persisted in JSON for easy inspection
@@ -555,4 +603,5 @@ The next iteration focus is runtime maturity and project hardening rather than f
 - stronger project documentation and demo clarity
 - more realistic adapter boundaries
 - broader evaluation coverage
+- deeper corpus-native retrieval over time
 - deeper runtime policy and analytics over time
