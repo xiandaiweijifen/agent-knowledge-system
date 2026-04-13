@@ -200,9 +200,11 @@ export function QueryView({
           corpusDocuments: "语料文档",
           scopeDocument: "单文档",
           scopeCorpus: "多文档",
-            sourceDocument: "来源文档",
-            sourceKind: "来源类型",
-            sourceSection: "来源章节",
+          sourceDocument: "来源文档",
+          sourceKind: "来源类型",
+          corpusDocumentId: "语料文档 Id",
+          corpusNodeId: "语料节点 Id",
+          sourceSection: "来源章节",
           answerCitations: "回答引用",
           groundedness: "依据强度",
           citationCoverage: "引用覆盖率",
@@ -211,6 +213,7 @@ export function QueryView({
           chars: "字符",
           vector: "向量",
           bonus: "加成",
+          corpusBonus: "语料加成",
           noAnswerTrace: "还没有回答链路",
           noAnswerTraceCopy: "运行查询后可检查回答文本、模型提供方和 Top 检索片段。",
           retrievalDiagnostics: "检索诊断",
@@ -390,9 +393,11 @@ export function QueryView({
           corpusDocuments: "Corpus Documents",
           scopeDocument: "Document",
           scopeCorpus: "Corpus",
-            sourceDocument: "Source Document",
-            sourceKind: "Source Kind",
-            sourceSection: "Source Section",
+          sourceDocument: "Source Document",
+          sourceKind: "Source Kind",
+          corpusDocumentId: "Corpus Document Id",
+          corpusNodeId: "Corpus Node Id",
+          sourceSection: "Source Section",
           answerCitations: "Answer Citations",
           groundedness: "Groundedness",
           citationCoverage: "Citation Coverage",
@@ -401,6 +406,7 @@ export function QueryView({
           chars: "chars",
           vector: "vector",
           bonus: "bonus",
+          corpusBonus: "corpus bonus",
           noAnswerTrace: "No answer trace yet",
           noAnswerTraceCopy:
             "Run a query to inspect answer text, provider selection, and top retrieved chunks.",
@@ -1789,15 +1795,24 @@ export function QueryView({
                       <strong>{match.chunk_id}</strong>
                       <span>{match.score.toFixed(6)}</span>
                     </header>
+                    <div className="meta-row">
+                      <span>{queryCopy.sourceDocument} {match.source_filename}</span>
+                      <span>{queryCopy.sourceKind} {match.document_kind ?? "reference"}</span>
+                      <span>{queryCopy.sourceSection} {formatSectionPath(match.section_path)}</span>
+                    </div>
+                    {queryResult.retrieval.retrieval_scope === "corpus" && (
                       <div className="meta-row">
-                        <span>{queryCopy.sourceDocument} {match.source_filename}</span>
-                        <span>{queryCopy.sourceKind} {match.document_kind ?? "reference"}</span>
-                        <span>{queryCopy.sourceSection} {formatSectionPath(match.section_path)}</span>
+                        <span>{queryCopy.corpusDocumentId} {match.corpus_document_id ?? "-"}</span>
+                        <span>{queryCopy.corpusNodeId} {match.corpus_node_id ?? "-"}</span>
                       </div>
+                    )}
                     <div className="meta-row">
                       <span>{queryCopy.chars} {match.char_count}</span>
                       <span>{queryCopy.vector} {match.vector_score?.toFixed(6) ?? "-"}</span>
                       <span>{queryCopy.bonus} {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
+                      {queryResult.retrieval.retrieval_scope === "corpus" && (
+                        <span>{queryCopy.corpusBonus} {match.corpus_bonus?.toFixed(6) ?? "-"}</span>
+                      )}
                     </div>
                     <p>{match.content}</p>
                   </article>
@@ -1852,14 +1867,23 @@ export function QueryView({
                       <strong>{match.chunk_id}</strong>
                       <span>{match.score.toFixed(6)}</span>
                     </header>
+                    <div className="meta-row">
+                      <span>{queryCopy.sourceDocument} {match.source_filename}</span>
+                      <span>{queryCopy.sourceKind} {match.document_kind ?? "reference"}</span>
+                      <span>{queryCopy.sourceSection} {formatSectionPath(match.section_path)}</span>
+                    </div>
+                    {diagnosticsResult.retrieval.retrieval_scope === "corpus" && (
                       <div className="meta-row">
-                        <span>{queryCopy.sourceDocument} {match.source_filename}</span>
-                        <span>{queryCopy.sourceKind} {match.document_kind ?? "reference"}</span>
-                        <span>{queryCopy.sourceSection} {formatSectionPath(match.section_path)}</span>
+                        <span>{queryCopy.corpusDocumentId} {match.corpus_document_id ?? "-"}</span>
+                        <span>{queryCopy.corpusNodeId} {match.corpus_node_id ?? "-"}</span>
                       </div>
+                    )}
                     <div className="meta-row">
                       <span>{queryCopy.vector} {match.vector_score?.toFixed(6) ?? "-"}</span>
                       <span>{queryCopy.bonus} {match.rerank_bonus?.toFixed(6) ?? "-"}</span>
+                      {diagnosticsResult.retrieval.retrieval_scope === "corpus" && (
+                        <span>{queryCopy.corpusBonus} {match.corpus_bonus?.toFixed(6) ?? "-"}</span>
+                      )}
                       <span>{queryCopy.chars} {match.char_count}</span>
                     </div>
                     <p>{match.content}</p>

@@ -73,6 +73,8 @@ describe("QueryView", () => {
                 chunk_index: 0,
                 source_filename: "rag_overview.md",
                 source_suffix: ".md",
+                corpus_document_id: "rag_overview.md",
+                corpus_node_id: "rag_overview.md::rag_overview.md::chunk_0",
                 char_count: 400,
                 section_title: "What RAG Means",
                 section_path: ["Retrieval-Augmented Generation Overview", "What RAG Means"],
@@ -81,6 +83,7 @@ describe("QueryView", () => {
                 score: 0.95,
                 vector_score: 0.66,
                 rerank_bonus: 0.29,
+                corpus_bonus: 0,
               },
             ],
           },
@@ -597,6 +600,9 @@ describe("QueryView", () => {
                 chunk_index: 7,
                 source_filename: "rag_overview.md",
                 source_suffix: ".md",
+                document_kind: "overview",
+                corpus_document_id: "rag_overview.md",
+                corpus_node_id: "rag_overview.md::rag_overview.md::chunk_7",
                 char_count: 345,
                 section_title: "Common Failure Modes",
                 section_path: [
@@ -608,6 +614,7 @@ describe("QueryView", () => {
                 score: 1.03,
                 vector_score: 0.73,
                 rerank_bonus: 0.3,
+                corpus_bonus: 0.028,
               },
             ],
           },
@@ -647,11 +654,17 @@ describe("QueryView", () => {
       ),
     ).toBeInTheDocument();
     expect(answerTrace.getByText("Source Document rag_overview.md")).toBeInTheDocument();
+    expect(answerTrace.getByText("Source Kind overview")).toBeInTheDocument();
     expect(
       answerTrace.getByText(
         "Source Section Retrieval-Augmented Generation Overview / Common Failure Modes",
       ),
     ).toBeInTheDocument();
+    expect(answerTrace.getByText("Corpus Document Id rag_overview.md")).toBeInTheDocument();
+    expect(
+      answerTrace.getByText("Corpus Node Id rag_overview.md::rag_overview.md::chunk_7"),
+    ).toBeInTheDocument();
+    expect(answerTrace.getByText("corpus bonus 0.028000")).toBeInTheDocument();
   });
 
   it("renders recent workflow runs and loads a selected run", async () => {

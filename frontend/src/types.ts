@@ -86,6 +86,8 @@ export type RetrievalMatch = {
   source_filename: string;
   source_suffix: string;
   document_kind?: string;
+  corpus_document_id?: string;
+  corpus_node_id?: string;
   char_count: number;
   section_title?: string;
   section_path?: string[];
@@ -94,6 +96,7 @@ export type RetrievalMatch = {
   score: number;
   vector_score?: number;
   rerank_bonus?: number;
+  corpus_bonus?: number;
 };
 
 export type RetrievalResponse = {
