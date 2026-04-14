@@ -16,6 +16,7 @@ def test_get_document_assets_returns_readiness(monkeypatch):
                 "chunks_ready": True,
                 "embeddings_ready": True,
                 "llamaindex_ready": False,
+                "qdrant_ready": True,
             },
         },
     )
@@ -27,6 +28,7 @@ def test_get_document_assets_returns_readiness(monkeypatch):
         "chunks_ready": True,
         "embeddings_ready": True,
         "llamaindex_ready": False,
+        "qdrant_ready": True,
     }
 
 

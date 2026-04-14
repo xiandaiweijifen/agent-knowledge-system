@@ -28,6 +28,7 @@ def test_list_documents_filters_hidden_and_non_document_files(
                 "chunks_ready": False,
                 "embeddings_ready": False,
                 "llamaindex_ready": False,
+                "qdrant_ready": False,
             },
         },
         {
@@ -39,6 +40,7 @@ def test_list_documents_filters_hidden_and_non_document_files(
                 "chunks_ready": False,
                 "embeddings_ready": False,
                 "llamaindex_ready": False,
+                "qdrant_ready": False,
             },
         },
     ]
@@ -79,9 +81,15 @@ def test_delete_document_with_artifacts_removes_related_files(
 
     from app.services.indexing import embedding_service
     from app.services.ingestion import llamaindex_ingestion_service
+    from app.storage.vector import qdrant_client
 
     monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
     monkeypatch.setattr(llamaindex_ingestion_service, "LLAMAINDEX_STORE_DIR", llamaindex_dir)
+    monkeypatch.setattr(
+        qdrant_client,
+        "delete_qdrant_points_for_document",
+        lambda filename: {"enabled": True, "deleted": True, "filename": filename},
+    )
     (embedding_dir / "notes.embeddings.json").write_text("{}", encoding="utf-8")
     (llamaindex_dir / "notes" / "docstore.json").write_text("{}", encoding="utf-8")
 
@@ -105,6 +113,7 @@ def test_delete_document_with_artifacts_removes_related_files(
         "deleted_chunks": True,
         "deleted_embeddings": True,
         "deleted_llamaindex_index": True,
+        "deleted_qdrant_points": True,
     }
     assert str(raw_dir / target_name) in removed_paths
     assert str(chunk_dir / "notes.chunks.json") in removed_paths

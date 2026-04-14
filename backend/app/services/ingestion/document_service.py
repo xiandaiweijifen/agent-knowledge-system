@@ -113,6 +113,7 @@ def build_document_asset_status(filename: str) -> dict:
     # Avoid top-level import cycles with the indexing and llamaindex services.
     from app.services.indexing.embedding_service import get_embedding_output_path
     from app.services.ingestion.llamaindex_ingestion_service import has_llamaindex_index
+    from app.storage.vector.qdrant_client import has_qdrant_points_for_document
 
     embedding_path = get_embedding_output_path(filename)
 
@@ -120,6 +121,7 @@ def build_document_asset_status(filename: str) -> dict:
         "chunks_ready": chunk_path.exists() and chunk_path.is_file(),
         "embeddings_ready": embedding_path.exists() and embedding_path.is_file(),
         "llamaindex_ready": has_llamaindex_index(filename),
+        "qdrant_ready": has_qdrant_points_for_document(filename),
     }
 
 
@@ -285,6 +287,7 @@ def delete_document_with_artifacts(filename: str) -> dict:
     # Avoid top-level import cycles with the indexing service.
     from app.services.indexing.embedding_service import get_embedding_output_path
     from app.services.ingestion.llamaindex_ingestion_service import LLAMAINDEX_STORE_DIR
+    from app.storage.vector.qdrant_client import delete_qdrant_points_for_document
 
     embedding_path = get_embedding_output_path(filename)
     llamaindex_store_path = LLAMAINDEX_STORE_DIR / Path(filename).stem
@@ -309,10 +312,18 @@ def delete_document_with_artifacts(filename: str) -> dict:
         llamaindex_store_path.rmdir()
         deleted_llamaindex_index = True
 
+    deleted_qdrant_points = False
+    try:
+        qdrant_result = delete_qdrant_points_for_document(filename)
+        deleted_qdrant_points = bool(qdrant_result.get("deleted"))
+    except Exception:
+        deleted_qdrant_points = False
+
     return {
         "filename": filename,
         "deleted_document": True,
         "deleted_chunks": deleted_chunks,
         "deleted_embeddings": deleted_embeddings,
         "deleted_llamaindex_index": deleted_llamaindex_index,
+        "deleted_qdrant_points": deleted_qdrant_points,
     }

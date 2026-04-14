@@ -138,3 +138,68 @@ def build_qdrant_payload(*, filename: str, embedding_record: Any) -> dict[str, A
         "content": embedding_record.content,
         "corpus_document_id": filename.strip().lower(),
     }
+
+
+def has_qdrant_points_for_document(filename: str) -> bool:
+    """Return whether Qdrant currently stores points for the given document."""
+    if not qdrant_enabled():
+        return False
+
+    client = build_qdrant_client()
+    if client is None:
+        return False
+
+    _, rest = _import_qdrant_client()
+    response = client.count(
+        collection_name=get_qdrant_collection_name(),
+        count_filter=rest.Filter(
+            must=[
+                rest.FieldCondition(
+                    key="source_filename",
+                    match=rest.MatchValue(value=filename),
+                )
+            ]
+        ),
+        exact=True,
+    )
+    return bool(response.count)
+
+
+def delete_qdrant_points_for_document(filename: str) -> dict[str, Any]:
+    """Delete all Qdrant points belonging to a document."""
+    if not qdrant_enabled():
+        return {
+            "enabled": False,
+            "deleted": False,
+            "reason": "qdrant_not_configured",
+        }
+
+    client = build_qdrant_client()
+    if client is None:
+        return {
+            "enabled": False,
+            "deleted": False,
+            "reason": "qdrant_not_configured",
+        }
+
+    _, rest = _import_qdrant_client()
+    client.delete(
+        collection_name=get_qdrant_collection_name(),
+        points_selector=rest.FilterSelector(
+            filter=rest.Filter(
+                must=[
+                    rest.FieldCondition(
+                        key="source_filename",
+                        match=rest.MatchValue(value=filename),
+                    )
+                ]
+            )
+        ),
+        wait=True,
+    )
+    return {
+        "enabled": True,
+        "deleted": True,
+        "filename": filename,
+        "collection_name": get_qdrant_collection_name(),
+    }
