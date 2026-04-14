@@ -20,6 +20,7 @@ def test_get_qdrant_collection_name_normalizes_invalid_chars(monkeypatch):
 
 
 def test_build_qdrant_client_returns_none_when_unconfigured(monkeypatch):
+    qdrant_client.reset_qdrant_client_cache()
     monkeypatch.setattr(settings, "qdrant_url", "")
     monkeypatch.setattr(settings, "qdrant_local_path", "")
 
@@ -27,6 +28,7 @@ def test_build_qdrant_client_returns_none_when_unconfigured(monkeypatch):
 
 
 def test_build_qdrant_client_uses_local_path(monkeypatch):
+    qdrant_client.reset_qdrant_client_cache()
     captured = {}
 
     class DummyClient:
@@ -48,6 +50,7 @@ def test_build_qdrant_client_uses_local_path(monkeypatch):
 
 
 def test_build_qdrant_client_uses_remote_url(monkeypatch):
+    qdrant_client.reset_qdrant_client_cache()
     captured = {}
 
     class DummyClient:
@@ -72,6 +75,29 @@ def test_build_qdrant_client_uses_remote_url(monkeypatch):
         "api_key": "secret",
         "prefer_grpc": True,
     }
+
+
+def test_build_qdrant_client_reuses_cached_instance(monkeypatch):
+    qdrant_client.reset_qdrant_client_cache()
+    created = {"count": 0}
+
+    class DummyClient:
+        def __init__(self, **kwargs):
+            created["count"] += 1
+
+    monkeypatch.setattr(settings, "qdrant_url", "")
+    monkeypatch.setattr(settings, "qdrant_local_path", "tmp/qdrant")
+    monkeypatch.setattr(
+        qdrant_client,
+        "_import_qdrant_client",
+        lambda: (DummyClient, SimpleNamespace()),
+    )
+
+    first = qdrant_client.build_qdrant_client()
+    second = qdrant_client.build_qdrant_client()
+
+    assert first is second
+    assert created["count"] == 1
 
 
 def test_build_qdrant_payload_maps_embedding_record_fields():

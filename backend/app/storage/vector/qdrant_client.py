@@ -17,6 +17,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 QDRANT_PAYLOAD_TEXT_FIELDS = ("content", "section_title", "source_filename", "document_kind")
+_QDRANT_CLIENT_CACHE: dict[tuple[str, str, str, bool], Any] = {}
 
 
 def qdrant_enabled() -> bool:
@@ -42,6 +43,15 @@ def _import_qdrant_client():
     return QdrantClient, rest
 
 
+def _current_qdrant_client_key() -> tuple[str, str, str, bool]:
+    return (
+        settings.qdrant_url.strip(),
+        settings.qdrant_local_path.strip(),
+        settings.qdrant_api_key.strip(),
+        bool(settings.qdrant_prefer_grpc),
+    )
+
+
 def build_qdrant_client() -> Any | None:
     """
     Build a Qdrant client from project settings.
@@ -53,18 +63,32 @@ def build_qdrant_client() -> Any | None:
         logger.info("Qdrant not configured")
         return None
 
+    cache_key = _current_qdrant_client_key()
+    cached_client = _QDRANT_CLIENT_CACHE.get(cache_key)
+    if cached_client is not None:
+        return cached_client
+
     QdrantClient, _ = _import_qdrant_client()
 
     if settings.qdrant_local_path:
         logger.info("Using local Qdrant path at %s", settings.qdrant_local_path)
-        return QdrantClient(path=settings.qdrant_local_path)
+        client = QdrantClient(path=settings.qdrant_local_path)
+        _QDRANT_CLIENT_CACHE[cache_key] = client
+        return client
 
     logger.info("Using remote Qdrant endpoint at %s", settings.qdrant_url)
-    return QdrantClient(
+    client = QdrantClient(
         url=settings.qdrant_url,
         api_key=settings.qdrant_api_key or None,
         prefer_grpc=settings.qdrant_prefer_grpc,
     )
+    _QDRANT_CLIENT_CACHE[cache_key] = client
+    return client
+
+
+def reset_qdrant_client_cache() -> None:
+    """Reset cached Qdrant clients. Intended for tests and local recovery."""
+    _QDRANT_CLIENT_CACHE.clear()
 
 
 def ensure_qdrant_collection(vector_dim: int, distance: str = "Cosine") -> dict[str, Any]:
