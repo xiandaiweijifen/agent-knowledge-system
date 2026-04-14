@@ -15,7 +15,7 @@ from app.services.indexing.embedding_service import (
     load_persisted_embeddings,
     persist_document_embeddings,
 )
-from app.services.ingestion.llamaindex_ingestion_service import build_llamaindex_index
+from app.services.vectorstore.index_service import build_vector_index
 
 router = APIRouter(tags=["documents"])
 
@@ -143,7 +143,7 @@ def persist_embeddings(filename: str):
     try:
         result = persist_document_embeddings(filename)
         try:
-            llamaindex_result = build_llamaindex_index(filename)
+            llamaindex_result = build_vector_index(filename)
             result["llamaindex_node_count"] = llamaindex_result["node_count"]
             result["llamaindex_store_path"] = llamaindex_result["store_path"]
         except Exception as exc:

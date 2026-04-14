@@ -3,11 +3,11 @@ import logging
 from app.core.config import settings
 from app.schemas.query import QueryResponse
 from app.services.llm.answer_service import generate_rag_answer
-from app.services.retrieval.llamaindex_retrieval_service import (
-    retrieve_with_llamaindex,
-    retrieve_with_llamaindex_corpus,
-)
 from app.services.retrieval.retrieval_service import retrieve_relevant_chunks
+from app.services.vectorstore.retrieval_service import (
+    retrieve_with_vector_index,
+    retrieve_with_vector_index_corpus,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +28,28 @@ def _normalized_knowledge_retrieval_mode() -> str:
     if mode not in {"llamaindex", "auto", "legacy"}:
         raise ValueError("knowledge_retrieval_mode_invalid")
     return mode
+
+
+def retrieve_with_llamaindex(filename: str, query_text: str, top_k: int = 3):
+    """Backward-compatible alias during vector store abstraction rollout."""
+    return retrieve_with_vector_index(
+        filename=filename,
+        query_text=query_text,
+        top_k=top_k,
+    )
+
+
+def retrieve_with_llamaindex_corpus(
+    query_text: str,
+    top_k: int = 3,
+    filenames: list[str] | None = None,
+):
+    """Backward-compatible alias during vector store abstraction rollout."""
+    return retrieve_with_vector_index_corpus(
+        query_text=query_text,
+        top_k=top_k,
+        filenames=filenames,
+    )
 
 
 def _retrieve_via_configured_mode(
