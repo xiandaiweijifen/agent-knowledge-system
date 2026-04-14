@@ -1,5 +1,6 @@
 import json
 from types import SimpleNamespace
+import uuid
 
 import pytest
 
@@ -115,6 +116,7 @@ def test_sync_document_embeddings_to_qdrant_upserts_points(workspace_tmp_path, m
     assert operations["upsert"]["collection_name"] == "agent_knowledge_chunks"
     assert operations["upsert"]["wait"] is True
     assert len(operations["upsert"]["points"]) == 2
+    assert str(uuid.UUID(operations["upsert"]["points"][0].id)) == operations["upsert"]["points"][0].id
 
 
 def test_sync_document_embeddings_to_qdrant_rejects_zero_dim(workspace_tmp_path, monkeypatch):

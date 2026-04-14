@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import re
+import uuid
 from typing import Any
 
 from app.core.config import settings
@@ -144,7 +145,7 @@ def ensure_qdrant_collection(vector_dim: int, distance: str = "Cosine") -> dict[
 
 def build_qdrant_point_id(chunk_id: str) -> str:
     """Return a stable Qdrant point id derived from the chunk id."""
-    return chunk_id
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, chunk_id))
 
 
 def build_qdrant_payload(*, filename: str, embedding_record: Any) -> dict[str, Any]:

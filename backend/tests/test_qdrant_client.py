@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+import uuid
 
 from app.core.config import settings
 from app.storage.vector import qdrant_client
@@ -123,3 +124,10 @@ def test_build_qdrant_payload_maps_embedding_record_fields():
     assert payload["source_filename"] == "doc.md"
     assert payload["corpus_document_id"] == "doc.md"
     assert payload["section_path"] == ["Doc", "Intro"]
+
+
+def test_build_qdrant_point_id_returns_stable_uuid():
+    point_id = qdrant_client.build_qdrant_point_id("doc.md::chunk_0")
+
+    assert point_id == qdrant_client.build_qdrant_point_id("doc.md::chunk_0")
+    assert str(uuid.UUID(point_id)) == point_id
