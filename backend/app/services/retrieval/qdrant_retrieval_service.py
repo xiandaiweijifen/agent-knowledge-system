@@ -58,9 +58,9 @@ def _query_qdrant_points(
         raise FileNotFoundError("qdrant")
 
     _, rest = _import_qdrant_client()
-    results = client.search(
+    response = client.query_points(
         collection_name=get_qdrant_collection_name(),
-        query_vector=query_vector,
+        query=query_vector,
         query_filter=rest.Filter(
             must=[
                 rest.FieldCondition(
@@ -73,6 +73,7 @@ def _query_qdrant_points(
         with_payload=True,
         with_vectors=False,
     )
+    results = response.points
 
     raw_results: list[dict[str, Any]] = []
     for point in results:
