@@ -180,6 +180,76 @@ def test_query_endpoint_supports_corpus_retrieval_without_filename(monkeypatch):
     assert payload["retrieval"]["matches"][0]["source_filename"] == "doc_b.md"
 
 
+def test_query_endpoint_supports_qdrant_document_retrieval(monkeypatch):
+    client = TestClient(app)
+    from app.schemas.query import RetrievalResult
+
+    monkeypatch.setattr(settings, "knowledge_retrieval_mode", "llamaindex")
+    monkeypatch.setattr(settings, "vector_store_provider", "qdrant")
+    monkeypatch.setattr(
+        "app.services.agent.query_service.retrieve_with_llamaindex",
+        lambda filename, query_text, top_k: RetrievalResult.model_validate(
+            {
+                "filename": filename,
+                "retrieval_scope": "document",
+                "corpus_filenames": [filename],
+                "embedding_provider": "qdrant",
+                "embedding_model": "mock-embedding-v1",
+                "vector_dim": 8,
+                "question": query_text,
+                "top_k": top_k,
+                "retrieved_at": "2026-04-12T00:00:00+00:00",
+                "retrieval_latency_ms": 8.0,
+                "query_embedding_provider": "mock",
+                "query_embedding_model": "mock-embedding-v1",
+                "matches": [
+                    {
+                        "chunk_id": "doc.md::chunk_0",
+                        "chunk_index": 0,
+                        "source_filename": "doc.md",
+                        "source_suffix": ".md",
+                        "document_kind": "overview",
+                        "char_count": 40,
+                        "section_title": "Overview",
+                        "section_path": ["Overview"],
+                        "heading_level": 1,
+                        "content": "RAG combines retrieval with generation.",
+                        "vector_score": 0.82,
+                        "rerank_bonus": 0.05,
+                        "score": 0.87,
+                    }
+                ],
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "app.services.agent.query_service.generate_rag_answer",
+        lambda question, matches: {
+            "answer": "RAG combines retrieval with generation.",
+            "answer_source": "fallback",
+            "model": "fallback",
+            "answered_at": "2026-04-12T00:00:00+00:00",
+            "answer_latency_ms": 1.0,
+            "chat_provider": "fallback",
+            "chat_model": "fallback",
+        },
+    )
+
+    response = client.post(
+        "/api/query",
+        json={
+            "filename": "doc.md",
+            "question": "What is RAG?",
+            "top_k": 1,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["retrieval"]["embedding_provider"] == "qdrant"
+    assert payload["retrieval"]["matches"][0]["chunk_id"] == "doc.md::chunk_0"
+
+
 def test_query_diagnostics_endpoint_returns_ranked_candidates(
     workspace_tmp_path,
     monkeypatch,
