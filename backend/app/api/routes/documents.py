@@ -15,6 +15,9 @@ from app.services.indexing.embedding_service import (
     load_persisted_embeddings,
     persist_document_embeddings,
 )
+from app.services.vectorstore.qdrant_index_service import (
+    sync_document_embeddings_to_qdrant,
+)
 from app.services.vectorstore.index_service import build_vector_index
 
 router = APIRouter(tags=["documents"])
@@ -142,6 +145,15 @@ def get_persisted_chunks(filename: str):
 def persist_embeddings(filename: str):
     try:
         result = persist_document_embeddings(filename)
+        try:
+            qdrant_result = sync_document_embeddings_to_qdrant(filename)
+            if qdrant_result.get("synced"):
+                result["qdrant_point_count"] = qdrant_result["point_count"]
+                result["qdrant_collection_name"] = qdrant_result["collection_name"]
+            elif qdrant_result.get("enabled") is False:
+                result["qdrant_sync_skipped"] = qdrant_result["reason"]
+        except Exception as exc:
+            result["qdrant_warning"] = str(exc)
         try:
             llamaindex_result = build_vector_index(filename)
             result["llamaindex_node_count"] = llamaindex_result["node_count"]
