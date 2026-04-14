@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     app_port: int = 8000
     agent_default_runtime: str = "legacy"
     embedding_provider: str = "mock"
+    vector_store_provider: str = "llamaindex"
     chat_provider: str = "fallback"
     route_planner_provider: str = "fallback"
     tool_planner_provider: str = "fallback"
@@ -38,6 +39,11 @@ class Settings(BaseSettings):
     gemini_workflow_planner_model: str = ""
     database_url: str = ""
     redis_url: str = ""
+    qdrant_url: str = ""
+    qdrant_api_key: str = ""
+    qdrant_collection_name: str = "agent_knowledge_chunks"
+    qdrant_local_path: str = ""
+    qdrant_prefer_grpc: bool = False
     langsmith_tracing_enabled: bool = False
     langsmith_api_key: str = ""
     langsmith_project: str = "agent-knowledge-system"

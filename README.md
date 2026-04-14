@@ -125,6 +125,19 @@ Runtime selection is controlled through:
 
 When `AGENT_DEFAULT_RUNTIME=v2`, the default `/api/query/agent` entrypoints dispatch to `agent_v2` for normal execution, resume by `run_id`, run listing, and run lookup.
 
+### Knowledge Index Backends
+
+The repository currently keeps the knowledge pipeline local-first, but the
+vector index layer is being abstracted so retrieval can move beyond the
+file-persisted LlamaIndex store over time.
+
+Current knobs:
+
+- `VECTOR_STORE_PROVIDER=llamaindex`
+- `QDRANT_URL=...` for a remote Qdrant instance
+- `QDRANT_LOCAL_PATH=...` for local embedded development mode
+- `QDRANT_COLLECTION_NAME=agent_knowledge_chunks`
+
 ## Core Capabilities
 
 ### 1. Knowledge Layer
