@@ -26,6 +26,8 @@ data/processed/*
 !data/processed/.gitkeep
 data/chunks/*
 !data/chunks/.gitkeep
+data/qdrant/
+backend/data/qdrant/
 data/tool_state/.tmp/
 data/tool_state/*.tmp
 data/tool_state/workflow_planner_debug.json

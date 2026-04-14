@@ -145,24 +145,28 @@ def has_qdrant_points_for_document(filename: str) -> bool:
     if not qdrant_enabled():
         return False
 
-    client = build_qdrant_client()
-    if client is None:
-        return False
+    try:
+        client = build_qdrant_client()
+        if client is None:
+            return False
 
-    _, rest = _import_qdrant_client()
-    response = client.count(
-        collection_name=get_qdrant_collection_name(),
-        count_filter=rest.Filter(
-            must=[
-                rest.FieldCondition(
-                    key="source_filename",
-                    match=rest.MatchValue(value=filename),
-                )
-            ]
-        ),
-        exact=True,
-    )
-    return bool(response.count)
+        _, rest = _import_qdrant_client()
+        response = client.count(
+            collection_name=get_qdrant_collection_name(),
+            count_filter=rest.Filter(
+                must=[
+                    rest.FieldCondition(
+                        key="source_filename",
+                        match=rest.MatchValue(value=filename),
+                    )
+                ]
+            ),
+            exact=True,
+        )
+        return bool(response.count)
+    except Exception as exc:
+        logger.warning("Failed to inspect Qdrant document points for %s: %s", filename, exc)
+        return False
 
 
 def delete_qdrant_points_for_document(filename: str) -> dict[str, Any]:

@@ -57,3 +57,15 @@ def test_delete_qdrant_points_for_document_deletes_by_filename(monkeypatch):
 
     assert result["deleted"] is True
     assert operations["delete"]["wait"] is True
+
+
+def test_has_qdrant_points_for_document_returns_false_when_client_missing(monkeypatch):
+    monkeypatch.setattr(settings, "qdrant_local_path", "tmp/qdrant")
+    monkeypatch.setattr(settings, "qdrant_url", "")
+    monkeypatch.setattr(
+        qdrant_client,
+        "_import_qdrant_client",
+        lambda: (_ for _ in ()).throw(RuntimeError("qdrant_client_not_installed")),
+    )
+
+    assert qdrant_client.has_qdrant_points_for_document("sample.txt") is False
