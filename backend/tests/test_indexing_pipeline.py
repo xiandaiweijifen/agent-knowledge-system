@@ -83,3 +83,58 @@ def test_build_mock_embedding_supports_large_vector_dimensions():
     vector = embedding_service.build_mock_embedding("rag systems", vector_dim=3072)
 
     assert len(vector) == 3072
+
+
+def test_persist_document_embeddings_surfaces_provider_fallback_reason(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    chunk_dir = workspace_tmp_path / "chunks"
+    embedding_dir = workspace_tmp_path / "embeddings"
+    chunk_dir.mkdir()
+    embedding_dir.mkdir()
+
+    monkeypatch.setattr(document_service, "CHUNK_DATA_DIR", chunk_dir)
+    monkeypatch.setattr(embedding_service, "EMBEDDING_DATA_DIR", embedding_dir)
+    monkeypatch.setattr(settings, "embedding_provider", "gemini")
+    monkeypatch.setattr(settings, "gemini_api_key", "configured")
+    monkeypatch.setattr(
+        embedding_service,
+        "build_gemini_embeddings",
+        lambda texts, model_name=None: (_ for _ in ()).throw(ValueError("bad_response_shape")),
+    )
+
+    chunk_payload = {
+        "filename": "sample.txt",
+        "suffix": ".txt",
+        "size_bytes": 42,
+        "source_path": "../data/raw/sample.txt",
+        "created_at": "2026-03-14T00:00:00+00:00",
+        "pipeline_version": "ingestion-v1",
+        "chunk_strategy": "character",
+        "chunk_count": 1,
+        "chunk_size": 500,
+        "chunk_overlap": 100,
+        "chunks": [
+            {
+                "chunk_id": "sample.txt::chunk_0",
+                "chunk_index": 0,
+                "source_filename": "sample.txt",
+                "source_suffix": ".txt",
+                "start_char": 0,
+                "end_char": 5,
+                "char_count": 5,
+                "content": "hello",
+            }
+        ],
+    }
+    (chunk_dir / "sample.chunks.json").write_text(
+        json.dumps(chunk_payload),
+        encoding="utf-8",
+    )
+
+    result = embedding_service.persist_document_embeddings("sample.txt")
+
+    assert result["embedding_provider"] == "mock_fallback"
+    assert "embedding_warning" in result
+    assert "ValueError: bad_response_shape" in result["embedding_warning"]

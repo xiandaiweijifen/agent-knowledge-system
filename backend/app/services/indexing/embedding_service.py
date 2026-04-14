@@ -1,5 +1,6 @@
 from hashlib import sha256
 import json
+import logging
 from pathlib import Path
 
 import httpx
@@ -27,6 +28,7 @@ GEMINI_EMBEDDINGS_URL_TEMPLATE = (
     "models/{model_name}:batchEmbedContents"
 )
 EMBEDDING_PIPELINE_VERSION = "indexing-v1"
+logger = logging.getLogger(__name__)
 
 
 def build_mock_embedding(text: str, vector_dim: int = MOCK_VECTOR_DIM) -> list[float]:
@@ -121,6 +123,18 @@ def build_gemini_embeddings(
     return resolved_model_name, vectors
 
 
+def _format_provider_error(exc: Exception) -> str:
+    if isinstance(exc, httpx.HTTPStatusError):
+        response = exc.response
+        body_preview = response.text[:300] if response is not None and response.text else ""
+        return f"http_{response.status_code}: {body_preview}".strip()
+
+    if isinstance(exc, httpx.HTTPError):
+        return f"http_error: {exc}"
+
+    return f"{type(exc).__name__}: {exc}"
+
+
 def generate_embedding_vectors(texts: list[str]) -> tuple[str, str, list[list[float]]]:
     """Generate vectors with a real provider when available, otherwise fallback."""
     if not texts:
@@ -150,6 +164,55 @@ def generate_embedding_vectors(texts: list[str]) -> tuple[str, str, list[list[fl
             return "openai", model_name, vectors
         except (httpx.HTTPError, KeyError, TypeError, ValueError):
             return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts)
+
+    raise ValueError("unsupported_embedding_provider")
+
+
+def generate_embedding_vectors_with_status(
+    texts: list[str],
+) -> tuple[str, str, list[list[float]], str | None]:
+    """Generate vectors and surface provider fallback reasons when available."""
+    if not texts:
+        return "mock", MOCK_EMBEDDING_MODEL, [], None
+
+    provider = settings.embedding_provider.lower().strip()
+
+    if provider == "mock":
+        return "mock", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts), None
+
+    if provider == "gemini":
+        if not settings.gemini_api_key:
+            return (
+                "mock_fallback",
+                MOCK_EMBEDDING_MODEL,
+                build_mock_embeddings(texts),
+                "gemini_api_key_missing",
+            )
+
+        try:
+            model_name, vectors = build_gemini_embeddings(texts)
+            return "gemini", model_name, vectors, None
+        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            warning = _format_provider_error(exc)
+            logger.warning("Gemini embeddings fallback triggered: %s", warning)
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts), warning
+
+    if provider == "openai":
+        if not settings.openai_api_key:
+            return (
+                "mock_fallback",
+                MOCK_EMBEDDING_MODEL,
+                build_mock_embeddings(texts),
+                "openai_api_key_missing",
+            )
+
+        try:
+            model_name, vectors = build_openai_embeddings(texts)
+            return "openai", model_name, vectors, None
+        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            warning = _format_provider_error(exc)
+            logger.warning("OpenAI embeddings fallback triggered: %s", warning)
+            return "mock_fallback", MOCK_EMBEDDING_MODEL, build_mock_embeddings(texts), warning
 
     raise ValueError("unsupported_embedding_provider")
 
@@ -211,7 +274,7 @@ def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:
     """Generate embeddings from persisted chunk data."""
     chunk_payload = PersistedChunkDocument.model_validate(load_persisted_chunks(filename))
     chunk_texts = [chunk.content for chunk in chunk_payload.chunks]
-    embedding_provider, embedding_model, vectors = generate_embedding_vectors(chunk_texts)
+    embedding_provider, embedding_model, vectors, _ = generate_embedding_vectors_with_status(chunk_texts)
     embeddings = []
 
     for chunk, vector in zip(chunk_payload.chunks, vectors):
@@ -252,7 +315,46 @@ def generate_document_embeddings(filename: str) -> PersistedEmbeddingDocument:
 
 def persist_document_embeddings(filename: str) -> dict:
     """Persist placeholder embeddings for a document."""
-    embedding_document = generate_document_embeddings(filename)
+    chunk_payload = PersistedChunkDocument.model_validate(load_persisted_chunks(filename))
+    chunk_texts = [chunk.content for chunk in chunk_payload.chunks]
+    embedding_provider, embedding_model, vectors, embedding_warning = (
+        generate_embedding_vectors_with_status(chunk_texts)
+    )
+    embeddings = []
+
+    for chunk, vector in zip(chunk_payload.chunks, vectors):
+        embeddings.append(
+            EmbeddingRecord(
+                embedding_id=f"{chunk.chunk_id}::embedding",
+                chunk_id=chunk.chunk_id,
+                chunk_index=chunk.chunk_index,
+                source_filename=chunk.source_filename,
+                source_suffix=chunk.source_suffix,
+                document_kind=chunk.document_kind,
+                char_count=chunk.char_count,
+                section_title=chunk.section_title,
+                section_path=chunk.section_path,
+                heading_level=chunk.heading_level,
+                content=chunk.content,
+                vector=vector,
+            )
+        )
+
+    vector_dim = len(vectors[0]) if vectors else 0
+    embedding_document = PersistedEmbeddingDocument(
+        filename=chunk_payload.filename,
+        suffix=chunk_payload.suffix,
+        document_kind=chunk_payload.document_kind,
+        source_path=chunk_payload.source_path,
+        source_chunk_path=str(get_chunk_output_path(filename)),
+        created_at=build_utc_timestamp(),
+        pipeline_version=EMBEDDING_PIPELINE_VERSION,
+        embedding_provider=embedding_provider,
+        embedding_model=embedding_model,
+        vector_dim=vector_dim,
+        chunk_count=chunk_payload.chunk_count,
+        embeddings=embeddings,
+    )
     output_path = get_embedding_output_path(filename)
 
     output_path.write_text(
@@ -260,7 +362,7 @@ def persist_document_embeddings(filename: str) -> dict:
         encoding="utf-8",
     )
 
-    return {
+    result = {
         "filename": embedding_document.filename,
         "embedding_provider": embedding_document.embedding_provider,
         "embedding_model": embedding_document.embedding_model,
@@ -270,6 +372,9 @@ def persist_document_embeddings(filename: str) -> dict:
         "pipeline_version": embedding_document.pipeline_version,
         "output_path": str(output_path),
     }
+    if embedding_warning:
+        result["embedding_warning"] = embedding_warning
+    return result
 
 
 def load_persisted_embeddings(filename: str) -> dict:
