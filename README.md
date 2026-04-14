@@ -581,6 +581,18 @@ For a repeatable walkthrough, use:
 - [demo_playbook.md](/d:/project/agent-knowledge-system/docs/demo_playbook.md)
 - [demo_recovery_flow.ps1](/d:/project/agent-knowledge-system/scripts/demo_recovery_flow.ps1)
 
+## Qdrant Backfill
+
+After enabling `VECTOR_STORE_PROVIDER=qdrant` and configuring either
+`QDRANT_LOCAL_PATH` or `QDRANT_URL`, you can batch-sync all persisted
+embedding artifacts into Qdrant:
+
+```powershell
+cd backend
+.\.venv\Scripts\activate
+python ..\scripts\backfill_qdrant.py
+```
+
 ## Testing
 
 ### Backend
