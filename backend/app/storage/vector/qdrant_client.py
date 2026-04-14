@@ -92,6 +92,18 @@ def reset_qdrant_client_cache() -> None:
     _QDRANT_CLIENT_CACHE.clear()
 
 
+def close_qdrant_clients() -> None:
+    """Close cached Qdrant clients and clear the cache."""
+    for client in list(_QDRANT_CLIENT_CACHE.values()):
+        try:
+            close_method = getattr(client, "close", None)
+            if callable(close_method):
+                close_method()
+        except Exception as exc:
+            logger.warning("Failed to close Qdrant client cleanly: %s", exc)
+    _QDRANT_CLIENT_CACHE.clear()
+
+
 def ensure_qdrant_collection(vector_dim: int, distance: str = "Cosine") -> dict[str, Any]:
     """
     Ensure the configured collection exists with the requested vector size.

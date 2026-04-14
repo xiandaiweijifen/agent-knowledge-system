@@ -131,3 +131,25 @@ def test_build_qdrant_point_id_returns_stable_uuid():
 
     assert point_id == qdrant_client.build_qdrant_point_id("doc.md::chunk_0")
     assert str(uuid.UUID(point_id)) == point_id
+
+
+def test_close_qdrant_clients_closes_cached_instances(monkeypatch):
+    qdrant_client.reset_qdrant_client_cache()
+    closed = {"count": 0}
+
+    class DummyClient:
+        def close(self):
+            closed["count"] += 1
+
+    monkeypatch.setattr(settings, "qdrant_url", "")
+    monkeypatch.setattr(settings, "qdrant_local_path", "tmp/qdrant")
+    monkeypatch.setattr(
+        qdrant_client,
+        "_import_qdrant_client",
+        lambda: (lambda **kwargs: DummyClient(), SimpleNamespace()),
+    )
+
+    qdrant_client.build_qdrant_client()
+    qdrant_client.close_qdrant_clients()
+
+    assert closed["count"] == 1

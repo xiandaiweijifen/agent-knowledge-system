@@ -14,12 +14,16 @@ if str(BACKEND_DIR) not in sys.path:
 from app.services.vectorstore.qdrant_index_service import (  # noqa: E402
     sync_all_persisted_embeddings_to_qdrant,
 )
+from app.storage.vector.qdrant_client import close_qdrant_clients  # noqa: E402
 
 
 def main() -> int:
-    summary = sync_all_persisted_embeddings_to_qdrant()
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
-    return 0 if summary["failed_count"] == 0 else 1
+    try:
+        summary = sync_all_persisted_embeddings_to_qdrant()
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return 0 if summary["failed_count"] == 0 else 1
+    finally:
+        close_qdrant_clients()
 
 
 if __name__ == "__main__":
