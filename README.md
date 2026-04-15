@@ -133,7 +133,7 @@ file-persisted LlamaIndex store over time.
 
 Current knobs:
 
-- `VECTOR_STORE_PROVIDER=llamaindex`
+- `VECTOR_STORE_PROVIDER=qdrant`
 - `QDRANT_URL=...` for a remote Qdrant instance
 - `QDRANT_LOCAL_PATH=...` for local embedded development mode
 - `QDRANT_COLLECTION_NAME=agent_knowledge_chunks`

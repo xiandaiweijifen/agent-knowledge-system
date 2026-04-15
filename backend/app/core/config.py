@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     app_port: int = 8000
     agent_default_runtime: str = "legacy"
     embedding_provider: str = "mock"
-    vector_store_provider: str = "llamaindex"
+    vector_store_provider: str = "qdrant"
     chat_provider: str = "fallback"
     route_planner_provider: str = "fallback"
     tool_planner_provider: str = "fallback"
