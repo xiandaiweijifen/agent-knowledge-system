@@ -1,5 +1,6 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from app.core.config import settings
 from app.services.ingestion.document_service import (
     chunk_document,
     chunk_document_with_strategy,
@@ -145,21 +146,28 @@ def get_persisted_chunks(filename: str):
 def persist_embeddings(filename: str):
     try:
         result = persist_document_embeddings(filename)
-        try:
-            qdrant_result = sync_document_embeddings_to_qdrant(filename)
-            if qdrant_result.get("synced"):
-                result["qdrant_point_count"] = qdrant_result["point_count"]
-                result["qdrant_collection_name"] = qdrant_result["collection_name"]
-            elif qdrant_result.get("enabled") is False:
-                result["qdrant_sync_skipped"] = qdrant_result["reason"]
-        except Exception as exc:
-            result["qdrant_warning"] = str(exc)
-        try:
-            llamaindex_result = build_vector_index(filename)
-            result["llamaindex_node_count"] = llamaindex_result["node_count"]
-            result["llamaindex_store_path"] = llamaindex_result["store_path"]
-        except Exception as exc:
-            result["llamaindex_warning"] = str(exc)
+        if settings.knowledge_write_qdrant:
+            try:
+                qdrant_result = sync_document_embeddings_to_qdrant(filename)
+                if qdrant_result.get("synced"):
+                    result["qdrant_point_count"] = qdrant_result["point_count"]
+                    result["qdrant_collection_name"] = qdrant_result["collection_name"]
+                elif qdrant_result.get("enabled") is False:
+                    result["qdrant_sync_skipped"] = qdrant_result["reason"]
+            except Exception as exc:
+                result["qdrant_warning"] = str(exc)
+        else:
+            result["qdrant_sync_skipped"] = "knowledge_write_qdrant_disabled"
+
+        if settings.knowledge_write_llamaindex:
+            try:
+                llamaindex_result = build_vector_index(filename)
+                result["llamaindex_node_count"] = llamaindex_result["node_count"]
+                result["llamaindex_store_path"] = llamaindex_result["store_path"]
+            except Exception as exc:
+                result["llamaindex_warning"] = str(exc)
+        else:
+            result["llamaindex_sync_skipped"] = "knowledge_write_llamaindex_disabled"
         return result
     except FileNotFoundError:
         raise HTTPException(

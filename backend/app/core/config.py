@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     agent_default_runtime: str = "legacy"
     embedding_provider: str = "mock"
     vector_store_provider: str = "qdrant"
+    knowledge_write_qdrant: bool = True
+    knowledge_write_llamaindex: bool = True
     chat_provider: str = "fallback"
     route_planner_provider: str = "fallback"
     tool_planner_provider: str = "fallback"
