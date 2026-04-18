@@ -1,5 +1,622 @@
 [
   {
+    "run_id": "39ace13b369746329a815c7a86a4f6fd",
+    "root_run_id": null,
+    "recovery_depth": 0,
+    "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-18T08:06:49.667222+00:00",
+    "completed_at": "2026-04-18T08:06:49.667222+00:00",
+    "last_updated_at": "2026-04-18T08:06:49.667222+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:06:49.667222+00:00",
+        "detail": "Route selected: tool_execution. The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:06:49.667222+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:06:49.667222+00:00",
+        "detail": "Tool execution node completed in agent_v2."
+      }
+    ],
+    "filename": null,
+    "answer": "Collected local system status for payment-service with requested environment production.",
+    "answer_source": "tool_result",
+    "model": null,
+    "answered_at": "2026-04-18T08:06:49.667222+00:00",
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "arguments": {
+        "environment": "production",
+        "issue_type": "timeout"
+      },
+      "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for payment-service with requested environment production.",
+      "trace_id": "ee652007c83b4da2b58b1069b70a2083",
+      "executed_at": "2026-04-18T08:06:49.277659+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "payment-service",
+        "status": "degraded",
+        "app_env": "development",
+        "service": "payment-service",
+        "environment": "production",
+        "health": "degraded",
+        "latency_p95_ms": 1320,
+        "error_rate": 0.083,
+        "cpu_percent": 74.0,
+        "memory_percent": 68.0,
+        "active_alerts": [
+          "timeout_rate_high",
+          "dependency_db_latency_spike"
+        ],
+        "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "true",
+        "redis_configured": "true",
+        "service_record": {
+          "service_id": "payment-service",
+          "service_name": "payment-service",
+          "owner_team": "payments-platform",
+          "tier": "tier-1",
+          "environments": [
+            "production",
+            "staging",
+            "development"
+          ],
+          "runbook_doc_ids": [
+            "payment_service_runbook.md",
+            "incident_playbook.md"
+          ]
+        },
+        "status_snapshot": {
+          "service": "payment-service",
+          "environment": "production",
+          "health": "degraded",
+          "latency_p95_ms": 1320,
+          "error_rate": 0.083,
+          "cpu_percent": 74.0,
+          "memory_percent": 68.0,
+          "active_alerts": [
+            "timeout_rate_high",
+            "dependency_db_latency_spike"
+          ],
+          "updated_at": "2026-04-18T07:30:00+00:00",
+          "summary": "Service is degraded due to elevated timeout rate and downstream DB latency."
+        },
+        "requested_environment": "production"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-18T08:06:47.087189+00:00",
+        "completed_at": "2026-04-18T08:06:49.277659+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {
+            "environment": "production",
+            "issue_type": "timeout"
+          },
+          "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service with requested environment production.",
+          "trace_id": "ee652007c83b4da2b58b1069b70a2083",
+          "executed_at": "2026-04-18T08:06:49.277659+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "degraded",
+            "app_env": "development",
+            "service": "payment-service",
+            "environment": "production",
+            "health": "degraded",
+            "latency_p95_ms": 1320,
+            "error_rate": 0.083,
+            "cpu_percent": 74.0,
+            "memory_percent": 68.0,
+            "active_alerts": [
+              "timeout_rate_high",
+              "dependency_db_latency_spike"
+            ],
+            "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "true",
+            "redis_configured": "true",
+            "service_record": {
+              "service_id": "payment-service",
+              "service_name": "payment-service",
+              "owner_team": "payments-platform",
+              "tier": "tier-1",
+              "environments": [
+                "production",
+                "staging",
+                "development"
+              ],
+              "runbook_doc_ids": [
+                "payment_service_runbook.md",
+                "incident_playbook.md"
+              ]
+            },
+            "status_snapshot": {
+              "service": "payment-service",
+              "environment": "production",
+              "health": "degraded",
+              "latency_p95_ms": 1320,
+              "error_rate": 0.083,
+              "cpu_percent": 74.0,
+              "memory_percent": 68.0,
+              "active_alerts": [
+                "timeout_rate_high",
+                "dependency_db_latency_spike"
+              ],
+              "updated_at": "2026-04-18T07:30:00+00:00",
+              "summary": "Service is degraded due to elevated timeout rate and downstream DB latency."
+            },
+            "requested_environment": "production"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "a1e4ee93cc5d4f65bc1a33455de80671",
+    "root_run_id": null,
+    "recovery_depth": 0,
+    "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "tool_execution_completed",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-18T08:06:01.451712+00:00",
+    "completed_at": "2026-04-18T08:06:01.451712+00:00",
+    "last_updated_at": "2026-04-18T08:06:01.451712+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 1,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:06:01.451712+00:00",
+        "detail": "Route selected: tool_execution. The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:06:01.451712+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:06:01.451712+00:00",
+        "detail": "Tool execution node completed in agent_v2."
+      }
+    ],
+    "filename": null,
+    "answer": "Collected local system status for payment-service with requested environment production.",
+    "answer_source": "tool_result",
+    "model": null,
+    "answered_at": "2026-04-18T08:06:01.451712+00:00",
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+      "planning_mode": "llm_gemini",
+      "route_hint": "tool_execution",
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "arguments": {
+        "environment": "production",
+        "issue_type": "timeout"
+      },
+      "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+    },
+    "tool_execution": {
+      "tool_name": "system_status",
+      "action": "query",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Collected local system status for payment-service with requested environment production.",
+      "trace_id": "e1f846a8e3bf4776990b69d794d33d5a",
+      "executed_at": "2026-04-18T08:06:01.046474+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "status_snapshot",
+        "resource_type": "system_status",
+        "target": "payment-service",
+        "status": "degraded",
+        "app_env": "development",
+        "service": "payment-service",
+        "environment": "production",
+        "health": "degraded",
+        "latency_p95_ms": 1320,
+        "error_rate": 0.083,
+        "cpu_percent": 74.0,
+        "memory_percent": 68.0,
+        "active_alerts": [
+          "timeout_rate_high",
+          "dependency_db_latency_spike"
+        ],
+        "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+        "embedding_provider": "gemini",
+        "embedding_model": "gemini-embedding-001",
+        "chat_provider": "gemini",
+        "chat_model": "gemini-2.5-flash",
+        "gemini_configured": "true",
+        "openai_configured": "false",
+        "database_configured": "true",
+        "redis_configured": "true",
+        "service_record": {
+          "service_id": "payment-service",
+          "service_name": "payment-service",
+          "owner_team": "payments-platform",
+          "tier": "tier-1",
+          "environments": [
+            "production",
+            "staging",
+            "development"
+          ],
+          "runbook_doc_ids": [
+            "payment_service_runbook.md",
+            "incident_playbook.md"
+          ]
+        },
+        "status_snapshot": {
+          "service": "payment-service",
+          "environment": "production",
+          "health": "degraded",
+          "latency_p95_ms": 1320,
+          "error_rate": 0.083,
+          "cpu_percent": 74.0,
+          "memory_percent": 68.0,
+          "active_alerts": [
+            "timeout_rate_high",
+            "dependency_db_latency_spike"
+          ],
+          "updated_at": "2026-04-18T07:30:00+00:00",
+          "summary": "Service is degraded due to elevated timeout rate and downstream DB latency."
+        },
+        "requested_environment": "production"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-18T08:05:58.786285+00:00",
+        "completed_at": "2026-04-18T08:06:01.046474+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "llm_gemini",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {
+            "environment": "production",
+            "issue_type": "timeout"
+          },
+          "plan_summary": "Plan system_status:query for payment-service using a llm planner."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service with requested environment production.",
+          "trace_id": "e1f846a8e3bf4776990b69d794d33d5a",
+          "executed_at": "2026-04-18T08:06:01.046474+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "degraded",
+            "app_env": "development",
+            "service": "payment-service",
+            "environment": "production",
+            "health": "degraded",
+            "latency_p95_ms": 1320,
+            "error_rate": 0.083,
+            "cpu_percent": 74.0,
+            "memory_percent": 68.0,
+            "active_alerts": [
+              "timeout_rate_high",
+              "dependency_db_latency_spike"
+            ],
+            "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "true",
+            "redis_configured": "true",
+            "service_record": {
+              "service_id": "payment-service",
+              "service_name": "payment-service",
+              "owner_team": "payments-platform",
+              "tier": "tier-1",
+              "environments": [
+                "production",
+                "staging",
+                "development"
+              ],
+              "runbook_doc_ids": [
+                "payment_service_runbook.md",
+                "incident_playbook.md"
+              ]
+            },
+            "status_snapshot": {
+              "service": "payment-service",
+              "environment": "production",
+              "health": "degraded",
+              "latency_p95_ms": 1320,
+              "error_rate": 0.083,
+              "cpu_percent": 74.0,
+              "memory_percent": 68.0,
+              "active_alerts": [
+                "timeout_rate_high",
+                "dependency_db_latency_spike"
+              ],
+              "updated_at": "2026-04-18T07:30:00+00:00",
+              "summary": "Service is degraded due to elevated timeout rate and downstream DB latency."
+            },
+            "requested_environment": "production"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "e3f307f79f6447c5b1e951096f337e1a",
+    "root_run_id": null,
+    "recovery_depth": 0,
+    "question": "What are rag systems?",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": null,
+    "resume_source_type": null,
+    "resume_strategy": null,
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "knowledge_answer_generated",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-18T08:03:37.843843+00:00",
+    "completed_at": "2026-04-18T08:03:37.843843+00:00",
+    "last_updated_at": "2026-04-18T08:03:37.843843+00:00",
+    "workflow_planning_mode": "heuristic_fallback_after_gemini_error",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 0,
+    "route": {
+      "route_type": "knowledge_retrieval",
+      "route_reason": "The request is best handled as a knowledge query and should continue through retrieval and answer generation.",
+      "filename": "sample.txt"
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:03:37.843843+00:00",
+        "detail": "Route selected: knowledge_retrieval. The request is best handled as a knowledge query and should continue through retrieval and answer generation."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:03:37.843843+00:00",
+        "detail": "Supervisor delegated knowledge_retrieval to knowledge_specialist based on the current route decision."
+      },
+      {
+        "stage": "answer",
+        "status": "completed",
+        "timestamp": "2026-04-18T08:03:37.843843+00:00",
+        "detail": "RAG uses retrieval before generation."
+      }
+    ],
+    "filename": "sample.txt",
+    "answer": "RAG uses retrieval before generation.",
+    "answer_source": "fallback",
+    "model": "local-fallback",
+    "answered_at": "2026-03-14T00:00:00+00:00",
+    "answer_latency_ms": 1.0,
+    "chat_provider": "fallback",
+    "chat_model": "local-fallback",
+    "retrieval": {
+      "filename": "sample.txt",
+      "retrieval_scope": "document",
+      "corpus_filenames": [],
+      "embedding_provider": "llamaindex",
+      "embedding_model": "llamaindex",
+      "vector_dim": 3072,
+      "question": "What are rag systems?",
+      "top_k": 1,
+      "retrieved_at": "2026-03-14T00:00:00+00:00",
+      "retrieval_latency_ms": 1.0,
+      "query_embedding_provider": "llamaindex",
+      "query_embedding_model": "llamaindex",
+      "matches": []
+    },
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": null,
+    "tool_execution": null,
+    "tool_chain": []
+  },
+  {
     "run_id": "999892e0241c4017b7beadb8f27fc0f8",
     "root_run_id": null,
     "recovery_depth": 0,

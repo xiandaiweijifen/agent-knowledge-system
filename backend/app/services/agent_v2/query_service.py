@@ -61,6 +61,7 @@ def _build_initial_state(question: str, filename: str | None, top_k: int) -> dic
         "chat_provider": None,
         "chat_model": None,
         "workflow_status": "in_progress",
+        "terminal_reason_override": None,
         "failure_stage": None,
         "retry_state": None,
         "retry_count": 0,
@@ -78,6 +79,10 @@ def _build_graph_invoke_config(thread_id: str) -> dict[str, dict[str, str]]:
 
 
 def _build_terminal_reason(final_state: dict[str, Any]) -> str:
+    terminal_reason_override = final_state.get("terminal_reason_override")
+    if isinstance(terminal_reason_override, str) and terminal_reason_override.strip():
+        return terminal_reason_override
+
     workflow_status = final_state.get("workflow_status")
     if workflow_status == "failed":
         failure_stage = final_state.get("failure_stage")
@@ -173,12 +178,20 @@ def _build_workflow_trace(
             )
         )
     elif route == "tool_execution":
+        if final_state.get("answer_source") == "local_incident_triage":
+            tool_chain = final_state.get("tool_chain") or []
+            if len(tool_chain) > 1:
+                detail = answer_detail or "Incident triage workflow completed in agent_v2."
+            else:
+                detail = answer_detail or "Incident triage status check completed in agent_v2."
+        else:
+            detail = "Tool execution node completed in agent_v2."
         events.append(
             WorkflowTraceEvent(
                 stage="tool_execution",
                 status=workflow_status,
                 timestamp=timestamp,
-                detail="Tool execution node completed in agent_v2.",
+                detail=detail,
             )
         )
     else:

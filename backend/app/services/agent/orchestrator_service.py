@@ -52,6 +52,14 @@ STATUS_AND_TICKET_PATTERN = re.compile(
     r"(?P<status>^(?:check|show|inspect|query).+?\b(?:status|health|configuration|config)\b.+?)(?:\s+and\s+|\s*,?\s+then\s+)(?P<ticket>(?:create|open|update|close).+\bticket\b.+)$",
     re.IGNORECASE,
 )
+INCIDENT_TRIAGE_SERVICE_PATTERN = re.compile(
+    r"\b([A-Za-z0-9._-]+(?:service|api|workflow))\b",
+    re.IGNORECASE,
+)
+INCIDENT_TRIAGE_SYMPTOM_PATTERN = re.compile(
+    r"\b(timeout|latency|error rate|errors|5xx|502|outage|degraded|incident)\b",
+    re.IGNORECASE,
+)
 UNSUPPORTED_DIRECT_ACTION_PATTERN = re.compile(
     r"\b(restart|deploy|rollback|delete|remove|shutdown|stop|start)\b",
     re.IGNORECASE,
@@ -1235,6 +1243,45 @@ def _match_status_then_summarize_workflow(question: str) -> tuple[str, str] | No
     return match.group("status").strip(), match.group("summarize").strip()
 
 
+def _match_incident_triage_workflow(question: str) -> tuple[str, str] | None:
+    normalized_question = question.strip()
+    lowered = normalized_question.lower()
+
+    if not ("ticket" in lowered or "incident" in lowered):
+        return None
+    if not ("draft" in lowered or "prepare" in lowered):
+        return None
+    if "submit" in lowered:
+        return None
+
+    service_match = INCIDENT_TRIAGE_SERVICE_PATTERN.search(normalized_question)
+    if not service_match:
+        return None
+
+    service = service_match.group(1).strip()
+    environment_match = ENVIRONMENT_HINT_PATTERN.search(normalized_question)
+    environment = environment_match.group(1).lower() if environment_match else ""
+    severity_match = SEVERITY_HINT_PATTERN.search(normalized_question)
+    severity = severity_match.group(1).lower() if severity_match else "high"
+
+    status_question = f"Check system status for {service}"
+    draft_question = f"Draft a {severity} severity ticket for {service}"
+    if environment:
+        status_question += f" in {environment}"
+        draft_question += f" in {environment}"
+
+    return status_question, draft_question
+
+
+def _build_incident_triage_search_question(question: str) -> str:
+    normalized_question = question.strip()
+    service_match = INCIDENT_TRIAGE_SERVICE_PATTERN.search(normalized_question)
+    service = service_match.group(1).strip() if service_match else "service"
+    symptom_match = INCIDENT_TRIAGE_SYMPTOM_PATTERN.search(normalized_question)
+    symptom = symptom_match.group(1).strip().lower() if symptom_match else "incident"
+    return f"Search docs for {service} {symptom}"
+
+
 def _resolve_multistep_workflow(question: str) -> tuple[str | None, str | None, str | None, str | None]:
     planning_mode, llm_plan = generate_llm_workflow_plan(question)
 
@@ -1245,6 +1292,7 @@ def _resolve_multistep_workflow(question: str) -> tuple[str | None, str | None, 
             "search_then_summarize",
             "status_then_ticket",
             "status_then_summarize",
+            "incident_triage",
         }:
             return (
                 workflow_kind,
@@ -1271,6 +1319,10 @@ def _resolve_multistep_workflow(question: str) -> tuple[str | None, str | None, 
     status_then_summarize = _match_status_then_summarize_workflow(question)
     if status_then_summarize is not None:
         return "status_then_summarize", status_then_summarize[0], status_then_summarize[1], planning_mode
+
+    incident_triage = _match_incident_triage_workflow(question)
+    if incident_triage is not None:
+        return "incident_triage", incident_triage[0], incident_triage[1], planning_mode
 
     return None, None, None, planning_mode
 
@@ -1339,7 +1391,7 @@ def _build_status_context_arguments(tool_output: dict[str, str]) -> dict[str, st
 
 
 def _is_ticket_step_with_inherited_context(tool_name: str, action: str) -> bool:
-    return tool_name == "ticketing" and action in {"create", "update", "close"}
+    return tool_name == "ticketing" and action in {"create", "draft", "update", "close"}
 
 
 def _split_search_snippets(snippets: str) -> list[tuple[str | None, str]]:
@@ -1443,6 +1495,33 @@ def _build_status_summary(tool_output: dict[str, str]) -> str:
         summary_parts.append(f"Current configuration: {', '.join(configuration_bits)}.")
 
     return " ".join(summary_parts).strip()
+
+
+def _build_incident_triage_summary(
+    *,
+    status_output: dict[str, str],
+    search_output: dict[str, str],
+    draft_output: dict[str, str] | None = None,
+) -> str:
+    summary_parts = [_build_status_summary(status_output)]
+
+    search_summary = _build_search_summary(search_output)
+    if search_summary:
+        summary_parts.append(search_summary)
+
+    if draft_output is not None:
+        ticket_id = draft_output.get("ticket_id", "").strip()
+        summary = draft_output.get("summary", "").strip() or draft_output.get("supporting_summary", "").strip()
+        if ticket_id:
+            summary_parts.append(f"Prepared incident ticket draft {ticket_id}.")
+        if summary:
+            summary_parts.append(f"Draft summary: {summary}")
+    else:
+        summary_parts.append(
+            "No ticket draft was created because the current status does not indicate an active incident."
+        )
+
+    return " ".join(part.strip() for part in summary_parts if part.strip()).strip()
 
 
 def _extract_summary_step_context(summarize_question: str) -> dict[str, str]:
@@ -2514,6 +2593,7 @@ def orchestrate_agent_request(
             "search_then_summarize",
             "status_then_ticket",
             "status_then_summarize",
+            "incident_triage",
         }:
             planner_label = _describe_workflow_planning_mode(workflow_planning_mode)
             workflow_trace.append(
@@ -2953,6 +3033,244 @@ def orchestrate_agent_request(
                 response,
                 started_at=workflow_started_at,
                 terminal_reason="tool_execution_completed",
+                completed_at=workflow_trace[-1].timestamp,
+            )
+            return _persist_workflow_response(response) if persist_run else response
+
+        if workflow_kind == "incident_triage" and workflow_search_question and workflow_follow_up_question:
+            status_question, draft_question = workflow_search_question, workflow_follow_up_question
+            search_question = _build_incident_triage_search_question(question)
+            prior_status_context: dict[str, str] = {}
+            prior_search_context: dict[str, str] = {}
+            status_output: dict[str, str] | None = None
+            search_output: dict[str, str] | None = None
+
+            for step_index, step_question in enumerate((status_question, search_question, draft_question), start=1):
+                step_started_at = build_utc_timestamp()
+                tool_planner_started_at = time.perf_counter()
+                try:
+                    tool_plan = plan_tool_request(step_question)
+                except ValueError:
+                    tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+                    raise
+                except Exception as exc:
+                    tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+                    failed_at = build_utc_timestamp()
+                    failure_message = _format_failure_message(exc)
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="tool_planning",
+                            status="failed",
+                            timestamp=failed_at,
+                            detail=f"Step {step_index}: tool planning failed: {failure_message}.",
+                        )
+                    )
+                    chained_steps.append(
+                        _build_failed_workflow_step_record(
+                            step_index=step_index,
+                            step_question=step_question,
+                            started_at=step_started_at,
+                            completed_at=failed_at,
+                            failure_message=failure_message,
+                        )
+                    )
+                    response = _build_failed_workflow_response(
+                        question=question,
+                        route=route,
+                        workflow_trace=workflow_trace,
+                        filename=filename,
+                        started_at=workflow_started_at,
+                        failed_at=failed_at,
+                        terminal_reason="tool_planning_failed",
+                        failure_stage="tool_planning",
+                        failure_message=failure_message,
+                        step_count=len(chained_steps),
+                        tool_chain=chained_steps,
+                        workflow_planning_latency_ms=workflow_planning_latency_ms,
+                        tool_planning_latency_ms=tool_planning_latency_ms,
+                        clarification_planning_latency_ms=clarification_planning_latency_ms,
+                    )
+                    return _persist_workflow_response(response) if persist_run else response
+                tool_planning_latency_ms += _elapsed_ms(tool_planner_started_at)
+
+                if step_index == 3:
+                    tool_plan.arguments = {
+                        **prior_status_context,
+                        **prior_search_context,
+                        **tool_plan.arguments,
+                    }
+                    workflow_trace.append(
+                        WorkflowTraceEvent(
+                            stage="tool_context",
+                            status="completed",
+                            timestamp=build_utc_timestamp(),
+                            detail=(
+                                "Step 3 inherited supporting system status and document search context "
+                                "before preparing the ticket draft."
+                            ),
+                        )
+                    )
+
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="tool_planning",
+                        status="completed",
+                        timestamp=build_utc_timestamp(),
+                        detail=(
+                            f"Step {step_index}: planned {tool_plan.tool_name}:{tool_plan.action} "
+                            f"for {tool_plan.target}."
+                        ),
+                    )
+                )
+                tool_response, failed_at, failure_message, attempt_count = _execute_tool_request_with_retry(
+                    tool_request=ToolExecutionRequest(
+                        tool_name=tool_plan.tool_name,
+                        action=tool_plan.action,
+                        target=tool_plan.target,
+                        arguments=tool_plan.arguments,
+                    ),
+                    workflow_trace=workflow_trace,
+                    step_index=step_index,
+                    debug_fault_injection=debug_fault_injection_state,
+                )
+                if tool_response is None:
+                    chained_steps.append(
+                        _build_failed_workflow_step_record(
+                            step_index=step_index,
+                            step_question=step_question,
+                            started_at=step_started_at,
+                            completed_at=failed_at,
+                            failure_message=failure_message,
+                            tool_plan=tool_plan.model_dump(),
+                            attempt_count=attempt_count,
+                        )
+                    )
+                    response = _build_failed_workflow_response(
+                        question=question,
+                        route=route,
+                        workflow_trace=workflow_trace,
+                        filename=filename,
+                        started_at=workflow_started_at,
+                        failed_at=failed_at,
+                        terminal_reason="tool_execution_failed",
+                        failure_stage="tool_execution",
+                        failure_message=failure_message,
+                        step_count=len(chained_steps),
+                        tool_plan=tool_plan.model_dump(),
+                        tool_chain=chained_steps,
+                        workflow_planning_latency_ms=workflow_planning_latency_ms,
+                        tool_planning_latency_ms=tool_planning_latency_ms,
+                        clarification_planning_latency_ms=clarification_planning_latency_ms,
+                    )
+                    return _persist_workflow_response(response) if persist_run else response
+
+                step_completed_at = build_utc_timestamp()
+                workflow_trace.append(
+                    WorkflowTraceEvent(
+                        stage="tool_execution",
+                        status="completed",
+                        timestamp=step_completed_at,
+                        detail=(
+                            f"Step {step_index}: executed {tool_response['execution_mode']} tool "
+                            f"{tool_response['tool_name']}:{tool_response['action']} "
+                            f"with status {tool_response['execution_status']}"
+                            + (f" after {attempt_count} attempt(s)." if attempt_count > 1 else ".")
+                        ),
+                    )
+                )
+                chained_steps.append(
+                    _build_workflow_step_record(
+                        step_index=step_index,
+                        step_question=step_question,
+                        tool_plan=tool_plan.model_dump(),
+                        tool_execution=tool_response,
+                        started_at=step_started_at,
+                        completed_at=step_completed_at,
+                        attempt_count=attempt_count,
+                    )
+                )
+
+                if step_index == 1:
+                    status_output = tool_response["output"]
+                    prior_status_context = _build_status_context_arguments(tool_response["output"])
+                    current_health = str(tool_response["output"].get("health", "")).strip().lower()
+                    current_status = str(tool_response["output"].get("status", "")).strip().lower()
+                    if current_health == "healthy" or current_status == "ok":
+                        workflow_trace.append(
+                            WorkflowTraceEvent(
+                                stage="incident_policy",
+                                status="completed",
+                                timestamp=build_utc_timestamp(),
+                                detail=(
+                                    "Incident triage detected a healthy service state, so the workflow "
+                                    "stopped before creating a ticket draft."
+                                ),
+                            )
+                        )
+                        response = AgentWorkflowResponse(
+                            question=question,
+                            workflow_status="completed",
+                            step_count=len(chained_steps),
+                            route=route,
+                            workflow_trace=workflow_trace,
+                            filename=filename,
+                            answer=_build_status_summary(tool_response["output"]),
+                            answer_source="local_incident_triage",
+                            model="local-heuristic-triage",
+                            answered_at=build_utc_timestamp(),
+                            answer_latency_ms=0.0,
+                            chat_provider="local",
+                            chat_model="local-heuristic-triage",
+                            tool_plan=tool_plan.model_dump(),
+                            tool_execution=tool_response,
+                            tool_chain=chained_steps,
+                            workflow_planning_latency_ms=workflow_planning_latency_ms,
+                            tool_planning_latency_ms=tool_planning_latency_ms,
+                            clarification_planning_latency_ms=clarification_planning_latency_ms,
+                        )
+                        response = _finalize_workflow_response(
+                            response,
+                            started_at=workflow_started_at,
+                            terminal_reason="no_incident_detected",
+                            completed_at=workflow_trace[-1].timestamp,
+                        )
+                        return _persist_workflow_response(response) if persist_run else response
+
+                if step_index == 2:
+                    search_output = tool_response["output"]
+                    prior_search_context = _build_search_context_arguments(tool_response["output"])
+
+            final_step = chained_steps[-1]
+            final_output = final_step["tool_execution"]["output"] if final_step.get("tool_execution") else {}
+            response = AgentWorkflowResponse(
+                question=question,
+                workflow_status="completed",
+                step_count=len(chained_steps),
+                route=route,
+                workflow_trace=workflow_trace,
+                filename=filename,
+                answer=_build_incident_triage_summary(
+                    status_output=status_output or {},
+                    search_output=search_output or {},
+                    draft_output=final_output,
+                ),
+                answer_source="local_incident_triage",
+                model="local-heuristic-triage",
+                answered_at=build_utc_timestamp(),
+                answer_latency_ms=0.0,
+                chat_provider="local",
+                chat_model="local-heuristic-triage",
+                tool_plan=final_step["tool_plan"],
+                tool_execution=final_step["tool_execution"],
+                tool_chain=chained_steps,
+                workflow_planning_latency_ms=workflow_planning_latency_ms,
+                tool_planning_latency_ms=tool_planning_latency_ms,
+                clarification_planning_latency_ms=clarification_planning_latency_ms,
+            )
+            response = _finalize_workflow_response(
+                response,
+                started_at=workflow_started_at,
+                terminal_reason="ticket_draft_prepared",
                 completed_at=workflow_trace[-1].timestamp,
             )
             return _persist_workflow_response(response) if persist_run else response

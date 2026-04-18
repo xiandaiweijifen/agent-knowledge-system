@@ -294,6 +294,88 @@ def test_orchestrate_agent_v2_request_returns_tool_result(monkeypatch):
     assert response.workflow_trace[-1].detail == "Tool execution node completed in agent_v2."
 
 
+def test_orchestrate_agent_v2_request_returns_incident_triage_result(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_graph",
+        lambda checkpointer=None: type(
+            "Graph",
+            (),
+            {
+                "invoke": lambda self, state, config=None: {
+                    **state,
+                    "route": "tool_execution",
+                    "route_reason": "Incident triage should inspect service health and prepare a ticket draft when needed.",
+                    "route_planning_mode": "llm_gemini",
+                    "workflow_status": "completed",
+                    "terminal_reason_override": "ticket_draft_prepared",
+                    "answer": "Incident triage prepared draft TICKET-0001 for payment-service.",
+                    "answer_source": "local_incident_triage",
+                    "tool_chain": [
+                        {
+                            "step_id": "step_1",
+                            "step_index": 1,
+                            "step_status": "completed",
+                            "attempt_count": 1,
+                            "retried": False,
+                            "started_at": "2026-04-07T00:00:00+00:00",
+                            "completed_at": "2026-04-07T00:00:01+00:00",
+                            "question": state["question"],
+                            "tool_plan": {"tool_name": "system_status", "action": "query", "target": "payment-service", "arguments": {"environment": "production"}},
+                            "tool_execution": {"tool_name": "system_status", "action": "query", "execution_status": "completed", "result_summary": "status checked"},
+                        },
+                        {
+                            "step_id": "step_2",
+                            "step_index": 2,
+                            "step_status": "completed",
+                            "attempt_count": 1,
+                            "retried": False,
+                            "started_at": "2026-04-07T00:00:01+00:00",
+                            "completed_at": "2026-04-07T00:00:02+00:00",
+                            "question": state["question"],
+                            "tool_plan": {"tool_name": "document_search", "action": "query", "target": "payment-service timeout", "arguments": {"max_results": "3"}},
+                            "tool_execution": {"tool_name": "document_search", "action": "query", "execution_status": "completed", "result_summary": "docs searched"},
+                        },
+                        {
+                            "step_id": "step_3",
+                            "step_index": 3,
+                            "step_status": "completed",
+                            "attempt_count": 1,
+                            "retried": False,
+                            "started_at": "2026-04-07T00:00:02+00:00",
+                            "completed_at": "2026-04-07T00:00:03+00:00",
+                            "question": state["question"],
+                            "tool_plan": {"tool_name": "ticketing", "action": "draft", "target": "payment-service", "arguments": {"severity": "high"}},
+                            "tool_execution": {
+                                "tool_name": "ticketing",
+                                "action": "draft",
+                                "target": "payment-service",
+                                "execution_status": "completed",
+                                "result_summary": "Prepared ticket draft TICKET-0001 for payment-service.",
+                                "output": {"ticket_id": "TICKET-0001", "submission_state": "awaiting_user_confirmation"},
+                            },
+                        },
+                    ],
+                },
+            },
+        )(),
+    )
+
+    response = orchestrate_agent_v2_request(
+        question="Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        top_k=3,
+    )
+
+    assert response.terminal_reason == "ticket_draft_prepared"
+    assert response.answer_source == "local_incident_triage"
+    assert response.step_count == 3
+    assert response.tool_execution["action"] == "draft"
+    assert response.workflow_trace[-1].detail == "Incident triage prepared draft TICKET-0001 for payment-service."
+
+
 def test_orchestrate_agent_v2_request_returns_failed_tool_response(monkeypatch):
     monkeypatch.setattr(
         "app.services.agent_v2.query_service.persist_agent_v2_run",

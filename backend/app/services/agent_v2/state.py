@@ -68,6 +68,7 @@ class AgentState(TypedDict):
     # ------------------------------------------------------------------ #
     # One of: "in_progress" | "completed" | "failed" | "clarification_required"
     workflow_status: str
+    terminal_reason_override: str | None
     failure_stage: str | None
     retry_state: str | None
     retry_count: int

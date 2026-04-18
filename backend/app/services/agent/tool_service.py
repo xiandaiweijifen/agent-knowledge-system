@@ -150,7 +150,7 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     },
 }
 ACTION_PATTERN = re.compile(
-    r"\b(create|open|close|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|list|set|move)\b",
+    r"\b(create|open|close|draft|submit|prepare|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|list|set|move)\b",
     re.IGNORECASE,
 )
 ENVIRONMENT_SEGMENT_PATTERN = re.compile(
@@ -1603,6 +1603,8 @@ def infer_tool_request(question: str) -> InferredToolRequest:
         action = "query"
 
     if tool_name == "ticketing":
+        if action == "prepare":
+            action = "draft"
         if action in {"set", "move"}:
             action = "update"
         if " for " in lowered:

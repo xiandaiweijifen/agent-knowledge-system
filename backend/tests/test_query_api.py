@@ -1238,6 +1238,16 @@ def test_plan_tool_request_returns_structured_plan():
     assert response.arguments["environment"] == "production"
 
 
+def test_plan_tool_request_supports_ticket_draft_action():
+    response = plan_tool_request("Draft a high severity ticket for payment-service in production")
+
+    assert response.tool_name == "ticketing"
+    assert response.action == "draft"
+    assert response.target == "payment-service"
+    assert response.arguments["severity"] == "high"
+    assert response.arguments["environment"] == "production"
+
+
 def test_plan_tool_request_maps_search_queries_to_document_search():
     response = plan_tool_request("Search docs for RAG architecture")
 
@@ -2471,6 +2481,45 @@ def test_query_agent_endpoint_supports_status_then_ticket_multistep_workflow(
         payload["tool_chain"][1]["tool_execution"]["output"]["supporting_summary"]
     )
     assert any(event["stage"] == "tool_context" for event in payload["workflow_trace"])
+
+
+def test_query_agent_endpoint_supports_incident_triage_workflow(workspace_tmp_path, monkeypatch):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    (raw_dir / "payment_service_runbook.md").write_text(
+        "Production timeout spikes in payment-service usually require checking downstream DB latency.",
+        encoding="utf-8",
+    )
+
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/agent",
+        json={
+            "question": (
+                "Check payment-service in production for timeout issues and if it is abnormal "
+                "prepare a high severity ticket draft"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workflow_status"] == "completed"
+    assert payload["terminal_reason"] == "ticket_draft_prepared"
+    assert payload["step_count"] == 3
+    assert "incident_triage workflow" in payload["workflow_trace"][1]["detail"]
+    assert payload["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
+    assert payload["tool_chain"][1]["tool_plan"]["tool_name"] == "document_search"
+    assert payload["tool_chain"][2]["tool_plan"]["tool_name"] == "ticketing"
+    assert payload["tool_chain"][2]["tool_plan"]["action"] == "draft"
+    assert payload["tool_chain"][2]["tool_execution"]["output"]["status"] == "draft"
+    assert payload["tool_chain"][2]["tool_execution"]["output"]["submission_state"] == "awaiting_user_confirmation"
+    assert payload["answer_source"] == "local_incident_triage"
+    assert "Prepared incident ticket draft" in payload["answer"]
 
 
 def test_query_agent_endpoint_supports_status_then_summarize_workflow():

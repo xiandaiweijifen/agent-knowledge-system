@@ -84,7 +84,7 @@ def _build_workflow_planner_prompt(question: str) -> str:
         "You are a workflow planning assistant for an enterprise agent system. "
         "Decide whether the user request should stay single-step or be decomposed into a supported multi-step workflow. "
         "Return JSON only with keys: workflow_kind, search_question, follow_up_question. "
-        "workflow_kind must be one of: single_step, search_then_ticket, search_then_summarize, status_then_ticket, status_then_summarize. "
+        "workflow_kind must be one of: single_step, search_then_ticket, search_then_summarize, status_then_ticket, status_then_summarize, incident_triage. "
         "If workflow_kind is single_step, return empty strings for search_question and follow_up_question. "
         "If workflow_kind is search_then_ticket, search_question must contain the search step and "
         "follow_up_question must contain the ticket step, which may create, update, or close a ticket. "
@@ -94,6 +94,8 @@ def _build_workflow_planner_prompt(question: str) -> str:
         "follow_up_question must contain the ticket step, which may create, update, or close a ticket. "
         "If workflow_kind is status_then_summarize, search_question must contain the system status step and "
         "follow_up_question must contain the summary step. "
+        "If workflow_kind is incident_triage, search_question must contain the initial system status step and "
+        "follow_up_question must contain the draft ticket step for the same service. "
         "Use single_step if the request is not clearly a supported multi-step workflow. "
         "Good examples:\n"
         '- "Search docs for payment-service outage and create a high severity ticket for payment-service" '
@@ -114,6 +116,9 @@ def _build_workflow_planner_prompt(question: str) -> str:
         '- "Check system status for payment-service, then summarize the result" '
         '-> {"workflow_kind":"status_then_summarize","search_question":"Check system status for payment-service",'
         '"follow_up_question":"summarize the result"}\n'
+        '- "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft" '
+        '-> {"workflow_kind":"incident_triage","search_question":"Check system status for payment-service in production",'
+        '"follow_up_question":"draft a high severity ticket for payment-service in production"}\n'
         '- "Create a ticket for payment-service outage" '
         '-> {"workflow_kind":"single_step","search_question":"","follow_up_question":""}\n'
         "Preserve clear user constraints like filename, max_results, severity, environment, and target. "
@@ -147,6 +152,9 @@ def _normalize_workflow_kind(value: str) -> str:
         "status_check_then_summary": "status_then_summarize",
         "check_status_then_summary": "status_then_summarize",
         "status_to_summary": "status_then_summarize",
+        "incident_triage": "incident_triage",
+        "triage_incident": "incident_triage",
+        "status_search_ticket_draft": "incident_triage",
     }
     return aliases.get(normalized, normalized)
 
@@ -172,6 +180,7 @@ def _normalize_workflow_plan_payload(payload: dict) -> dict[str, str] | None:
         "search_then_summarize",
         "status_then_ticket",
         "status_then_summarize",
+        "incident_triage",
     }:
         return None
 
