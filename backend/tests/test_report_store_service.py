@@ -9,6 +9,7 @@ def test_persist_and_load_latest_retrieval_report(workspace_tmp_path, monkeypatc
         top_k=3,
         report={
             "top_k": 3,
+            "vector_store_provider": "qdrant",
             "summary": {
                 "total_cases": 2,
                 "hit_rate_at_k": 1.0,
@@ -16,24 +17,29 @@ def test_persist_and_load_latest_retrieval_report(workspace_tmp_path, monkeypatc
             },
             "cases": [],
         },
+        vector_store_provider="qdrant",
     )
 
     loaded = report_store_service.load_latest_retrieval_report(
         dataset_name="rag_overview_retrieval_eval.json",
         top_k=3,
+        vector_store_provider="qdrant",
     )
 
     assert persisted["report_source"] == "fresh"
     assert loaded is not None
     assert loaded["report_source"] == "saved"
+    assert loaded["vector_store_provider"] == "qdrant"
     assert loaded["report"]["summary"]["total_cases"] == 2
 
     history = report_store_service.list_retrieval_report_history(
         dataset_name="rag_overview_retrieval_eval.json",
         top_k=3,
+        vector_store_provider="qdrant",
     )
 
     assert len(history) == 1
+    assert history[0]["vector_store_provider"] == "qdrant"
     assert history[0]["primary_metric_name"] == "hit_rate_at_k"
 
 

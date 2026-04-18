@@ -138,6 +138,7 @@ Current knobs:
 - `KNOWLEDGE_WRITE_LLAMAINDEX=true`
 - `QDRANT_URL=...` for a remote Qdrant instance
 - `QDRANT_LOCAL_PATH=...` for local embedded development mode
+  Relative paths are resolved from the repository root, not the current shell directory.
 - `QDRANT_COLLECTION_NAME=agent_knowledge_chunks`
 
 ## Core Capabilities
@@ -347,6 +348,8 @@ Notes:
 - `POST /api/evaluation/retrieval`
 - `GET /api/evaluation/retrieval/latest`
 - `GET /api/evaluation/retrieval/history`
+- Retrieval evaluation accepts an optional `vector_store_provider` so you can save
+  and compare `qdrant` and `llamaindex` reports independently.
 - `GET /api/evaluation/agent-route/datasets`
 - `POST /api/evaluation/agent-route`
 - `GET /api/evaluation/agent-route/latest`
@@ -594,6 +597,18 @@ cd backend
 .\.venv\Scripts\activate
 python ..\scripts\backfill_qdrant.py
 ```
+
+## Retrieval Eval Matrix
+
+You can benchmark one or more retrieval datasets against a specific vector
+store provider without editing `.env` between runs:
+
+```powershell
+backend\.venv\Scripts\python scripts\run_retrieval_eval.py --all-datasets --provider qdrant --provider llamaindex --top-k 3 --persist
+```
+
+If a dataset has not been indexed for the selected provider yet, the script
+records that dataset in the `failures` list instead of aborting the whole run.
 
 ## Testing
 

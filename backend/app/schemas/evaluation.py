@@ -22,6 +22,8 @@ class RetrievalEvalCaseResult(BaseModel):
     citation_coverage: float = 0.0
     top_document_kind: str = "reference"
     citation_document_kinds: list[str] = Field(default_factory=list)
+    retrieval_latency_ms: float = 0.0
+    answer_latency_ms: float = 0.0
 
 
 class RetrievalEvalSummary(BaseModel):
@@ -30,10 +32,13 @@ class RetrievalEvalSummary(BaseModel):
     mean_reciprocal_rank: float
     grounded_case_rate: float = 0.0
     mean_citation_coverage: float = 0.0
+    mean_retrieval_latency_ms: float = 0.0
+    mean_answer_latency_ms: float = 0.0
 
 
 class RetrievalEvalReport(BaseModel):
     top_k: int
+    vector_store_provider: str = "qdrant"
     summary: RetrievalEvalSummary
     cases: list[RetrievalEvalCaseResult] = Field(default_factory=list)
 

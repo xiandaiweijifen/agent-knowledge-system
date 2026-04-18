@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -50,6 +51,19 @@ class Settings(BaseSettings):
     langsmith_api_key: str = ""
     langsmith_project: str = "agent-knowledge-system"
     langsmith_endpoint: str = "https://api.smith.langchain.com"
+
+    @field_validator("qdrant_local_path", mode="before")
+    @classmethod
+    def normalize_qdrant_local_path(cls, value: str) -> str:
+        normalized = str(value or "").strip()
+        if not normalized:
+            return ""
+
+        path = Path(normalized)
+        if path.is_absolute():
+            return str(path)
+
+        return str((REPO_ROOT / path).resolve())
 
     model_config = SettingsConfigDict(
         env_file=(

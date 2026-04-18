@@ -42,17 +42,20 @@ def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
     query_results = {
         "rag systems": SimpleNamespace(
             retrieval=SimpleNamespace(
-                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_0", document_kind="overview")]
+                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_0", document_kind="overview")],
+                retrieval_latency_ms=125.5,
             ),
             answer_verification=SimpleNamespace(
                 groundedness_status="grounded",
                 citation_coverage=1.0,
             ),
             answer_citations=[SimpleNamespace(document_kind="overview")],
+            answer_latency_ms=500.0,
         ),
         "agent system": SimpleNamespace(
             retrieval=SimpleNamespace(
-                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_1", document_kind="workflow")]
+                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_1", document_kind="workflow")],
+                retrieval_latency_ms=74.5,
             ),
             answer_verification=SimpleNamespace(
                 groundedness_status="partially_grounded",
@@ -62,6 +65,7 @@ def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
                 SimpleNamespace(document_kind="workflow"),
                 SimpleNamespace(document_kind="reference"),
             ],
+            answer_latency_ms=250.0,
         ),
     }
 
@@ -78,11 +82,66 @@ def test_evaluate_retrieval_dataset_computes_hit_rate_and_mrr(
     assert report.summary.mean_reciprocal_rank == 1.0
     assert report.summary.grounded_case_rate == 0.5
     assert report.summary.mean_citation_coverage == 0.75
+    assert report.summary.mean_retrieval_latency_ms == 100.0
+    assert report.summary.mean_answer_latency_ms == 375.0
     assert all(case.hit_at_k for case in report.cases)
     assert report.cases[0].groundedness_status == "grounded"
     assert report.cases[1].citation_coverage == 0.5
     assert report.cases[0].top_document_kind == "overview"
     assert report.cases[1].citation_document_kinds == ["reference", "workflow"]
+    assert report.vector_store_provider == retrieval_eval_service.settings.vector_store_provider
+
+
+def test_evaluate_retrieval_dataset_temporarily_overrides_vector_store_provider(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    dataset_path = workspace_tmp_path / "eval.json"
+    dataset_path.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {
+                        "case_id": "case_1",
+                        "filename": "sample.txt",
+                        "question": "rag systems",
+                        "expected_chunk_ids": ["sample.txt::chunk_0"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    seen_providers: list[str] = []
+
+    def _fake_run_query(filename, question, top_k, execution_context):
+        seen_providers.append(retrieval_eval_service.settings.vector_store_provider)
+        return SimpleNamespace(
+            retrieval=SimpleNamespace(
+                matches=[SimpleNamespace(chunk_id="sample.txt::chunk_0", document_kind="overview")],
+                retrieval_latency_ms=10.0,
+            ),
+            answer_verification=SimpleNamespace(
+                groundedness_status="grounded",
+                citation_coverage=1.0,
+            ),
+            answer_citations=[],
+            answer_latency_ms=20.0,
+        )
+
+    original_provider = retrieval_eval_service.settings.vector_store_provider
+    monkeypatch.setattr(retrieval_eval_service, "run_query_with_context", _fake_run_query)
+
+    report = evaluate_retrieval_dataset(
+        dataset_path=dataset_path,
+        top_k=1,
+        vector_store_provider="llamaindex",
+    )
+
+    assert report.vector_store_provider == "llamaindex"
+    assert seen_providers == ["llamaindex"]
+    assert retrieval_eval_service.settings.vector_store_provider == original_provider
 
 
 def test_list_retrieval_datasets_only_includes_retrieval_eval_files(

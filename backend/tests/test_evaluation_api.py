@@ -16,17 +16,21 @@ from app.services.evaluation import (
 def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
     client = TestClient(app)
 
-    def fake_eval(dataset_name: str, top_k: int):
+    def fake_eval(dataset_name: str, top_k: int, vector_store_provider: str | None = None):
         assert dataset_name == "rag_overview_retrieval_eval.json"
         assert top_k == 3
+        assert vector_store_provider == "qdrant"
         return {
             "top_k": 3,
+            "vector_store_provider": "qdrant",
             "summary": {
                 "total_cases": 2,
                 "hit_rate_at_k": 1.0,
                 "mean_reciprocal_rank": 0.75,
                 "grounded_case_rate": 1.0,
                 "mean_citation_coverage": 1.0,
+                "mean_retrieval_latency_ms": 100.0,
+                "mean_answer_latency_ms": 400.0,
             },
             "cases": [
                 {
@@ -39,6 +43,8 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
                     "reciprocal_rank": 1.0,
                     "groundedness_status": "grounded",
                     "citation_coverage": 1.0,
+                    "retrieval_latency_ms": 100.0,
+                    "answer_latency_ms": 400.0,
                 }
             ],
         }
@@ -51,11 +57,12 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
     monkeypatch.setattr(
         report_store_service,
         "persist_retrieval_report",
-        lambda dataset_name, top_k, report: {
+        lambda dataset_name, top_k, report, vector_store_provider=None: {
             "dataset_name": dataset_name,
             "top_k": top_k,
             "saved_at": "2026-03-17T01:00:00+00:00",
             "report_source": "fresh",
+            "vector_store_provider": vector_store_provider,
             "report": report,
         },
     )
@@ -65,6 +72,7 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
         json={
             "dataset_name": "rag_overview_retrieval_eval.json",
             "top_k": 3,
+            "vector_store_provider": "qdrant",
         },
     )
 
@@ -72,6 +80,7 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
     payload = response.json()
     assert payload["dataset_name"] == "rag_overview_retrieval_eval.json"
     assert payload["report"]["summary"]["hit_rate_at_k"] == 1.0
+    assert payload["vector_store_provider"] == "qdrant"
     assert payload["report_source"] == "fresh"
     assert payload["saved_at"] == "2026-03-17T01:00:00+00:00"
 
@@ -79,7 +88,7 @@ def test_retrieval_evaluation_endpoint_returns_report(monkeypatch):
 def test_retrieval_evaluation_endpoint_returns_404_for_missing_dataset(monkeypatch):
     client = TestClient(app)
 
-    def fake_eval(dataset_name: str, top_k: int):
+    def fake_eval(dataset_name: str, top_k: int, vector_store_provider: str | None = None):
         raise FileNotFoundError(dataset_name)
 
     monkeypatch.setattr(
@@ -569,18 +578,22 @@ def test_latest_retrieval_evaluation_endpoint_returns_saved_report(monkeypatch):
     monkeypatch.setattr(
         report_store_service,
         "load_latest_retrieval_report",
-        lambda dataset_name, top_k: {
+        lambda dataset_name, top_k, vector_store_provider=None: {
             "dataset_name": dataset_name,
             "saved_at": "2026-03-17T02:00:00+00:00",
             "report_source": "saved",
+            "vector_store_provider": vector_store_provider,
             "report": {
                 "top_k": top_k,
+                "vector_store_provider": vector_store_provider or "qdrant",
                 "summary": {
                     "total_cases": 2,
                     "hit_rate_at_k": 0.5,
                     "mean_reciprocal_rank": 0.5,
                     "grounded_case_rate": 0.0,
                     "mean_citation_coverage": 0.0,
+                    "mean_retrieval_latency_ms": 100.0,
+                    "mean_answer_latency_ms": 200.0,
                 },
                 "cases": [],
             },
@@ -588,12 +601,13 @@ def test_latest_retrieval_evaluation_endpoint_returns_saved_report(monkeypatch):
     )
 
     response = client.get(
-        "/api/evaluation/retrieval/latest?dataset_name=rag_overview_retrieval_eval.json&top_k=3",
+        "/api/evaluation/retrieval/latest?dataset_name=rag_overview_retrieval_eval.json&top_k=3&vector_store_provider=qdrant",
     )
 
     assert response.status_code == 200
     payload = response.json()
     assert payload["report_source"] == "saved"
+    assert payload["vector_store_provider"] == "qdrant"
     assert payload["saved_at"] == "2026-03-17T02:00:00+00:00"
 
 
@@ -603,11 +617,12 @@ def test_retrieval_evaluation_history_endpoint_returns_entries(monkeypatch):
     monkeypatch.setattr(
         report_store_service,
         "list_retrieval_report_history",
-        lambda dataset_name, top_k, limit=5: [
+        lambda dataset_name, top_k, limit=5, vector_store_provider=None: [
             {
                 "dataset_name": dataset_name,
                 "saved_at": "2026-03-17T02:00:00+00:00",
                 "report_source": "saved",
+                "vector_store_provider": vector_store_provider,
                 "top_k": top_k,
                 "primary_metric_name": "hit_rate_at_k",
                 "primary_metric_value": 0.75,
@@ -617,11 +632,12 @@ def test_retrieval_evaluation_history_endpoint_returns_entries(monkeypatch):
     )
 
     response = client.get(
-        "/api/evaluation/retrieval/history?dataset_name=rag_overview_retrieval_eval.json&top_k=3",
+        "/api/evaluation/retrieval/history?dataset_name=rag_overview_retrieval_eval.json&top_k=3&vector_store_provider=qdrant",
     )
 
     assert response.status_code == 200
     payload = response.json()
+    assert payload["entries"][0]["vector_store_provider"] == "qdrant"
     assert payload["entries"][0]["primary_metric_name"] == "hit_rate_at_k"
 
 

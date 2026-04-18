@@ -13,12 +13,14 @@ from app.schemas.evaluation import (
 class EvaluationReportMetadata(BaseModel):
     saved_at: str | None = None
     report_source: str | None = None
+    vector_store_provider: str | None = None
 
 
 class EvaluationReportHistoryEntry(BaseModel):
     dataset_name: str
     saved_at: str
     report_source: str = "saved"
+    vector_store_provider: str | None = None
     top_k: int | None = None
     primary_metric_name: str
     primary_metric_value: float
@@ -81,6 +83,7 @@ class RetrievalEvalDatasetInfo(BaseModel):
 class RetrievalEvalRequest(BaseModel):
     dataset_name: str
     top_k: int = 3
+    vector_store_provider: str | None = None
 
 
 class RetrievalEvalResponse(EvaluationReportMetadata):

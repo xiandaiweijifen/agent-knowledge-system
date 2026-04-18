@@ -27,6 +27,7 @@ def _report_payload(dataset_name: str, report: Any, report_source: str) -> dict[
         "dataset_name": dataset_name,
         "saved_at": datetime.now(timezone.utc).isoformat(),
         "report_source": report_source,
+        "vector_store_provider": serialized_report.get("vector_store_provider"),
         "report": serialized_report,
     }
 
@@ -60,10 +61,42 @@ def _retrieval_report_path(dataset_name: str, top_k: int) -> Path:
     return REPORT_STORE_DIR / f"retrieval__{safe_name}__topk_{top_k}.json"
 
 
+def _retrieval_provider_report_path(
+    dataset_name: str,
+    top_k: int,
+    vector_store_provider: str | None,
+) -> Path:
+    if not vector_store_provider:
+        return _retrieval_report_path(dataset_name, top_k)
+
+    safe_name = _sanitize_segment(dataset_name)
+    safe_provider = _sanitize_segment(vector_store_provider)
+    return REPORT_STORE_DIR / (
+        f"retrieval__{safe_name}__provider_{safe_provider}__topk_{top_k}.json"
+    )
+
+
 def _retrieval_history_report_path(dataset_name: str, top_k: int, saved_at: str) -> Path:
     safe_name = _sanitize_segment(dataset_name)
     return REPORT_STORE_DIR / (
         f"retrieval__{safe_name}__topk_{top_k}__{_history_timestamp(saved_at)}.json"
+    )
+
+
+def _retrieval_provider_history_report_path(
+    dataset_name: str,
+    top_k: int,
+    saved_at: str,
+    vector_store_provider: str | None,
+) -> Path:
+    if not vector_store_provider:
+        return _retrieval_history_report_path(dataset_name, top_k, saved_at)
+
+    safe_name = _sanitize_segment(dataset_name)
+    safe_provider = _sanitize_segment(vector_store_provider)
+    return REPORT_STORE_DIR / (
+        f"retrieval__{safe_name}__provider_{safe_provider}__topk_{top_k}__"
+        f"{_history_timestamp(saved_at)}.json"
     )
 
 
@@ -102,6 +135,7 @@ def _history_entry(payload: dict[str, Any], primary_metric_name: str, primary_me
         "dataset_name": payload["dataset_name"],
         "saved_at": payload["saved_at"],
         "report_source": "saved",
+        "vector_store_provider": payload.get("vector_store_provider"),
         "top_k": payload.get("top_k"),
         "primary_metric_name": primary_metric_name,
         "primary_metric_value": primary_metric_value,
@@ -119,24 +153,60 @@ def _sorted_history_payloads(paths: list[Path]) -> list[dict[str, Any]]:
     return payloads
 
 
-def persist_retrieval_report(dataset_name: str, top_k: int, report: Any) -> dict[str, Any]:
+def persist_retrieval_report(
+    dataset_name: str,
+    top_k: int,
+    report: Any,
+    vector_store_provider: str | None = None,
+) -> dict[str, Any]:
     payload = _report_payload(dataset_name=dataset_name, report=report, report_source="fresh")
+    payload["vector_store_provider"] = vector_store_provider or payload.get("vector_store_provider")
     payload["top_k"] = top_k
-    _write_report(_retrieval_history_report_path(dataset_name, top_k, payload["saved_at"]), payload)
-    return _write_report(_retrieval_report_path(dataset_name, top_k), payload)
+    _write_report(
+        _retrieval_provider_history_report_path(
+            dataset_name,
+            top_k,
+            payload["saved_at"],
+            payload.get("vector_store_provider"),
+        ),
+        payload,
+    )
+    return _write_report(
+        _retrieval_provider_report_path(
+            dataset_name,
+            top_k,
+            payload.get("vector_store_provider"),
+        ),
+        payload,
+    )
 
 
-def load_latest_retrieval_report(dataset_name: str, top_k: int) -> dict[str, Any] | None:
-    payload = _read_report(_retrieval_report_path(dataset_name, top_k))
+def load_latest_retrieval_report(
+    dataset_name: str,
+    top_k: int,
+    vector_store_provider: str | None = None,
+) -> dict[str, Any] | None:
+    payload = _read_report(
+        _retrieval_provider_report_path(dataset_name, top_k, vector_store_provider)
+    )
     if payload is None:
         return None
     payload["report_source"] = "saved"
     return payload
 
 
-def list_retrieval_report_history(dataset_name: str, top_k: int, limit: int = 5) -> list[dict[str, Any]]:
+def list_retrieval_report_history(
+    dataset_name: str,
+    top_k: int,
+    limit: int = 5,
+    vector_store_provider: str | None = None,
+) -> list[dict[str, Any]]:
     safe_name = _sanitize_segment(dataset_name)
-    pattern = f"retrieval__{safe_name}__topk_{top_k}__*.json"
+    if vector_store_provider:
+        safe_provider = _sanitize_segment(vector_store_provider)
+        pattern = f"retrieval__{safe_name}__provider_{safe_provider}__topk_{top_k}__*.json"
+    else:
+        pattern = f"retrieval__{safe_name}__topk_{top_k}__*.json"
     payloads = _sorted_history_payloads(sorted(REPORT_STORE_DIR.glob(pattern)))[:limit]
     return [
         _history_entry(

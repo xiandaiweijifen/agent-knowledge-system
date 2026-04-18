@@ -1,7 +1,8 @@
 import json
+from contextlib import contextmanager
 from pathlib import Path
 
-from app.core.config import DATA_ROOT
+from app.core.config import DATA_ROOT, settings
 from app.schemas.evaluation_api import RetrievalEvalDatasetInfo
 from app.schemas.evaluation import (
     RetrievalEvalCase,
@@ -12,6 +13,31 @@ from app.schemas.evaluation import (
 from app.services.agent.query_service import run_query_with_context
 
 EVAL_DATA_DIR = DATA_ROOT / "eval"
+
+
+def _normalized_vector_store_provider(vector_store_provider: str | None) -> str | None:
+    if vector_store_provider is None:
+        return None
+
+    normalized = vector_store_provider.strip().lower()
+    if normalized not in {"qdrant", "llamaindex"}:
+        raise ValueError("vector_store_provider_invalid")
+    return normalized
+
+
+@contextmanager
+def _temporary_vector_store_provider(vector_store_provider: str | None):
+    normalized = _normalized_vector_store_provider(vector_store_provider)
+    if normalized is None:
+        yield settings.vector_store_provider.strip().lower()
+        return
+
+    previous_provider = settings.vector_store_provider
+    settings.vector_store_provider = normalized
+    try:
+        yield normalized
+    finally:
+        settings.vector_store_provider = previous_provider
 
 
 def load_retrieval_eval_cases(dataset_path: Path) -> list[RetrievalEvalCase]:
@@ -34,54 +60,71 @@ def compute_reciprocal_rank(
     return 0.0
 
 
-def evaluate_retrieval_dataset(dataset_path: Path, top_k: int = 3) -> RetrievalEvalReport:
+def evaluate_retrieval_dataset(
+    dataset_path: Path,
+    top_k: int = 3,
+    vector_store_provider: str | None = None,
+) -> RetrievalEvalReport:
     """Evaluate retrieval performance on a local dataset."""
     cases = load_retrieval_eval_cases(dataset_path)
     case_results = []
+    total_retrieval_latency_ms = 0.0
+    total_answer_latency_ms = 0.0
 
-    for case in cases:
-        query_result = run_query_with_context(
-            filename=case.filename,
-            question=case.question,
-            top_k=top_k,
-            execution_context="eval",
-        )
-        retrieval_result = query_result.retrieval
-        retrieved_chunk_ids = [match.chunk_id for match in retrieval_result.matches]
-        top_document_kind = (
-            retrieval_result.matches[0].document_kind
-            if retrieval_result.matches
-            else "reference"
-        )
-        citation_document_kinds = sorted(
-            {
-                citation.document_kind
-                for citation in getattr(query_result, "answer_citations", [])
-                if getattr(citation, "document_kind", "").strip()
-            }
-        )
-        expected_set = set(case.expected_chunk_ids)
-        hit_at_k = any(chunk_id in expected_set for chunk_id in retrieved_chunk_ids)
-        reciprocal_rank = compute_reciprocal_rank(
-            expected_chunk_ids=case.expected_chunk_ids,
-            retrieved_chunk_ids=retrieved_chunk_ids,
-        )
-
-        case_results.append(
-            RetrievalEvalCaseResult(
-                case_id=case.case_id,
+    with _temporary_vector_store_provider(vector_store_provider) as active_provider:
+        for case in cases:
+            query_result = run_query_with_context(
                 filename=case.filename,
                 question=case.question,
+                top_k=top_k,
+                execution_context="eval",
+            )
+            retrieval_result = query_result.retrieval
+            retrieved_chunk_ids = [match.chunk_id for match in retrieval_result.matches]
+            top_document_kind = (
+                retrieval_result.matches[0].document_kind
+                if retrieval_result.matches
+                else "reference"
+            )
+            citation_document_kinds = sorted(
+                {
+                    citation.document_kind
+                    for citation in getattr(query_result, "answer_citations", [])
+                    if getattr(citation, "document_kind", "").strip()
+                }
+            )
+            expected_set = set(case.expected_chunk_ids)
+            hit_at_k = any(chunk_id in expected_set for chunk_id in retrieved_chunk_ids)
+            reciprocal_rank = compute_reciprocal_rank(
                 expected_chunk_ids=case.expected_chunk_ids,
                 retrieved_chunk_ids=retrieved_chunk_ids,
-                hit_at_k=hit_at_k,
-                reciprocal_rank=reciprocal_rank,
-                groundedness_status=query_result.answer_verification.groundedness_status,
-                citation_coverage=query_result.answer_verification.citation_coverage,
-                top_document_kind=top_document_kind,
-                citation_document_kinds=citation_document_kinds,
             )
-        )
+            total_retrieval_latency_ms += getattr(retrieval_result, "retrieval_latency_ms", 0.0)
+            total_answer_latency_ms += getattr(query_result, "answer_latency_ms", 0.0)
+
+            case_results.append(
+                RetrievalEvalCaseResult(
+                    case_id=case.case_id,
+                    filename=case.filename,
+                    question=case.question,
+                    expected_chunk_ids=case.expected_chunk_ids,
+                    retrieved_chunk_ids=retrieved_chunk_ids,
+                    hit_at_k=hit_at_k,
+                    reciprocal_rank=reciprocal_rank,
+                    groundedness_status=query_result.answer_verification.groundedness_status,
+                    citation_coverage=query_result.answer_verification.citation_coverage,
+                    top_document_kind=top_document_kind,
+                    citation_document_kinds=citation_document_kinds,
+                    retrieval_latency_ms=round(
+                        getattr(retrieval_result, "retrieval_latency_ms", 0.0),
+                        3,
+                    ),
+                    answer_latency_ms=round(
+                        getattr(query_result, "answer_latency_ms", 0.0),
+                        3,
+                    ),
+                )
+            )
 
     total_cases = len(case_results)
     hit_count = sum(1 for result in case_results if result.hit_at_k)
@@ -101,16 +144,27 @@ def evaluate_retrieval_dataset(dataset_path: Path, top_k: int = 3) -> RetrievalE
         mean_citation_coverage=round(citation_coverage_sum / total_cases, 6)
         if total_cases
         else 0.0,
+        mean_retrieval_latency_ms=round(total_retrieval_latency_ms / total_cases, 3)
+        if total_cases
+        else 0.0,
+        mean_answer_latency_ms=round(total_answer_latency_ms / total_cases, 3)
+        if total_cases
+        else 0.0,
     )
 
     return RetrievalEvalReport(
         top_k=top_k,
+        vector_store_provider=active_provider,
         summary=summary,
         cases=case_results,
     )
 
 
-def evaluate_named_retrieval_dataset(dataset_name: str, top_k: int = 3) -> RetrievalEvalReport:
+def evaluate_named_retrieval_dataset(
+    dataset_name: str,
+    top_k: int = 3,
+    vector_store_provider: str | None = None,
+) -> RetrievalEvalReport:
     """Evaluate retrieval performance for a named local dataset."""
     if top_k <= 0:
         raise ValueError("top_k_must_be_positive")
@@ -125,7 +179,26 @@ def evaluate_named_retrieval_dataset(dataset_name: str, top_k: int = 3) -> Retri
     if not dataset_path.exists() or not dataset_path.is_file():
         raise FileNotFoundError(dataset_name)
 
-    return evaluate_retrieval_dataset(dataset_path=dataset_path, top_k=top_k)
+    return evaluate_retrieval_dataset(
+        dataset_path=dataset_path,
+        top_k=top_k,
+        vector_store_provider=vector_store_provider,
+    )
+
+
+def evaluate_all_retrieval_datasets(
+    top_k: int = 3,
+    vector_store_provider: str | None = None,
+) -> dict[str, RetrievalEvalReport]:
+    """Evaluate every retrieval dataset with a consistent retrieval backend."""
+    reports: dict[str, RetrievalEvalReport] = {}
+    for dataset in list_retrieval_datasets():
+        reports[dataset.dataset_name] = evaluate_named_retrieval_dataset(
+            dataset_name=dataset.dataset_name,
+            top_k=top_k,
+            vector_store_provider=vector_store_provider,
+        )
+    return reports
 
 
 def list_retrieval_datasets() -> list[RetrievalEvalDatasetInfo]:

@@ -55,10 +55,15 @@ def get_retrieval_datasets() -> RetrievalEvalDatasetListResponse:
 
 
 @router.get("/evaluation/retrieval/latest", response_model=RetrievalEvalResponse)
-def get_latest_retrieval_report(dataset_name: str, top_k: int = 3) -> RetrievalEvalResponse:
+def get_latest_retrieval_report(
+    dataset_name: str,
+    top_k: int = 3,
+    vector_store_provider: str | None = None,
+) -> RetrievalEvalResponse:
     payload = report_store_service.load_latest_retrieval_report(
         dataset_name=dataset_name,
         top_k=top_k,
+        vector_store_provider=vector_store_provider,
     )
     if payload is None:
         raise HTTPException(status_code=404, detail="evaluation_report_not_found")
@@ -71,12 +76,14 @@ def get_retrieval_report_history(
     dataset_name: str,
     top_k: int = 3,
     limit: int = 5,
+    vector_store_provider: str | None = None,
 ) -> EvaluationReportHistoryResponse:
     return EvaluationReportHistoryResponse(
         entries=report_store_service.list_retrieval_report_history(
             dataset_name=dataset_name,
             top_k=top_k,
             limit=limit,
+            vector_store_provider=vector_store_provider,
         ),
     )
 
@@ -171,6 +178,7 @@ def evaluate_retrieval(request: RetrievalEvalRequest) -> RetrievalEvalResponse:
         report = retrieval_eval_service.evaluate_named_retrieval_dataset(
             dataset_name=request.dataset_name,
             top_k=request.top_k,
+            vector_store_provider=request.vector_store_provider,
         )
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Evaluation dataset not found")
@@ -181,6 +189,7 @@ def evaluate_retrieval(request: RetrievalEvalRequest) -> RetrievalEvalResponse:
         dataset_name=request.dataset_name,
         top_k=request.top_k,
         report=report,
+        vector_store_provider=request.vector_store_provider,
     )
 
     return RetrievalEvalResponse(
@@ -188,6 +197,7 @@ def evaluate_retrieval(request: RetrievalEvalRequest) -> RetrievalEvalResponse:
         report=report,
         saved_at=persisted["saved_at"],
         report_source=persisted["report_source"],
+        vector_store_provider=persisted.get("vector_store_provider"),
     )
 
 
