@@ -166,9 +166,14 @@ def test_tool_exec_node_runs_incident_triage_workflow(monkeypatch):
                 output={
                     "health": "degraded",
                     "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+                    "service_record": {
+                        "runbook_doc_ids": ["payment_service_runbook.md", "incident_playbook.md"],
+                    },
                 },
             )
         if request.tool_name == "document_search":
+            assert request.arguments["filename"] == "payment_service_runbook.md"
+            assert request.target == "timeout"
             return _build_execution(
                 tool_name="document_search",
                 action="query",

@@ -164,6 +164,25 @@ def _build_incident_triage_summary(
     )
 
 
+def _select_evidence_filename(service_record: dict, symptom: str) -> str | None:
+    runbook_doc_ids = service_record.get("runbook_doc_ids")
+    if not isinstance(runbook_doc_ids, list) or not runbook_doc_ids:
+        return None
+
+    lowered_symptom = symptom.lower()
+    preferred_keywords = [lowered_symptom]
+    if lowered_symptom == "timeout":
+        preferred_keywords.extend(["runbook", "incident", "payment"])
+
+    for keyword in preferred_keywords:
+        for candidate in runbook_doc_ids:
+            if isinstance(candidate, str) and keyword in candidate.lower():
+                return candidate
+
+    first_candidate = runbook_doc_ids[0]
+    return first_candidate if isinstance(first_candidate, str) and first_candidate.strip() else None
+
+
 def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, str]) -> dict:
     question = state["question"]
     service = triage_context["service"]
@@ -185,6 +204,7 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
         )
         tool_chain.append(status_step)
         status_output = status_execution.model_dump().get("output", {})
+        service_record = status_output.get("service_record", {})
         health = str(status_output.get("health") or status_output.get("status") or "").lower()
         if health in {"healthy", "ok", "nominal"}:
             return {
@@ -205,14 +225,18 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
                 "retry_count": 0,
             }
 
+        evidence_filename = _select_evidence_filename(service_record, symptom)
         search_step, search_execution = _execute_single_step(
             state=state,
             step_index=2,
             question=question,
             tool_name="document_search",
             action="query",
-            target=f"{service} {symptom}",
-            arguments={"max_results": "3"},
+            target=symptom,
+            arguments={
+                "max_results": "3",
+                **({"filename": evidence_filename} if evidence_filename else {}),
+            },
             planning_mode="agent_v2_incident_triage",
         )
         tool_chain.append(search_step)
