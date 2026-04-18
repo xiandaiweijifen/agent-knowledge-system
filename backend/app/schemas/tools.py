@@ -3,6 +3,22 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class ToolArgumentSpec(BaseModel):
+    name: str
+    value_type: str
+    required: bool = False
+    description: str
+    enum_values: list[str] = Field(default_factory=list)
+    domain_entity: str | None = None
+
+
+class ToolResultFieldSpec(BaseModel):
+    name: str
+    value_type: str
+    description: str
+    domain_entity: str | None = None
+
+
 class ToolExecutionRequest(BaseModel):
     tool_name: str
     action: str
@@ -48,6 +64,11 @@ class ToolCatalogEntry(BaseModel):
     supported_actions: list[str] = Field(default_factory=list)
     description: str
     execution_mode: str
+    primary_resource: str = ""
+    domain_entities: list[str] = Field(default_factory=list)
+    confirmation_required_actions: list[str] = Field(default_factory=list)
+    argument_schema: list[ToolArgumentSpec] = Field(default_factory=list)
+    result_schema: list[ToolResultFieldSpec] = Field(default_factory=list)
 
 
 class ToolCatalogResponse(BaseModel):

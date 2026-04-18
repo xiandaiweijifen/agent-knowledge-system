@@ -9,12 +9,15 @@ from app.core.config import DATA_ROOT
 from app.core.config import settings
 from app.schemas.tools import (
     InferredToolRequest,
+    ToolArgumentSpec,
     ToolCatalogEntry,
     ToolCatalogResponse,
     ToolExecutionRequest,
     ToolExecutionResponse,
     ToolPlanResponse,
+    ToolResultFieldSpec,
 )
+from app.schemas.domain import IncidentTicket, KnowledgeAsset, ServiceRecord, StatusSnapshot
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.ingestion import document_service
 from app.services.agent.state_store import JsonListRepository
@@ -26,16 +29,124 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
         "supported_actions": ["create", "update", "close", "query", "list"],
         "description": "Create, inspect, update, or close incident and ticket records for operational issues.",
         "execution_mode": "local_adapter",
+        "primary_resource": "incident_ticket",
+        "domain_entities": ["IncidentTicket", "ServiceRecord"],
+        "confirmation_required_actions": ["create", "update", "close"],
+        "argument_schema": [
+            {
+                "name": "target",
+                "value_type": "string",
+                "required": True,
+                "description": "Service or incident target for the ticket action.",
+                "domain_entity": "ServiceRecord",
+            },
+            {
+                "name": "severity",
+                "value_type": "string",
+                "required": False,
+                "description": "Severity level for incident-style tickets.",
+                "enum_values": ["high", "medium", "low", "unspecified"],
+                "domain_entity": "IncidentTicket",
+            },
+            {
+                "name": "environment",
+                "value_type": "string",
+                "required": False,
+                "description": "Environment affected by the incident.",
+                "enum_values": ["production", "staging", "development", "unspecified"],
+                "domain_entity": "IncidentTicket",
+            },
+        ],
+        "result_schema": [
+            {
+                "name": "ticket_record",
+                "value_type": "object",
+                "description": "Structured incident ticket record.",
+                "domain_entity": "IncidentTicket",
+            },
+            {
+                "name": "ticket_records",
+                "value_type": "array",
+                "description": "Structured incident ticket collection for list actions.",
+                "domain_entity": "IncidentTicket",
+            },
+        ],
     },
     "system_status": {
         "supported_actions": ["query"],
         "description": "Inspect service or system health status through a status-style tool interface.",
         "execution_mode": "local_adapter",
+        "primary_resource": "status_snapshot",
+        "domain_entities": ["ServiceRecord", "StatusSnapshot"],
+        "confirmation_required_actions": [],
+        "argument_schema": [
+            {
+                "name": "target",
+                "value_type": "string",
+                "required": True,
+                "description": "Service or system name to inspect.",
+                "domain_entity": "ServiceRecord",
+            },
+            {
+                "name": "environment",
+                "value_type": "string",
+                "required": False,
+                "description": "Requested environment for the status check.",
+                "enum_values": ["production", "staging", "development"],
+                "domain_entity": "StatusSnapshot",
+            },
+        ],
+        "result_schema": [
+            {
+                "name": "service_record",
+                "value_type": "object",
+                "description": "Structured service metadata for the requested target.",
+                "domain_entity": "ServiceRecord",
+            },
+            {
+                "name": "status_snapshot",
+                "value_type": "object",
+                "description": "Structured status snapshot for the service and environment.",
+                "domain_entity": "StatusSnapshot",
+            },
+        ],
     },
     "document_search": {
         "supported_actions": ["query"],
         "description": "Perform a tool-style document lookup outside the main retrieval answer flow.",
         "execution_mode": "local_adapter",
+        "primary_resource": "knowledge_asset",
+        "domain_entities": ["KnowledgeAsset"],
+        "confirmation_required_actions": [],
+        "argument_schema": [
+            {
+                "name": "target",
+                "value_type": "string",
+                "required": True,
+                "description": "Free-text query to search across document content.",
+            },
+            {
+                "name": "filename",
+                "value_type": "string",
+                "required": False,
+                "description": "Optional filename filter for a single knowledge asset.",
+                "domain_entity": "KnowledgeAsset",
+            },
+            {
+                "name": "max_results",
+                "value_type": "integer",
+                "required": False,
+                "description": "Optional hard limit on returned matches.",
+            },
+        ],
+        "result_schema": [
+            {
+                "name": "knowledge_assets",
+                "value_type": "array",
+                "description": "Structured matched knowledge assets with snippets.",
+                "domain_entity": "KnowledgeAsset",
+            },
+        ],
     },
 }
 ACTION_PATTERN = re.compile(
@@ -199,6 +310,48 @@ def _normalize_environment_value(value: str) -> str:
     return normalized
 
 
+def _canonicalize_service_id(target: str) -> str:
+    normalized = unicodedata.normalize("NFKC", target).strip().lower()
+    normalized = re.sub(r"[^a-z0-9._-]+", "-", normalized)
+    normalized = re.sub(r"-{2,}", "-", normalized)
+    return normalized.strip("-") or "service"
+
+
+def _build_service_record(target: str) -> ServiceRecord:
+    service_id = _canonicalize_service_id(target)
+    runbook_doc_ids: list[str] = []
+    if "payment" in service_id:
+        runbook_doc_ids = ["payment_service_runbook.md"]
+    elif "checkout" in service_id:
+        runbook_doc_ids = ["checkout_service_runbook.md"]
+    elif "workflow" in service_id:
+        runbook_doc_ids = ["agent_workflow.md", "workflow_runtime_notes.md"]
+
+    return ServiceRecord(
+        service_id=service_id,
+        service_name=target.strip() or service_id,
+        owner_team="platform-operations",
+        tier="tier-1" if "payment" in service_id else "tier-2",
+        environments=["production", "staging", "development"],
+        runbook_doc_ids=runbook_doc_ids,
+    )
+
+
+def _infer_doc_kind(filename: str) -> str:
+    stem = Path(filename).stem.lower()
+    if "runbook" in stem:
+        return "runbook"
+    if "incident" in stem or "postmortem" in stem:
+        return "incident_postmortem"
+    if "faq" in stem:
+        return "faq"
+    if "deploy" in stem or "release" in stem:
+        return "deployment"
+    if "workflow" in stem:
+        return "workflow"
+    return "reference"
+
+
 def _extract_environment_argument(question: str) -> str | None:
     match = ENVIRONMENT_ARGUMENT_PATTERN.search(question)
     if not match:
@@ -267,7 +420,18 @@ def _normalize_ticket_record(ticket: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(ticket)
     ticket_id = normalized.get("ticket_id", "").strip()
     target = _canonicalize_ticket_target(normalized.get("target", "").strip() or "ticket")
+    environment = normalized.get("environment", "unspecified")
+    severity = normalized.get("severity", "unspecified")
+    service = normalized.get("service", "").strip() or _canonicalize_service_id(target)
     normalized["target"] = target
+    normalized["service"] = service
+    normalized["title"] = normalized.get("title", "").strip() or (
+        f"{severity.title()} severity incident for {service} in {environment}"
+    )
+    normalized["summary"] = (
+        normalized.get("summary", "").strip()
+        or normalized.get("supporting_summary", "").strip()
+    )
     normalized.update(
         _build_tool_output_metadata(
             output_kind="record",
@@ -276,6 +440,20 @@ def _normalize_ticket_record(ticket: dict[str, Any]) -> dict[str, Any]:
             resource_id=ticket_id or None,
         )
     )
+    normalized["ticket_record"] = IncidentTicket(
+        ticket_id=ticket_id,
+        title=normalized["title"],
+        service=service,
+        environment=environment,
+        severity=severity,
+        symptoms=[],
+        status=normalized.get("status", "open"),
+        assignee=normalized.get("assignee"),
+        created_at=normalized.get("created_at", ""),
+        updated_at=normalized.get("updated_at", normalized.get("created_at", "")),
+        source_run_id=normalized.get("source_run_id"),
+        summary=normalized["summary"],
+    ).model_dump(mode="json")
     return normalized
 
 
@@ -285,10 +463,13 @@ def _build_ticket_collection_records(tickets: list[dict[str, Any]]) -> list[dict
         serialized_records.append(
             {
                 "ticket_id": ticket.get("ticket_id", ""),
+                "title": ticket.get("title", ""),
+                "service": ticket.get("service", ticket.get("target", "")),
                 "target": ticket.get("target", ""),
                 "status": ticket.get("status", ""),
                 "severity": ticket.get("severity", ""),
                 "environment": ticket.get("environment", ""),
+                "summary": ticket.get("summary", ticket.get("supporting_summary", "")),
             }
         )
     return serialized_records
@@ -702,6 +883,14 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
 
     if action == "create":
         ticket_id = f"TICKET-{len(tickets) + 1:04d}"
+        service = _canonicalize_service_id(target)
+        environment = request.arguments.get("environment", "unspecified")
+        severity = request.arguments.get("severity", "unspecified")
+        summary = (
+            request.arguments.get("supporting_summary", "").strip()
+            or _build_supporting_summary(request.arguments)
+        )
+        title = f"{severity.title()} severity incident for {service} in {environment}"
         ticket = {
             **_build_tool_output_metadata(
                 output_kind="record",
@@ -710,12 +899,15 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
                 resource_id=ticket_id,
             ),
             "ticket_id": ticket_id,
+            "title": title,
+            "service": service,
             "target": target,
             "status": "open",
-            "severity": request.arguments.get("severity", "unspecified"),
-            "environment": request.arguments.get("environment", "unspecified"),
+            "severity": severity,
+            "environment": environment,
             "created_at": now,
             "updated_at": now,
+            "summary": summary,
         }
         for context_key in (
             "supporting_query",
@@ -729,14 +921,26 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             context_value = request.arguments.get(context_key, "").strip()
             if context_value:
                 ticket[context_key] = context_value
-        supporting_summary = (
-            request.arguments.get("supporting_summary", "").strip()
-            or _build_supporting_summary(request.arguments)
-        )
-        if supporting_summary:
-            ticket["supporting_summary"] = supporting_summary
+        if summary:
+            ticket["supporting_summary"] = summary
         tickets.append(ticket)
         _save_ticket_store(tickets)
+
+        incident_ticket = IncidentTicket(
+            ticket_id=ticket_id,
+            title=title,
+            service=service,
+            environment=environment,
+            severity=severity,
+            symptoms=[request.arguments.get("supporting_status", "").strip()]
+            if request.arguments.get("supporting_status", "").strip()
+            else [],
+            status="open",
+            created_at=now,
+            updated_at=now,
+            summary=summary,
+        )
+        ticket["ticket_record"] = incident_ticket.model_dump(mode="json")
 
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -777,6 +981,23 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         )
 
     if action == "query":
+        ticket.setdefault(
+            "ticket_record",
+            IncidentTicket(
+                ticket_id=ticket.get("ticket_id", ""),
+                title=ticket.get("title", f"Incident for {ticket.get('target', '')}"),
+                service=ticket.get("service", _canonicalize_service_id(ticket.get("target", ""))),
+                environment=ticket.get("environment", "unspecified"),
+                severity=ticket.get("severity", "unspecified"),
+                symptoms=[],
+                status=ticket.get("status", "open"),
+                assignee=ticket.get("assignee"),
+                created_at=ticket.get("created_at", now),
+                updated_at=ticket.get("updated_at", now),
+                source_run_id=ticket.get("source_run_id"),
+                summary=ticket.get("summary", ticket.get("supporting_summary", "")),
+            ).model_dump(mode="json"),
+        )
         return ToolExecutionResponse(
             tool_name="ticketing",
             action=action,
@@ -800,12 +1021,29 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         )
         if supporting_summary:
             ticket["supporting_summary"] = supporting_summary
+            ticket["summary"] = supporting_summary
         normalized_status = request.arguments.get("status", "").strip().lower()
         if normalized_status == "open":
             ticket.pop("closed_at", None)
         elif normalized_status == "closed":
             ticket["closed_at"] = now
         ticket["updated_at"] = now
+        ticket.setdefault("service", _canonicalize_service_id(ticket.get("target", "")))
+        ticket.setdefault("title", f"Incident for {ticket.get('target', '')}")
+        ticket["ticket_record"] = IncidentTicket(
+            ticket_id=ticket.get("ticket_id", ""),
+            title=ticket.get("title", ""),
+            service=ticket.get("service", ""),
+            environment=ticket.get("environment", "unspecified"),
+            severity=ticket.get("severity", "unspecified"),
+            symptoms=[],
+            status=ticket.get("status", "open"),
+            assignee=ticket.get("assignee"),
+            created_at=ticket.get("created_at", now),
+            updated_at=now,
+            source_run_id=ticket.get("source_run_id"),
+            summary=ticket.get("summary", ticket.get("supporting_summary", "")),
+        ).model_dump(mode="json")
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -830,9 +1068,26 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         )
         if supporting_summary:
             ticket["supporting_summary"] = supporting_summary
+            ticket["summary"] = supporting_summary
         ticket["status"] = "closed"
         ticket["updated_at"] = now
         ticket["closed_at"] = now
+        ticket.setdefault("service", _canonicalize_service_id(ticket.get("target", "")))
+        ticket.setdefault("title", f"Incident for {ticket.get('target', '')}")
+        ticket["ticket_record"] = IncidentTicket(
+            ticket_id=ticket.get("ticket_id", ""),
+            title=ticket.get("title", ""),
+            service=ticket.get("service", ""),
+            environment=ticket.get("environment", "unspecified"),
+            severity=ticket.get("severity", "unspecified"),
+            symptoms=[],
+            status="closed",
+            assignee=ticket.get("assignee"),
+            created_at=ticket.get("created_at", now),
+            updated_at=now,
+            source_run_id=ticket.get("source_run_id"),
+            summary=ticket.get("summary", ticket.get("supporting_summary", "")),
+        ).model_dump(mode="json")
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -865,6 +1120,23 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
         else "local-fallback"
     )
 
+    service_record = _build_service_record(target)
+    environment = requested_environment or settings.app_env or "development"
+    status_snapshot = StatusSnapshot(
+        service=service_record.service_id,
+        environment=environment,
+        health="healthy",
+        latency_p95_ms=145 if environment != "production" else 220,
+        error_rate=0.002 if environment != "production" else 0.008,
+        cpu_percent=41.0 if environment != "production" else 56.0,
+        memory_percent=48.0 if environment != "production" else 62.0,
+        active_alerts=[],
+        updated_at=build_utc_timestamp(),
+        summary=(
+            f"{service_record.service_name} is healthy in {environment} with no active alerts."
+        ),
+    )
+
     output = {
         **_build_tool_output_metadata(
             output_kind="status_snapshot",
@@ -873,6 +1145,15 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
         ),
         "status": "ok",
         "app_env": settings.app_env,
+        "service": service_record.service_id,
+        "environment": environment,
+        "health": status_snapshot.health,
+        "latency_p95_ms": status_snapshot.latency_p95_ms,
+        "error_rate": status_snapshot.error_rate,
+        "cpu_percent": status_snapshot.cpu_percent,
+        "memory_percent": status_snapshot.memory_percent,
+        "active_alerts": status_snapshot.active_alerts,
+        "summary": status_snapshot.summary,
         "embedding_provider": settings.embedding_provider,
         "embedding_model": embedding_model,
         "chat_provider": settings.chat_provider,
@@ -881,6 +1162,8 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
         "openai_configured": str(bool(settings.openai_api_key)).lower(),
         "database_configured": str(bool(settings.database_url)).lower(),
         "redis_configured": str(bool(settings.redis_url)).lower(),
+        "service_record": service_record.model_dump(mode="json"),
+        "status_snapshot": status_snapshot.model_dump(mode="json"),
     }
     if requested_environment:
         output["requested_environment"] = requested_environment
@@ -931,6 +1214,19 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
     returned_matches = ranked_matches[:max_results] if max_results else ranked_matches
     matched_documents = [filename for _, filename, _, _ in returned_matches]
     preview_snippets = [snippet for _, _, snippet, _ in returned_matches]
+    knowledge_assets = [
+        KnowledgeAsset(
+            doc_id=filename,
+            service="payment-service" if "payment" in filename.lower() else "",
+            doc_kind=_infer_doc_kind(filename),
+            section_path=[],
+            tags=[_infer_doc_kind(filename)],
+            source_filename=filename,
+            title=Path(filename).stem.replace("_", " ").replace("-", " ").strip(),
+            snippet=snippet,
+        ).model_dump(mode="json")
+        for _, filename, snippet, _ in returned_matches
+    ]
 
     result_summary = (
         f"Found {len(matched_documents)} matching document(s) for '{query}'."
@@ -950,6 +1246,7 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
         "returned_count": str(len(returned_matches)),
         "matched_documents": ", ".join(matched_documents),
         "skipped_documents": str(skipped_documents),
+        "knowledge_assets": knowledge_assets,
     }
     if filename_filter:
         output["filename_filter"] = filename_filter
@@ -1048,6 +1345,19 @@ def list_registered_tools() -> ToolCatalogResponse:
             supported_actions=list(tool_config["supported_actions"]),
             description=str(tool_config["description"]),
             execution_mode=str(tool_config["execution_mode"]),
+            primary_resource=str(tool_config.get("primary_resource", "")),
+            domain_entities=list(tool_config.get("domain_entities", [])),
+            confirmation_required_actions=list(
+                tool_config.get("confirmation_required_actions", [])
+            ),
+            argument_schema=[
+                ToolArgumentSpec.model_validate(item)
+                for item in tool_config.get("argument_schema", [])
+            ],
+            result_schema=[
+                ToolResultFieldSpec.model_validate(item)
+                for item in tool_config.get("result_schema", [])
+            ],
         )
         for tool_name, tool_config in SUPPORTED_TOOLS.items()
     ]

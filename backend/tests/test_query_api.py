@@ -914,6 +914,9 @@ def test_execute_system_status_tool_returns_live_local_snapshot(monkeypatch):
     assert response.output["embedding_provider"] == "gemini"
     assert response.output["chat_provider"] == "fallback"
     assert response.output["gemini_configured"] == "true"
+    assert response.output["service_record"]["service_id"] == "agent-knowledge-system"
+    assert response.output["status_snapshot"]["service"] == "agent-knowledge-system"
+    assert response.output["status_snapshot"]["health"] == "healthy"
 
 
 def test_execute_system_status_tool_preserves_requested_target(monkeypatch):
@@ -949,6 +952,7 @@ def test_execute_system_status_tool_preserves_requested_environment(monkeypatch)
     assert response.output["target"] == "payment-service"
     assert response.output["app_env"] == "development"
     assert response.output["requested_environment"] == "production"
+    assert response.output["status_snapshot"]["environment"] == "production"
     assert "requested environment production" in response.result_summary
 
 
@@ -979,6 +983,8 @@ def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, 
     assert response.output["matched_count"] == "1"
     assert "notes.md" in response.output["matched_documents"]
     assert response.output["skipped_documents"] == "1"
+    assert response.output["knowledge_assets"][0]["doc_id"] == "notes.md"
+    assert response.output["knowledge_assets"][0]["doc_kind"] == "reference"
 
 
 def test_execute_document_search_tool_returns_filename_filter_when_used(
@@ -1133,6 +1139,8 @@ def test_query_tool_execute_endpoint_returns_structured_stub(workspace_tmp_path,
     assert payload["execution_mode"] == "local_adapter"
     assert payload["trace_id"]
     assert payload["output"]["ticket_id"].startswith("TICKET-")
+    assert payload["output"]["ticket_record"]["service"] == "payment-service"
+    assert payload["output"]["ticket_record"]["severity"] == "high"
 
 
 def test_query_tool_execute_endpoint_returns_live_system_status():
@@ -1158,7 +1166,11 @@ def test_list_registered_tools_returns_catalog():
     catalog = list_registered_tools()
 
     assert catalog.count >= 3
-    assert any(tool.tool_name == "ticketing" for tool in catalog.tools)
+    ticketing_tool = next(tool for tool in catalog.tools if tool.tool_name == "ticketing")
+    assert ticketing_tool.primary_resource == "incident_ticket"
+    assert "IncidentTicket" in ticketing_tool.domain_entities
+    assert "create" in ticketing_tool.confirmation_required_actions
+    assert any(arg.name == "severity" for arg in ticketing_tool.argument_schema)
 
 
 def test_query_tools_endpoint_returns_catalog():
@@ -1168,7 +1180,10 @@ def test_query_tools_endpoint_returns_catalog():
     assert response.status_code == 200
     payload = response.json()
     assert payload["count"] >= 3
-    assert any(tool["tool_name"] == "ticketing" for tool in payload["tools"])
+    ticketing_tool = next(tool for tool in payload["tools"] if tool["tool_name"] == "ticketing")
+    assert ticketing_tool["primary_resource"] == "incident_ticket"
+    assert "IncidentTicket" in ticketing_tool["domain_entities"]
+    assert any(arg["name"] == "severity" for arg in ticketing_tool["argument_schema"])
 
 
 def test_plan_tool_request_returns_structured_plan():
