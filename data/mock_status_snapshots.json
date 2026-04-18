@@ -1,0 +1,38 @@
+[
+  {
+    "service": "payment-service",
+    "environment": "production",
+    "health": "degraded",
+    "latency_p95_ms": 1320,
+    "error_rate": 0.083,
+    "cpu_percent": 74,
+    "memory_percent": 68,
+    "active_alerts": ["timeout_rate_high", "dependency_db_latency_spike"],
+    "updated_at": "2026-04-18T07:30:00+00:00",
+    "summary": "Service is degraded due to elevated timeout rate and downstream DB latency."
+  },
+  {
+    "service": "payment-service",
+    "environment": "staging",
+    "health": "healthy",
+    "latency_p95_ms": 180,
+    "error_rate": 0.004,
+    "cpu_percent": 42,
+    "memory_percent": 46,
+    "active_alerts": [],
+    "updated_at": "2026-04-18T07:30:00+00:00",
+    "summary": "Service is healthy in staging."
+  },
+  {
+    "service": "checkout-api",
+    "environment": "production",
+    "health": "healthy",
+    "latency_p95_ms": 240,
+    "error_rate": 0.006,
+    "cpu_percent": 51,
+    "memory_percent": 57,
+    "active_alerts": [],
+    "updated_at": "2026-04-18T07:30:00+00:00",
+    "summary": "Checkout API is healthy in production."
+  }
+]

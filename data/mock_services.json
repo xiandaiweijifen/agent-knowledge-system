@@ -1,0 +1,26 @@
+[
+  {
+    "service_id": "payment-service",
+    "service_name": "payment-service",
+    "owner_team": "payments-platform",
+    "tier": "tier-1",
+    "environments": ["production", "staging", "development"],
+    "runbook_doc_ids": ["payment_service_runbook.md", "incident_playbook.md"]
+  },
+  {
+    "service_id": "checkout-api",
+    "service_name": "checkout-api",
+    "owner_team": "commerce-runtime",
+    "tier": "tier-1",
+    "environments": ["production", "staging"],
+    "runbook_doc_ids": ["checkout_service_runbook.md"]
+  },
+  {
+    "service_id": "agent-workflow",
+    "service_name": "agent-workflow",
+    "owner_team": "platform-operations",
+    "tier": "tier-2",
+    "environments": ["staging", "development"],
+    "runbook_doc_ids": ["agent_workflow.md", "workflow_runtime_notes.md"]
+  }
+]

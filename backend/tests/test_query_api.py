@@ -491,6 +491,41 @@ def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path,
     assert "closed_at" not in reopened.output
 
 
+def test_execute_ticketing_tool_supports_draft_and_submit(workspace_tmp_path, monkeypatch):
+    ticket_store_path = workspace_tmp_path / "tickets.json"
+    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+
+    drafted = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="draft",
+            target="payment-service",
+            arguments={
+                "severity": "high",
+                "environment": "production",
+                "supporting_summary": "Timeout rate is elevated and needs operator review.",
+            },
+        )
+    )
+
+    submitted = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="ticketing",
+            action="submit",
+            target="payment-service",
+            arguments={"ticket_id": drafted.output["ticket_id"]},
+        )
+    )
+
+    assert drafted.execution_status == "completed"
+    assert drafted.output["status"] == "draft"
+    assert drafted.output["submission_state"] == "awaiting_user_confirmation"
+    assert submitted.execution_status == "completed"
+    assert submitted.output["status"] == "open"
+    assert submitted.output["submission_state"] == "submitted"
+    assert submitted.output["ticket_record"]["status"] == "open"
+
+
 def test_execute_ticketing_tool_builds_supporting_summary_from_search_context(
     workspace_tmp_path,
     monkeypatch,
@@ -952,7 +987,13 @@ def test_execute_system_status_tool_preserves_requested_environment(monkeypatch)
     assert response.output["target"] == "payment-service"
     assert response.output["app_env"] == "development"
     assert response.output["requested_environment"] == "production"
+    assert response.output["status"] == "degraded"
     assert response.output["status_snapshot"]["environment"] == "production"
+    assert response.output["status_snapshot"]["health"] == "degraded"
+    assert response.output["status_snapshot"]["active_alerts"] == [
+        "timeout_rate_high",
+        "dependency_db_latency_spike",
+    ]
     assert "requested environment production" in response.result_summary
 
 
@@ -1169,7 +1210,7 @@ def test_list_registered_tools_returns_catalog():
     ticketing_tool = next(tool for tool in catalog.tools if tool.tool_name == "ticketing")
     assert ticketing_tool.primary_resource == "incident_ticket"
     assert "IncidentTicket" in ticketing_tool.domain_entities
-    assert "create" in ticketing_tool.confirmation_required_actions
+    assert "submit" in ticketing_tool.confirmation_required_actions
     assert any(arg.name == "severity" for arg in ticketing_tool.argument_schema)
 
 

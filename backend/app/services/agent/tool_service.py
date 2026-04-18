@@ -26,12 +26,12 @@ from app.services.llm.tool_planner_service import generate_llm_tool_plan
 
 SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
     "ticketing": {
-        "supported_actions": ["create", "update", "close", "query", "list"],
+        "supported_actions": ["draft", "submit", "create", "update", "close", "query", "list"],
         "description": "Create, inspect, update, or close incident and ticket records for operational issues.",
         "execution_mode": "local_adapter",
         "primary_resource": "incident_ticket",
         "domain_entities": ["IncidentTicket", "ServiceRecord"],
-        "confirmation_required_actions": ["create", "update", "close"],
+        "confirmation_required_actions": ["submit", "update", "close"],
         "argument_schema": [
             {
                 "name": "target",
@@ -206,6 +206,8 @@ TICKET_LIST_TARGET_PATTERN = re.compile(
 TICKET_DATA_DIR = DATA_ROOT / "tool_state"
 TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
+MOCK_SERVICE_PATH = DATA_ROOT / "mock_services.json"
+MOCK_STATUS_SNAPSHOTS_PATH = DATA_ROOT / "mock_status_snapshots.json"
 TOOL_OUTPUT_SCHEMA_VERSION = "tool-output-v1"
 
 
@@ -319,6 +321,24 @@ def _canonicalize_service_id(target: str) -> str:
 
 def _build_service_record(target: str) -> ServiceRecord:
     service_id = _canonicalize_service_id(target)
+    mock_services = _load_mock_services()
+    for record in mock_services:
+        candidate_id = _canonicalize_service_id(str(record.get("service_id") or record.get("service_name") or ""))
+        if candidate_id != service_id:
+            continue
+        return ServiceRecord(
+            service_id=candidate_id,
+            service_name=str(record.get("service_name") or target.strip() or candidate_id),
+            owner_team=str(record.get("owner_team") or "platform-operations"),
+            tier=str(record.get("tier") or "tier-2"),
+            environments=[
+                _normalize_environment_value(str(item))
+                for item in record.get("environments", [])
+                if str(item).strip()
+            ],
+            runbook_doc_ids=[str(item) for item in record.get("runbook_doc_ids", []) if str(item).strip()],
+        )
+
     runbook_doc_ids: list[str] = []
     if "payment" in service_id:
         runbook_doc_ids = ["payment_service_runbook.md"]
@@ -350,6 +370,46 @@ def _infer_doc_kind(filename: str) -> str:
     if "workflow" in stem:
         return "workflow"
     return "reference"
+
+
+def _build_status_snapshot(service_record: ServiceRecord, environment: str) -> StatusSnapshot:
+    normalized_environment = _normalize_environment_value(environment or settings.app_env or "development")
+    for snapshot in _load_mock_status_snapshots():
+        snapshot_service = _canonicalize_service_id(
+            str(snapshot.get("service") or snapshot.get("service_id") or "")
+        )
+        snapshot_environment = _normalize_environment_value(str(snapshot.get("environment") or ""))
+        if snapshot_service != service_record.service_id or snapshot_environment != normalized_environment:
+            continue
+        return StatusSnapshot(
+            service=service_record.service_id,
+            environment=normalized_environment,
+            health=str(snapshot.get("health") or "unknown"),
+            latency_p95_ms=int(snapshot["latency_p95_ms"]) if snapshot.get("latency_p95_ms") is not None else None,
+            error_rate=float(snapshot["error_rate"]) if snapshot.get("error_rate") is not None else None,
+            cpu_percent=float(snapshot["cpu_percent"]) if snapshot.get("cpu_percent") is not None else None,
+            memory_percent=float(snapshot["memory_percent"]) if snapshot.get("memory_percent") is not None else None,
+            active_alerts=[str(item) for item in snapshot.get("active_alerts", []) if str(item).strip()],
+            updated_at=str(snapshot.get("updated_at") or build_utc_timestamp()),
+            summary=str(snapshot.get("summary") or ""),
+        )
+
+    healthy = normalized_environment != "production"
+    return StatusSnapshot(
+        service=service_record.service_id,
+        environment=normalized_environment,
+        health="healthy" if healthy else "degraded",
+        latency_p95_ms=145 if healthy else 220,
+        error_rate=0.002 if healthy else 0.008,
+        cpu_percent=41.0 if healthy else 56.0,
+        memory_percent=48.0 if healthy else 62.0,
+        active_alerts=[] if healthy else ["latency_elevated"],
+        updated_at=build_utc_timestamp(),
+        summary=(
+            f"{service_record.service_name} is {'healthy' if healthy else 'degraded'} "
+            f"in {normalized_environment}."
+        ),
+    )
 
 
 def _extract_environment_argument(question: str) -> str | None:
@@ -409,11 +469,30 @@ def _load_ticket_store() -> list[dict[str, Any]]:
     ).load()
 
 
+def _load_json_payload(path: Path, default: Any) -> Any:
+    if not path.exists() or not path.is_file():
+        return default
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return default
+
+
 def _save_ticket_store(tickets: list[dict[str, Any]]) -> None:
     JsonListRepository(
         TICKET_STORE_PATH,
         normalizer=_normalize_ticket_record,
     ).save(tickets)
+
+
+def _load_mock_services() -> list[dict[str, Any]]:
+    payload = _load_json_payload(MOCK_SERVICE_PATH, default=[])
+    return payload if isinstance(payload, list) else []
+
+
+def _load_mock_status_snapshots() -> list[dict[str, Any]]:
+    payload = _load_json_payload(MOCK_STATUS_SNAPSHOTS_PATH, default=[])
+    return payload if isinstance(payload, list) else []
 
 
 def _normalize_ticket_record(ticket: dict[str, Any]) -> dict[str, Any]:
@@ -546,6 +625,47 @@ def _build_supporting_summary(arguments: dict[str, str]) -> str:
         summary_parts.append(f"{status_sentence}.")
 
     return " ".join(summary_parts).strip()
+
+
+def _next_ticket_id(tickets: list[dict[str, Any]]) -> str:
+    max_id = 0
+    for ticket in tickets:
+        raw_ticket_id = str(ticket.get("ticket_id", "")).strip().upper()
+        match = re.match(r"^TICKET-(\d+)$", raw_ticket_id)
+        if match:
+            max_id = max(max_id, int(match.group(1)))
+    return f"TICKET-{max_id + 1:04d}"
+
+
+def _build_incident_ticket_record(
+    *,
+    ticket_id: str,
+    title: str,
+    service: str,
+    environment: str,
+    severity: str,
+    status: str,
+    created_at: str,
+    updated_at: str,
+    summary: str,
+    assignee: str | None = None,
+    source_run_id: str | None = None,
+    symptoms: list[str] | None = None,
+) -> dict[str, Any]:
+    return IncidentTicket(
+        ticket_id=ticket_id,
+        title=title,
+        service=service,
+        environment=environment,
+        severity=severity,
+        symptoms=symptoms or [],
+        status=status,
+        assignee=assignee,
+        created_at=created_at,
+        updated_at=updated_at,
+        source_run_id=source_run_id,
+        summary=summary,
+    ).model_dump(mode="json")
 
 
 def _tokenize_search_terms(query: str) -> list[str]:
@@ -882,7 +1002,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         )
 
     if action == "create":
-        ticket_id = f"TICKET-{len(tickets) + 1:04d}"
+        ticket_id = _next_ticket_id(tickets)
         service = _canonicalize_service_id(target)
         environment = request.arguments.get("environment", "unspecified")
         severity = request.arguments.get("severity", "unspecified")
@@ -926,21 +1046,20 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         tickets.append(ticket)
         _save_ticket_store(tickets)
 
-        incident_ticket = IncidentTicket(
+        ticket["ticket_record"] = _build_incident_ticket_record(
             ticket_id=ticket_id,
             title=title,
             service=service,
             environment=environment,
             severity=severity,
-            symptoms=[request.arguments.get("supporting_status", "").strip()]
-            if request.arguments.get("supporting_status", "").strip()
-            else [],
             status="open",
             created_at=now,
             updated_at=now,
             summary=summary,
+            symptoms=[request.arguments.get("supporting_status", "").strip()]
+            if request.arguments.get("supporting_status", "").strip()
+            else [],
         )
-        ticket["ticket_record"] = incident_ticket.model_dump(mode="json")
 
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -949,6 +1068,67 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             execution_status="completed",
             execution_mode="local_adapter",
             result_summary=f"Created local ticket {ticket_id} for {target}.",
+            trace_id=trace_id,
+            executed_at=now,
+            output=ticket,
+        )
+
+    if action == "draft":
+        ticket_id = _next_ticket_id(tickets)
+        service = _canonicalize_service_id(target)
+        environment = request.arguments.get("environment", "unspecified")
+        severity = request.arguments.get("severity", "unspecified")
+        summary = (
+            request.arguments.get("supporting_summary", "").strip()
+            or _build_supporting_summary(request.arguments)
+        )
+        title = request.arguments.get(
+            "title",
+            f"{severity.title()} severity incident for {service} in {environment}",
+        )
+        ticket = {
+            **_build_tool_output_metadata(
+                output_kind="record",
+                resource_type="ticket",
+                target=target,
+                resource_id=ticket_id,
+            ),
+            "ticket_id": ticket_id,
+            "title": title,
+            "service": service,
+            "target": target,
+            "status": "draft",
+            "submission_state": "awaiting_user_confirmation",
+            "severity": severity,
+            "environment": environment,
+            "created_at": now,
+            "updated_at": now,
+            "summary": summary,
+            "draft_created_at": now,
+        }
+        if summary:
+            ticket["supporting_summary"] = summary
+        ticket["ticket_record"] = _build_incident_ticket_record(
+            ticket_id=ticket_id,
+            title=title,
+            service=service,
+            environment=environment,
+            severity=severity,
+            status="draft",
+            created_at=now,
+            updated_at=now,
+            summary=summary,
+        )
+        tickets.append(ticket)
+        _save_ticket_store(tickets)
+
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target,
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=f"Prepared ticket draft {ticket_id} for {target}.",
             trace_id=trace_id,
             executed_at=now,
             output=ticket,
@@ -1010,6 +1190,56 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             output=ticket,
         )
 
+    if action == "submit":
+        current_status = str(ticket.get("status", "")).strip().lower()
+        if current_status not in {"draft", "awaiting_confirmation"}:
+            return ToolExecutionResponse(
+                tool_name="ticketing",
+                action=action,
+                target=target,
+                execution_status="invalid_state",
+                execution_mode="local_adapter",
+                result_summary=(
+                    f"Ticket {ticket.get('ticket_id', '')} is not in a submittable draft state."
+                ),
+                trace_id=trace_id,
+                executed_at=now,
+                output=ticket,
+            )
+
+        ticket["status"] = "open"
+        ticket["submission_state"] = "submitted"
+        ticket["submitted_at"] = now
+        ticket["updated_at"] = now
+        ticket.setdefault("service", _canonicalize_service_id(ticket.get("target", "")))
+        ticket.setdefault("title", f"Incident for {ticket.get('target', '')}")
+        ticket["ticket_record"] = _build_incident_ticket_record(
+            ticket_id=ticket.get("ticket_id", ""),
+            title=ticket.get("title", ""),
+            service=ticket.get("service", ""),
+            environment=ticket.get("environment", "unspecified"),
+            severity=ticket.get("severity", "unspecified"),
+            status="open",
+            created_at=ticket.get("created_at", now),
+            updated_at=now,
+            summary=ticket.get("summary", ticket.get("supporting_summary", "")),
+            assignee=ticket.get("assignee"),
+            source_run_id=ticket.get("source_run_id"),
+        )
+        _save_ticket_store(tickets)
+
+        return ToolExecutionResponse(
+            tool_name="ticketing",
+            action=action,
+            target=target,
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=f"Submitted ticket draft {ticket['ticket_id']} for {target}.",
+            trace_id=trace_id,
+            executed_at=now,
+            output=ticket,
+        )
+
     if action == "update":
         for key, value in request.arguments.items():
             if key == "ticket_id":
@@ -1030,20 +1260,19 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         ticket["updated_at"] = now
         ticket.setdefault("service", _canonicalize_service_id(ticket.get("target", "")))
         ticket.setdefault("title", f"Incident for {ticket.get('target', '')}")
-        ticket["ticket_record"] = IncidentTicket(
+        ticket["ticket_record"] = _build_incident_ticket_record(
             ticket_id=ticket.get("ticket_id", ""),
             title=ticket.get("title", ""),
             service=ticket.get("service", ""),
             environment=ticket.get("environment", "unspecified"),
             severity=ticket.get("severity", "unspecified"),
-            symptoms=[],
             status=ticket.get("status", "open"),
-            assignee=ticket.get("assignee"),
             created_at=ticket.get("created_at", now),
             updated_at=now,
-            source_run_id=ticket.get("source_run_id"),
             summary=ticket.get("summary", ticket.get("supporting_summary", "")),
-        ).model_dump(mode="json")
+            assignee=ticket.get("assignee"),
+            source_run_id=ticket.get("source_run_id"),
+        )
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -1074,20 +1303,19 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
         ticket["closed_at"] = now
         ticket.setdefault("service", _canonicalize_service_id(ticket.get("target", "")))
         ticket.setdefault("title", f"Incident for {ticket.get('target', '')}")
-        ticket["ticket_record"] = IncidentTicket(
+        ticket["ticket_record"] = _build_incident_ticket_record(
             ticket_id=ticket.get("ticket_id", ""),
             title=ticket.get("title", ""),
             service=ticket.get("service", ""),
             environment=ticket.get("environment", "unspecified"),
             severity=ticket.get("severity", "unspecified"),
-            symptoms=[],
             status="closed",
-            assignee=ticket.get("assignee"),
             created_at=ticket.get("created_at", now),
             updated_at=now,
-            source_run_id=ticket.get("source_run_id"),
             summary=ticket.get("summary", ticket.get("supporting_summary", "")),
-        ).model_dump(mode="json")
+            assignee=ticket.get("assignee"),
+            source_run_id=ticket.get("source_run_id"),
+        )
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -1122,20 +1350,7 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
 
     service_record = _build_service_record(target)
     environment = requested_environment or settings.app_env or "development"
-    status_snapshot = StatusSnapshot(
-        service=service_record.service_id,
-        environment=environment,
-        health="healthy",
-        latency_p95_ms=145 if environment != "production" else 220,
-        error_rate=0.002 if environment != "production" else 0.008,
-        cpu_percent=41.0 if environment != "production" else 56.0,
-        memory_percent=48.0 if environment != "production" else 62.0,
-        active_alerts=[],
-        updated_at=build_utc_timestamp(),
-        summary=(
-            f"{service_record.service_name} is healthy in {environment} with no active alerts."
-        ),
-    )
+    status_snapshot = _build_status_snapshot(service_record, environment)
 
     output = {
         **_build_tool_output_metadata(
@@ -1143,10 +1358,10 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
             resource_type="system_status",
             target=target,
         ),
-        "status": "ok",
+        "status": "ok" if status_snapshot.health == "healthy" else status_snapshot.health,
         "app_env": settings.app_env,
         "service": service_record.service_id,
-        "environment": environment,
+        "environment": status_snapshot.environment,
         "health": status_snapshot.health,
         "latency_p95_ms": status_snapshot.latency_p95_ms,
         "error_rate": status_snapshot.error_rate,
