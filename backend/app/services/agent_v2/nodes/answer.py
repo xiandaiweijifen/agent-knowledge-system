@@ -17,6 +17,14 @@ def answer_node(state: AgentState) -> dict:
             "retry_state": state.get("retry_state"),
             "retry_count": state.get("retry_count", 0),
         }
+    if state.get("workflow_status") == "clarification_required":
+        return {
+            "answer": state.get("answer"),
+            "answer_source": state.get("answer_source") or "stub",
+            "clarification_question": state.get("clarification_question"),
+            "clarification_plan": state.get("clarification_plan"),
+            "workflow_status": "clarification_required",
+        }
     if state.get("answer"):
         return {
             "answer": state["answer"],

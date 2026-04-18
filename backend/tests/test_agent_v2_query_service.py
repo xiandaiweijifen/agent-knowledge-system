@@ -310,10 +310,15 @@ def test_orchestrate_agent_v2_request_returns_incident_triage_result(monkeypatch
                     "route": "tool_execution",
                     "route_reason": "Incident triage should inspect service health and prepare a ticket draft when needed.",
                     "route_planning_mode": "llm_gemini",
-                    "workflow_status": "completed",
-                    "terminal_reason_override": "ticket_draft_prepared",
+                    "workflow_status": "clarification_required",
                     "answer": "Incident triage prepared draft TICKET-0001 for payment-service.",
                     "answer_source": "local_incident_triage",
+                    "clarification_question": "Draft TICKET-0001 is ready for payment-service in production. Do you want me to submit it?",
+                    "clarification_plan": {
+                        "confirmation_kind": "ticket_submission",
+                        "ticket_id": "TICKET-0001",
+                        "missing_fields": ["submission_confirmation"],
+                    },
                     "tool_chain": [
                         {
                             "step_id": "step_1",
@@ -369,11 +374,14 @@ def test_orchestrate_agent_v2_request_returns_incident_triage_result(monkeypatch
         top_k=3,
     )
 
-    assert response.terminal_reason == "ticket_draft_prepared"
+    assert response.workflow_status == "clarification_required"
+    assert response.terminal_reason == "clarification_requested"
     assert response.answer_source == "local_incident_triage"
     assert response.step_count == 3
     assert response.tool_execution["action"] == "draft"
-    assert response.workflow_trace[-1].detail == "Incident triage prepared draft TICKET-0001 for payment-service."
+    assert response.recommended_recovery_action == "resume_with_clarification"
+    assert response.clarification_plan["confirmation_kind"] == "ticket_submission"
+    assert response.workflow_trace[-1].stage == "clarification"
 
 
 def test_orchestrate_agent_v2_request_returns_failed_tool_response(monkeypatch):
@@ -628,6 +636,153 @@ def test_recover_agent_v2_request_marks_clarification_recovery_metadata(monkeypa
     assert response.resume_source_type == "run_id"
     assert response.resume_strategy == "clarification_recovery"
     assert persisted["response"].recovered_via_action == "resume_with_clarification"
+
+
+def test_resume_agent_v2_request_submits_ticket_after_confirmation(monkeypatch):
+    from app.services.agent_v2.query_service import resume_agent_v2_request
+    from app.schemas.query import AgentWorkflowResponse, RouteDecision, WorkflowTraceEvent, WorkflowStepRecord
+
+    persisted_run = AgentWorkflowResponse(
+        run_id="run-ticket-confirm",
+        question="Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        workflow_status="clarification_required",
+        route=RouteDecision(
+            route_type="tool_execution",
+            route_reason="Incident triage should inspect service health and prepare a ticket draft when needed.",
+            filename=None,
+        ),
+        answer="Incident triage prepared draft TICKET-0001 for payment-service.",
+        answer_source="local_incident_triage",
+        clarification_message="Draft TICKET-0001 is ready for payment-service in production. Do you want me to submit it?",
+        clarification_plan={
+            "confirmation_kind": "ticket_submission",
+            "ticket_id": "TICKET-0001",
+            "service": "payment-service",
+            "environment": "production",
+            "missing_fields": ["submission_confirmation"],
+        },
+        tool_plan={"tool_name": "ticketing", "action": "draft", "target": "payment-service"},
+        tool_execution={"tool_name": "ticketing", "action": "draft", "target": "payment-service", "output": {"ticket_id": "TICKET-0001"}},
+        tool_chain=[
+            WorkflowStepRecord(
+                step_id="step_3",
+                step_index=3,
+                step_status="completed",
+                attempt_count=1,
+                retried=False,
+                started_at="2026-04-07T00:00:00+00:00",
+                completed_at="2026-04-07T00:00:01+00:00",
+                question="q",
+                tool_plan={"tool_name": "ticketing", "action": "draft", "target": "payment-service"},
+                tool_execution={"tool_name": "ticketing", "action": "draft", "target": "payment-service", "output": {"ticket_id": "TICKET-0001"}},
+            )
+        ],
+        workflow_trace=[
+            WorkflowTraceEvent(
+                stage="clarification",
+                status="clarification_required",
+                timestamp="2026-04-07T00:00:01+00:00",
+                detail="Draft TICKET-0001 is ready for payment-service in production. Do you want me to submit it?",
+            )
+        ],
+    )
+
+    persisted = {}
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: persisted_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: persisted.setdefault("response", response),
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_utc_timestamp",
+        lambda: "2026-04-07T00:00:02+00:00",
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.execute_tool_request",
+        lambda request: type(
+            "ToolExecution",
+            (),
+            {
+                "execution_status": "completed",
+                "executed_at": "2026-04-07T00:00:02+00:00",
+                "model_dump": lambda self=None: {
+                    "tool_name": "ticketing",
+                    "action": "submit",
+                    "target": "payment-service",
+                    "execution_status": "completed",
+                    "result_summary": "Submitted ticket draft TICKET-0001 for payment-service.",
+                    "output": {"ticket_id": "TICKET-0001", "submission_state": "submitted"},
+                },
+            },
+        )(),
+    )
+
+    response = resume_agent_v2_request(
+        run_id="run-ticket-confirm",
+        clarification_context={"submission_confirmation": "yes"},
+        checkpointer=object(),
+    )
+
+    assert response.workflow_status == "completed"
+    assert response.terminal_reason == "ticket_submitted"
+    assert response.tool_execution["action"] == "submit"
+    assert response.step_count == 2
+    assert response.applied_clarification_fields == ["submission_confirmation"]
+    assert persisted["response"].terminal_reason == "ticket_submitted"
+
+
+def test_resume_agent_v2_request_cancels_ticket_when_confirmation_declined(monkeypatch):
+    from app.services.agent_v2.query_service import resume_agent_v2_request
+    from app.schemas.query import AgentWorkflowResponse, RouteDecision
+
+    persisted_run = AgentWorkflowResponse(
+        run_id="run-ticket-cancel",
+        question="Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        workflow_status="clarification_required",
+        route=RouteDecision(
+            route_type="tool_execution",
+            route_reason="Incident triage should inspect service health and prepare a ticket draft when needed.",
+            filename=None,
+        ),
+        answer="Incident triage prepared draft TICKET-0002 for payment-service.",
+        answer_source="local_incident_triage",
+        clarification_message="Draft TICKET-0002 is ready for payment-service in production. Do you want me to submit it?",
+        clarification_plan={
+            "confirmation_kind": "ticket_submission",
+            "ticket_id": "TICKET-0002",
+            "service": "payment-service",
+            "environment": "production",
+            "missing_fields": ["submission_confirmation"],
+        },
+        tool_plan={"tool_name": "ticketing", "action": "draft", "target": "payment-service"},
+        tool_execution={"tool_name": "ticketing", "action": "draft", "target": "payment-service", "output": {"ticket_id": "TICKET-0002"}},
+    )
+
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.get_persisted_agent_v2_run",
+        lambda run_id: persisted_run,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        lambda response: None,
+    )
+    monkeypatch.setattr(
+        "app.services.agent_v2.query_service.build_utc_timestamp",
+        lambda: "2026-04-07T00:00:03+00:00",
+    )
+
+    response = resume_agent_v2_request(
+        run_id="run-ticket-cancel",
+        clarification_context={"submission_confirmation": "no"},
+        checkpointer=object(),
+    )
+
+    assert response.workflow_status == "completed"
+    assert response.terminal_reason == "ticket_submission_cancelled"
+    assert response.answer == "Left ticket draft TICKET-0002 unsubmitted at operator request."
 
 
 def test_stream_agent_v2_request_emits_updates_and_final_result(monkeypatch):

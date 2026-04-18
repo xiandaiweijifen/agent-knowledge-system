@@ -6,6 +6,7 @@ Verifies graph compilation and Package 8 router behavior.
 import pytest
 from langgraph.checkpoint.memory import InMemorySaver
 from app.services.agent_v2.graph import build_graph
+from app.services.agent_v2.nodes.answer import answer_node
 from app.services.agent_v2.state import AgentState
 
 
@@ -32,6 +33,7 @@ BASE_INPUT: AgentState = {
     "chat_provider": None,
     "chat_model": None,
     "workflow_status": "in_progress",
+    "terminal_reason_override": None,
     "error": None,
     "messages": [],
 }
@@ -104,6 +106,21 @@ def test_tool_exec_path(graph):
     )
     assert result["workflow_status"] == "completed"
     assert result["supervisor_agent"] == "operations_specialist"
+
+
+def test_answer_node_preserves_clarification_required_status():
+    result = answer_node(
+        {
+            **BASE_INPUT,
+            "workflow_status": "clarification_required",
+            "answer": "Draft TICKET-0001 is ready.",
+            "answer_source": "local_incident_triage",
+            "clarification_question": "Do you want me to submit it?",
+            "clarification_plan": {"confirmation_kind": "ticket_submission"},
+        }
+    )
+    assert result["workflow_status"] == "clarification_required"
+    assert result["clarification_question"] == "Do you want me to submit it?"
 
 
 def test_clarification_path(graph):

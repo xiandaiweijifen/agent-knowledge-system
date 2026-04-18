@@ -164,6 +164,31 @@ def _build_incident_triage_summary(
     )
 
 
+def _build_ticket_submission_confirmation(
+    *,
+    service: str,
+    environment: str,
+    draft_output: dict,
+) -> tuple[str, dict]:
+    ticket_id = str(draft_output.get("ticket_id") or "unknown").strip()
+    confirmation_question = (
+        f"Draft {ticket_id} is ready for {service} in {environment}. Do you want me to submit it?"
+    )
+    return confirmation_question, {
+        "question": confirmation_question,
+        "planning_mode": "agent_v2_incident_triage",
+        "confirmation_kind": "ticket_submission",
+        "missing_fields": ["submission_confirmation"],
+        "follow_up_questions": [
+            f"Confirm whether to submit ticket draft {ticket_id}."
+        ],
+        "clarification_summary": confirmation_question,
+        "ticket_id": ticket_id,
+        "service": service,
+        "environment": environment,
+    }
+
+
 def _select_evidence_filename(service_record: dict, symptom: str) -> str | None:
     runbook_doc_ids = service_record.get("runbook_doc_ids")
     if not isinstance(runbook_doc_ids, list) or not runbook_doc_ids:
@@ -271,8 +296,18 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
                 draft_output=draft_output,
             ),
             "answer_source": "local_incident_triage",
-            "workflow_status": "completed",
-            "terminal_reason_override": "ticket_draft_prepared",
+            "workflow_status": "clarification_required",
+            "terminal_reason_override": None,
+            "clarification_question": _build_ticket_submission_confirmation(
+                service=service,
+                environment=environment,
+                draft_output=draft_output,
+            )[0],
+            "clarification_plan": _build_ticket_submission_confirmation(
+                service=service,
+                environment=environment,
+                draft_output=draft_output,
+            )[1],
             "failure_stage": None,
             "retry_state": "not_applicable",
             "retry_count": 0,

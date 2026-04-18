@@ -204,8 +204,9 @@ def test_tool_exec_node_runs_incident_triage_workflow(monkeypatch):
         }
     )
 
-    assert result["workflow_status"] == "completed"
-    assert result["terminal_reason_override"] == "ticket_draft_prepared"
+    assert result["workflow_status"] == "clarification_required"
+    assert result["clarification_plan"]["confirmation_kind"] == "ticket_submission"
+    assert result["clarification_plan"]["ticket_id"] == "TICKET-0001"
     assert result["answer_source"] == "local_incident_triage"
     assert len(result["tool_chain"]) == 3
     assert result["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
