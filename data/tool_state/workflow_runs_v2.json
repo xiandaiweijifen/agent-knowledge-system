@@ -1,5 +1,829 @@
 [
   {
+    "run_id": "fb63adf9aa064c2297edc7e574eced0d",
+    "root_run_id": null,
+    "recovery_depth": 0,
+    "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": "resume_with_clarification",
+    "resume_source_type": "run_id",
+    "resume_strategy": "clarification_recovery",
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [
+      "submission_confirmation"
+    ],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "ticket_submitted",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-19T11:17:07.579144+00:00",
+    "completed_at": "2026-04-19T11:17:23.581695+00:00",
+    "last_updated_at": "2026-04-19T11:17:23.581695+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 4,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-19T11:17:11.731233+00:00",
+        "detail": "Route selected: tool_execution. The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-19T11:17:11.731233+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "clarification",
+        "status": "clarification_required",
+        "timestamp": "2026-04-19T11:17:11.731233+00:00",
+        "detail": "Draft TICKET-0339 is ready for payment-service in production. Do you want me to submit it?"
+      },
+      {
+        "stage": "clarification",
+        "status": "completed",
+        "timestamp": "2026-04-19T11:17:23.581695+00:00",
+        "detail": "Operator confirmed submission of draft TICKET-0339."
+      },
+      {
+        "stage": "tool_execution",
+        "status": "completed",
+        "timestamp": "2026-04-19T11:17:23.581695+00:00",
+        "detail": "Incident triage submitted ticket TICKET-0339 for payment-service after operator confirmation."
+      }
+    ],
+    "filename": null,
+    "answer": "Incident triage submitted ticket TICKET-0339 for payment-service after operator confirmation.",
+    "answer_source": "local_incident_triage",
+    "model": null,
+    "answered_at": "2026-04-19T11:17:23.581695+00:00",
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+      "planning_mode": "agent_v2_incident_triage_resume",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "submit",
+      "target": "payment-service",
+      "arguments": {
+        "ticket_id": "TICKET-0339"
+      },
+      "plan_summary": "Plan ticketing:submit for payment-service."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "submit",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Submitted ticket draft TICKET-0339 for payment-service.",
+      "trace_id": "28ed3a5289fb406e8ccf215b4f39bffc",
+      "executed_at": "2026-04-19T11:17:23.604257+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0339",
+        "ticket_id": "TICKET-0339",
+        "title": "High severity incident for payment-service in production",
+        "service": "payment-service",
+        "status": "open",
+        "submission_state": "submitted",
+        "severity": "high",
+        "environment": "production",
+        "created_at": "2026-04-19T11:17:11.060294+00:00",
+        "updated_at": "2026-04-19T11:17:23.604257+00:00",
+        "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+        "draft_created_at": "2026-04-19T11:17:11.060294+00:00",
+        "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+        "ticket_record": {
+          "ticket_id": "TICKET-0339",
+          "title": "High severity incident for payment-service in production",
+          "service": "payment-service",
+          "environment": "production",
+          "severity": "high",
+          "symptoms": [],
+          "status": "open",
+          "assignee": null,
+          "created_at": "2026-04-19T11:17:11.060294+00:00",
+          "updated_at": "2026-04-19T11:17:23.604257+00:00",
+          "source_run_id": null,
+          "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+        },
+        "submitted_at": "2026-04-19T11:17:23.604257+00:00"
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-19T11:17:10.976628+00:00",
+        "completed_at": "2026-04-19T11:17:10.977392+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "agent_v2_incident_triage",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {
+            "environment": "production",
+            "issue_type": "timeout"
+          },
+          "plan_summary": "Plan system_status:query for payment-service."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service with requested environment production.",
+          "trace_id": "38c75be57cd14449be7aa1b3219ce9cb",
+          "executed_at": "2026-04-19T11:17:10.977392+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "degraded",
+            "app_env": "development",
+            "service": "payment-service",
+            "environment": "production",
+            "health": "degraded",
+            "latency_p95_ms": 1320,
+            "error_rate": 0.083,
+            "cpu_percent": 74.0,
+            "memory_percent": 68.0,
+            "active_alerts": [
+              "timeout_rate_high",
+              "dependency_db_latency_spike"
+            ],
+            "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "true",
+            "redis_configured": "true",
+            "service_record": {
+              "service_id": "payment-service",
+              "service_name": "payment-service",
+              "owner_team": "payments-platform",
+              "tier": "tier-1",
+              "environments": [
+                "production",
+                "staging",
+                "development"
+              ],
+              "runbook_doc_ids": [
+                "payment_service_runbook.md",
+                "incident_playbook.md"
+              ]
+            },
+            "status_snapshot": {
+              "service": "payment-service",
+              "environment": "production",
+              "health": "degraded",
+              "latency_p95_ms": 1320,
+              "error_rate": 0.083,
+              "cpu_percent": 74.0,
+              "memory_percent": 68.0,
+              "active_alerts": [
+                "timeout_rate_high",
+                "dependency_db_latency_spike"
+              ],
+              "updated_at": "2026-04-18T07:30:00+00:00",
+              "summary": "Service is degraded due to elevated timeout rate and downstream DB latency."
+            },
+            "requested_environment": "production"
+          }
+        },
+        "failure_message": null
+      },
+      {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-19T11:17:10.977566+00:00",
+        "completed_at": "2026-04-19T11:17:11.002584+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "agent_v2_incident_triage",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "timeout",
+          "arguments": {
+            "max_results": "3",
+            "filename": "payment_service_runbook.md"
+          },
+          "plan_summary": "Plan document_search:query for timeout."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "timeout",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'timeout'.",
+          "trace_id": "4bf62f5143b74abea2e9de3b23f6bec2",
+          "executed_at": "2026-04-19T11:17:11.002584+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "timeout",
+            "item_count": "1",
+            "query": "timeout",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "payment_service_runbook.md",
+            "skipped_documents": "0",
+            "knowledge_assets": [
+              {
+                "doc_id": "payment_service_runbook.md",
+                "service": "payment-service",
+                "doc_kind": "runbook",
+                "section_path": [],
+                "tags": [
+                  "runbook"
+                ],
+                "source_filename": "payment_service_runbook.md",
+                "title": "payment service runbook",
+                "snippet": "payment_service_runbook.md: Typical payment-service problems include authorization timeout, settlement job delay, webhook backlog, and elevated retry count from downstream gateways."
+              }
+            ],
+            "filename_filter": "payment_service_runbook.md",
+            "max_results": "3",
+            "snippets": "payment_service_runbook.md: Typical payment-service problems include authorization timeout, settlement job delay, webhook backlog, and elevated retry count from downstream gateways.",
+            "top_match_document": "payment_service_runbook.md",
+            "top_match_score": "4.617",
+            "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      },
+      {
+        "step_id": "step_3",
+        "step_index": 3,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-19T11:17:11.002676+00:00",
+        "completed_at": "2026-04-19T11:17:11.060294+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "agent_v2_incident_triage",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "draft",
+          "target": "payment-service",
+          "arguments": {
+            "severity": "high",
+            "environment": "production",
+            "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+          },
+          "plan_summary": "Plan ticketing:draft for payment-service."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "draft",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Prepared ticket draft TICKET-0339 for payment-service.",
+          "trace_id": "80f9bda9a8b645eaafa2809055794c63",
+          "executed_at": "2026-04-19T11:17:11.060294+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0339",
+            "ticket_id": "TICKET-0339",
+            "title": "High severity incident for payment-service in production",
+            "service": "payment-service",
+            "status": "draft",
+            "submission_state": "awaiting_user_confirmation",
+            "severity": "high",
+            "environment": "production",
+            "created_at": "2026-04-19T11:17:11.060294+00:00",
+            "updated_at": "2026-04-19T11:17:11.060294+00:00",
+            "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            "draft_created_at": "2026-04-19T11:17:11.060294+00:00",
+            "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            "ticket_record": {
+              "ticket_id": "TICKET-0339",
+              "title": "High severity incident for payment-service in production",
+              "service": "payment-service",
+              "environment": "production",
+              "severity": "high",
+              "symptoms": [],
+              "status": "draft",
+              "assignee": null,
+              "created_at": "2026-04-19T11:17:11.060294+00:00",
+              "updated_at": "2026-04-19T11:17:11.060294+00:00",
+              "source_run_id": null,
+              "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+            }
+          }
+        },
+        "failure_message": null
+      },
+      {
+        "step_id": "step_4",
+        "step_index": 4,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-19T11:17:23.581695+00:00",
+        "completed_at": "2026-04-19T11:17:23.604257+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "agent_v2_incident_triage_resume",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "submit",
+          "target": "payment-service",
+          "arguments": {
+            "ticket_id": "TICKET-0339"
+          },
+          "plan_summary": "Plan ticketing:submit for payment-service."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "submit",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Submitted ticket draft TICKET-0339 for payment-service.",
+          "trace_id": "28ed3a5289fb406e8ccf215b4f39bffc",
+          "executed_at": "2026-04-19T11:17:23.604257+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0339",
+            "ticket_id": "TICKET-0339",
+            "title": "High severity incident for payment-service in production",
+            "service": "payment-service",
+            "status": "open",
+            "submission_state": "submitted",
+            "severity": "high",
+            "environment": "production",
+            "created_at": "2026-04-19T11:17:11.060294+00:00",
+            "updated_at": "2026-04-19T11:17:23.604257+00:00",
+            "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            "draft_created_at": "2026-04-19T11:17:11.060294+00:00",
+            "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            "ticket_record": {
+              "ticket_id": "TICKET-0339",
+              "title": "High severity incident for payment-service in production",
+              "service": "payment-service",
+              "environment": "production",
+              "severity": "high",
+              "symptoms": [],
+              "status": "open",
+              "assignee": null,
+              "created_at": "2026-04-19T11:17:11.060294+00:00",
+              "updated_at": "2026-04-19T11:17:23.604257+00:00",
+              "source_run_id": null,
+              "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+            },
+            "submitted_at": "2026-04-19T11:17:23.604257+00:00"
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
+    "run_id": "398dc191253b4a5ab58ceebd11c7e349",
+    "root_run_id": null,
+    "recovery_depth": 0,
+    "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+    "resumed_from_question": null,
+    "source_run_id": null,
+    "recovered_via_action": "resume_with_clarification",
+    "resume_source_type": "run_id",
+    "resume_strategy": "clarification_recovery",
+    "resumed_from_step_index": null,
+    "reused_step_indices": [],
+    "applied_clarification_fields": [
+      "submission_confirmation"
+    ],
+    "question_rewritten": false,
+    "overridden_plan_arguments": [],
+    "workflow_status": "completed",
+    "terminal_reason": "ticket_submission_cancelled",
+    "outcome_category": "completed",
+    "is_recoverable": null,
+    "retry_state": "not_applicable",
+    "recommended_recovery_action": "none",
+    "available_recovery_actions": [],
+    "recovery_action_details": {},
+    "failure_stage": null,
+    "failure_message": null,
+    "started_at": "2026-04-19T10:42:28.904861+00:00",
+    "completed_at": "2026-04-19T10:42:40.383306+00:00",
+    "last_updated_at": "2026-04-19T10:42:40.383306+00:00",
+    "workflow_planning_mode": "llm_gemini",
+    "tool_planning_mode": null,
+    "tool_planning_modes": [],
+    "clarification_planning_mode": null,
+    "planner_call_count": 0,
+    "tool_planner_call_count": 0,
+    "workflow_planning_latency_ms": 0,
+    "tool_planning_latency_ms": 0,
+    "clarification_planning_latency_ms": 0,
+    "planner_latency_ms_total": 0,
+    "llm_planner_layers": [],
+    "fallback_planner_layers": [],
+    "llm_tool_planner_steps": [],
+    "fallback_tool_planner_steps": [],
+    "retry_count": 0,
+    "retried_step_indices": [],
+    "step_count": 3,
+    "route": {
+      "route_type": "tool_execution",
+      "route_reason": "The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket.",
+      "filename": null
+    },
+    "workflow_trace": [
+      {
+        "stage": "routing",
+        "status": "completed",
+        "timestamp": "2026-04-19T10:42:32.121691+00:00",
+        "detail": "Route selected: tool_execution. The user is asking to check a service for issues and prepare a ticket, which requires executing tools to monitor the service and potentially create a ticket."
+      },
+      {
+        "stage": "supervisor",
+        "status": "completed",
+        "timestamp": "2026-04-19T10:42:32.121691+00:00",
+        "detail": "Supervisor delegated tool_execution to operations_specialist based on the current route decision."
+      },
+      {
+        "stage": "clarification",
+        "status": "clarification_required",
+        "timestamp": "2026-04-19T10:42:32.121691+00:00",
+        "detail": "Draft TICKET-0338 is ready for payment-service in production. Do you want me to submit it?"
+      },
+      {
+        "stage": "clarification",
+        "status": "completed",
+        "timestamp": "2026-04-19T10:42:40.383306+00:00",
+        "detail": "Left ticket draft TICKET-0338 unsubmitted at operator request."
+      }
+    ],
+    "filename": null,
+    "answer": "Left ticket draft TICKET-0338 unsubmitted at operator request.",
+    "answer_source": "local_incident_triage",
+    "model": null,
+    "answered_at": "2026-04-19T10:42:40.383306+00:00",
+    "answer_latency_ms": null,
+    "chat_provider": null,
+    "chat_model": null,
+    "retrieval": null,
+    "clarification_message": null,
+    "clarification_plan": null,
+    "tool_plan": {
+      "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+      "planning_mode": "agent_v2_incident_triage",
+      "route_hint": "tool_execution",
+      "tool_name": "ticketing",
+      "action": "draft",
+      "target": "payment-service",
+      "arguments": {
+        "severity": "high",
+        "environment": "production",
+        "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+      },
+      "plan_summary": "Plan ticketing:draft for payment-service."
+    },
+    "tool_execution": {
+      "tool_name": "ticketing",
+      "action": "draft",
+      "target": "payment-service",
+      "execution_status": "completed",
+      "execution_mode": "local_adapter",
+      "result_summary": "Prepared ticket draft TICKET-0338 for payment-service.",
+      "trace_id": "0626ae100e8247c7b09819000e63478a",
+      "executed_at": "2026-04-19T10:42:31.418288+00:00",
+      "output": {
+        "schema_version": "tool-output-v1",
+        "output_kind": "record",
+        "resource_type": "ticket",
+        "target": "payment-service",
+        "resource_id": "TICKET-0338",
+        "ticket_id": "TICKET-0338",
+        "title": "High severity incident for payment-service in production",
+        "service": "payment-service",
+        "status": "draft",
+        "submission_state": "awaiting_user_confirmation",
+        "severity": "high",
+        "environment": "production",
+        "created_at": "2026-04-19T10:42:31.418288+00:00",
+        "updated_at": "2026-04-19T10:42:31.418288+00:00",
+        "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+        "draft_created_at": "2026-04-19T10:42:31.418288+00:00",
+        "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+        "ticket_record": {
+          "ticket_id": "TICKET-0338",
+          "title": "High severity incident for payment-service in production",
+          "service": "payment-service",
+          "environment": "production",
+          "severity": "high",
+          "symptoms": [],
+          "status": "draft",
+          "assignee": null,
+          "created_at": "2026-04-19T10:42:31.418288+00:00",
+          "updated_at": "2026-04-19T10:42:31.418288+00:00",
+          "source_run_id": null,
+          "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+        }
+      }
+    },
+    "tool_chain": [
+      {
+        "step_id": "step_1",
+        "step_index": 1,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-19T10:42:31.368520+00:00",
+        "completed_at": "2026-04-19T10:42:31.380221+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "agent_v2_incident_triage",
+          "route_hint": "tool_execution",
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "arguments": {
+            "environment": "production",
+            "issue_type": "timeout"
+          },
+          "plan_summary": "Plan system_status:query for payment-service."
+        },
+        "tool_execution": {
+          "tool_name": "system_status",
+          "action": "query",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Collected local system status for payment-service with requested environment production.",
+          "trace_id": "9aecae85995a48a0aa77cc446833ad17",
+          "executed_at": "2026-04-19T10:42:31.380221+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "status_snapshot",
+            "resource_type": "system_status",
+            "target": "payment-service",
+            "status": "degraded",
+            "app_env": "development",
+            "service": "payment-service",
+            "environment": "production",
+            "health": "degraded",
+            "latency_p95_ms": 1320,
+            "error_rate": 0.083,
+            "cpu_percent": 74.0,
+            "memory_percent": 68.0,
+            "active_alerts": [
+              "timeout_rate_high",
+              "dependency_db_latency_spike"
+            ],
+            "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+            "embedding_provider": "gemini",
+            "embedding_model": "gemini-embedding-001",
+            "chat_provider": "gemini",
+            "chat_model": "gemini-2.5-flash",
+            "gemini_configured": "true",
+            "openai_configured": "false",
+            "database_configured": "true",
+            "redis_configured": "true",
+            "service_record": {
+              "service_id": "payment-service",
+              "service_name": "payment-service",
+              "owner_team": "payments-platform",
+              "tier": "tier-1",
+              "environments": [
+                "production",
+                "staging",
+                "development"
+              ],
+              "runbook_doc_ids": [
+                "payment_service_runbook.md",
+                "incident_playbook.md"
+              ]
+            },
+            "status_snapshot": {
+              "service": "payment-service",
+              "environment": "production",
+              "health": "degraded",
+              "latency_p95_ms": 1320,
+              "error_rate": 0.083,
+              "cpu_percent": 74.0,
+              "memory_percent": 68.0,
+              "active_alerts": [
+                "timeout_rate_high",
+                "dependency_db_latency_spike"
+              ],
+              "updated_at": "2026-04-18T07:30:00+00:00",
+              "summary": "Service is degraded due to elevated timeout rate and downstream DB latency."
+            },
+            "requested_environment": "production"
+          }
+        },
+        "failure_message": null
+      },
+      {
+        "step_id": "step_2",
+        "step_index": 2,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-19T10:42:31.380317+00:00",
+        "completed_at": "2026-04-19T10:42:31.404368+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "agent_v2_incident_triage",
+          "route_hint": "tool_execution",
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "timeout",
+          "arguments": {
+            "max_results": "3",
+            "filename": "payment_service_runbook.md"
+          },
+          "plan_summary": "Plan document_search:query for timeout."
+        },
+        "tool_execution": {
+          "tool_name": "document_search",
+          "action": "query",
+          "target": "timeout",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Found 1 matching document(s) for 'timeout'.",
+          "trace_id": "9df4bb15d23641e9a2ee497623862b25",
+          "executed_at": "2026-04-19T10:42:31.404368+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "search_results",
+            "resource_type": "document_match",
+            "target": "timeout",
+            "item_count": "1",
+            "query": "timeout",
+            "matched_count": "1",
+            "returned_count": "1",
+            "matched_documents": "payment_service_runbook.md",
+            "skipped_documents": "0",
+            "knowledge_assets": [
+              {
+                "doc_id": "payment_service_runbook.md",
+                "service": "payment-service",
+                "doc_kind": "runbook",
+                "section_path": [],
+                "tags": [
+                  "runbook"
+                ],
+                "source_filename": "payment_service_runbook.md",
+                "title": "payment service runbook",
+                "snippet": "payment_service_runbook.md: Typical payment-service problems include authorization timeout, settlement job delay, webhook backlog, and elevated retry count from downstream gateways."
+              }
+            ],
+            "filename_filter": "payment_service_runbook.md",
+            "max_results": "3",
+            "snippets": "payment_service_runbook.md: Typical payment-service problems include authorization timeout, settlement job delay, webhook backlog, and elevated retry count from downstream gateways.",
+            "top_match_document": "payment_service_runbook.md",
+            "top_match_score": "4.617",
+            "top_match_reason": "full query match, early occurrence, term coverage 1/1"
+          }
+        },
+        "failure_message": null
+      },
+      {
+        "step_id": "step_3",
+        "step_index": 3,
+        "step_status": "completed",
+        "attempt_count": 1,
+        "retried": false,
+        "started_at": "2026-04-19T10:42:31.404426+00:00",
+        "completed_at": "2026-04-19T10:42:31.418288+00:00",
+        "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+        "tool_plan": {
+          "question": "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          "planning_mode": "agent_v2_incident_triage",
+          "route_hint": "tool_execution",
+          "tool_name": "ticketing",
+          "action": "draft",
+          "target": "payment-service",
+          "arguments": {
+            "severity": "high",
+            "environment": "production",
+            "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+          },
+          "plan_summary": "Plan ticketing:draft for payment-service."
+        },
+        "tool_execution": {
+          "tool_name": "ticketing",
+          "action": "draft",
+          "target": "payment-service",
+          "execution_status": "completed",
+          "execution_mode": "local_adapter",
+          "result_summary": "Prepared ticket draft TICKET-0338 for payment-service.",
+          "trace_id": "0626ae100e8247c7b09819000e63478a",
+          "executed_at": "2026-04-19T10:42:31.418288+00:00",
+          "output": {
+            "schema_version": "tool-output-v1",
+            "output_kind": "record",
+            "resource_type": "ticket",
+            "target": "payment-service",
+            "resource_id": "TICKET-0338",
+            "ticket_id": "TICKET-0338",
+            "title": "High severity incident for payment-service in production",
+            "service": "payment-service",
+            "status": "draft",
+            "submission_state": "awaiting_user_confirmation",
+            "severity": "high",
+            "environment": "production",
+            "created_at": "2026-04-19T10:42:31.418288+00:00",
+            "updated_at": "2026-04-19T10:42:31.418288+00:00",
+            "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            "draft_created_at": "2026-04-19T10:42:31.418288+00:00",
+            "supporting_summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            "ticket_record": {
+              "ticket_id": "TICKET-0338",
+              "title": "High severity incident for payment-service in production",
+              "service": "payment-service",
+              "environment": "production",
+              "severity": "high",
+              "symptoms": [],
+              "status": "draft",
+              "assignee": null,
+              "created_at": "2026-04-19T10:42:31.418288+00:00",
+              "updated_at": "2026-04-19T10:42:31.418288+00:00",
+              "source_run_id": null,
+              "summary": "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout."
+            }
+          }
+        },
+        "failure_message": null
+      }
+    ]
+  },
+  {
     "run_id": "36b536bda301447c812a09f156a057bf",
     "root_run_id": null,
     "recovery_depth": 0,

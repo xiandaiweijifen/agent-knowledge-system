@@ -1341,6 +1341,17 @@ textarea {
   background: rgba(255, 255, 255, 0.82);
 }
 
+.technical-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+  list-style: none;
+}
+
+.technical-details summary::-webkit-details-marker {
+  display: none;
+}
+
 .tool-output-card strong {
   display: block;
   line-height: 1.5;

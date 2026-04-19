@@ -265,6 +265,14 @@ export function QueryView({
           submissionDecision: "提交决策",
           submitTicket: "提交工单",
           cancelTicket: "取消提交",
+          currentOutcome: "当前结果",
+          technicalDetails: "技术细节",
+          technicalDetailsCopy: "仅在排查或调试时展开，主视图保留任务所需的关键信息。",
+          viewTechnicalDetails: "查看执行细节与轨迹",
+          draftReady: "草稿已准备",
+          awaitingConfirmation: "等待确认",
+          ticketSubmitted: "工单已提交",
+          submissionCancelled: "已取消提交",
           clearDiagnostics: "清空诊断",
           runQuery: "运行 Query",
           runDiagnostics: "运行 Diagnostics",
@@ -472,6 +480,14 @@ export function QueryView({
           submissionDecision: "Submission Decision",
           submitTicket: "Submit Ticket",
           cancelTicket: "Cancel Submission",
+          currentOutcome: "Current Outcome",
+          technicalDetails: "Technical Details",
+          technicalDetailsCopy: "Expand only when you need execution trace or raw workflow diagnostics.",
+          viewTechnicalDetails: "View Execution Details And Trace",
+          draftReady: "Draft Ready",
+          awaitingConfirmation: "Awaiting Confirmation",
+          ticketSubmitted: "Ticket Submitted",
+          submissionCancelled: "Submission Cancelled",
           clearDiagnostics: "Clear Diagnostics",
           runQuery: "Run Query",
           runDiagnostics: "Run Diagnostics",
@@ -737,6 +753,28 @@ export function QueryView({
     return toolNames.includes("system_status") && toolNames.includes("ticketing");
   }
 
+  function formatIncidentOutcome(response: AgentWorkflowResponse) {
+    const terminalReason = response.terminal_reason ?? "";
+    const workflowStatus = response.workflow_status;
+
+    if (terminalReason === "ticket_submitted") {
+      return queryCopy.ticketSubmitted;
+    }
+    if (terminalReason === "ticket_submission_cancelled") {
+      return queryCopy.submissionCancelled;
+    }
+    if (
+      terminalReason === "clarification_requested" ||
+      workflowStatus === "clarification_required"
+    ) {
+      return queryCopy.awaitingConfirmation;
+    }
+    if (terminalReason === "ticket_draft_prepared") {
+      return queryCopy.draftReady;
+    }
+    return terminalReason || workflowStatus || queryCopy.notAvailable;
+  }
+
   function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
     if (!response || !isIncidentTriageWorkflow(response)) {
       return null;
@@ -754,11 +792,31 @@ export function QueryView({
     const activeAlerts = Array.isArray(statusOutput.active_alerts)
       ? (statusOutput.active_alerts as string[])
       : [];
+    const ticketId =
+      String(ticketOutput.ticket_id ?? response.clarification_plan?.ticket_id ?? queryCopy.notAvailable);
 
     return (
       <article className="subsection-card incident-triage-card">
         <span className="section-label">{queryCopy.incidentTriage}</span>
         <p className="subsection-copy">{queryCopy.incidentTriageCopy}</p>
+        <div className="trace-grid">
+          <div>
+            <span className="trace-label">{queryCopy.workflowStatus}</span>
+            <strong>{response.workflow_status}</strong>
+          </div>
+          <div>
+            <span className="trace-label">{queryCopy.currentOutcome}</span>
+            <strong>{formatIncidentOutcome(response)}</strong>
+          </div>
+          <div>
+            <span className="trace-label">{queryCopy.ticketId}</span>
+            <strong className="trace-code">{ticketId}</strong>
+          </div>
+          <div>
+            <span className="trace-label">{queryCopy.route}</span>
+            <strong>{response.route.route_type}</strong>
+          </div>
+        </div>
         <div className="incident-triage-grid">
           <section className="incident-card">
             <span className="trace-label">{queryCopy.serviceHealth}</span>
@@ -841,6 +899,345 @@ export function QueryView({
           </section>
         </div>
       </article>
+    );
+  }
+
+  function renderWorkflowTechnicalDetails(response: AgentWorkflowResponse) {
+    return (
+      <>
+        <article className="subsection-card">
+          <span className="section-label">{queryCopy.routeReason}</span>
+          <p className="subsection-copy">{response.route.route_reason}</p>
+        </article>
+
+        <article className="subsection-card">
+          <span className="section-label">{queryCopy.routeContext}</span>
+          <div className="pill-strip">
+            <span className={`meta-pill${routeUsesFilename ? "" : " muted-pill"}`}>
+              {queryCopy.documentUsed} {routeUsesFilename ? `${queryCopy.used}: ${response.filename}` : queryCopy.notUsed}
+            </span>
+            <span className={`meta-pill${routeUsesRetrieval ? "" : " muted-pill"}`}>
+              {queryCopy.retrievalUsed} {routeUsesRetrieval ? queryCopy.used : queryCopy.notUsed}
+            </span>
+            <span className={`meta-pill${routeUsesToolPlanning ? "" : " muted-pill"}`}>
+              {queryCopy.toolPlanningUsed} {routeUsesToolPlanning ? queryCopy.used : queryCopy.notUsed}
+            </span>
+          </div>
+        </article>
+
+        <article className="subsection-card">
+          <span className="section-label">{queryCopy.workflowRecord}</span>
+          <div className="trace-grid workflow-record-grid">
+            <div>
+              <span className="trace-label">{queryCopy.runId}</span>
+              <strong className="trace-code">{response.run_id ?? queryCopy.notPersisted}</strong>
+            </div>
+            <div>
+              <span className="trace-label">{queryCopy.rootRun}</span>
+              <strong className="trace-code">{response.root_run_id ?? queryCopy.notLinked}</strong>
+              {response.root_run_id && response.root_run_id !== response.run_id && (
+                <button
+                  type="button"
+                  className="inline-link-button"
+                  onClick={() => onLoadAgentWorkflowRun(response.root_run_id!)}
+                >
+                  {queryCopy.loadRootRun}
+                </button>
+              )}
+            </div>
+            <div>
+              <span className="trace-label">{queryCopy.recoveryDepth}</span>
+              <strong>{response.recovery_depth ?? 0}</strong>
+            </div>
+            <div>
+              <span className="trace-label">{queryCopy.resumedFrom}</span>
+              <strong>{response.resumed_from_question ?? queryCopy.notResumed}</strong>
+            </div>
+            <div>
+              <span className="trace-label">{queryCopy.sourceRun}</span>
+              <strong className="trace-code">{response.source_run_id ?? queryCopy.notLinked}</strong>
+              {response.source_run_id && (
+                <button
+                  type="button"
+                  className="inline-link-button"
+                  onClick={() => onLoadAgentWorkflowRun(response.source_run_id!)}
+                >
+                  {queryCopy.loadSourceRun}
+                </button>
+              )}
+            </div>
+            <div>
+              <span className="trace-label">{queryCopy.recoveredVia}</span>
+              <strong>
+                {response.recovered_via_action
+                  ? formatRecoveryActionLabel(response.recovered_via_action)
+                  : queryCopy.notResumed}
+              </strong>
+            </div>
+            <div>
+              <span className="trace-label">{queryCopy.resumeType}</span>
+              <strong>
+                {response.resume_strategy
+                  ? formatResumeStrategyLabel(response.resume_strategy)
+                  : queryCopy.notResumed}
+              </strong>
+              {response.resume_strategy && (
+                <small className="trace-code trace-code-subtle">{response.resume_strategy}</small>
+              )}
+            </div>
+            <div>
+              <span className="trace-label">{queryCopy.resumedStep}</span>
+              <strong>{response.resumed_from_step_index ?? queryCopy.notResumedFromStep}</strong>
+            </div>
+          </div>
+          <div className="pill-strip">
+            <span
+              className={`meta-pill${
+                (response.reused_step_indices?.length ?? 0) > 0 ? "" : " muted-pill"
+              }`}
+            >
+              {queryCopy.reusedSteps}{" "}
+              {(response.reused_step_indices?.length ?? 0) > 0
+                ? response.reused_step_indices?.join(", ")
+                : queryCopy.none}
+            </span>
+            <span className="meta-pill">
+              {queryCopy.questionRewritten} {response.question_rewritten ? queryCopy.yes : queryCopy.no}
+            </span>
+          </div>
+        </article>
+
+        {relatedWorkflowRuns.length > 0 && (
+          <article className="subsection-card">
+            <span className="section-label">{queryCopy.recoveryChain}</span>
+            <p className="subsection-copy">{queryCopy.recoveryChainCopy}</p>
+            {(previousChainRun || nextChainRun) && (
+              <div className="button-row">
+                {previousChainRun?.run_id && (
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    disabled={queryBusy}
+                    onClick={() => onLoadAgentWorkflowRun(previousChainRun.run_id!)}
+                  >
+                    {queryCopy.previousChainRun}
+                  </button>
+                )}
+                {nextChainRun?.run_id && (
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    disabled={queryBusy}
+                    onClick={() => onLoadAgentWorkflowRun(nextChainRun.run_id!)}
+                  >
+                    {queryCopy.nextChainRun}
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="recovery-chain-list">
+              {relatedWorkflowRuns.map((run) => {
+                const runId = run.run_id ?? queryCopy.notPersisted;
+                const isCurrentRun = run.run_id === currentRunId;
+                const isRootRun =
+                  Boolean(currentRootRunId) && run.run_id === currentRootRunId;
+                const isSourceRun =
+                  Boolean(response.source_run_id) &&
+                  run.run_id === response.source_run_id;
+
+                return (
+                  <article
+                    key={runId}
+                    className={`recovery-chain-card${isCurrentRun ? " is-current" : ""}`}
+                  >
+                    <div className="card-title-row">
+                      <strong>{run.question}</strong>
+                      <span className="status-chip">{run.workflow_status}</span>
+                    </div>
+                    <div className="meta-row">
+                      <span>{queryCopy.runMeta} {runId}</span>
+                      <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
+                    </div>
+                    <div className="meta-row">
+                      <span>{queryCopy.routeMeta} {getWorkflowRunRouteType(run)}</span>
+                      <span>
+                        {queryCopy.recoveredViaMeta}:{" "}
+                        {run.recovered_via_action
+                          ? formatRecoveryActionLabel(run.recovered_via_action)
+                          : queryCopy.none}
+                      </span>
+                    </div>
+                    <div className="pill-strip">
+                      {isCurrentRun && <span className="meta-pill">{queryCopy.currentRun}</span>}
+                      {isRootRun && <span className="meta-pill">{queryCopy.rootRunBadge}</span>}
+                      {isSourceRun && <span className="meta-pill">{queryCopy.sourceRunBadge}</span>}
+                      {run.resume_strategy && (
+                        <span className="meta-pill">
+                          {formatResumeStrategyLabel(run.resume_strategy)}
+                        </span>
+                      )}
+                    </div>
+                    {!isCurrentRun && run.run_id && (
+                      <div className="button-row">
+                        <button
+                          type="button"
+                          className="ghost-button"
+                          disabled={queryBusy}
+                          onClick={() => onLoadAgentWorkflowRun(run.run_id!)}
+                        >
+                          {queryCopy.loadChainRun}
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </article>
+        )}
+
+        {hasToolChain && (
+          <article className="subsection-card">
+            <span className="section-label">{queryCopy.executedSteps}</span>
+            <p className="subsection-copy">{queryCopy.executedStepsCopy(response.tool_chain.length)}</p>
+            <div className="tool-chain-list">
+              {response.tool_chain.map((step, index) => (
+                <article
+                  key={`${step.question}-${index + 1}`}
+                  className="tool-chain-card"
+                >
+                  <header className="tool-chain-header">
+                    <div>
+                      <span className="section-label">
+                        {queryCopy.step} {step.step_index}
+                      </span>
+                      <h3>{step.tool_plan.tool_name}</h3>
+                    </div>
+                    <span className="status-chip success">
+                      {step.tool_plan.action}
+                    </span>
+                  </header>
+                  <p className="subsection-copy">
+                    <strong>{queryCopy.question}:</strong> {step.question}
+                  </p>
+                  <div className="trace-grid">
+                    <div>
+                      <span className="trace-label">{queryCopy.target}</span>
+                      <strong>{step.tool_plan.target}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">{queryCopy.planningMode}</span>
+                      <strong>{step.tool_plan.planning_mode}</strong>
+                    </div>
+                    <div>
+                      <span className="trace-label">{queryCopy.executionMode}</span>
+                      <strong>{step.tool_execution?.execution_mode ?? queryCopy.notUsed}</strong>
+                    </div>
+                  </div>
+                  {Object.keys(step.tool_plan.arguments).length > 0 && (
+                    <div className="pill-strip">
+                      {Object.entries(step.tool_plan.arguments).map(([key, value]) => (
+                        <span key={key} className="meta-pill">
+                          {key}: {value}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {renderToolExecutionDetails(step.tool_execution)}
+                </article>
+              ))}
+            </div>
+          </article>
+        )}
+
+        {response.tool_plan && (
+          <article className="subsection-card">
+            <span className="section-label">
+              {hasToolChain ? queryCopy.finalStep : queryCopy.toolPlan}
+            </span>
+            <div className="trace-grid">
+              <div>
+                <span className="trace-label">{queryCopy.tool}</span>
+                <strong>{response.tool_plan.tool_name}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.action}</span>
+                <strong>{response.tool_plan.action}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.target}</span>
+                <strong>{response.tool_plan.target}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.planningMode}</span>
+                <strong>{response.tool_plan.planning_mode}</strong>
+              </div>
+            </div>
+            {Object.keys(response.tool_plan.arguments).length > 0 && (
+              <div className="pill-strip">
+                {Object.entries(response.tool_plan.arguments).map(([key, value]) => (
+                  <span key={key} className="meta-pill">
+                    {key}: {value}
+                  </span>
+                ))}
+              </div>
+            )}
+            <p className="subsection-copy">{response.tool_plan.plan_summary}</p>
+            {hasToolChain && (
+              <p className="muted">{queryCopy.finalStepCopy}</p>
+            )}
+          </article>
+        )}
+
+        {response.tool_execution && (
+          <article className="subsection-card">
+            <span className="section-label">
+              {hasToolChain ? queryCopy.finalStepExecution : queryCopy.toolExecution}
+            </span>
+            {renderToolExecutionDetails(response.tool_execution)}
+          </article>
+        )}
+
+        {response.clarification_plan && (
+          <article className="subsection-card">
+            <span className="section-label">{queryCopy.clarificationPlan}</span>
+            <p className="subsection-copy">
+              {response.clarification_message ??
+                response.clarification_plan.clarification_summary}
+            </p>
+            {response.clarification_plan.missing_fields.length > 0 && (
+              <div className="pill-strip">
+                {response.clarification_plan.missing_fields.map((field) => (
+                  <span key={field} className="meta-pill">
+                    {queryCopy.missing}: {field}
+                  </span>
+                ))}
+              </div>
+            )}
+            {response.clarification_plan.follow_up_questions.length > 0 && (
+              <div className="list-block">
+                {response.clarification_plan.follow_up_questions.map((item) => (
+                  <p key={item}>{item}</p>
+                ))}
+              </div>
+            )}
+          </article>
+        )}
+
+        <div className="section-label">{queryCopy.workflowTrace}</div>
+        <div className="trace-event-list">
+          {response.workflow_trace.map((event) => (
+            <article key={`${event.stage}-${event.timestamp}`} className="trace-event-card">
+              <header>
+                <strong>{event.stage}</strong>
+                <span>{event.status}</span>
+              </header>
+              <p>{event.detail}</p>
+              <small>{event.timestamp}</small>
+            </article>
+          ))}
+        </div>
+      </>
     );
   }
 
@@ -1292,12 +1689,28 @@ export function QueryView({
                   <strong>{agentQueryResult.workflow_status}</strong>
                 </div>
                 <div>
-                    <span className="trace-label">{queryCopy.route}</span>
-                  <strong>{agentQueryResult.route.route_type}</strong>
+                    <span className="trace-label">
+                      {isIncidentTriageWorkflow(agentQueryResult) ? queryCopy.currentOutcome : queryCopy.route}
+                    </span>
+                  <strong>
+                    {isIncidentTriageWorkflow(agentQueryResult)
+                      ? formatIncidentOutcome(agentQueryResult)
+                      : agentQueryResult.route.route_type}
+                  </strong>
                 </div>
                 <div>
-                    <span className="trace-label">{queryCopy.answerProvider}</span>
-                    <strong>{agentQueryResult.chat_provider ?? queryCopy.notUsed}</strong>
+                    <span className="trace-label">
+                      {isIncidentTriageWorkflow(agentQueryResult) ? queryCopy.ticketId : queryCopy.answerProvider}
+                    </span>
+                    <strong className={isIncidentTriageWorkflow(agentQueryResult) ? "trace-code" : undefined}>
+                      {isIncidentTriageWorkflow(agentQueryResult)
+                        ? String(
+                            agentQueryResult.tool_execution?.output.ticket_id ??
+                              agentQueryResult.clarification_plan?.ticket_id ??
+                              queryCopy.notAvailable,
+                          )
+                        : agentQueryResult.chat_provider ?? queryCopy.notUsed}
+                    </strong>
                 </div>
                 <div>
                     <span className="trace-label">{queryCopy.tool}</span>
@@ -1327,195 +1740,6 @@ export function QueryView({
 
               {agentQueryResult && (
               <>
-              <article className="subsection-card">
-                <span className="section-label">{queryCopy.routeReason}</span>
-                <p className="subsection-copy">{agentQueryResult.route.route_reason}</p>
-              </article>
-
-              <article className="subsection-card">
-                <span className="section-label">{queryCopy.routeContext}</span>
-                <div className="pill-strip">
-                  <span className={`meta-pill${routeUsesFilename ? "" : " muted-pill"}`}>
-                    {queryCopy.documentUsed} {routeUsesFilename ? `${queryCopy.used}: ${agentQueryResult.filename}` : queryCopy.notUsed}
-                  </span>
-                  <span className={`meta-pill${routeUsesRetrieval ? "" : " muted-pill"}`}>
-                    {queryCopy.retrievalUsed} {routeUsesRetrieval ? queryCopy.used : queryCopy.notUsed}
-                  </span>
-                  <span className={`meta-pill${routeUsesToolPlanning ? "" : " muted-pill"}`}>
-                    {queryCopy.toolPlanningUsed} {routeUsesToolPlanning ? queryCopy.used : queryCopy.notUsed}
-                  </span>
-                </div>
-              </article>
-
-              <article className="subsection-card">
-                <span className="section-label">{queryCopy.workflowRecord}</span>
-                <div className="trace-grid workflow-record-grid">
-                  <div>
-                    <span className="trace-label">{queryCopy.runId}</span>
-                    <strong className="trace-code">{agentQueryResult.run_id ?? queryCopy.notPersisted}</strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">{queryCopy.rootRun}</span>
-                    <strong className="trace-code">{agentQueryResult.root_run_id ?? queryCopy.notLinked}</strong>
-                    {agentQueryResult.root_run_id && agentQueryResult.root_run_id !== agentQueryResult.run_id && (
-                      <button
-                        type="button"
-                        className="inline-link-button"
-                        onClick={() => onLoadAgentWorkflowRun(agentQueryResult.root_run_id!)}
-                      >
-                        {queryCopy.loadRootRun}
-                      </button>
-                    )}
-                  </div>
-                  <div>
-                    <span className="trace-label">{queryCopy.recoveryDepth}</span>
-                    <strong>{agentQueryResult.recovery_depth ?? 0}</strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">{queryCopy.resumedFrom}</span>
-                    <strong>{agentQueryResult.resumed_from_question ?? queryCopy.notResumed}</strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">{queryCopy.sourceRun}</span>
-                    <strong className="trace-code">{agentQueryResult.source_run_id ?? queryCopy.notLinked}</strong>
-                    {agentQueryResult.source_run_id && (
-                      <button
-                        type="button"
-                        className="inline-link-button"
-                        onClick={() => onLoadAgentWorkflowRun(agentQueryResult.source_run_id!)}
-                      >
-                        {queryCopy.loadSourceRun}
-                      </button>
-                    )}
-                  </div>
-                  <div>
-                    <span className="trace-label">{queryCopy.recoveredVia}</span>
-                    <strong>
-                      {agentQueryResult.recovered_via_action
-                        ? formatRecoveryActionLabel(agentQueryResult.recovered_via_action)
-                        : queryCopy.notResumed}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="trace-label">{queryCopy.resumeType}</span>
-                    <strong>{agentQueryResult.resume_strategy ? formatResumeStrategyLabel(agentQueryResult.resume_strategy) : queryCopy.notResumed}</strong>
-                    {agentQueryResult.resume_strategy && (
-                      <small className="trace-code trace-code-subtle">{agentQueryResult.resume_strategy}</small>
-                    )}
-                  </div>
-                  <div>
-                    <span className="trace-label">{queryCopy.resumedStep}</span>
-                    <strong>
-                      {agentQueryResult.resumed_from_step_index ?? queryCopy.notResumedFromStep}
-                    </strong>
-                  </div>
-                </div>
-                <div className="pill-strip">
-                  <span
-                    className={`meta-pill${
-                      (agentQueryResult.reused_step_indices?.length ?? 0) > 0 ? "" : " muted-pill"
-                    }`}
-                  >
-                    {queryCopy.reusedSteps}{" "}
-                    {(agentQueryResult.reused_step_indices?.length ?? 0) > 0
-                      ? agentQueryResult.reused_step_indices?.join(", ")
-                      : queryCopy.none}
-                  </span>
-                  <span className="meta-pill">
-                    {queryCopy.questionRewritten} {agentQueryResult.question_rewritten ? queryCopy.yes : queryCopy.no}
-                  </span>
-                </div>
-              </article>
-
-              {relatedWorkflowRuns.length > 0 && (
-                <article className="subsection-card">
-                  <span className="section-label">{queryCopy.recoveryChain}</span>
-                  <p className="subsection-copy">{queryCopy.recoveryChainCopy}</p>
-                  {(previousChainRun || nextChainRun) && (
-                    <div className="button-row">
-                      {previousChainRun?.run_id && (
-                        <button
-                          type="button"
-                          className="ghost-button"
-                          disabled={queryBusy}
-                          onClick={() => onLoadAgentWorkflowRun(previousChainRun.run_id!)}
-                        >
-                          {queryCopy.previousChainRun}
-                        </button>
-                      )}
-                      {nextChainRun?.run_id && (
-                        <button
-                          type="button"
-                          className="ghost-button"
-                          disabled={queryBusy}
-                          onClick={() => onLoadAgentWorkflowRun(nextChainRun.run_id!)}
-                        >
-                          {queryCopy.nextChainRun}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                  <div className="recovery-chain-list">
-                    {relatedWorkflowRuns.map((run) => {
-                      const runId = run.run_id ?? queryCopy.notPersisted;
-                      const isCurrentRun = run.run_id === currentRunId;
-                      const isRootRun =
-                        Boolean(currentRootRunId) && run.run_id === currentRootRunId;
-                      const isSourceRun =
-                        Boolean(agentQueryResult.source_run_id) &&
-                        run.run_id === agentQueryResult.source_run_id;
-
-                      return (
-                        <article
-                          key={runId}
-                          className={`recovery-chain-card${isCurrentRun ? " is-current" : ""}`}
-                        >
-                          <div className="card-title-row">
-                            <strong>{run.question}</strong>
-                            <span className="status-chip">{run.workflow_status}</span>
-                          </div>
-                          <div className="meta-row">
-                            <span>{queryCopy.runMeta} {runId}</span>
-                            <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
-                          </div>
-                          <div className="meta-row">
-                            <span>{queryCopy.routeMeta} {getWorkflowRunRouteType(run)}</span>
-                            <span>
-                              {queryCopy.recoveredViaMeta}:{" "}
-                              {run.recovered_via_action
-                                ? formatRecoveryActionLabel(run.recovered_via_action)
-                                : queryCopy.none}
-                            </span>
-                          </div>
-                          <div className="pill-strip">
-                            {isCurrentRun && <span className="meta-pill">{queryCopy.currentRun}</span>}
-                            {isRootRun && <span className="meta-pill">{queryCopy.rootRunBadge}</span>}
-                            {isSourceRun && <span className="meta-pill">{queryCopy.sourceRunBadge}</span>}
-                            {run.resume_strategy && (
-                              <span className="meta-pill">
-                                {formatResumeStrategyLabel(run.resume_strategy)}
-                              </span>
-                            )}
-                          </div>
-                          {!isCurrentRun && run.run_id && (
-                            <div className="button-row">
-                              <button
-                                type="button"
-                                className="ghost-button"
-                                disabled={queryBusy}
-                                onClick={() => onLoadAgentWorkflowRun(run.run_id!)}
-                              >
-                                {queryCopy.loadChainRun}
-                              </button>
-                            </div>
-                          )}
-                        </article>
-                      );
-                    })}
-                  </div>
-                </article>
-              )}
-
               <article className="subsection-card">
                 <span className="section-label">{queryCopy.recoverySemantics}</span>
                 <div className="trace-grid">
@@ -1568,147 +1792,15 @@ export function QueryView({
 
               {renderIncidentTriagePanel(agentQueryResult)}
 
-              {hasToolChain && (
-                <article className="subsection-card">
-                  <span className="section-label">{queryCopy.executedSteps}</span>
-                  <p className="subsection-copy">{queryCopy.executedStepsCopy(agentQueryResult.tool_chain.length)}</p>
-                  <div className="tool-chain-list">
-                    {agentQueryResult.tool_chain.map((step, index) => (
-                      <article
-                        key={`${step.question}-${index + 1}`}
-                        className="tool-chain-card"
-                      >
-                        <header className="tool-chain-header">
-                          <div>
-                            <span className="section-label">
-                              {queryCopy.step} {step.step_index}
-                            </span>
-                            <h3>{step.tool_plan.tool_name}</h3>
-                          </div>
-                          <span className="status-chip success">
-                            {step.tool_plan.action}
-                          </span>
-                        </header>
-                        <p className="subsection-copy">
-                          <strong>{queryCopy.question}:</strong> {step.question}
-                        </p>
-                        <div className="trace-grid">
-                          <div>
-                            <span className="trace-label">{queryCopy.target}</span>
-                            <strong>{step.tool_plan.target}</strong>
-                          </div>
-                          <div>
-                            <span className="trace-label">{queryCopy.planningMode}</span>
-                            <strong>{step.tool_plan.planning_mode}</strong>
-                          </div>
-                          <div>
-                            <span className="trace-label">{queryCopy.executionMode}</span>
-                            <strong>{step.tool_execution?.execution_mode ?? queryCopy.notUsed}</strong>
-                          </div>
-                        </div>
-                        {Object.keys(step.tool_plan.arguments).length > 0 && (
-                          <div className="pill-strip">
-                            {Object.entries(step.tool_plan.arguments).map(([key, value]) => (
-                              <span key={key} className="meta-pill">
-                                {key}: {value}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {renderToolExecutionDetails(step.tool_execution)}
-                      </article>
-                    ))}
-                  </div>
-                </article>
+              {isIncidentTriageWorkflow(agentQueryResult) ? (
+                <details className="subsection-card technical-details">
+                  <summary>{queryCopy.viewTechnicalDetails}</summary>
+                  <p className="subsection-copy">{queryCopy.technicalDetailsCopy}</p>
+                  {renderWorkflowTechnicalDetails(agentQueryResult)}
+                </details>
+              ) : (
+                renderWorkflowTechnicalDetails(agentQueryResult)
               )}
-
-              {agentQueryResult.tool_plan && (
-                <article className="subsection-card">
-                  <span className="section-label">
-                    {hasToolChain ? queryCopy.finalStep : queryCopy.toolPlan}
-                  </span>
-                  <div className="trace-grid">
-                    <div>
-                      <span className="trace-label">{queryCopy.tool}</span>
-                      <strong>{agentQueryResult.tool_plan.tool_name}</strong>
-                    </div>
-                    <div>
-                      <span className="trace-label">{queryCopy.action}</span>
-                      <strong>{agentQueryResult.tool_plan.action}</strong>
-                    </div>
-                    <div>
-                      <span className="trace-label">{queryCopy.target}</span>
-                      <strong>{agentQueryResult.tool_plan.target}</strong>
-                    </div>
-                    <div>
-                      <span className="trace-label">{queryCopy.planningMode}</span>
-                      <strong>{agentQueryResult.tool_plan.planning_mode}</strong>
-                    </div>
-                  </div>
-                  {Object.keys(agentQueryResult.tool_plan.arguments).length > 0 && (
-                    <div className="pill-strip">
-                      {Object.entries(agentQueryResult.tool_plan.arguments).map(([key, value]) => (
-                        <span key={key} className="meta-pill">
-                          {key}: {value}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <p className="subsection-copy">{agentQueryResult.tool_plan.plan_summary}</p>
-                  {hasToolChain && (
-                    <p className="muted">{queryCopy.finalStepCopy}</p>
-                  )}
-                </article>
-              )}
-
-              {agentQueryResult.tool_execution && (
-                <article className="subsection-card">
-                  <span className="section-label">
-                    {hasToolChain ? queryCopy.finalStepExecution : queryCopy.toolExecution}
-                  </span>
-                  {renderToolExecutionDetails(agentQueryResult.tool_execution)}
-                </article>
-              )}
-
-              {agentQueryResult.clarification_plan && (
-                <article className="subsection-card">
-                  <span className="section-label">{queryCopy.clarificationPlan}</span>
-                  <p className="subsection-copy">
-                    {agentQueryResult.clarification_message ??
-                      agentQueryResult.clarification_plan.clarification_summary}
-                  </p>
-                  {agentQueryResult.clarification_plan.missing_fields.length > 0 && (
-                    <div className="pill-strip">
-                      {agentQueryResult.clarification_plan.missing_fields.map((field) => (
-                        <span key={field} className="meta-pill">
-                          {queryCopy.missing}: {field}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {agentQueryResult.clarification_plan.follow_up_questions.length > 0 && (
-                    <div className="list-block">
-                      {agentQueryResult.clarification_plan.follow_up_questions.map((item) => (
-                        <p key={item}>{item}</p>
-                      ))}
-                    </div>
-                  )}
-                </article>
-              )}
-
-              <div className="section-label">{queryCopy.workflowTrace}</div>
-              <div className="trace-event-list">
-                {agentQueryResult.workflow_trace.map((event) => (
-                  <article key={`${event.stage}-${event.timestamp}`} className="trace-event-card">
-                    <header>
-                      <strong>{event.stage}</strong>
-                      <span>{event.status}</span>
-                    </header>
-                    <p>{event.detail}</p>
-                    <small>{event.timestamp}</small>
-                  </article>
-                ))}
-              </div>
               </>
               )}
             </div>
