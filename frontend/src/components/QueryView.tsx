@@ -255,6 +255,16 @@ export function QueryView({
           clarificationFieldPlaceholder: "请输入",
           recoveryDetails: "恢复详情",
           recoveryAction: "恢复动作",
+          incidentTriage: "故障分诊",
+          incidentTriageCopy: "把状态、证据和工单草稿汇总成一个可执行的排障视图。",
+          serviceHealth: "服务健康",
+          activeAlerts: "活跃告警",
+          evidence: "证据",
+          runbookEvidence: "Runbook 证据",
+          ticketDraft: "工单草稿",
+          submissionDecision: "提交决策",
+          submitTicket: "提交工单",
+          cancelTicket: "取消提交",
           clearDiagnostics: "清空诊断",
           runQuery: "运行 Query",
           runDiagnostics: "运行 Diagnostics",
@@ -452,6 +462,16 @@ export function QueryView({
           clarificationFieldPlaceholder: "Enter",
           recoveryDetails: "Recovery Details",
           recoveryAction: "Recovery Action",
+          incidentTriage: "Incident Triage",
+          incidentTriageCopy: "Roll up status, evidence, and the ticket draft into an actionable triage view.",
+          serviceHealth: "Service Health",
+          activeAlerts: "Active Alerts",
+          evidence: "Evidence",
+          runbookEvidence: "Runbook Evidence",
+          ticketDraft: "Ticket Draft",
+          submissionDecision: "Submission Decision",
+          submitTicket: "Submit Ticket",
+          cancelTicket: "Cancel Submission",
           clearDiagnostics: "Clear Diagnostics",
           runQuery: "Run Query",
           runDiagnostics: "Run Diagnostics",
@@ -561,6 +581,12 @@ export function QueryView({
     return [];
   }
 
+  function isTicketSubmissionConfirmationPlan(
+    clarificationPlan?: AgentWorkflowResponse["clarification_plan"],
+  ) {
+    return clarificationPlan?.confirmation_kind === "ticket_submission";
+  }
+
   function renderRecoveryActions(actions: string[] | undefined, mutedWhenEmpty = false) {
     if (!actions || actions.length === 0) {
       return (
@@ -594,6 +620,26 @@ export function QueryView({
     return String(value);
   }
 
+  function formatToolOutputValue(value: unknown) {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => {
+          if (item && typeof item === "object") {
+            return JSON.stringify(item);
+          }
+          return String(item);
+        })
+        .join(", ");
+    }
+    if (value && typeof value === "object") {
+      return JSON.stringify(value);
+    }
+    if (value === null || value === undefined || value === "") {
+      return queryCopy.notAvailable;
+    }
+    return String(value);
+  }
+
   function submitClarificationRecovery(
     event: FormEvent<HTMLFormElement>,
     runId: string,
@@ -615,6 +661,39 @@ export function QueryView({
   ) {
     if (!runId) {
       return null;
+    }
+
+    if (isTicketSubmissionConfirmationPlan(clarificationPlan)) {
+      return (
+        <div className="clarification-recovery-form">
+          <span className="trace-label">{queryCopy.submissionDecision}</span>
+          <p className="subsection-copy">{queryCopy.clarificationResumeCopy}</p>
+          <div className="button-row">
+            <button
+              type="button"
+              className="primary-button"
+              disabled={queryBusy}
+              onClick={() =>
+                onRecoverAgentWorkflowRun(runId, "resume_with_clarification", {
+                  submission_confirmation: "yes",
+                })}
+            >
+              {queryBusy ? queryCopy.recovering : queryCopy.submitTicket}
+            </button>
+            <button
+              type="button"
+              className="ghost-button"
+              disabled={queryBusy}
+              onClick={() =>
+                onRecoverAgentWorkflowRun(runId, "resume_with_clarification", {
+                  submission_confirmation: "no",
+                })}
+            >
+              {queryCopy.cancelTicket}
+            </button>
+          </div>
+        </div>
+      );
     }
 
     const missingFields = getClarificationFields(recoveryActionDetails, clarificationPlan);
@@ -647,6 +726,121 @@ export function QueryView({
           </button>
         </div>
       </form>
+    );
+  }
+
+  function isIncidentTriageWorkflow(response: AgentWorkflowResponse | null) {
+    if (!response || response.answer_source !== "local_incident_triage") {
+      return false;
+    }
+    const toolNames = response.tool_chain.map((step) => step.tool_plan.tool_name);
+    return toolNames.includes("system_status") && toolNames.includes("ticketing");
+  }
+
+  function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
+    if (!response || !isIncidentTriageWorkflow(response)) {
+      return null;
+    }
+
+    const statusStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "system_status");
+    const evidenceStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "document_search");
+    const ticketStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "ticketing");
+    const statusOutput = (statusStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const evidenceOutput = (evidenceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const ticketOutput = (ticketStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const knowledgeAssets = Array.isArray(evidenceOutput.knowledge_assets)
+      ? (evidenceOutput.knowledge_assets as Array<Record<string, unknown>>)
+      : [];
+    const activeAlerts = Array.isArray(statusOutput.active_alerts)
+      ? (statusOutput.active_alerts as string[])
+      : [];
+
+    return (
+      <article className="subsection-card incident-triage-card">
+        <span className="section-label">{queryCopy.incidentTriage}</span>
+        <p className="subsection-copy">{queryCopy.incidentTriageCopy}</p>
+        <div className="incident-triage-grid">
+          <section className="incident-card">
+            <span className="trace-label">{queryCopy.serviceHealth}</span>
+            <div className="trace-grid">
+              <div>
+                <span className="trace-label">{queryCopy.target}</span>
+                <strong>{String(statusOutput.service ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.environment}</span>
+                <strong>{String(statusOutput.environment ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.status}</span>
+                <strong>{String(statusOutput.health ?? statusOutput.status ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">p95</span>
+                <strong>{String(statusOutput.latency_p95_ms ?? queryCopy.notAvailable)} ms</strong>
+              </div>
+            </div>
+            {activeAlerts.length > 0 && (
+              <>
+                <span className="trace-label">{queryCopy.activeAlerts}</span>
+                <div className="pill-strip">
+                  {activeAlerts.map((alert) => (
+                    <span key={alert} className="meta-pill">{alert}</span>
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
+
+          <section className="incident-card">
+            <span className="trace-label">{queryCopy.evidence}</span>
+            <div className="trace-grid">
+              <div>
+                <span className="trace-label">{queryCopy.matchedDocuments}</span>
+                <strong>{String(evidenceOutput.matched_documents ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.runbookEvidence}</span>
+                <strong>{String(evidenceOutput.filename_filter ?? queryCopy.notAvailable)}</strong>
+              </div>
+            </div>
+            {knowledgeAssets.length > 0 && (
+              <div className="list-block">
+                {knowledgeAssets.map((asset, index) => (
+                  <p key={`${String(asset.doc_id ?? "asset")}-${index}`}>
+                    {String(asset.snippet ?? asset.title ?? asset.doc_id ?? queryCopy.notAvailable)}
+                  </p>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="incident-card">
+            <span className="trace-label">{queryCopy.ticketDraft}</span>
+            <div className="trace-grid">
+              <div>
+                <span className="trace-label">{queryCopy.ticketId}</span>
+                <strong className="trace-code">{String(ticketOutput.ticket_id ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.severity}</span>
+                <strong>{String(ticketOutput.severity ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.environment}</span>
+                <strong>{String(ticketOutput.environment ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.status}</span>
+                <strong>{String(ticketOutput.submission_state ?? ticketOutput.status ?? queryCopy.notAvailable)}</strong>
+              </div>
+            </div>
+            {ticketOutput.summary && (
+              <p className="subsection-copy">{String(ticketOutput.summary)}</p>
+            )}
+          </section>
+        </div>
+      </article>
     );
   }
 
@@ -874,7 +1068,7 @@ export function QueryView({
                   .map(([key, value]) => (
                   <article key={key} className="tool-output-card">
                     <span className="trace-label">{key}</span>
-                    <strong>{value}</strong>
+                    <strong>{formatToolOutputValue(value)}</strong>
                   </article>
                   ))}
               </div>
@@ -1371,6 +1565,8 @@ export function QueryView({
                   <blockquote className="answer-card">{agentQueryResult.answer}</blockquote>
                 </article>
               )}
+
+              {renderIncidentTriagePanel(agentQueryResult)}
 
               {hasToolChain && (
                 <article className="subsection-card">

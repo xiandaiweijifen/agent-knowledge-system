@@ -1554,5 +1554,261 @@ describe("QueryView", () => {
     expect(screen.getByText("Agent workflow started.")).toBeInTheDocument();
     expect(screen.getByText(/Route selected: tool_execution/)).toBeInTheDocument();
   });
+
+  it("renders incident triage cards and confirmation actions", async () => {
+    const user = userEvent.setup();
+    const onRecoverAgentWorkflowRun = vi.fn();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft"
+        topK={3}
+        activePresetQuestions={[]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-incident",
+          question: "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          workflow_status: "clarification_required",
+          terminal_reason: "clarification_requested",
+          recommended_recovery_action: "resume_with_clarification",
+          available_recovery_actions: ["resume_with_clarification"],
+          recovery_action_details: {
+            resume_with_clarification: {
+              missing_fields: ["submission_confirmation"],
+            },
+          },
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Incident triage should inspect service health and prepare a ticket draft when needed.",
+            filename: null,
+          },
+          workflow_trace: [],
+          answer:
+            "Incident triage for payment-service in production found a likely timeout issue. Service is degraded due to elevated timeout rate and downstream DB latency. Prepared ticket draft TICKET-0335 for operator review. Supporting evidence came from payment_service_runbook.md.",
+          answer_source: "local_incident_triage",
+          clarification_message:
+            "Draft TICKET-0335 is ready for payment-service in production. Do you want me to submit it?",
+          clarification_plan: {
+            question:
+              "Draft TICKET-0335 is ready for payment-service in production. Do you want me to submit it?",
+            planning_mode: "agent_v2_incident_triage",
+            confirmation_kind: "ticket_submission",
+            missing_fields: ["submission_confirmation"],
+            follow_up_questions: ["Confirm whether to submit ticket draft TICKET-0335."],
+            clarification_summary:
+              "Draft TICKET-0335 is ready for payment-service in production. Do you want me to submit it?",
+            ticket_id: "TICKET-0335",
+            service: "payment-service",
+            environment: "production",
+          },
+          tool_plan: {
+            question:
+              "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+            planning_mode: "agent_v2_incident_triage",
+            route_hint: "tool_execution",
+            tool_name: "ticketing",
+            action: "draft",
+            target: "payment-service",
+            arguments: {
+              severity: "high",
+              environment: "production",
+            },
+            plan_summary: "Plan ticketing:draft for payment-service.",
+          },
+          tool_execution: {
+            tool_name: "ticketing",
+            action: "draft",
+            target: "payment-service",
+            execution_status: "completed",
+            execution_mode: "local_adapter",
+            result_summary: "Prepared ticket draft TICKET-0335 for payment-service.",
+            trace_id: "trace-incident",
+            executed_at: "2026-04-18T08:28:19.609751+00:00",
+            output: {
+              ticket_id: "TICKET-0335",
+              status: "draft",
+              submission_state: "awaiting_user_confirmation",
+              severity: "high",
+              environment: "production",
+              summary:
+                "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            },
+          },
+          tool_chain: [
+            {
+              step_id: "step_1",
+              step_index: 1,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-18T08:28:18.414385+00:00",
+              completed_at: "2026-04-18T08:28:18.415618+00:00",
+              question:
+                "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+              tool_plan: {
+                question:
+                  "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+                planning_mode: "agent_v2_incident_triage",
+                route_hint: "tool_execution",
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                arguments: {
+                  environment: "production",
+                  issue_type: "timeout",
+                },
+                plan_summary: "Plan system_status:query for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary:
+                  "Collected local system status for payment-service with requested environment production.",
+                trace_id: "trace-status",
+                executed_at: "2026-04-18T08:28:18.415618+00:00",
+                output: {
+                  service: "payment-service",
+                  environment: "production",
+                  health: "degraded",
+                  latency_p95_ms: "1320",
+                  active_alerts: ["timeout_rate_high", "dependency_db_latency_spike"] as unknown as string,
+                } as unknown as Record<string, string>,
+              },
+            },
+            {
+              step_id: "step_2",
+              step_index: 2,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-18T08:28:18.415750+00:00",
+              completed_at: "2026-04-18T08:28:19.598613+00:00",
+              question:
+                "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+              tool_plan: {
+                question:
+                  "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+                planning_mode: "agent_v2_incident_triage",
+                route_hint: "tool_execution",
+                tool_name: "document_search",
+                action: "query",
+                target: "timeout",
+                arguments: {
+                  max_results: "3",
+                  filename: "payment_service_runbook.md",
+                },
+                plan_summary: "Plan document_search:query for timeout.",
+              },
+              tool_execution: {
+                tool_name: "document_search",
+                action: "query",
+                target: "timeout",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Found 1 matching document(s) for 'timeout'.",
+                trace_id: "trace-doc",
+                executed_at: "2026-04-18T08:28:19.598613+00:00",
+                output: {
+                  matched_documents: "payment_service_runbook.md",
+                  filename_filter: "payment_service_runbook.md",
+                  knowledge_assets: [
+                    {
+                      doc_id: "payment_service_runbook.md",
+                      snippet:
+                        "payment_service_runbook.md: Typical payment-service problems include authorization timeout, settlement job delay, webhook backlog, and elevated retry count from downstream gateways.",
+                    },
+                  ] as unknown as string,
+                } as unknown as Record<string, string>,
+              },
+            },
+            {
+              step_id: "step_3",
+              step_index: 3,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-18T08:28:19.598674+00:00",
+              completed_at: "2026-04-18T08:28:19.609751+00:00",
+              question:
+                "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+              tool_plan: {
+                question:
+                  "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+                planning_mode: "agent_v2_incident_triage",
+                route_hint: "tool_execution",
+                tool_name: "ticketing",
+                action: "draft",
+                target: "payment-service",
+                arguments: {
+                  severity: "high",
+                  environment: "production",
+                },
+                plan_summary: "Plan ticketing:draft for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "ticketing",
+                action: "draft",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Prepared ticket draft TICKET-0335 for payment-service.",
+                trace_id: "trace-ticket",
+                executed_at: "2026-04-18T08:28:19.609751+00:00",
+                output: {
+                  ticket_id: "TICKET-0335",
+                  status: "draft",
+                  submission_state: "awaiting_user_confirmation",
+                  severity: "high",
+                  environment: "production",
+                  summary:
+                    "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+                },
+              },
+            },
+          ],
+        }}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={onRecoverAgentWorkflowRun}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Incident Triage")).toBeInTheDocument();
+    expect(screen.getByText("Service Health")).toBeInTheDocument();
+    expect(screen.getByText("Runbook Evidence")).toBeInTheDocument();
+    expect(screen.getByText("Ticket Draft")).toBeInTheDocument();
+    expect(screen.getAllByText("payment_service_runbook.md").length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: "Submit Ticket" }));
+    await user.click(screen.getByRole("button", { name: "Cancel Submission" }));
+
+    expect(onRecoverAgentWorkflowRun).toHaveBeenNthCalledWith(
+      1,
+      "run-incident",
+      "resume_with_clarification",
+      { submission_confirmation: "yes" },
+    );
+    expect(onRecoverAgentWorkflowRun).toHaveBeenNthCalledWith(
+      2,
+      "run-incident",
+      "resume_with_clarification",
+      { submission_confirmation: "no" },
+    );
+  });
 });
 

@@ -1321,6 +1321,26 @@ textarea {
   background: rgba(255, 255, 255, 0.84);
 }
 
+.incident-triage-card {
+  border-color: rgba(159, 58, 29, 0.18);
+  background: rgba(255, 248, 241, 0.72);
+}
+
+.incident-triage-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.incident-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(159, 58, 29, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
 .tool-output-card strong {
   display: block;
   line-height: 1.5;

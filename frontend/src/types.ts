@@ -173,6 +173,10 @@ export type ClarificationPlan = {
   missing_fields: string[];
   follow_up_questions: string[];
   clarification_summary: string;
+  confirmation_kind?: string;
+  ticket_id?: string;
+  service?: string;
+  environment?: string;
 };
 
 export type ToolPlan = {
