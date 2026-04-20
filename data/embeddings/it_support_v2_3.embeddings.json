@@ -1,0 +1,40 @@
+{
+  "filename": "it_support_v2_3.md",
+  "suffix": ".md",
+  "document_kind": "reference",
+  "source_path": "D:\\project\\agent-knowledge-system\\data\\raw\\it_support_v2_3.md",
+  "source_chunk_path": "D:\\project\\agent-knowledge-system\\data\\chunks\\it_support_v2_3.chunks.json",
+  "created_at": "2026-04-19T13:33:16.885603+00:00",
+  "pipeline_version": "indexing-v1",
+  "embedding_provider": "mock_fallback",
+  "embedding_model": "mock-embedding-v1",
+  "vector_dim": 8,
+  "chunk_count": 1,
+  "embeddings": [
+    {
+      "embedding_id": "it_support_v2_3.md::chunk_0::embedding",
+      "chunk_id": "it_support_v2_3.md::chunk_0",
+      "chunk_index": 0,
+      "source_filename": "it_support_v2_3.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 535,
+      "section_title": "Explain how Mack detects data masking rule bypasses.",
+      "section_path": [
+        "Explain how Mack detects data masking rule bypasses."
+      ],
+      "heading_level": 1,
+      "content": "# Explain how Mack detects data masking rule bypasses.\n\n- Dataset: it_support_v2\n- Doc ID: it_support_v2::3\n- Service: it-support\n- Document Kind: support_resolution\n- Source Filename: it_support_v2_3.md\n- Tags: it_support_v2, support-dialogue, external-knowledge\n\n## Imported Snippet\n\nExplain how Mack detects data masking rule bypasses. Mack analyzes application query logs for masked data exposure, checks for direct database access attempts, verifies data masking rule application at the database level, and flags user workarounds.",
+      "vector": [
+        0.74902,
+        0.752941,
+        0.976471,
+        0.2,
+        0.356863,
+        0.337255,
+        0.627451,
+        0.85098
+      ]
+    }
+  ]
+}

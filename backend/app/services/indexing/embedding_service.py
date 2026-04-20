@@ -31,6 +31,14 @@ EMBEDDING_PIPELINE_VERSION = "indexing-v1"
 logger = logging.getLogger(__name__)
 
 
+def _embedding_request_kwargs() -> dict[str, object]:
+    """Return shared HTTP client options for outbound embedding requests."""
+    return {
+        "timeout": 30.0,
+        "trust_env": settings.embedding_http_trust_env,
+    }
+
+
 def build_mock_embedding(text: str, vector_dim: int = MOCK_VECTOR_DIM) -> list[float]:
     """Generate a deterministic placeholder vector for pipeline scaffolding."""
     digest = sha256(text.encode("utf-8")).digest()
@@ -73,7 +81,7 @@ def build_openai_embeddings(
         OPENAI_EMBEDDINGS_URL,
         headers=headers,
         json=payload,
-        timeout=30.0,
+        **_embedding_request_kwargs(),
     )
     response.raise_for_status()
     response_payload = response.json()
@@ -114,7 +122,7 @@ def build_gemini_embeddings(
             "Content-Type": "application/json",
         },
         json={"requests": request_items},
-        timeout=30.0,
+        **_embedding_request_kwargs(),
     )
     response.raise_for_status()
     response_payload = response.json()

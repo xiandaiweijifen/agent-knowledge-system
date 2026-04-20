@@ -1,5 +1,7 @@
 ﻿import type { ChangeEvent } from "react";
 
+import { useState } from "react";
+
 import { formatBytes, formatTimestamp } from "../format";
 import type {
   DocumentItem,
@@ -54,6 +56,8 @@ export function DocumentsView({
   onDeleteDocument,
   onUploadFile,
 }: DocumentsViewProps) {
+  const [documentSearch, setDocumentSearch] = useState("");
+  const [showAllDocuments, setShowAllDocuments] = useState(false);
   const copy =
     locale === "zh"
       ? {
@@ -70,6 +74,12 @@ export function DocumentsView({
           llamaindexMissing: "llamaindex 缺失",
           registry: "文档注册表",
           registryCopy: "在文档进入切块和 embedding 之前管理原始知识文件。",
+          searchDocuments: "搜索文件名",
+          searchPlaceholder: "按文件名搜索",
+          shownDocuments: "当前展示",
+          recentDocumentsPreview: "默认仅展示前 5 个文件，避免文档列表占满页面。",
+          showAllDocuments: "展开全部文件",
+          showRecentDocuments: "收起到前 5 个",
           refresh: "刷新",
           upload: "上传文档",
           uploadHint: "添加一个 .txt 或 .md 文件",
@@ -121,6 +131,12 @@ export function DocumentsView({
           llamaindexMissing: "llamaindex missing",
           registry: "Document Registry",
           registryCopy: "Manage raw knowledge files before they enter chunking and embedding.",
+          searchDocuments: "Search By Filename",
+          searchPlaceholder: "Search by filename",
+          shownDocuments: "Showing",
+          recentDocumentsPreview: "Only the first 5 documents are shown by default to keep the registry compact.",
+          showAllDocuments: "Show All Files",
+          showRecentDocuments: "Show First 5",
           refresh: "Refresh",
           upload: "Upload Document",
           uploadHint: "Add a .txt or .md file",
@@ -159,6 +175,14 @@ export function DocumentsView({
           noDocumentSelectedCopy:
             "Select a document to inspect its content and current pipeline artifact status.",
         };
+
+  const normalizedDocumentSearch = documentSearch.trim().toLowerCase();
+  const filteredDocuments = documents.filter((item) =>
+    normalizedDocumentSearch
+      ? item.filename.toLowerCase().includes(normalizedDocumentSearch)
+      : true,
+  );
+  const visibleDocuments = showAllDocuments ? filteredDocuments : filteredDocuments.slice(0, 5);
 
   return (
     <section className="panel-grid">
@@ -205,37 +229,75 @@ export function DocumentsView({
         {documentsBusy && <p className="status">{copy.loading}</p>}
         {documentsError && <p className="error">{documentsError}</p>}
         {documents.length > 0 ? (
-          <div className="document-list">
-            {documents.map((item) => (
-              <button
-                key={item.filename}
-                type="button"
-                className={`document-card${selectedFilename === item.filename ? " active" : ""}`}
-                onClick={() => onSelectDocument(item.filename)}
-              >
-                <div className="card-title-row">
-                  <strong>{item.filename}</strong>
-                  <span className="file-pill">{item.suffix}</span>
-                </div>
-                <small>{formatBytes(item.size_bytes)}</small>
-                <div className="meta-stack">
-                  <span>
-                    {item.knowledge_assets?.chunks_ready ? copy.chunksReady : copy.chunksMissing}
-                  </span>
-                  <span>
-                    {item.knowledge_assets?.embeddings_ready
-                      ? copy.embeddingsReady
-                      : copy.embeddingsMissing}
-                  </span>
-                  <span>
-                    {item.knowledge_assets?.llamaindex_ready
-                      ? copy.llamaindexReady
-                      : copy.llamaindexMissing}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
+          <>
+            <div className="document-registry-toolbar">
+              <label>
+                {copy.searchDocuments}
+                <input
+                  type="text"
+                  value={documentSearch}
+                  placeholder={copy.searchPlaceholder}
+                  onChange={(event) => {
+                    setDocumentSearch(event.target.value);
+                    setShowAllDocuments(false);
+                  }}
+                />
+              </label>
+              <span className="registry-count">
+                {copy.shownDocuments} {visibleDocuments.length} / {filteredDocuments.length}
+              </span>
+            </div>
+            {filteredDocuments.length > 5 && (
+              <div className="button-row">
+                <p className="subsection-copy">{copy.recentDocumentsPreview}</p>
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={() => setShowAllDocuments((current) => !current)}
+                >
+                  {showAllDocuments ? copy.showRecentDocuments : copy.showAllDocuments}
+                </button>
+              </div>
+            )}
+            {filteredDocuments.length > 0 ? (
+              <div className="document-list">
+                {visibleDocuments.map((item) => (
+                  <button
+                    key={item.filename}
+                    type="button"
+                    className={`document-card${selectedFilename === item.filename ? " active" : ""}`}
+                    onClick={() => onSelectDocument(item.filename)}
+                  >
+                    <div className="card-title-row">
+                      <strong>{item.filename}</strong>
+                      <span className="file-pill">{item.suffix}</span>
+                    </div>
+                    <small>{formatBytes(item.size_bytes)}</small>
+                    <div className="meta-stack">
+                      <span>
+                        {item.knowledge_assets?.chunks_ready ? copy.chunksReady : copy.chunksMissing}
+                      </span>
+                      <span>
+                        {item.knowledge_assets?.embeddings_ready
+                          ? copy.embeddingsReady
+                          : copy.embeddingsMissing}
+                      </span>
+                      <span>
+                        {item.knowledge_assets?.llamaindex_ready
+                          ? copy.llamaindexReady
+                          : copy.llamaindexMissing}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">
+                <strong>{copy.noDocuments}</strong>
+                <p>{copy.searchPlaceholder}</p>
+              </div>
+            )}
+          </>
         ) : (
           <div className="empty-state">
             <strong>{copy.noDocuments}</strong>

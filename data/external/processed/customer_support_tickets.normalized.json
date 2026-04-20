@@ -1,0 +1,999 @@
+{
+  "dataset": {
+    "slug": "customer_support_tickets",
+    "label": "Customer Support Tickets",
+    "kind": "ticket_secondary",
+    "source_url": "https://huggingface.co/datasets/Tobi-Bueck/customer-support-tickets",
+    "expected_formats": [
+      "csv"
+    ],
+    "recommended_input": "Place the CSV export under data/external/raw/customer_support_tickets/",
+    "notes": [
+      "Useful for support ticket language, priority, queue, and response drafting patterns.",
+      "Good supplement for incident/request/problem phrasing and ticket summaries."
+    ]
+  },
+  "record_count": 25,
+  "ticket_count": 25,
+  "service_count": 9,
+  "knowledge_asset_count": 25,
+  "tickets": [
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-1",
+      "title": "Wesentlicher Sicherheitsvorfall",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.371923+00:00",
+      "updated_at": "2026-04-19T12:52:56.372007+00:00",
+      "source_run_id": null,
+      "summary": "Sehr geehrtes Support-Team,\\n\\nich möchte einen gravierenden Sicherheitsvorfall melden, der gegenwärtig mehrere Komponenten unserer Infrastruktur betrifft. Betroffene Geräte umfassen Projektoren, Bildschirme und Speicherlösungen auf Cloud-Plattformen. Der Grund für die Annahme ist, dass der Vorfall eine potenzielle Datenverletzung im Zusammenhang mit einer Cyberattacke darstellt, was ein erhebliches Risiko für sensible Informationen und den laufenden Geschäftsbetrieb unserer Organisation bedeutet.\\n\\nUnsere initialen Untersuchungen haben ungewöhnliche Aktivitäten und Abweichungen bei den Geräten ergeben. Trotz der Umsetzung unserer standardisierten Behebungs- und Eindämmungsmaßnahmen konnte die Bedrohung bislang nicht vollständig eliminiert."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-2",
+      "title": "Account Disruption",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.372239+00:00",
+      "updated_at": "2026-04-19T12:52:56.372250+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI am writing to report a significant problem with the centralized account management portal, which currently appears to be offline. This outage is blocking access to account settings, leading to substantial inconvenience. I have attempted to log in multiple times using different browsers and devices, but the issue persists.\\n\\nCould you please provide an update on the outage status and an estimated time for resolution? Also, are there any alternative ways to access and manage my account during this downtime?"
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-3",
+      "title": "Query About Smart Home System Integration Features",
+      "service": "returns-and-exchanges",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.372396+00:00",
+      "updated_at": "2026-04-19T12:52:56.372406+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am reaching out to request detailed information about the capabilities of your smart home integration products listed on your website. As a potential customer aiming to develop a seamlessly interconnected home environment, it is essential to understand how your products interact with various smart home platforms.\\n\\nCould you kindly provide detailed compatibility information with popular smart home ecosystems such as Amazon Alexa, Google Assistant, and Apple?"
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-4",
+      "title": "Inquiry Regarding Invoice Details",
+      "service": "billing-and-payments",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.372535+00:00",
+      "updated_at": "2026-04-19T12:52:56.372543+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message finds you well. I am reaching out to request clarification about the billing and payment procedures linked to my account. Recently, I observed some inconsistencies in the charges applied and would like to ensure I fully understand the billing cycle, accepted payment options, and any potential extra charges.\\n\\nFirstly, I would be grateful if you could provide a detailed explanation of how the billing cycle functions. Specifically, I am interested in knowing the start and end dates.\\n\\nThank you for your assistance regarding these billing inquiries."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-5",
+      "title": "Question About Marketing Agency Software Compatibility",
+      "service": "sales-and-pre-sales",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.372675+00:00",
+      "updated_at": "2026-04-19T12:52:56.372685+00:00",
+      "source_run_id": null,
+      "summary": "Dear Support Team,\\n\\nI hope this message reaches you well. I am reaching out to ask about the compatibility of your products with the specific needs of marketing agencies. Our company is considering adopting these solutions to streamline our current marketing processes and wants to confirm that the products are fully compatible with the tools and platforms we currently utilize.\\n\\nCould you please supply detailed information regarding the compatibility of your products with popular marketing software, CRM systems, email marketing applications, and analytics platforms? Additionally, I would appreciate any relevant case studies or documentation tailored to our use case."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-6",
+      "title": "Feature Query",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.372802+00:00",
+      "updated_at": "2026-04-19T12:52:56.372811+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support,\\n\\nI hope this message reaches you in good health. I am eager to learn more about the features of one of your products. Would you be able to share comprehensive details about its functionalities, specifications, and any distinctive characteristics it may possess? Additionally, if there are user manuals, tutorials, or demonstration videos available, I would be grateful if you could provide those resources. Gaining a thorough understanding of the features will assist me in making an informed decision regarding the product.\\n\\nThank you very much for your assistance. I look forward to your prompt reply.\\n\\nBest regards"
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-7",
+      "title": "System Interruptions",
+      "service": "service-outages-and-maintenance",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.372927+00:00",
+      "updated_at": "2026-04-19T12:52:56.372936+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI am submitting a report regarding multiple system service disruptions that are currently interfering with project operations and client interactions. These interruptions have notably reduced efficiency and caused delays in meeting important deadlines.\\n\\nInitial assessments suggest that the primary issue may be linked to widespread failures in network hardware connectivity. We have already carried out several basic troubleshooting procedures, such as rebooting devices and performing initial system checks, but the problems persist."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-8",
+      "title": "Connectivity Problems with Printer on MacBook Pro",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373063+00:00",
+      "updated_at": "2026-04-19T12:52:56.373074+00:00",
+      "source_run_id": null,
+      "summary": "Dear Support Team,\\n\\nI am reporting a recurring issue with the Laser Printer when printing from MacBook Pros running macOS 15. Several team members have recently encountered this problem, which appears to be connected to the latest macOS 15 system updates.\\n\\nWe believe the root cause might be a driver compatibility issue due to the updated operating systems or printer firmware. To troubleshoot, we have restarted the printers and MacBook devices, reinstalled the printer drivers, and verified configurations."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-9",
+      "title": "Anfrage nach detaillierten Angaben zur Systemarchitektur der Plattform",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373193+00:00",
+      "updated_at": "2026-04-19T12:52:56.373201+00:00",
+      "source_run_id": null,
+      "summary": "Sehr geehrtes Kundensupport-Team,\\n\\nich hoffe, diese Nachricht trifft Sie wohl. Ich nehme Kontakt auf, um umfassende Informationen zur Architektur der Plattform zu erfragen. Das Verständnis der zugrunde liegenden Struktur, Komponenten und deren Zusammenhänge ist entscheidend, um eine reibungslose Integration zu gewährleisten und die Nutzung der Dienste zu optimieren.\\n\\nBesonders interessieren mich Details zu den Kernmodulen der Plattform, Datenströmen, Sicherheitsmaßnahmen, Skalierbarkeitsmerkmalen sowie verfügbaren APIs und Schnittstellen zur Anpassung. Zudem wären Einblicke in den Technologiestack sowie die Bereitstellungsumgebung sehr hilfreich.\\n\\nDer Zugriff auf diese Informationen ermöglicht es dem technischen Team, die Infrastrukturprozesse besser zu planen und zu steuern."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-10",
+      "title": "Anfrage zur Klärung der Auswirkungen eines Serviceausfalls",
+      "service": "service-outages-and-maintenance",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373320+00:00",
+      "updated_at": "2026-04-19T12:52:56.373329+00:00",
+      "source_run_id": null,
+      "summary": "Sehr geehrtes Kundendienstteam,\\n\\nich hoffe, diese Nachricht erreicht Sie wohlbehalten. Ich schreibe, um eine Klärung bezüglich des kürzlichen Ausfalls Ihres Dienstes zu bitten, der die Plattform betroffen hat. Nutzer, die auf Ihre Dienste angewiesen sind, benötigen klare Informationen, um die betrieblichen Abläufe planen zu können, und es ist wichtig, den Umfang sowie die Folgen des Ausfalls genau zu verstehen.\\n\\nKönnten Sie bitte detaillierte Angaben zum Zeitraum des Ausfalls, welche Dienste betroffen waren und ob dabei Daten kompromittiert oder verloren gegangen sind, bereitstellen? Zudem würde ich mich über aktuelle Informationen zu den Maßnahmen freuen, die ergriffen wurden, um zukünftige Vorfälle zu verhindern.\\n\\nVielen Dank für Ihre Unterstützung und die Klärung der Details."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-11",
+      "title": "VPN Access Issue",
+      "service": "product-support",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373458+00:00",
+      "updated_at": "2026-04-19T12:52:56.373467+00:00",
+      "source_run_id": null,
+      "summary": "Customer Support,\\n\\nWe are encountering a disruption in VPN-router connectivity that is impacting several devices, notably essential remote telemedicine systems and EMR integrations. Attempts to resolve the issue by restarting affected devices and resetting the router have been unsuccessful. We suspect the problem may be related to firmware discrepancies following recent network configuration updates. This disruption is significantly affecting our operations, and we urgently need assistance to identify and fix the root cause. Kindly advise on additional troubleshooting steps."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-12",
+      "title": "Issue with SaaS Platform Functionality",
+      "service": "product-support",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373581+00:00",
+      "updated_at": "2026-04-19T12:52:56.373590+00:00",
+      "source_run_id": null,
+      "summary": "Sehr geehrtes Support-Team,\\n\\nich möchte Sie auf einen Ausfall der Funktionen unserer SaaS-Plattform aufmerksam machen, den wir momentan erleben. In den letzten Stunden sind mehrere zentrale Features der Plattform langsamer geworden, was die Arbeitsabläufe erheblich beeinträchtigt und die Produktivität verringert.\\n\\nBesonders betroffen sind die Ladezeiten der Dashboards, es gibt Inkonsistenzen bei der Daten-Synchronisation sowie gelegentliche Fehler im Benutzer-Authentifizierungsprozess. Trotz Versuchen, die Anwendung neu zu starten und den Browser-Cache zu leeren, bestehen die Probleme weiterhin.\\n\\nDa die Plattform für unsere täglichen Geschäftsprozesse unverzichtbar ist, bitten wir um eine schnelle Bearbeitung dieses Anliegens. Könnten Sie uns bitte Unterstützung bieten?"
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-13",
+      "title": "Immediate Help Needed: Technical Problem with Cloud SaaS Service",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373705+00:00",
+      "updated_at": "2026-04-19T12:52:56.373714+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI am submitting a report regarding a technical problem encountered with the Cloud SaaS platform, which is currently disrupting our business activities. I have observed that certain features are not functioning as expected, causing interruptions that hinder workflow efficiency.\\n\\nIn particular, I am facing sporadic connectivity issues when trying to access the platform. Sometimes, the system fails to load the dashboard, and the data displayed appears outdated or incomplete. Furthermore, the response times for executing commands have significantly increased, resulting in delays."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-14",
+      "title": "Inquiry for Detailed Information on Agency Offerings",
+      "service": "product-support",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373826+00:00",
+      "updated_at": "2026-04-19T12:52:56.373835+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am writing to request detailed information about the services provided by your agency. Specifically, I am interested in understanding the variety of services available, the pricing models, and any special packages or offers that might be applicable.\\n\\nAdditionally, I would appreciate it if you could send brochures, service contracts, and case studies highlighting your previous work and client success stories. This information will greatly help me in making an informed decision."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-15",
+      "title": "Request for Issue Explanation",
+      "service": "product-support",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.373945+00:00",
+      "updated_at": "2026-04-19T12:52:56.373954+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am reaching out to request help with a problem I am experiencing. Unfortunately, I am not entirely sure how to clearly describe the issue, which makes it difficult to specify the exact nature of the problem.\\n\\nWhen I try to use the service, I observe unexpected behavior and cannot identify the precise cause. There are error messages and notifications, which make it challenging to provide a detailed description. I have attempted basic troubleshooting steps, such as restarting the application and checking for updates."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-16",
+      "title": "Inquiry for In-Depth Details on Financial Institution Offerings",
+      "service": "customer-service",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374088+00:00",
+      "updated_at": "2026-04-19T12:52:56.374097+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you in good health. I am writing to request detailed information about the spectrum of products provided by your financial institution. As a potential client, I am particularly eager to learn about the features, advantages, and terms linked to your investment and savings offerings.\\n\\nWould you be able to send comprehensive brochures or documentation that specify the details of your products? I am interested in information regarding account types, interest rates, fees, minimum deposit amounts, and any current promotional deals."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-17",
+      "title": "Enhancing Multi-Unit Marketing Processes",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374222+00:00",
+      "updated_at": "2026-04-19T12:52:56.374231+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI am reaching out to request comprehensive details on optimizing marketing workflows across multiple departments by utilizing advanced analytics, automation, and centralized account management. Our organization aims to improve campaign coordination and boost performance metrics across various marketing channels, believing that implementing such strategies will greatly enhance our overall marketing success.\\n\\nIn particular, I would like to understand the best practices for integrating data analytics tools that offer real-time insights across different teams."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-18",
+      "title": "Inquiry for Comprehensive Marketing Service Details",
+      "service": "customer-service",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374357+00:00",
+      "updated_at": "2026-04-19T12:52:56.374366+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am writing to request detailed information about your marketing offerings. Our company is currently considering new marketing approaches to strengthen our brand visibility and boost customer engagement, and we are keen to understand the array of services your team provides.\\n\\nSpecifically, I would like to learn about the various marketing packages available, including digital marketing solutions such as social media management, email marketing campaigns, and search engine optimization."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-19",
+      "title": "Query About Future Service Disruptions and Maintenance Timelines",
+      "service": "service-outages-and-maintenance",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374481+00:00",
+      "updated_at": "2026-04-19T12:52:56.374489+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message finds you well. I am reaching out to request detailed details regarding the schedule and scope of upcoming service disruptions and maintenance activities that could affect access to critical systems, particularly big data repositories, analytical models, and automated investment platforms. Understanding the timing and duration of these events is crucial for us to plan accordingly and minimize potential operational interruptions.\\n\\nCould you please provide a thorough overview of the planned maintenance?"
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-20",
+      "title": "Proposal for Upgrades to Big Data Analytics Systems",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374599+00:00",
+      "updated_at": "2026-04-19T12:52:56.374607+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am writing to request improvements to our existing big data analytics infrastructure. Our goal is to enhance support for advanced machine learning models developed in Python, enable automated rebalancing of investment portfolios, and customize ESG (Environmental, Social, and Governance) investment strategies tailored specifically for institutional clients.\\n\\nAt present, our system manages large data sets and aims to incorporate complex machine learning algorithms to deliver real-time analytics efficiently."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-21",
+      "title": "Guidelines for Incorporating Seagate Expansion Drives",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374714+00:00",
+      "updated_at": "2026-04-19T12:52:56.374723+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you in good health. I am seeking comprehensive instructions on how to effectively integrate Seagate Expansion Desktop 6TB drives into healthcare storage solutions. My main priority is to guarantee that data management and storage procedures fully adhere to HIPAA and GDPR standards.\\n\\nCould you please share your suggestions for the best configuration of these drives within a healthcare setting? In particular, I am keen to learn about secure setup options that can assist in maintaining compliance."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-22",
+      "title": "Unable to Access Office Applications",
+      "service": "human-resources",
+      "environment": "unspecified",
+      "severity": "high",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374830+00:00",
+      "updated_at": "2026-04-19T12:52:56.374839+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support,\\n\\nWe are encountering a problem where employees are unable to open Excel, PowerPoint, and other Office programs on MacBook Air devices, despite having valid licenses. The issue started after a recent macOS update, which we suspect may have caused compatibility problems, possibly due to expired authentication tokens.\\n\\nTo attempt a fix, we rebooted the laptops, tried repairing Office, and re-entered Microsoft credentials. Regrettably, none of these actions resolved the issue, and the applications still cannot be accessed.\\n\\nWe would"
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-23",
+      "title": "Query",
+      "service": "billing-and-payments",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.374959+00:00",
+      "updated_at": "2026-04-19T12:52:56.374967+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am reaching out to request detailed billing details and payment options for a QuickBooks Online subscription. Specifically, I am interested in understanding the available plans, their pricing structures, and any tailored options for institutional clients within the financial services industry. It would be helpful to receive documentation on invoicing procedures, payment timelines, discounts, and any special terms applicable to organizations like ours.\\n\\nAdditionally, please"
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-24",
+      "title": "Multiple Device Connection Problems",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.375081+00:00",
+      "updated_at": "2026-04-19T12:52:56.375089+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support,\\n\\nWe are experiencing extensive connectivity problems impacting numerous devices throughout the office. The issues have been observed with headsets, printers, and workstations all at once, significantly disrupting daily activities. Our initial investigation indicates that the cause may be a network outage or a misconfiguration within the system infrastructure.\\n\\nOur team has already tried several troubleshooting methods, including rebooting affected devices and swapping hardware components, but unfortunately, these efforts did not resolve the disruptions."
+    },
+    {
+      "ticket_id": "CUSTOMER_SUPPORT_TICKETS-25",
+      "title": "Network Connection Problems",
+      "service": "technical-support",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:52:56.375183+00:00",
+      "updated_at": "2026-04-19T12:52:56.375191+00:00",
+      "source_run_id": null,
+      "summary": "Dear Customer Support Team,\\n\\nI am reaching out to report persistent issues with network connectivity that are significantly disrupting my workflow. I've observed sporadic interruptions across several devices, which I believe may be caused by a malfunctioning repeater or potential interference from other devices within the network configuration.\\n\\nIn an attempt to resolve the problem, I have already taken several measures, such as restarting the affected equipment and repositioning the repeater to different locations within the premises. Despite these efforts, the connectivity issues persist."
+    }
+  ],
+  "services": [
+    {
+      "service_id": "technical-support",
+      "service_name": "Technical Support",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "returns-and-exchanges",
+      "service_name": "Returns and Exchanges",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "billing-and-payments",
+      "service_name": "Billing and Payments",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": [
+        "payment_service_runbook.md",
+        "incident_playbook.md"
+      ]
+    },
+    {
+      "service_id": "sales-and-pre-sales",
+      "service_name": "Sales and Pre-Sales",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "service-outages-and-maintenance",
+      "service_name": "Service Outages and Maintenance",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "product-support",
+      "service_name": "Product Support",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "it-support",
+      "service_name": "IT Support",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "customer-service",
+      "service_name": "Customer Service",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "human-resources",
+      "service_name": "Human Resources",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    }
+  ],
+  "knowledge_assets": [
+    {
+      "doc_id": "customer_support_tickets::1",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "technical support",
+        "de",
+        "security",
+        "outage",
+        "disruption",
+        "data breach"
+      ],
+      "source_filename": "customer_support_tickets_1.md",
+      "title": "Wesentlicher Sicherheitsvorfall",
+      "snippet": "Sehr geehrtes Support-Team,\\n\\nich möchte einen gravierenden Sicherheitsvorfall melden, der gegenwärtig mehrere Komponenten unserer Infrastruktur betrifft. Betroffene Geräte umfassen Projektoren, Bildschirme und Speicherlösungen auf Cloud-Plattformen. Der Grund für die Annahme ist, dass der Vorfall eine potenzielle Datenverletzung im Zusammenhang mit einer Cyberattacke darstellt, was ein erhebliches Risiko für sensible Informationen und den laufenden Geschäftsbetrieb unserer Organisation bedeutet.\\n\\nUnsere initialen Untersuchungen haben ungewöhnliche Aktivitäten und Abweichungen bei den Geräten ergeben. Trotz der Umsetzung unserer standardisierten Behebungs- und Eindämmungsmaßnahmen konnte die Bedrohung bislang nicht vollständig eliminiert. Vielen Dank für die Meldung des kritischen Sicherheitsvorfalls und die Bereitstellung der Übersicht über die betroffenen Geräte sowie der ergriffenen ersten Maßnahmen. Wir erkennen die Dringlichkeit und Schwere der Lage an und setzen alles daran, den Fall prioritär zu bearbeiten. Für eine umgehende Untersuchung benötigen wir zusätzliche Informationen: Bitte senden Sie uns spezifische Protokolle der betroffenen Projektoren, Bildschirme und Cloud-Speichersysteme, inklusive Zeitstempel verdächtiger Aktivitäten sowie ungewöhnlicher Fehlermeldungen. Falls möglich, fügen Sie auch eine Zusammenfassung der bereits durchgeführten Maßnahmen bei."
+    },
+    {
+      "doc_id": "customer_support_tickets::2",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "technical support",
+        "en",
+        "account",
+        "disruption",
+        "outage",
+        "it",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_2.md",
+      "title": "Account Disruption",
+      "snippet": "Dear Customer Support Team,\\n\\nI am writing to report a significant problem with the centralized account management portal, which currently appears to be offline. This outage is blocking access to account settings, leading to substantial inconvenience. I have attempted to log in multiple times using different browsers and devices, but the issue persists.\\n\\nCould you please provide an update on the outage status and an estimated time for resolution? Also, are there any alternative ways to access and manage my account during this downtime? Thank you for reaching out, <name>. We are aware of the outage affecting the centralized account management system, and our technical team is actively working to resolve the issue. In the meantime, we suggest using alternative methods to manage your account, with a focus on restoring service as quickly as possible. We will provide an update as soon as the service is back online. We apologize for the inconvenience and appreciate your patience. If you have any further questions, please let us know."
+    },
+    {
+      "doc_id": "customer_support_tickets::3",
+      "service": "returns-and-exchanges",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "returns and exchanges",
+        "en",
+        "product",
+        "feature",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_3.md",
+      "title": "Query About Smart Home System Integration Features",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am reaching out to request detailed information about the capabilities of your smart home integration products listed on your website. As a potential customer aiming to develop a seamlessly interconnected home environment, it is essential to understand how your products interact with various smart home platforms.\\n\\nCould you kindly provide detailed compatibility information with popular smart home ecosystems such as Amazon Alexa, Google Assistant, and Apple? Thank you for your inquiry. Our products support integration with Amazon Alexa, Google Assistant, and Apple HomeKit. Compatibility details can differ depending on the specific item; please let us know which models you are interested in. The setup process is generally user-friendly but may require professional installation. We regularly update our software to provide enhanced features. For comprehensive information on compatibility with upcoming updates, please specify the models you are considering."
+    },
+    {
+      "doc_id": "customer_support_tickets::4",
+      "service": "billing-and-payments",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "billing and payments",
+        "en",
+        "billing",
+        "payment",
+        "account",
+        "documentation",
+        "feedback"
+      ],
+      "source_filename": "customer_support_tickets_4.md",
+      "title": "Inquiry Regarding Invoice Details",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message finds you well. I am reaching out to request clarification about the billing and payment procedures linked to my account. Recently, I observed some inconsistencies in the charges applied and would like to ensure I fully understand the billing cycle, accepted payment options, and any potential extra charges.\\n\\nFirstly, I would be grateful if you could provide a detailed explanation of how the billing cycle functions. Specifically, I am interested in knowing the start and end dates.\\n\\nThank you for your assistance regarding these billing inquiries. We appreciate you reaching out with your billing questions. The billing period generally begins on the first day of the month and concludes on the last day, with payments due by the 10th of the following month. We accept credit cards, bank transfers, and certain online payment services; credit card transactions are typically processed the quickest. Late payments may incur fees based on the due date, and any additional processing charges depend on the chosen payment method. You can review your statements for detailed payment information."
+    },
+    {
+      "doc_id": "customer_support_tickets::5",
+      "service": "sales-and-pre-sales",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "problem",
+        "sales and pre-sales",
+        "en",
+        "product",
+        "feature",
+        "feedback",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_5.md",
+      "title": "Question About Marketing Agency Software Compatibility",
+      "snippet": "Dear Support Team,\\n\\nI hope this message reaches you well. I am reaching out to ask about the compatibility of your products with the specific needs of marketing agencies. Our company is considering adopting these solutions to streamline our current marketing processes and wants to confirm that the products are fully compatible with the tools and platforms we currently utilize.\\n\\nCould you please supply detailed information regarding the compatibility of your products with popular marketing software, CRM systems, email marketing applications, and analytics platforms? Additionally, I would appreciate any relevant case studies or documentation tailored to our use case. Thank you for your inquiry. Our product supports integration with major CRM, email marketing, and analytics platforms through APIs and customization options. Please specify the tools you are using so we can provide you with detailed documentation and relevant case studies."
+    },
+    {
+      "doc_id": "customer_support_tickets::6",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "technical support",
+        "en",
+        "feature",
+        "product",
+        "documentation",
+        "feedback"
+      ],
+      "source_filename": "customer_support_tickets_6.md",
+      "title": "Feature Query",
+      "snippet": "Dear Customer Support,\\n\\nI hope this message reaches you in good health. I am eager to learn more about the features of one of your products. Would you be able to share comprehensive details about its functionalities, specifications, and any distinctive characteristics it may possess? Additionally, if there are user manuals, tutorials, or demonstration videos available, I would be grateful if you could provide those resources. Gaining a thorough understanding of the features will assist me in making an informed decision regarding the product.\\n\\nThank you very much for your assistance. I look forward to your prompt reply.\\n\\nBest regards Thank you for your inquiry. Please specify which product you are interested in, so I can provide detailed information, features, and relevant resources."
+    },
+    {
+      "doc_id": "customer_support_tickets::7",
+      "service": "service-outages-and-maintenance",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "service outages and maintenance",
+        "en",
+        "outage",
+        "disruption",
+        "performance",
+        "it",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_7.md",
+      "title": "System Interruptions",
+      "snippet": "Dear Customer Support Team,\\n\\nI am submitting a report regarding multiple system service disruptions that are currently interfering with project operations and client interactions. These interruptions have notably reduced efficiency and caused delays in meeting important deadlines.\\n\\nInitial assessments suggest that the primary issue may be linked to widespread failures in network hardware connectivity. We have already carried out several basic troubleshooting procedures, such as rebooting devices and performing initial system checks, but the problems persist. Thank you for bringing the system disruptions to our attention. We understand the importance of maintaining stable services for project workflows and client communications, and we apologize for the inconvenience caused. To assist us in diagnosing the issue, could you please provide specific details about the affected systems or services, the approximate start time of the outages, and any error messages or logs you've encountered? Additionally, let us know if the outages are impacting users at a single location or across multiple sites."
+    },
+    {
+      "doc_id": "customer_support_tickets::8",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "technical support",
+        "en",
+        "network",
+        "hardware",
+        "performance",
+        "bug",
+        "compatibility"
+      ],
+      "source_filename": "customer_support_tickets_8.md",
+      "title": "Connectivity Problems with Printer on MacBook Pro",
+      "snippet": "Dear Support Team,\\n\\nI am reporting a recurring issue with the Laser Printer when printing from MacBook Pros running macOS 15. Several team members have recently encountered this problem, which appears to be connected to the latest macOS 15 system updates.\\n\\nWe believe the root cause might be a driver compatibility issue due to the updated operating systems or printer firmware. To troubleshoot, we have restarted the printers and MacBook devices, reinstalled the printer drivers, and verified configurations. Thank you for reaching out regarding the connectivity problems with the Laser Printer on MacBook Pros after recent macOS 15 updates. We understand how disruptive this can be and appreciate your efforts in troubleshooting so far. To assist you further, please confirm the specific MacBook model and current macOS version you are using (including whether you have iOS devices like iPhones or iPads). Also, provide the model and driver version of the Laser Printer installed. Meanwhile, we recommend..."
+    },
+    {
+      "doc_id": "customer_support_tickets::9",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "technical support",
+        "de",
+        "documentation",
+        "feedback",
+        "it",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_9.md",
+      "title": "Anfrage nach detaillierten Angaben zur Systemarchitektur der Plattform",
+      "snippet": "Sehr geehrtes Kundensupport-Team,\\n\\nich hoffe, diese Nachricht trifft Sie wohl. Ich nehme Kontakt auf, um umfassende Informationen zur Architektur der Plattform zu erfragen. Das Verständnis der zugrunde liegenden Struktur, Komponenten und deren Zusammenhänge ist entscheidend, um eine reibungslose Integration zu gewährleisten und die Nutzung der Dienste zu optimieren.\\n\\nBesonders interessieren mich Details zu den Kernmodulen der Plattform, Datenströmen, Sicherheitsmaßnahmen, Skalierbarkeitsmerkmalen sowie verfügbaren APIs und Schnittstellen zur Anpassung. Zudem wären Einblicke in den Technologiestack sowie die Bereitstellungsumgebung sehr hilfreich.\\n\\nDer Zugriff auf diese Informationen ermöglicht es dem technischen Team, die Infrastrukturprozesse besser zu planen und zu steuern. Vielen Dank für Ihre Anfrage. Wir stellen Ihnen die verfügbaren technischen Dokumentationen zur Verfügung. Falls notwendig, lassen Sie uns gern einen passenden Termin mit unseren Spezialisten vereinbaren."
+    },
+    {
+      "doc_id": "customer_support_tickets::10",
+      "service": "service-outages-and-maintenance",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "service outages and maintenance",
+        "de",
+        "disruption",
+        "outage",
+        "recovery",
+        "support"
+      ],
+      "source_filename": "customer_support_tickets_10.md",
+      "title": "Anfrage zur Klärung der Auswirkungen eines Serviceausfalls",
+      "snippet": "Sehr geehrtes Kundendienstteam,\\n\\nich hoffe, diese Nachricht erreicht Sie wohlbehalten. Ich schreibe, um eine Klärung bezüglich des kürzlichen Ausfalls Ihres Dienstes zu bitten, der die Plattform betroffen hat. Nutzer, die auf Ihre Dienste angewiesen sind, benötigen klare Informationen, um die betrieblichen Abläufe planen zu können, und es ist wichtig, den Umfang sowie die Folgen des Ausfalls genau zu verstehen.\\n\\nKönnten Sie bitte detaillierte Angaben zum Zeitraum des Ausfalls, welche Dienste betroffen waren und ob dabei Daten kompromittiert oder verloren gegangen sind, bereitstellen? Zudem würde ich mich über aktuelle Informationen zu den Maßnahmen freuen, die ergriffen wurden, um zukünftige Vorfälle zu verhindern.\\n\\nVielen Dank für Ihre Unterstützung und die Klärung der Details. Vielen Dank, dass Sie uns bezüglich des kürzlichen Serviceausfalls kontaktiert haben. Der Ausfall begann um 9:00 Uhr morgens und wurde um 13:30 Uhr behoben, wodurch die Hauptdatenzugangs- und Messaging-Dienste betroffen waren. Wir bestätigen, dass im betreffenden Zeitraum keine Kundendaten kompromittiert oder verloren wurden. Unser technisches Team hat die Ursache, eine vorübergehende Systemüberlastung, bereits identifiziert und zusätzliche Schutzmaßnahmen sowie Überwachungsprozesse implementiert, um zukünftige Vorfälle zu verhindern. Für spezifische Informationen über das betroffene Konto bitten wir um weitere Details."
+    },
+    {
+      "doc_id": "customer_support_tickets::11",
+      "service": "product-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "product support",
+        "en",
+        "network",
+        "disruption",
+        "vpn",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_11.md",
+      "title": "VPN Access Issue",
+      "snippet": "Customer Support,\\n\\nWe are encountering a disruption in VPN-router connectivity that is impacting several devices, notably essential remote telemedicine systems and EMR integrations. Attempts to resolve the issue by restarting affected devices and resetting the router have been unsuccessful. We suspect the problem may be related to firmware discrepancies following recent network configuration updates. This disruption is significantly affecting our operations, and we urgently need assistance to identify and fix the root cause. Kindly advise on additional troubleshooting steps. Thank you for reporting this problem. Please provide the model of your VPN router, the current firmware version, and details of any recent network modifications. This information will assist us in diagnosing the issue and recommending suitable troubleshooting measures or firmware updates."
+    },
+    {
+      "doc_id": "customer_support_tickets::12",
+      "service": "product-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "product support",
+        "de",
+        "bug",
+        "performance",
+        "disruption",
+        "feature"
+      ],
+      "source_filename": "customer_support_tickets_12.md",
+      "title": "Issue with SaaS Platform Functionality",
+      "snippet": "Sehr geehrtes Support-Team,\\n\\nich möchte Sie auf einen Ausfall der Funktionen unserer SaaS-Plattform aufmerksam machen, den wir momentan erleben. In den letzten Stunden sind mehrere zentrale Features der Plattform langsamer geworden, was die Arbeitsabläufe erheblich beeinträchtigt und die Produktivität verringert.\\n\\nBesonders betroffen sind die Ladezeiten der Dashboards, es gibt Inkonsistenzen bei der Daten-Synchronisation sowie gelegentliche Fehler im Benutzer-Authentifizierungsprozess. Trotz Versuchen, die Anwendung neu zu starten und den Browser-Cache zu leeren, bestehen die Probleme weiterhin.\\n\\nDa die Plattform für unsere täglichen Geschäftsprozesse unverzichtbar ist, bitten wir um eine schnelle Bearbeitung dieses Anliegens. Könnten Sie uns bitte Unterstützung bieten? Vielen Dank für Ihre Kontaktaufnahme bezüglich der Probleme mit unserer SaaS-Plattform. Wir verstehen die Dringlichkeit, insbesondere bei den Funktionen der Dashboards, der Datensynchronisierung und der Benutzer-Authentifizierung, und entschuldigen uns für die entstandenen Unannehmlichkeiten. Unser technisches Team arbeitet derzeit an der Analyse der Situation, um die Ursache zu identifizieren und die normale Funktion so schnell wie möglich wiederherzustellen. Wir können momentan keinen genauen Zeitrahmen für die Lösung nennen, werden Sie jedoch umgehend informieren, sobald wir weitere Erkenntnisse haben. In der Zwischenzeit empfehlen wir, die Plattform vorübergehend nur bei dringendem Bedarf zu nutzen, um den Support zu gewährleisten."
+    },
+    {
+      "doc_id": "customer_support_tickets::13",
+      "service": "it-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "problem",
+        "it support",
+        "en",
+        "bug",
+        "crash",
+        "network",
+        "performance",
+        "disruption",
+        "outage",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_13.md",
+      "title": "Immediate Help Needed: Technical Problem with Cloud SaaS Service",
+      "snippet": "Dear Customer Support Team,\\n\\nI am submitting a report regarding a technical problem encountered with the Cloud SaaS platform, which is currently disrupting our business activities. I have observed that certain features are not functioning as expected, causing interruptions that hinder workflow efficiency.\\n\\nIn particular, I am facing sporadic connectivity issues when trying to access the platform. Sometimes, the system fails to load the dashboard, and the data displayed appears outdated or incomplete. Furthermore, the response times for executing commands have significantly increased, resulting in delays. Thanks for providing detailed information about the issue with the Cloud SaaS platform. We apologize for the inconvenience and understand the impact on your business. To assist us further, could you please confirm if the problem is affecting specific user accounts, and share any relevant error messages or screenshots? Also, let us know your current browser and operating system versions. Our technical team is ready to escalate this matter and work towards a swift resolution. Feel free to contact us by phone if needed."
+    },
+    {
+      "doc_id": "customer_support_tickets::14",
+      "service": "product-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "product support",
+        "en",
+        "product",
+        "service",
+        "feedback",
+        "sales"
+      ],
+      "source_filename": "customer_support_tickets_14.md",
+      "title": "Inquiry for Detailed Information on Agency Offerings",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am writing to request detailed information about the services provided by your agency. Specifically, I am interested in understanding the variety of services available, the pricing models, and any special packages or offers that might be applicable.\\n\\nAdditionally, I would appreciate it if you could send brochures, service contracts, and case studies highlighting your previous work and client success stories. This information will greatly help me in making an informed decision. Thank you for your interest in our agency's services. We offer a comprehensive selection of solutions including digital marketing, brand management, content creation, and campaign planning. Our pricing is flexible; standard packages can be customized to meet specific client requirements, and we often have special promotions. We are happy to send brochures, service agreements, and case studies that showcase our clients' successes. Please reply with your preferred email address to receive these materials. We look forward to assisting you through the onboarding process."
+    },
+    {
+      "doc_id": "customer_support_tickets::15",
+      "service": "product-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "product support",
+        "en",
+        "bug",
+        "issue",
+        "disruption",
+        "support"
+      ],
+      "source_filename": "customer_support_tickets_15.md",
+      "title": "Request for Issue Explanation",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am reaching out to request help with a problem I am experiencing. Unfortunately, I am not entirely sure how to clearly describe the issue, which makes it difficult to specify the exact nature of the problem.\\n\\nWhen I try to use the service, I observe unexpected behavior and cannot identify the precise cause. There are error messages and notifications, which make it challenging to provide a detailed description. I have attempted basic troubleshooting steps, such as restarting the application and checking for updates. Thank you for providing details about the issue. To assist you further, could you please describe the unexpected behavior you have observed while using the service? If possible, include the steps you took that led to the problem and attach relevant screenshots. Additionally, please inform us about your device type, operating system, and application version. This information will help us investigate and resolve the issue more efficiently."
+    },
+    {
+      "doc_id": "customer_support_tickets::16",
+      "service": "customer-service",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "customer service",
+        "en",
+        "inquiry",
+        "product",
+        "feature",
+        "customer support"
+      ],
+      "source_filename": "customer_support_tickets_16.md",
+      "title": "Inquiry for In-Depth Details on Financial Institution Offerings",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you in good health. I am writing to request detailed information about the spectrum of products provided by your financial institution. As a potential client, I am particularly eager to learn about the features, advantages, and terms linked to your investment and savings offerings.\\n\\nWould you be able to send comprehensive brochures or documentation that specify the details of your products? I am interested in information regarding account types, interest rates, fees, minimum deposit amounts, and any current promotional deals. Thank you for your interest in our financial products. We offer a diverse selection of investment and savings solutions tailored to various needs, including high-yield savings accounts, fixed-term deposits, mutual funds, and retirement plans. Each product features specific benefits, interest rates, fees, minimum deposit requirements, and caters to different risk levels suitable for various customer profiles. We will provide detailed brochures that cover all these aspects, along with information on our current promotional offers."
+    },
+    {
+      "doc_id": "customer_support_tickets::17",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "technical support",
+        "en",
+        "feature",
+        "account",
+        "marketing",
+        "performance",
+        "automation",
+        "organization",
+        "campaign"
+      ],
+      "source_filename": "customer_support_tickets_17.md",
+      "title": "Enhancing Multi-Unit Marketing Processes",
+      "snippet": "Dear Customer Support Team,\\n\\nI am reaching out to request comprehensive details on optimizing marketing workflows across multiple departments by utilizing advanced analytics, automation, and centralized account management. Our organization aims to improve campaign coordination and boost performance metrics across various marketing channels, believing that implementing such strategies will greatly enhance our overall marketing success.\\n\\nIn particular, I would like to understand the best practices for integrating data analytics tools that offer real-time insights across different teams. Thank you for your inquiry, <name>. To provide relevant assistance, could you please specify which analytics and automation tools your teams are currently using? This will enable us to suggest compatible solutions, effective practices, and relevant case studies tailored to your environment."
+    },
+    {
+      "doc_id": "customer_support_tickets::18",
+      "service": "customer-service",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "customer service",
+        "en",
+        "marketing",
+        "feedback",
+        "sales",
+        "lead"
+      ],
+      "source_filename": "customer_support_tickets_18.md",
+      "title": "Inquiry for Comprehensive Marketing Service Details",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am writing to request detailed information about your marketing offerings. Our company is currently considering new marketing approaches to strengthen our brand visibility and boost customer engagement, and we are keen to understand the array of services your team provides.\\n\\nSpecifically, I would like to learn about the various marketing packages available, including digital marketing solutions such as social media management, email marketing campaigns, and search engine optimization. Thank you for your interest in our marketing solutions. We offer a variety of digital and traditional marketing packages, including social media management, SEO, email marketing, content development, print advertising, and more. Our pricing is adaptable, allowing us to create customized plans that suit your specific business requirements. We can also provide case studies relevant to your industry upon request. Please share your industry, business objectives, and budget preferences so we can deliver tailored information."
+    },
+    {
+      "doc_id": "customer_support_tickets::19",
+      "service": "service-outages-and-maintenance",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "service outages and maintenance",
+        "en",
+        "disruption",
+        "maintenance",
+        "notification",
+        "it",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_19.md",
+      "title": "Query About Future Service Disruptions and Maintenance Timelines",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message finds you well. I am reaching out to request detailed details regarding the schedule and scope of upcoming service disruptions and maintenance activities that could affect access to critical systems, particularly big data repositories, analytical models, and automated investment platforms. Understanding the timing and duration of these events is crucial for us to plan accordingly and minimize potential operational interruptions.\\n\\nCould you please provide a thorough overview of the planned maintenance? Thank you for reaching out about the upcoming service disruptions and maintenance schedules. The scheduled outages and maintenance windows in the near future are expected to impact big data lakes, analytical models, and automated investment platforms. Maintenance plans will include advance notifications with detailed information about the timing, affected components, expected downtime, and recommended preparations. For urgent issues during maintenance periods, you may contact our support hotline at <tel_num> to reach the designated support team."
+    },
+    {
+      "doc_id": "customer_support_tickets::20",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "change",
+        "technical support",
+        "en",
+        "product",
+        "feature",
+        "feedback",
+        "it"
+      ],
+      "source_filename": "customer_support_tickets_20.md",
+      "title": "Proposal for Upgrades to Big Data Analytics Systems",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am writing to request improvements to our existing big data analytics infrastructure. Our goal is to enhance support for advanced machine learning models developed in Python, enable automated rebalancing of investment portfolios, and customize ESG (Environmental, Social, and Governance) investment strategies tailored specifically for institutional clients.\\n\\nAt present, our system manages large data sets and aims to incorporate complex machine learning algorithms to deliver real-time analytics efficiently. Thank you for sharing your upgrade proposals. To provide an accurate timeline for assessment, could you please specify the current setup of your platform and preferred technology stacks? This information will help us evaluate feasibility, required resources, and outline the subsequent steps."
+    },
+    {
+      "doc_id": "customer_support_tickets::21",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "technical support",
+        "en",
+        "product",
+        "documentation",
+        "security",
+        "it"
+      ],
+      "source_filename": "customer_support_tickets_21.md",
+      "title": "Guidelines for Incorporating Seagate Expansion Drives",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you in good health. I am seeking comprehensive instructions on how to effectively integrate Seagate Expansion Desktop 6TB drives into healthcare storage solutions. My main priority is to guarantee that data management and storage procedures fully adhere to HIPAA and GDPR standards.\\n\\nCould you please share your suggestions for the best configuration of these drives within a healthcare setting? In particular, I am keen to learn about secure setup options that can assist in maintaining compliance. Thank you for your query. To provide precise advice, please specify your operating system and storage environment. We recommend implementing hardware encryption, enforcing strict access controls, performing regular firmware updates, and adopting secure backup practices to ensure compliance with HIPAA and GDPR regulations."
+    },
+    {
+      "doc_id": "customer_support_tickets::22",
+      "service": "human-resources",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "human resources",
+        "en",
+        "account",
+        "security",
+        "compatibility",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_22.md",
+      "title": "Unable to Access Office Applications",
+      "snippet": "Dear Customer Support,\\n\\nWe are encountering a problem where employees are unable to open Excel, PowerPoint, and other Office programs on MacBook Air devices, despite having valid licenses. The issue started after a recent macOS update, which we suspect may have caused compatibility problems, possibly due to expired authentication tokens.\\n\\nTo attempt a fix, we rebooted the laptops, tried repairing Office, and re-entered Microsoft credentials. Regrettably, none of these actions resolved the issue, and the applications still cannot be accessed.\\n\\nWe would Thank you for providing a detailed explanation of the issue. To assist you further, please specify any error messages encountered when launching Office applications. Also, verify whether your macOS version is up to date and confirm that the latest versions of Microsoft Office are installed. Since immediate access is critical, we can schedule a call at a convenient time to guide you through advanced troubleshooting steps. Please let us know your availability and any additional information."
+    },
+    {
+      "doc_id": "customer_support_tickets::23",
+      "service": "billing-and-payments",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "request",
+        "billing and payments",
+        "en",
+        "billing",
+        "payment",
+        "subscription",
+        "product",
+        "feedback"
+      ],
+      "source_filename": "customer_support_tickets_23.md",
+      "title": "Query",
+      "snippet": "Dear Customer Support Team,\\n\\nI hope this message reaches you well. I am reaching out to request detailed billing details and payment options for a QuickBooks Online subscription. Specifically, I am interested in understanding the available plans, their pricing structures, and any tailored options for institutional clients within the financial services industry. It would be helpful to receive documentation on invoicing procedures, payment timelines, discounts, and any special terms applicable to organizations like ours.\\n\\nAdditionally, please Thank you for reaching out to us regarding your QuickBooks Online subscription inquiry. We are pleased to assist you with detailed billing information and payment options tailored for institutional clients in the financial services sector. QuickBooks Online offers several subscription tiers with varying features; institutional pricing discounts may also be available based on your organization's size and specific needs. We will send comprehensive documentation covering current plans, pricing details, invoicing processes, payment schedules, and any applicable discounts or special terms."
+    },
+    {
+      "doc_id": "customer_support_tickets::24",
+      "service": "it-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "it support",
+        "en",
+        "network",
+        "disruption",
+        "hardware",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_24.md",
+      "title": "Multiple Device Connection Problems",
+      "snippet": "Dear Customer Support,\\n\\nWe are experiencing extensive connectivity problems impacting numerous devices throughout the office. The issues have been observed with headsets, printers, and workstations all at once, significantly disrupting daily activities. Our initial investigation indicates that the cause may be a network outage or a misconfiguration within the system infrastructure.\\n\\nOur team has already tried several troubleshooting methods, including rebooting affected devices and swapping hardware components, but unfortunately, these efforts did not resolve the disruptions. Thank you for providing details about the connectivity problems affecting various devices. To assist you further, could you please specify whether the network outage affects both wired and wireless connections, and if any error messages are displayed on the devices? Also, kindly inform us of any recent modifications to your network configuration or infrastructure. If possible, please share relevant network logs or screenshots. We will prioritize your case and, if necessary, arrange a call at your convenience to accelerate the troubleshooting process."
+    },
+    {
+      "doc_id": "customer_support_tickets::25",
+      "service": "technical-support",
+      "doc_kind": "support_ticket",
+      "section_path": [],
+      "tags": [
+        "customer_support_tickets",
+        "external-ticket",
+        "incident",
+        "technical support",
+        "en",
+        "network",
+        "performance",
+        "disruption",
+        "it",
+        "tech support"
+      ],
+      "source_filename": "customer_support_tickets_25.md",
+      "title": "Network Connection Problems",
+      "snippet": "Dear Customer Support Team,\\n\\nI am reaching out to report persistent issues with network connectivity that are significantly disrupting my workflow. I've observed sporadic interruptions across several devices, which I believe may be caused by a malfunctioning repeater or potential interference from other devices within the network configuration.\\n\\nIn an attempt to resolve the problem, I have already taken several measures, such as restarting the affected equipment and repositioning the repeater to different locations within the premises. Despite these efforts, the connectivity issues persist. Thank you for reaching out to us, <name>. We understand the importance of reliable and stable network connectivity. Currently, widespread problems with repeaters and interference in the environment are being reported. To assist you further, could you please specify which devices are impacted, provide details about your network setup, and mention any recent modifications? If possible, kindly share relevant error logs. We are prepared to guide you through advanced troubleshooting procedures."
+    }
+  ]
+}

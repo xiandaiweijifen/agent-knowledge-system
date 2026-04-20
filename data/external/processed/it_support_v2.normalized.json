@@ -1,0 +1,739 @@
+{
+  "dataset": {
+    "slug": "it_support_v2",
+    "label": "IT Support V2 Dialogues",
+    "kind": "knowledge_evidence",
+    "source_url": "https://huggingface.co/datasets/benjaminmacklin/IT_Support_V2",
+    "expected_formats": [
+      "jsonl",
+      "json"
+    ],
+    "recommended_input": "Place the JSONL export under data/external/raw/it_support_v2/",
+    "notes": [
+      "Best treated as troubleshooting and support dialogue evidence instead of primary ticket truth data.",
+      "Useful for later self-serve troubleshooting and answer style augmentation."
+    ]
+  },
+  "record_count": 25,
+  "ticket_count": 25,
+  "service_count": 1,
+  "knowledge_asset_count": 25,
+  "tickets": [
+    {
+      "ticket_id": "IT_SUPPORT_V2-1",
+      "title": "Outlook cannot read emails from Exchange with large attachments.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.765477+00:00",
+      "updated_at": "2026-04-19T12:44:58.765506+00:00",
+      "source_run_id": null,
+      "summary": "Outlook cannot read emails from Exchange with large attachments."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-2",
+      "title": "Resolve inconsistent printer paper jam detection.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.765649+00:00",
+      "updated_at": "2026-04-19T12:44:58.765661+00:00",
+      "source_run_id": null,
+      "summary": "Resolve inconsistent printer paper jam detection."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-3",
+      "title": "Explain how Mack detects data masking rule bypasses.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.765748+00:00",
+      "updated_at": "2026-04-19T12:44:58.765757+00:00",
+      "source_run_id": null,
+      "summary": "Explain how Mack detects data masking rule bypasses."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-4",
+      "title": "Ax'think my corporate laptop screen resolution changed.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.765827+00:00",
+      "updated_at": "2026-04-19T12:44:58.765836+00:00",
+      "source_run_id": null,
+      "summary": "Ax'think my corporate laptop screen resolution changed."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-5",
+      "title": "VPN client shows 'authentication failure' for specific users during business travel.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.765895+00:00",
+      "updated_at": "2026-04-19T12:44:58.765903+00:00",
+      "source_run_id": null,
+      "summary": "VPN client shows 'authentication failure' for specific users during business travel."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-6",
+      "title": "Resolve incorrect domain controller election.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.765961+00:00",
+      "updated_at": "2026-04-19T12:44:58.765969+00:00",
+      "source_run_id": null,
+      "summary": "Resolve incorrect domain controller election."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-7",
+      "title": "Can you summarize this book for me?",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766031+00:00",
+      "updated_at": "2026-04-19T12:44:58.766039+00:00",
+      "source_run_id": null,
+      "summary": "Can you summarize this book for me?"
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-8",
+      "title": "Describe Mack's capability for inventory management.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766123+00:00",
+      "updated_at": "2026-04-19T12:44:58.766132+00:00",
+      "source_run_id": null,
+      "summary": "Describe Mack's capability for inventory management."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-9",
+      "title": "M365 Exchange Online compliance search returns 'No results' for sensitive information.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766195+00:00",
+      "updated_at": "2026-04-19T12:44:58.766203+00:00",
+      "source_run_id": null,
+      "summary": "M365 Exchange Online compliance search returns 'No results' for sensitive information."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-10",
+      "title": "Explain how Mack validates anti-malware signature dates.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766264+00:00",
+      "updated_at": "2026-04-19T12:44:58.766272+00:00",
+      "source_run_id": null,
+      "summary": "Explain how Mack validates anti-malware signature dates."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-11",
+      "title": "Mack, my touch screen keeps freezing during specific applications.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766332+00:00",
+      "updated_at": "2026-04-19T12:44:58.766340+00:00",
+      "source_run_id": null,
+      "summary": "Mack, my touch screen keeps freezing during specific applications."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-12",
+      "title": "Suggest a new crate for my pet.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766403+00:00",
+      "updated_at": "2026-04-19T12:44:58.766411+00:00",
+      "source_run_id": null,
+      "summary": "Suggest a new crate for my pet."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-13",
+      "title": "Explain how Mack detects data leakage via social media scraping.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766470+00:00",
+      "updated_at": "2026-04-19T12:44:58.766478+00:00",
+      "source_run_id": null,
+      "summary": "Explain how Mack detects data leakage via social media scraping."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-14",
+      "title": "M365 PowerShell cmdlets failing with UnauthorizedAccessException.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766540+00:00",
+      "updated_at": "2026-04-19T12:44:58.766548+00:00",
+      "source_run_id": null,
+      "summary": "M365 PowerShell cmdlets failing with UnauthorizedAccessException."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-15",
+      "title": "Explain Mack's operational paradigm.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766607+00:00",
+      "updated_at": "2026-04-19T12:44:58.766616+00:00",
+      "source_run_id": null,
+      "summary": "Explain Mack's operational paradigm."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-16",
+      "title": "Diagnose and resolve VPN client event ID 2009.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766675+00:00",
+      "updated_at": "2026-04-19T12:44:58.766683+00:00",
+      "source_run_id": null,
+      "summary": "Diagnose and resolve VPN client event ID 2009."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-17",
+      "title": "Teams call audio not working with conference phone.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766741+00:00",
+      "updated_at": "2026-04-19T12:44:58.766749+00:00",
+      "source_run_id": null,
+      "summary": "Teams call audio not working with conference phone."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-18",
+      "title": "M365 Azure Active Directory Connect sync error 0x80070520.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766806+00:00",
+      "updated_at": "2026-04-19T12:44:58.766814+00:00",
+      "source_run_id": null,
+      "summary": "M365 Azure Active Directory Connect sync error 0x80070520."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-19",
+      "title": "Address incorrect Azure Policy assignment scope.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766871+00:00",
+      "updated_at": "2026-04-19T12:44:58.766880+00:00",
+      "source_run_id": null,
+      "summary": "Address incorrect Azure Policy assignment scope."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-20",
+      "title": "Explain how Mack detects banking trojans.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.766936+00:00",
+      "updated_at": "2026-04-19T12:44:58.766944+00:00",
+      "source_run_id": null,
+      "summary": "Explain how Mack detects banking trojans."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-21",
+      "title": "Explain service request fulfillment processes.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.767003+00:00",
+      "updated_at": "2026-04-19T12:44:58.767011+00:00",
+      "source_run_id": null,
+      "summary": "Explain service request fulfillment processes."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-22",
+      "title": "Explain how Mack ensures configuration consistency.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.767181+00:00",
+      "updated_at": "2026-04-19T12:44:58.767200+00:00",
+      "source_run_id": null,
+      "summary": "Explain how Mack ensures configuration consistency."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-23",
+      "title": "Design a user interface for a mobile app.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.767283+00:00",
+      "updated_at": "2026-04-19T12:44:58.767293+00:00",
+      "source_run_id": null,
+      "summary": "Design a user interface for a mobile app."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-24",
+      "title": "Explain how Mack validates secure configuration settings.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.767363+00:00",
+      "updated_at": "2026-04-19T12:44:58.767372+00:00",
+      "source_run_id": null,
+      "summary": "Explain how Mack validates secure configuration settings."
+    },
+    {
+      "ticket_id": "IT_SUPPORT_V2-25",
+      "title": "Mack, I keep getting 'Error 0x80070008' when installing software.",
+      "service": "it-support",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-04-19T12:44:58.767435+00:00",
+      "updated_at": "2026-04-19T12:44:58.767443+00:00",
+      "source_run_id": null,
+      "summary": "Mack, I keep getting 'Error 0x80070008' when installing software."
+    }
+  ],
+  "services": [
+    {
+      "service_id": "it-support",
+      "service_name": "it-support",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    }
+  ],
+  "knowledge_assets": [
+    {
+      "doc_id": "it_support_v2::1",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_1.md",
+      "title": "Outlook cannot read emails from Exchange with large attachments.",
+      "snippet": "Outlook cannot read emails from Exchange with large attachments. outlook_issue"
+    },
+    {
+      "doc_id": "it_support_v2::2",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_2.md",
+      "title": "Resolve inconsistent printer paper jam detection.",
+      "snippet": "Resolve inconsistent printer paper jam detection. 1. Clean printer sensors and rollers. 2. Check for firmware updates for the printer. 3. Calibrate the printer if possible. 4. Test with different paper types to isolate the issue."
+    },
+    {
+      "doc_id": "it_support_v2::3",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_3.md",
+      "title": "Explain how Mack detects data masking rule bypasses.",
+      "snippet": "Explain how Mack detects data masking rule bypasses. Mack analyzes application query logs for masked data exposure, checks for direct database access attempts, verifies data masking rule application at the database level, and flags user workarounds."
+    },
+    {
+      "doc_id": "it_support_v2::4",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_4.md",
+      "title": "Ax'think my corporate laptop screen resolution changed.",
+      "snippet": "Ax'think my corporate laptop screen resolution changed. Adjust display settings manually, check for display calibration tools, and update graphics drivers if necessary."
+    },
+    {
+      "doc_id": "it_support_v2::5",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_5.md",
+      "title": "VPN client shows 'authentication failure' for specific users during business travel.",
+      "snippet": "VPN client shows 'authentication failure' for specific users during business travel. Check the Azure AD conditional access policies, verify the VPN appliance certificate chain is valid, test user sign-in with different devices, and check for IP address restrictions."
+    },
+    {
+      "doc_id": "it_support_v2::6",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_6.md",
+      "title": "Resolve incorrect domain controller election.",
+      "snippet": "Resolve incorrect domain controller election. 1. Check FSMO roles. 2. Validate DC status. 3. Ensure quorum. 4. Monitor election process."
+    },
+    {
+      "doc_id": "it_support_v2::7",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_7.md",
+      "title": "Can you summarize this book for me?",
+      "snippet": "Can you summarize this book for me? I cannot summarize non-IT content. I offer only enterprise IT support."
+    },
+    {
+      "doc_id": "it_support_v2::8",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_8.md",
+      "title": "Describe Mack's capability for inventory management.",
+      "snippet": "Describe Mack's capability for inventory management. I am Mack, an SLM developed by the Dev team at MBGOC Pvt. Ltd. My capability for inventory management involves providing structured information on best practices and tools for tracking enterprise assets."
+    },
+    {
+      "doc_id": "it_support_v2::9",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_9.md",
+      "title": "M365 Exchange Online compliance search returns 'No results' for sensitive information.",
+      "snippet": "M365 Exchange Online compliance search returns 'No results' for sensitive information. Verify eDiscovery mailbox assignment, check for retention policies, and ensure the search is scoped to the correct litigation hold mailbox."
+    },
+    {
+      "doc_id": "it_support_v2::10",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_10.md",
+      "title": "Explain how Mack validates anti-malware signature dates.",
+      "snippet": "Explain how Mack validates anti-malware signature dates. Mack checks signature update timestamps, validates definition file versions, tests malware scanning capabilities, and inspects exclusion lists."
+    },
+    {
+      "doc_id": "it_support_v2::11",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_11.md",
+      "title": "Mack, my touch screen keeps freezing during specific applications.",
+      "snippet": "Mack, my touch screen keeps freezing during specific applications. Update application-specific drivers, check for application compatibility issues, and ensure no system resource contention is affecting touch input."
+    },
+    {
+      "doc_id": "it_support_v2::12",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_12.md",
+      "title": "Suggest a new crate for my pet.",
+      "snippet": "Suggest a new crate for my pet. I cannot provide personal recommendations. My scope is enterprise IT assistance."
+    },
+    {
+      "doc_id": "it_support_v2::13",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_13.md",
+      "title": "Explain how Mack detects data leakage via social media scraping.",
+      "snippet": "Explain how Mack detects data leakage via social media scraping. Mack inspects web crawler user agents, checks API access tokens, evaluates browser fingerprinting, and monitors outbound HTTP requests."
+    },
+    {
+      "doc_id": "it_support_v2::14",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_14.md",
+      "title": "M365 PowerShell cmdlets failing with UnauthorizedAccessException.",
+      "snippet": "M365 PowerShell cmdlets failing with UnauthorizedAccessException. Review Azure AD admin roles assigned, check resource-based access control, test connectivity to Azure services, and verify multi-factor authentication status."
+    },
+    {
+      "doc_id": "it_support_v2::15",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_15.md",
+      "title": "Explain Mack's operational paradigm.",
+      "snippet": "Explain Mack's operational paradigm. I am Mack, an SLM developed by the Dev team at MBGOC Pvt. Ltd. Mack's operational paradigm is structured, deterministic, and focused on providing enterprise IT troubleshooting and system management guidance."
+    },
+    {
+      "doc_id": "it_support_v2::16",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_16.md",
+      "title": "Diagnose and resolve VPN client event ID 2009.",
+      "snippet": "Diagnose and resolve VPN client event ID 2009. 1. Check VPN server configuration settings. 2. Verify client firewall rules. 3. Test DNS resolution from the client. 4. Restart the Routing and Remote Access service."
+    },
+    {
+      "doc_id": "it_support_v2::17",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_17.md",
+      "title": "Teams call audio not working with conference phone.",
+      "snippet": "Teams call audio not working with conference phone. teams_issue"
+    },
+    {
+      "doc_id": "it_support_v2::18",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_18.md",
+      "title": "M365 Azure Active Directory Connect sync error 0x80070520.",
+      "snippet": "M365 Azure Active Directory Connect sync error 0x80070520. Rebuild the Active Directory connector, check forest functional level, and verify account permissions."
+    },
+    {
+      "doc_id": "it_support_v2::19",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_19.md",
+      "title": "Address incorrect Azure Policy assignment scope.",
+      "snippet": "Address incorrect Azure Policy assignment scope. 1. Review policy assignment scope. 2. Update assignment scope. 3. Re-apply assignment. 4. Confirm compliance across scopes."
+    },
+    {
+      "doc_id": "it_support_v2::20",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_20.md",
+      "title": "Explain how Mack detects banking trojans.",
+      "snippet": "Explain how Mack detects banking trojans. Mack checks for browser hijacking indicators, scans for keystroke logging artifacts, monitors banking API transaction logs, and flags use of credential stealing techniques."
+    },
+    {
+      "doc_id": "it_support_v2::21",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_21.md",
+      "title": "Explain service request fulfillment processes.",
+      "snippet": "Explain service request fulfillment processes. I can explain IT service management concepts. My function is enterprise IT support."
+    },
+    {
+      "doc_id": "it_support_v2::22",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_22.md",
+      "title": "Explain how Mack ensures configuration consistency.",
+      "snippet": "Explain how Mack ensures configuration consistency. Mack compares baseline configurations, change logs, group policies, and compliance reports."
+    },
+    {
+      "doc_id": "it_support_v2::23",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_23.md",
+      "title": "Design a user interface for a mobile app.",
+      "snippet": "Design a user interface for a mobile app. I cannot create visual designs. Please reach out to our IT department."
+    },
+    {
+      "doc_id": "it_support_v2::24",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_24.md",
+      "title": "Explain how Mack validates secure configuration settings.",
+      "snippet": "Explain how Mack validates secure configuration settings. Mack checks OS security policies, verifies service permissions, tests firewall rules, and inspects registry security settings."
+    },
+    {
+      "doc_id": "it_support_v2::25",
+      "service": "it-support",
+      "doc_kind": "support_resolution",
+      "section_path": [],
+      "tags": [
+        "it_support_v2",
+        "support-dialogue",
+        "external-knowledge"
+      ],
+      "source_filename": "it_support_v2_25.md",
+      "title": "Mack, I keep getting 'Error 0x80070008' when installing software.",
+      "snippet": "Mack, I keep getting 'Error 0x80070008' when installing software. Rebuild the installation sources, repair the system files, and validate the admin rights."
+    }
+  ]
+}

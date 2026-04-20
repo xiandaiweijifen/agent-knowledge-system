@@ -1,0 +1,118 @@
+{
+  "filename": "customer_support_tickets_3.md",
+  "suffix": ".md",
+  "document_kind": "reference",
+  "source_path": "D:\\project\\agent-knowledge-system\\data\\raw\\customer_support_tickets_3.md",
+  "source_chunk_path": "D:\\project\\agent-knowledge-system\\data\\chunks\\customer_support_tickets_3.chunks.json",
+  "created_at": "2026-04-19T14:05:59.547429+00:00",
+  "pipeline_version": "indexing-v1",
+  "embedding_provider": "mock_fallback",
+  "embedding_model": "mock-embedding-v1",
+  "vector_dim": 8,
+  "chunk_count": 4,
+  "embeddings": [
+    {
+      "embedding_id": "customer_support_tickets_3.md::chunk_0::embedding",
+      "chunk_id": "customer_support_tickets_3.md::chunk_0",
+      "chunk_index": 0,
+      "source_filename": "customer_support_tickets_3.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 500,
+      "section_title": "Query About Smart Home System Integration Features",
+      "section_path": [
+        "Query About Smart Home System Integration Features"
+      ],
+      "heading_level": 1,
+      "content": "# Query About Smart Home System Integration Features\n\n- Dataset: customer_support_tickets\n- Doc ID: customer_support_tickets::3\n- Service: returns-and-exchanges\n- Document Kind: support_ticket\n- Source Filename: customer_support_tickets_3.md\n- Tags: customer_support_tickets, external-ticket, request, returns and exchanges, en, product, feature, tech support\n\n## Imported Snippet\n\nDear Customer Support Team,\\n\\nI hope this message reaches you well. I am reaching out to request detailed information",
+      "vector": [
+        0.576471,
+        0.345098,
+        0.623529,
+        0.827451,
+        0.505882,
+        0.454902,
+        0.278431,
+        0.847059
+      ]
+    },
+    {
+      "embedding_id": "customer_support_tickets_3.md::chunk_1::embedding",
+      "chunk_id": "customer_support_tickets_3.md::chunk_1",
+      "chunk_index": 1,
+      "source_filename": "customer_support_tickets_3.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 500,
+      "section_title": "Imported Snippet",
+      "section_path": [
+        "Query About Smart Home System Integration Features",
+        "Imported Snippet"
+      ],
+      "heading_level": 2,
+      "content": "ort Team,\\n\\nI hope this message reaches you well. I am reaching out to request detailed information about the capabilities of your smart home integration products listed on your website. As a potential customer aiming to develop a seamlessly interconnected home environment, it is essential to understand how your products interact with various smart home platforms.\\n\\nCould you kindly provide detailed compatibility information with popular smart home ecosystems such as Amazon Alexa, Google Assis",
+      "vector": [
+        0.890196,
+        0.164706,
+        0.352941,
+        0.07451,
+        0.541176,
+        0.180392,
+        0.72549,
+        0.239216
+      ]
+    },
+    {
+      "embedding_id": "customer_support_tickets_3.md::chunk_2::embedding",
+      "chunk_id": "customer_support_tickets_3.md::chunk_2",
+      "chunk_index": 2,
+      "source_filename": "customer_support_tickets_3.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 500,
+      "section_title": "Imported Snippet",
+      "section_path": [
+        "Query About Smart Home System Integration Features",
+        "Imported Snippet"
+      ],
+      "heading_level": 2,
+      "content": "iled compatibility information with popular smart home ecosystems such as Amazon Alexa, Google Assistant, and Apple? Thank you for your inquiry. Our products support integration with Amazon Alexa, Google Assistant, and Apple HomeKit. Compatibility details can differ depending on the specific item; please let us know which models you are interested in. The setup process is generally user-friendly but may require professional installation. We regularly update our software to provide enhanced featu",
+      "vector": [
+        0.952941,
+        0.231373,
+        0.262745,
+        0.87451,
+        0.313725,
+        0.690196,
+        0.988235,
+        0.831373
+      ]
+    },
+    {
+      "embedding_id": "customer_support_tickets_3.md::chunk_3::embedding",
+      "chunk_id": "customer_support_tickets_3.md::chunk_3",
+      "chunk_index": 3,
+      "source_filename": "customer_support_tickets_3.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 221,
+      "section_title": "Imported Snippet",
+      "section_path": [
+        "Query About Smart Home System Integration Features",
+        "Imported Snippet"
+      ],
+      "heading_level": 2,
+      "content": "ut may require professional installation. We regularly update our software to provide enhanced features. For comprehensive information on compatibility with upcoming updates, please specify the models you are considering.",
+      "vector": [
+        0.396078,
+        0.309804,
+        0.282353,
+        0.478431,
+        0.584314,
+        0.356863,
+        0.847059,
+        0.223529
+      ]
+    }
+  ]
+}

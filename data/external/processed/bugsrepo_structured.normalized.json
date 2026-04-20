@@ -1,0 +1,1068 @@
+{
+  "dataset": {
+    "slug": "bugsrepo_structured",
+    "label": "BugsRepo Structured Bug Reports",
+    "kind": "ticket_primary",
+    "source_url": "https://zenodo.org/records/15003722",
+    "expected_formats": [
+      "json",
+      "jsonl",
+      "csv"
+    ],
+    "recommended_input": "Place the structured bug report export under data/external/raw/bugsrepo_structured/",
+    "notes": [
+      "Best fit for real incident and ticket metadata.",
+      "Good primary source for severity, status, summary, comments, and assignee-like fields."
+    ]
+  },
+  "record_count": 25,
+  "ticket_count": 25,
+  "service_count": 19,
+  "knowledge_asset_count": 25,
+  "tickets": [
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801506",
+      "title": "Intermittent /fs/FileSystemSyncAccessHandle-read-write.https.tentative.worker.html | single tracking bug",
+      "service": "core-dom-file",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T22:13:15Z",
+      "updated_at": "2024-02-14T12:00:48Z",
+      "source_run_id": null,
+      "summary": "Intermittent /fs/FileSystemSyncAccessHandle-read-write.https.tentative.worker.html | single tracking bug Product: Core. Component: DOM: File. Resolution: INCOMPLETE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801505",
+      "title": "Intermittent /css/css-contain/contain-crash.html | single tracking bug",
+      "service": "core-layout",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T22:10:46Z",
+      "updated_at": "2024-04-10T12:04:09Z",
+      "source_run_id": null,
+      "summary": "Intermittent /css/css-contain/contain-crash.html | single tracking bug Product: Core. Component: Layout. Resolution: INCOMPLETE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801504",
+      "title": "Documents for TrustCor CA",
+      "service": "ca-program-ca-documents",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T21:47:03Z",
+      "updated_at": "2022-11-19T21:59:47Z",
+      "source_run_id": null,
+      "summary": "Documents for TrustCor CA Product: CA Program. Component: CA Documents. Resolution: WORKSFORME."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801503",
+      "title": "Something is wrong with WM_NAME refreshing",
+      "service": "core-widget-gtk",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T21:28:33Z",
+      "updated_at": "2022-11-20T09:30:44Z",
+      "source_run_id": null,
+      "summary": "Something is wrong with WM_NAME refreshing Product: Core. Component: Widget: Gtk. Resolution: DUPLICATE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801502",
+      "title": "When the overflow panel overflows, the scrollbar overlaps a portion of the menuitems",
+      "service": "firefox-theme",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "wdurand@mozilla.com",
+      "created_at": "2022-11-19T21:20:37Z",
+      "updated_at": "2022-11-23T07:02:48Z",
+      "source_run_id": null,
+      "summary": "When the overflow panel overflows, the scrollbar overlaps a portion of the menuitems Product: Firefox. Component: Theme. Resolution: FIXED."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801501",
+      "title": "Mixed content bypass using window.open'd about:blank from http context and https iframe",
+      "service": "core-dom-security",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "jewilde@mozilla.com",
+      "created_at": "2022-11-19T21:02:27Z",
+      "updated_at": "2024-05-30T18:02:37Z",
+      "source_run_id": null,
+      "summary": "Mixed content bypass using window.open'd about:blank from http context and https iframe Product: Core. Component: DOM: Security. Resolution: FIXED."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801500",
+      "title": "Partially back out bug 1795890",
+      "service": "firefox-theme",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "emilio@crisal.io",
+      "created_at": "2022-11-19T20:58:00Z",
+      "updated_at": "2022-11-21T15:41:55Z",
+      "source_run_id": null,
+      "summary": "Partially back out bug 1795890 Product: Firefox. Component: Theme. Resolution: FIXED."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801499",
+      "title": "drive.google.com - it's not possible to drag images across tabs to Google Drive",
+      "service": "core-dom-copy-paste-and-drag-drop",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T20:49:07Z",
+      "updated_at": "2022-11-25T09:45:13Z",
+      "source_run_id": null,
+      "summary": "drive.google.com - it's not possible to drag images across tabs to Google Drive Product: Core. Component: DOM: Copy & Paste and Drag & Drop. Resolution: DUPLICATE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801498",
+      "title": "[wpt-sync] Sync PR 37041 - User activation: test activation across origins",
+      "service": "core-dom-core-html",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "wptsync@mozilla.bugs",
+      "created_at": "2022-11-19T20:48:45Z",
+      "updated_at": "2022-12-11T21:29:11Z",
+      "source_run_id": null,
+      "summary": "[wpt-sync] Sync PR 37041 - User activation: test activation across origins Product: Core. Component: DOM: Core & HTML. Resolution: FIXED."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801497",
+      "title": "Create symlinks with IOUtils",
+      "service": "core-xpcom",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "brennie@mozilla.com",
+      "created_at": "2022-11-19T20:19:28Z",
+      "updated_at": "2022-11-28T16:53:20Z",
+      "source_run_id": null,
+      "summary": "Create symlinks with IOUtils Product: Core. Component: XPCOM. Resolution: WONTFIX."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801496",
+      "title": "Create symlinks with nsIFile",
+      "service": "core-xpcom",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "brennie@mozilla.com",
+      "created_at": "2022-11-19T20:17:21Z",
+      "updated_at": "2022-11-28T16:49:19Z",
+      "source_run_id": null,
+      "summary": "Create symlinks with nsIFile Product: Core. Component: XPCOM. Resolution: WONTFIX."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801495",
+      "title": "Immutable noLock VFS",
+      "service": "core-sqlite-and-embedded-database-bindings",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "mak@mozilla.com",
+      "created_at": "2022-11-19T19:42:23Z",
+      "updated_at": "2024-08-20T19:28:43Z",
+      "source_run_id": null,
+      "summary": "Immutable noLock VFS Product: Core. Component: SQLite and Embedded Database Bindings. Resolution: FIXED."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801494",
+      "title": "Intermittent /service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html | single tracking bug",
+      "service": "core-dom-service-workers",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T18:31:03Z",
+      "updated_at": "2024-04-03T12:01:43Z",
+      "source_run_id": null,
+      "summary": "Intermittent /service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html | single tracking bug Product: Core. Component: DOM: Service Workers. Resolution: INCOMPLETE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801493",
+      "title": "Extension icons at top left not clickable",
+      "service": "webextensions-untriaged",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "open",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T18:26:14Z",
+      "updated_at": "2022-11-23T09:26:16Z",
+      "source_run_id": null,
+      "summary": "Extension icons at top left not clickable Product: WebExtensions. Component: Untriaged."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801492",
+      "title": "file download in downloads panel has text 'Completed - <number>.<number>MBOpening in <number>s...', only one should be used",
+      "service": "firefox-downloads-panel",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "emilio@crisal.io",
+      "created_at": "2022-11-19T18:24:51Z",
+      "updated_at": "2022-12-14T08:16:06Z",
+      "source_run_id": null,
+      "summary": "file download in downloads panel has text 'Completed - <number>.<number>MBOpening in <number>s...', only one should be used Product: Firefox. Component: Downloads Panel. Resolution: FIXED."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801491",
+      "title": "Лаги",
+      "service": "invalid-bugs-general",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T17:46:05Z",
+      "updated_at": "2022-11-19T18:33:59Z",
+      "source_run_id": null,
+      "summary": "Лаги Product: Invalid Bugs. Component: General. Resolution: INVALID."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801490",
+      "title": "Eretret",
+      "service": "invalid-bugs-general",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T17:36:48Z",
+      "updated_at": "2022-11-19T18:31:06Z",
+      "source_run_id": null,
+      "summary": "Eretret Product: Invalid Bugs. Component: General. Resolution: INVALID."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801489",
+      "title": "Лаги",
+      "service": "invalid-bugs-general",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T17:34:21Z",
+      "updated_at": "2022-11-19T18:34:04Z",
+      "source_run_id": null,
+      "summary": "Лаги Product: Invalid Bugs. Component: General. Resolution: INVALID."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801488",
+      "title": "No thumbnails for AVIF entries in GTK file chooser dialog on linux systems that support them",
+      "service": "core-widget-gtk",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "stransky@redhat.com",
+      "created_at": "2022-11-19T17:03:32Z",
+      "updated_at": "2022-11-22T09:51:02Z",
+      "source_run_id": null,
+      "summary": "No thumbnails for AVIF entries in GTK file chooser dialog on linux systems that support them Product: Core. Component: Widget: Gtk. Resolution: FIXED."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801487",
+      "title": "Crash in [@ <unknown in atidxx64.dll> | CContext::TID3D11DeviceContext_DrawIndexedInstanced_<T>]",
+      "service": "core-graphics-webrender",
+      "environment": "unspecified",
+      "severity": "medium",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T16:44:42Z",
+      "updated_at": "2024-04-01T21:40:50Z",
+      "source_run_id": null,
+      "summary": "Crash in [@ <unknown in atidxx64.dll> | CContext::TID3D11DeviceContext_DrawIndexedInstanced_<T>] Product: Core. Component: Graphics: WebRender. Resolution: INACTIVE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801486",
+      "title": "Profile manager - Add toolbar icon, improve accessibility and make Firefox profile management & settings more user friendly",
+      "service": "toolkit-startup-and-profile-system",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T14:49:59Z",
+      "updated_at": "2022-11-21T10:02:00Z",
+      "source_run_id": null,
+      "summary": "Profile manager - Add toolbar icon, improve accessibility and make Firefox profile management & settings more user friendly Product: Toolkit. Component: Startup and Profile System. Resolution: DUPLICATE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801485",
+      "title": "Intermittent /worklets/audio-worklet-service-worker-interception.https.html | single tracking bug",
+      "service": "core-dom-core-html",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T14:48:35Z",
+      "updated_at": "2024-07-05T12:03:51Z",
+      "source_run_id": null,
+      "summary": "Intermittent /worklets/audio-worklet-service-worker-interception.https.html | single tracking bug Product: Core. Component: DOM: Core & HTML. Resolution: INCOMPLETE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801484",
+      "title": "Intermittent toolkit/components/antitracking/test/browser/browser_staticPartition_tls_session.js | single tracking bug",
+      "service": "core-privacy-anti-tracking",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T14:39:37Z",
+      "updated_at": "2023-05-24T12:01:01Z",
+      "source_run_id": null,
+      "summary": "Intermittent toolkit/components/antitracking/test/browser/browser_staticPartition_tls_session.js | single tracking bug Product: Core. Component: Privacy: Anti-Tracking. Resolution: INCOMPLETE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801483",
+      "title": "\"No video with supported format and MIME type found\" error (mp4 w/HEVC encoding)",
+      "service": "core-audio-video-playback",
+      "environment": "unspecified",
+      "severity": "low",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T14:21:36Z",
+      "updated_at": "2024-03-27T22:48:21Z",
+      "source_run_id": null,
+      "summary": "\"No video with supported format and MIME type found\" error (mp4 w/HEVC encoding) Product: Core. Component: Audio/Video: Playback. Resolution: DUPLICATE."
+    },
+    {
+      "ticket_id": "BUGSREPO_STRUCTURED-1801482",
+      "title": "[linux] The data should be still in the clipboard when you close the application.",
+      "service": "thunderbird-mail-window-front-end",
+      "environment": "unspecified",
+      "severity": "unspecified",
+      "symptoms": [],
+      "status": "closed",
+      "assignee": "nobody@mozilla.org",
+      "created_at": "2022-11-19T14:01:31Z",
+      "updated_at": "2023-09-06T15:04:53Z",
+      "source_run_id": null,
+      "summary": "[linux] The data should be still in the clipboard when you close the application. Product: Thunderbird. Component: Mail Window Front End. Resolution: DUPLICATE."
+    }
+  ],
+  "services": [
+    {
+      "service_id": "core-dom-file",
+      "service_name": "Core / DOM: File",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-layout",
+      "service_name": "Core / Layout",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "ca-program-ca-documents",
+      "service_name": "CA Program / CA Documents",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-widget-gtk",
+      "service_name": "Core / Widget: Gtk",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "firefox-theme",
+      "service_name": "Firefox / Theme",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-dom-security",
+      "service_name": "Core / DOM: Security",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-dom-copy-paste-and-drag-drop",
+      "service_name": "Core / DOM: Copy & Paste and Drag & Drop",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-dom-core-html",
+      "service_name": "Core / DOM: Core & HTML",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-xpcom",
+      "service_name": "Core / XPCOM",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-sqlite-and-embedded-database-bindings",
+      "service_name": "Core / SQLite and Embedded Database Bindings",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-dom-service-workers",
+      "service_name": "Core / DOM: Service Workers",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "webextensions-untriaged",
+      "service_name": "WebExtensions / Untriaged",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "firefox-downloads-panel",
+      "service_name": "Firefox / Downloads Panel",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "invalid-bugs-general",
+      "service_name": "Invalid Bugs / General",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-graphics-webrender",
+      "service_name": "Core / Graphics: WebRender",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "toolkit-startup-and-profile-system",
+      "service_name": "Toolkit / Startup and Profile System",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-privacy-anti-tracking",
+      "service_name": "Core / Privacy: Anti-Tracking",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "core-audio-video-playback",
+      "service_name": "Core / Audio/Video: Playback",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    },
+    {
+      "service_id": "thunderbird-mail-window-front-end",
+      "service_name": "Thunderbird / Mail Window Front End",
+      "owner_team": "external-dataset-import",
+      "tier": "tier-2",
+      "environments": [
+        "production",
+        "staging",
+        "development"
+      ],
+      "runbook_doc_ids": []
+    }
+  ],
+  "knowledge_assets": [
+    {
+      "doc_id": "bugsrepo_structured::1801506",
+      "service": "core-dom-file",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s4",
+        "p5",
+        "core",
+        "dom: file"
+      ],
+      "source_filename": "bugsrepo_structured_1801506.md",
+      "title": "Intermittent /fs/FileSystemSyncAccessHandle-read-write.https.tentative.worker.html | single tracking bug",
+      "snippet": "Intermittent /fs/FileSystemSyncAccessHandle-read-write.https.tentative.worker.html | single tracking bug Status RESOLVED. Resolution INCOMPLETE. Comment count 22."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801505",
+      "service": "core-layout",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s4",
+        "p5",
+        "core",
+        "layout"
+      ],
+      "source_filename": "bugsrepo_structured_1801505.md",
+      "title": "Intermittent /css/css-contain/contain-crash.html | single tracking bug",
+      "snippet": "Intermittent /css/css-contain/contain-crash.html | single tracking bug Status RESOLVED. Resolution INCOMPLETE. Comment count 9."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801504",
+      "service": "ca-program-ca-documents",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "task",
+        "other",
+        "--",
+        "ca program",
+        "ca documents"
+      ],
+      "source_filename": "bugsrepo_structured_1801504.md",
+      "title": "Documents for TrustCor CA",
+      "snippet": "Documents for TrustCor CA Status RESOLVED. Resolution WORKSFORME. Comment count 16."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801503",
+      "service": "core-widget-gtk",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "--",
+        "core",
+        "widget: gtk"
+      ],
+      "source_filename": "bugsrepo_structured_1801503.md",
+      "title": "Something is wrong with WM_NAME refreshing",
+      "snippet": "Something is wrong with WM_NAME refreshing Status RESOLVED. Resolution DUPLICATE. Comment count 8."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801502",
+      "service": "firefox-theme",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "client software",
+        "--",
+        "firefox",
+        "theme"
+      ],
+      "source_filename": "bugsrepo_structured_1801502.md",
+      "title": "When the overflow panel overflows, the scrollbar overlaps a portion of the menuitems",
+      "snippet": "When the overflow panel overflows, the scrollbar overlaps a portion of the menuitems Status VERIFIED. Resolution FIXED. Comment count 16."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801501",
+      "service": "core-dom-security",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s3",
+        "p3",
+        "core",
+        "dom: security"
+      ],
+      "source_filename": "bugsrepo_structured_1801501.md",
+      "title": "Mixed content bypass using window.open'd about:blank from http context and https iframe",
+      "snippet": "Mixed content bypass using window.open'd about:blank from http context and https iframe Status RESOLVED. Resolution FIXED. Comment count 27."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801500",
+      "service": "firefox-theme",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "client software",
+        "--",
+        "firefox",
+        "theme"
+      ],
+      "source_filename": "bugsrepo_structured_1801500.md",
+      "title": "Partially back out bug 1795890",
+      "snippet": "Partially back out bug 1795890 Status RESOLVED. Resolution FIXED. Comment count 4."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801499",
+      "service": "core-dom-copy-paste-and-drag-drop",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "--",
+        "core",
+        "dom: copy & paste and drag & drop"
+      ],
+      "source_filename": "bugsrepo_structured_1801499.md",
+      "title": "drive.google.com - it's not possible to drag images across tabs to Google Drive",
+      "snippet": "drive.google.com - it's not possible to drag images across tabs to Google Drive Status RESOLVED. Resolution DUPLICATE. Comment count 3."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801498",
+      "service": "core-dom-core-html",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "task",
+        "components",
+        "--",
+        "p4",
+        "core",
+        "dom: core & html"
+      ],
+      "source_filename": "bugsrepo_structured_1801498.md",
+      "title": "[wpt-sync] Sync PR 37041 - User activation: test activation across origins",
+      "snippet": "[wpt-sync] Sync PR 37041 - User activation: test activation across origins Status RESOLVED. Resolution FIXED. Comment count 13."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801497",
+      "service": "core-xpcom",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "task",
+        "components",
+        "s3",
+        "p1",
+        "core",
+        "xpcom"
+      ],
+      "source_filename": "bugsrepo_structured_1801497.md",
+      "title": "Create symlinks with IOUtils",
+      "snippet": "Create symlinks with IOUtils Status RESOLVED. Resolution WONTFIX. Comment count 3."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801496",
+      "service": "core-xpcom",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "task",
+        "components",
+        "s3",
+        "p1",
+        "core",
+        "xpcom"
+      ],
+      "source_filename": "bugsrepo_structured_1801496.md",
+      "title": "Create symlinks with nsIFile",
+      "snippet": "Create symlinks with nsIFile Status RESOLVED. Resolution WONTFIX. Comment count 3."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801495",
+      "service": "core-sqlite-and-embedded-database-bindings",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "--",
+        "core",
+        "sqlite and embedded database bindings"
+      ],
+      "source_filename": "bugsrepo_structured_1801495.md",
+      "title": "Immutable noLock VFS",
+      "snippet": "Immutable noLock VFS Status RESOLVED. Resolution FIXED. Comment count 6."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801494",
+      "service": "core-dom-service-workers",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s4",
+        "p5",
+        "core",
+        "dom: service workers"
+      ],
+      "source_filename": "bugsrepo_structured_1801494.md",
+      "title": "Intermittent /service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html | single tracking bug",
+      "snippet": "Intermittent /service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html | single tracking bug Status RESOLVED. Resolution INCOMPLETE. Comment count 17."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801493",
+      "service": "webextensions-untriaged",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s4",
+        "p5",
+        "webextensions",
+        "untriaged"
+      ],
+      "source_filename": "bugsrepo_structured_1801493.md",
+      "title": "Extension icons at top left not clickable",
+      "snippet": "Extension icons at top left not clickable Status NEW. Comment count 6."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801492",
+      "service": "firefox-downloads-panel",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "client software",
+        "--",
+        "firefox",
+        "downloads panel"
+      ],
+      "source_filename": "bugsrepo_structured_1801492.md",
+      "title": "file download in downloads panel has text 'Completed - <number>.<number>MBOpening in <number>s...', only one should be used",
+      "snippet": "file download in downloads panel has text 'Completed - <number>.<number>MBOpening in <number>s...', only one should be used Status RESOLVED. Resolution FIXED. Comment count 7."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801491",
+      "service": "invalid-bugs-general",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "graveyard",
+        "--",
+        "invalid bugs",
+        "general"
+      ],
+      "source_filename": "bugsrepo_structured_1801491.md",
+      "title": "Лаги",
+      "snippet": "Лаги Status RESOLVED. Resolution INVALID. Comment count 2."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801490",
+      "service": "invalid-bugs-general",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "graveyard",
+        "--",
+        "invalid bugs",
+        "general"
+      ],
+      "source_filename": "bugsrepo_structured_1801490.md",
+      "title": "Eretret",
+      "snippet": "Eretret Status RESOLVED. Resolution INVALID. Comment count 1."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801489",
+      "service": "invalid-bugs-general",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "graveyard",
+        "--",
+        "invalid bugs",
+        "general"
+      ],
+      "source_filename": "bugsrepo_structured_1801489.md",
+      "title": "Лаги",
+      "snippet": "Лаги Status RESOLVED. Resolution INVALID. Comment count 2."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801488",
+      "service": "core-widget-gtk",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "--",
+        "core",
+        "widget: gtk"
+      ],
+      "source_filename": "bugsrepo_structured_1801488.md",
+      "title": "No thumbnails for AVIF entries in GTK file chooser dialog on linux systems that support them",
+      "snippet": "No thumbnails for AVIF entries in GTK file chooser dialog on linux systems that support them Status RESOLVED. Resolution FIXED. Comment count 4."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801487",
+      "service": "core-graphics-webrender",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s3",
+        "--",
+        "core",
+        "graphics: webrender"
+      ],
+      "source_filename": "bugsrepo_structured_1801487.md",
+      "title": "Crash in [@ <unknown in atidxx64.dll> | CContext::TID3D11DeviceContext_DrawIndexedInstanced_<T>]",
+      "snippet": "Crash in [@ <unknown in atidxx64.dll> | CContext::TID3D11DeviceContext_DrawIndexedInstanced_<T>] Status RESOLVED. Resolution INACTIVE. Comment count 6."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801486",
+      "service": "toolkit-startup-and-profile-system",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "enhancement",
+        "components",
+        "--",
+        "toolkit",
+        "startup and profile system"
+      ],
+      "source_filename": "bugsrepo_structured_1801486.md",
+      "title": "Profile manager - Add toolbar icon, improve accessibility and make Firefox profile management & settings more user friendly",
+      "snippet": "Profile manager - Add toolbar icon, improve accessibility and make Firefox profile management & settings more user friendly Status RESOLVED. Resolution DUPLICATE. Comment count 4."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801485",
+      "service": "core-dom-core-html",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s4",
+        "p5",
+        "core",
+        "dom: core & html"
+      ],
+      "source_filename": "bugsrepo_structured_1801485.md",
+      "title": "Intermittent /worklets/audio-worklet-service-worker-interception.https.html | single tracking bug",
+      "snippet": "Intermittent /worklets/audio-worklet-service-worker-interception.https.html | single tracking bug Status RESOLVED. Resolution INCOMPLETE. Comment count 21."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801484",
+      "service": "core-privacy-anti-tracking",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s4",
+        "p5",
+        "core",
+        "privacy: anti-tracking"
+      ],
+      "source_filename": "bugsrepo_structured_1801484.md",
+      "title": "Intermittent toolkit/components/antitracking/test/browser/browser_staticPartition_tls_session.js | single tracking bug",
+      "snippet": "Intermittent toolkit/components/antitracking/test/browser/browser_staticPartition_tls_session.js | single tracking bug Status RESOLVED. Resolution INCOMPLETE. Comment count 6."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801483",
+      "service": "core-audio-video-playback",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "components",
+        "s4",
+        "p3",
+        "core",
+        "audio/video: playback"
+      ],
+      "source_filename": "bugsrepo_structured_1801483.md",
+      "title": "\"No video with supported format and MIME type found\" error (mp4 w/HEVC encoding)",
+      "snippet": "\"No video with supported format and MIME type found\" error (mp4 w/HEVC encoding) Status RESOLVED. Resolution DUPLICATE. Comment count 7."
+    },
+    {
+      "doc_id": "bugsrepo_structured::1801482",
+      "service": "thunderbird-mail-window-front-end",
+      "doc_kind": "issue_report",
+      "section_path": [],
+      "tags": [
+        "bugsrepo_structured",
+        "external-ticket",
+        "defect",
+        "client software",
+        "--",
+        "thunderbird",
+        "mail window front end"
+      ],
+      "source_filename": "bugsrepo_structured_1801482.md",
+      "title": "[linux] The data should be still in the clipboard when you close the application.",
+      "snippet": "[linux] The data should be still in the clipboard when you close the application. Status RESOLVED. Resolution DUPLICATE. Comment count 7."
+    }
+  ]
+}

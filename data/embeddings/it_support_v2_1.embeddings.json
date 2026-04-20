@@ -1,0 +1,40 @@
+{
+  "filename": "it_support_v2_1.md",
+  "suffix": ".md",
+  "document_kind": "reference",
+  "source_path": "D:\\project\\agent-knowledge-system\\data\\raw\\it_support_v2_1.md",
+  "source_chunk_path": "D:\\project\\agent-knowledge-system\\data\\chunks\\it_support_v2_1.chunks.json",
+  "created_at": "2026-04-19T13:33:03.742635+00:00",
+  "pipeline_version": "indexing-v1",
+  "embedding_provider": "mock_fallback",
+  "embedding_model": "mock-embedding-v1",
+  "vector_dim": 8,
+  "chunk_count": 1,
+  "embeddings": [
+    {
+      "embedding_id": "it_support_v2_1.md::chunk_0::embedding",
+      "chunk_id": "it_support_v2_1.md::chunk_0",
+      "chunk_index": 0,
+      "source_filename": "it_support_v2_1.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 376,
+      "section_title": "Outlook cannot read emails from Exchange with large attachments.",
+      "section_path": [
+        "Outlook cannot read emails from Exchange with large attachments."
+      ],
+      "heading_level": 1,
+      "content": "# Outlook cannot read emails from Exchange with large attachments.\n\n- Dataset: it_support_v2\n- Doc ID: it_support_v2::1\n- Service: it-support\n- Document Kind: support_resolution\n- Source Filename: it_support_v2_1.md\n- Tags: it_support_v2, support-dialogue, external-knowledge\n\n## Imported Snippet\n\nOutlook cannot read emails from Exchange with large attachments. outlook_issue",
+      "vector": [
+        0.760784,
+        0.890196,
+        0.615686,
+        0.098039,
+        0.031373,
+        0.784314,
+        0.933333,
+        0.65098
+      ]
+    }
+  ]
+}

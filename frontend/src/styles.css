@@ -605,6 +605,50 @@ textarea {
   gap: 12px;
 }
 
+.document-registry-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.document-registry-toolbar label {
+  display: grid;
+  gap: 6px;
+  min-width: min(100%, 320px);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.document-registry-toolbar input {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid rgba(31, 41, 51, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 252, 245, 0.92);
+  transition:
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    background var(--motion-fast);
+}
+
+.document-registry-toolbar input:hover {
+  border-color: rgba(159, 58, 29, 0.3);
+}
+
+.document-registry-toolbar input:focus-visible {
+  outline: 2px solid rgba(159, 58, 29, 0.45);
+  outline-offset: 2px;
+  border-color: rgba(159, 58, 29, 0.35);
+}
+
+.registry-count {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .empty-state {
   display: grid;
   gap: 8px;
@@ -1349,6 +1393,17 @@ textarea {
 }
 
 .technical-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.run-card-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink-muted);
+  list-style: none;
+}
+
+.run-card-details summary::-webkit-details-marker {
   display: none;
 }
 

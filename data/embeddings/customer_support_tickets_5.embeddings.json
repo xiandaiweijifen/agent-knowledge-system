@@ -1,0 +1,92 @@
+{
+  "filename": "customer_support_tickets_5.md",
+  "suffix": ".md",
+  "document_kind": "reference",
+  "source_path": "D:\\project\\agent-knowledge-system\\data\\raw\\customer_support_tickets_5.md",
+  "source_chunk_path": "D:\\project\\agent-knowledge-system\\data\\chunks\\customer_support_tickets_5.chunks.json",
+  "created_at": "2026-04-19T14:11:36.730823+00:00",
+  "pipeline_version": "indexing-v1",
+  "embedding_provider": "mock_fallback",
+  "embedding_model": "mock-embedding-v1",
+  "vector_dim": 8,
+  "chunk_count": 3,
+  "embeddings": [
+    {
+      "embedding_id": "customer_support_tickets_5.md::chunk_0::embedding",
+      "chunk_id": "customer_support_tickets_5.md::chunk_0",
+      "chunk_index": 0,
+      "source_filename": "customer_support_tickets_5.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 500,
+      "section_title": "Question About Marketing Agency Software Compatibility",
+      "section_path": [
+        "Question About Marketing Agency Software Compatibility"
+      ],
+      "heading_level": 1,
+      "content": "# Question About Marketing Agency Software Compatibility\n\n- Dataset: customer_support_tickets\n- Doc ID: customer_support_tickets::5\n- Service: sales-and-pre-sales\n- Document Kind: support_ticket\n- Source Filename: customer_support_tickets_5.md\n- Tags: customer_support_tickets, external-ticket, problem, sales and pre-sales, en, product, feature, feedback, tech support\n\n## Imported Snippet\n\nDear Support Team,\\n\\nI hope this message reaches you well. I am reaching out to ask about the compatibility",
+      "vector": [
+        0.745098,
+        0.803922,
+        0.207843,
+        0.52549,
+        0.447059,
+        0.039216,
+        0.458824,
+        0.756863
+      ]
+    },
+    {
+      "embedding_id": "customer_support_tickets_5.md::chunk_1::embedding",
+      "chunk_id": "customer_support_tickets_5.md::chunk_1",
+      "chunk_index": 1,
+      "source_filename": "customer_support_tickets_5.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 500,
+      "section_title": "Imported Snippet",
+      "section_path": [
+        "Question About Marketing Agency Software Compatibility",
+        "Imported Snippet"
+      ],
+      "heading_level": 2,
+      "content": "port Team,\\n\\nI hope this message reaches you well. I am reaching out to ask about the compatibility of your products with the specific needs of marketing agencies. Our company is considering adopting these solutions to streamline our current marketing processes and wants to confirm that the products are fully compatible with the tools and platforms we currently utilize.\\n\\nCould you please supply detailed information regarding the compatibility of your products with popular marketing software, ",
+      "vector": [
+        0.133333,
+        0.34902,
+        0.262745,
+        0.207843,
+        0.882353,
+        0.568627,
+        0.019608,
+        0.647059
+      ]
+    },
+    {
+      "embedding_id": "customer_support_tickets_5.md::chunk_2::embedding",
+      "chunk_id": "customer_support_tickets_5.md::chunk_2",
+      "chunk_index": 2,
+      "source_filename": "customer_support_tickets_5.md",
+      "source_suffix": ".md",
+      "document_kind": "reference",
+      "char_count": 543,
+      "section_title": "Imported Snippet",
+      "section_path": [
+        "Question About Marketing Agency Software Compatibility",
+        "Imported Snippet"
+      ],
+      "heading_level": 2,
+      "content": " detailed information regarding the compatibility of your products with popular marketing software, CRM systems, email marketing applications, and analytics platforms? Additionally, I would appreciate any relevant case studies or documentation tailored to our use case. Thank you for your inquiry. Our product supports integration with major CRM, email marketing, and analytics platforms through APIs and customization options. Please specify the tools you are using so we can provide you with detailed documentation and relevant case studies.",
+      "vector": [
+        0.701961,
+        0.85098,
+        0.847059,
+        0.027451,
+        0.094118,
+        0.086275,
+        0.643137,
+        0.941176
+      ]
+    }
+  ]
+}

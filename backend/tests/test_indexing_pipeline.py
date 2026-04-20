@@ -138,3 +138,32 @@ def test_persist_document_embeddings_surfaces_provider_fallback_reason(
     assert result["embedding_provider"] == "mock_fallback"
     assert "embedding_warning" in result
     assert "ValueError: bad_response_shape" in result["embedding_warning"]
+
+
+def test_build_gemini_embeddings_ignores_environment_proxies_by_default(monkeypatch):
+    captured: dict[str, object] = {}
+
+    class DummyResponse:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"embeddings": [{"values": [0.1, 0.2, 0.3]}]}
+
+    def fake_post(url, **kwargs):
+        captured["url"] = url
+        captured["trust_env"] = kwargs.get("trust_env")
+        captured["timeout"] = kwargs.get("timeout")
+        return DummyResponse()
+
+    monkeypatch.setattr(settings, "gemini_api_key", "configured")
+    monkeypatch.setattr(settings, "gemini_embedding_model", "gemini-embedding-001")
+    monkeypatch.setattr(settings, "embedding_http_trust_env", False)
+    monkeypatch.setattr(embedding_service.httpx, "post", fake_post)
+
+    model, vectors = embedding_service.build_gemini_embeddings(["hello"])
+
+    assert model == "gemini-embedding-001"
+    assert vectors == [[0.1, 0.2, 0.3]]
+    assert captured["trust_env"] is False
+    assert captured["timeout"] == 30.0

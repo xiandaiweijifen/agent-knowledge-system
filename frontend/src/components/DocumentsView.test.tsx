@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -12,7 +12,7 @@ describe("DocumentsView", () => {
     const onGeneratePipeline = vi.fn();
     const onDeleteDocument = vi.fn();
 
-    render(
+    const view = render(
       <DocumentsView
         locale="en"
         documents={[
@@ -85,5 +85,62 @@ describe("DocumentsView", () => {
       new File(["hello"], "notes.md", { type: "text/markdown" }),
     );
     expect(onUploadFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("limits the registry to 5 files by default and supports filename search", async () => {
+    const user = userEvent.setup();
+    const onSelectDocument = vi.fn();
+
+    const view = render(
+      <DocumentsView
+        locale="en"
+        documents={[
+          { filename: "agent_workflow.md", size_bytes: 100, suffix: ".md", knowledge_assets: {} },
+          { filename: "checkout_service_runbook.md", size_bytes: 101, suffix: ".md", knowledge_assets: {} },
+          { filename: "customer_support_tickets_1.md", size_bytes: 102, suffix: ".md", knowledge_assets: {} },
+          { filename: "incident_playbook.md", size_bytes: 103, suffix: ".md", knowledge_assets: {} },
+          { filename: "it_support_v2_1.md", size_bytes: 104, suffix: ".md", knowledge_assets: {} },
+          { filename: "payment_service_runbook.md", size_bytes: 105, suffix: ".md", knowledge_assets: {} },
+        ]}
+        selectedFilename="agent_workflow.md"
+        preview={null}
+        chunkArtifact={null}
+        embeddingArtifact={null}
+        documentsBusy={false}
+        artifactBusy={false}
+        uploadBusy={false}
+        documentsError=""
+        artifactMessage=""
+        uploadMessage=""
+        onRefreshDocuments={vi.fn()}
+        onSelectDocument={onSelectDocument}
+        onRefreshArtifacts={vi.fn()}
+        onPersistChunks={vi.fn()}
+        onPersistEmbeddings={vi.fn()}
+        onGeneratePipeline={vi.fn()}
+        onDeleteDocument={vi.fn()}
+        onUploadFile={vi.fn()}
+      />,
+    );
+
+    const registryPanel = screen.getAllByText("Document Registry").at(-1)?.closest("article");
+    expect(registryPanel).toBeTruthy();
+    const scoped = within(registryPanel!);
+
+    expect(scoped.getByText("Showing 5 / 6")).toBeInTheDocument();
+    expect(scoped.queryByText("payment_service_runbook.md")).not.toBeInTheDocument();
+
+    await user.click(scoped.getByRole("button", { name: "Show All Files" }));
+    expect(scoped.getByText("payment_service_runbook.md")).toBeInTheDocument();
+
+    const searchInput = scoped.getByPlaceholderText("Search by filename");
+    expect(searchInput).toBeDefined();
+    await user.type(searchInput, "payment");
+    expect(scoped.getByText("Showing 1 / 1")).toBeInTheDocument();
+    expect(scoped.getByText("payment_service_runbook.md")).toBeInTheDocument();
+    expect(scoped.queryByText("agent_workflow.md")).not.toBeInTheDocument();
+
+    await user.click(scoped.getByText("payment_service_runbook.md").closest("button")!);
+    expect(onSelectDocument).toHaveBeenCalledWith("payment_service_runbook.md");
   });
 });

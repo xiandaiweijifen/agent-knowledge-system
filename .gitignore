@@ -31,6 +31,9 @@ backend/data/qdrant/
 data/tool_state/.tmp/
 data/tool_state/*.tmp
 data/tool_state/workflow_planner_debug.json
+data/external/raw/**
+!data/external/raw/
+!data/external/raw/.gitkeep
 
 # Python test / cache
 .pytest_cache/
@@ -45,4 +48,5 @@ build/
 coverage/
 *.tsbuildinfo
 .codex_write_check.tmp
+.codex-backups/
 

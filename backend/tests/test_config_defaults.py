@@ -17,3 +17,9 @@ def test_qdrant_local_path_is_resolved_against_repo_root():
     )
 
     assert settings.qdrant_local_path == str((REPO_ROOT / "data" / "qdrant").resolve())
+
+
+def test_embedding_http_trust_env_defaults_to_false():
+    settings = Settings(_env_file=None)
+
+    assert settings.embedding_http_trust_env is False

@@ -25,7 +25,7 @@ The repository is in a late-stage refactor transition.
 The default engineering direction is now `agent_v2`, which is built on:
 
 - LangGraph for orchestration, checkpoints, interrupts, and state threading
-- LlamaIndex-backed retrieval on the query path
+- Qdrant-backed retrieval on the query path, with LlamaIndex still available as a compatibility path
 - PostgreSQL/Redis hooks for runtime infrastructure
 - LangSmith tracing
 - SSE event streaming to the frontend query console
@@ -70,11 +70,12 @@ Still intentionally unfinished:
 
 Knowledge-layer status today:
 
-- the project now uses an explicit `LlamaIndex` primary retrieval path in standard runtime mode
+- the project now uses `Qdrant` as the default primary retrieval backend in standard runtime mode
 - document assets expose readiness for:
   - `chunks`
   - `embeddings`
   - `llamaindex`
+  - `qdrant`
 - chunking is now section-aware, and persisted knowledge nodes carry:
   - `section_title`
   - `section_path`
@@ -127,19 +128,21 @@ When `AGENT_DEFAULT_RUNTIME=v2`, the default `/api/query/agent` entrypoints disp
 
 ### Knowledge Index Backends
 
-The repository currently keeps the knowledge pipeline local-first, but the
-vector index layer is being abstracted so retrieval can move beyond the
-file-persisted LlamaIndex store over time.
+The repository keeps the knowledge pipeline local-first, but retrieval now
+defaults to Qdrant while still preserving the historical LlamaIndex path for
+compatibility and fallback testing.
 
 Current knobs:
 
 - `VECTOR_STORE_PROVIDER=qdrant`
 - `KNOWLEDGE_WRITE_QDRANT=true`
 - `KNOWLEDGE_WRITE_LLAMAINDEX=true`
-- `QDRANT_URL=...` for a remote Qdrant instance
+- `QDRANT_URL=http://localhost:6333` for a local or remote Qdrant server
 - `QDRANT_LOCAL_PATH=...` for local embedded development mode
   Relative paths are resolved from the repository root, not the current shell directory.
 - `QDRANT_COLLECTION_NAME=agent_knowledge_chunks`
+- for multi-process local work, batch import, and evaluation scripts, prefer `QDRANT_URL`
+  over embedded `QDRANT_LOCAL_PATH`
 
 ## Core Capabilities
 
@@ -148,8 +151,8 @@ Current knobs:
 - upload and preview local documents
 - persist chunk artifacts
 - persist embedding artifacts
-- expose knowledge asset readiness for chunks, embeddings, and LlamaIndex stores
-- retrieve relevant chunks for a question with explicit LlamaIndex primary mode
+- expose knowledge asset readiness for chunks, embeddings, LlamaIndex stores, and Qdrant sync
+- retrieve relevant chunks for a question with Qdrant as the default primary mode
 - run corpus retrieval without a fixed document context
 - inspect retrieval diagnostics and ranked candidates
 - return section-aware matches with document kind and corpus identity metadata
@@ -211,7 +214,7 @@ High-level backend flow:
 
 1. Documents are uploaded and stored locally.
 2. Text is chunked and embedding artifacts are persisted.
-3. LlamaIndex-backed retrieval services score and rerank section-aware candidate chunks.
+3. Qdrant-backed retrieval services score and rerank section-aware candidate chunks.
 4. Corpus queries can merge and rank candidates across multiple documents with explicit corpus metadata.
 5. Requests are routed into retrieval, clarification, or tool/workflow execution.
 6. Answer generation synthesizes grounded responses with citations and verification signals.
@@ -482,6 +485,7 @@ Recommended standard runtime setup:
 APP_ENV=development
 AGENT_DEFAULT_RUNTIME=v2
 EMBEDDING_PROVIDER=gemini
+EMBEDDING_HTTP_TRUST_ENV=false
 CHAT_PROVIDER=gemini
 ROUTE_PLANNER_PROVIDER=gemini
 TOOL_PLANNER_PROVIDER=gemini
@@ -510,6 +514,7 @@ Example Gemini/OpenAI model setup:
 
 ```env
 EMBEDDING_PROVIDER=gemini
+EMBEDDING_HTTP_TRUST_ENV=false
 CHAT_PROVIDER=gemini
 TOOL_PLANNER_PROVIDER=gemini
 CLARIFICATION_PLANNER_PROVIDER=gemini
@@ -587,6 +592,22 @@ For a repeatable walkthrough, use:
 - [demo_recovery_flow.ps1](/d:/project/agent-knowledge-system/scripts/demo_recovery_flow.ps1)
 
 ## Qdrant Backfill
+
+For stable local development, start the standalone Qdrant service first:
+
+```powershell
+docker compose up -d qdrant
+```
+
+Then point the app at the server instead of embedded storage:
+
+```env
+QDRANT_URL=http://localhost:6333
+QDRANT_LOCAL_PATH=
+```
+
+Keep `EMBEDDING_HTTP_TRUST_ENV=false` unless you intentionally rely on a
+working system proxy for outbound model requests.
 
 After enabling `VECTOR_STORE_PROVIDER=qdrant` and configuring either
 `QDRANT_LOCAL_PATH` or `QDRANT_URL`, you can batch-sync all persisted

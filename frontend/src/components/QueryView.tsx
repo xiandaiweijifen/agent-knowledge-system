@@ -71,6 +71,8 @@ export function QueryView({
   const [runRecoveryFilter, setRunRecoveryFilter] = useState("all");
   const [focusedChainRootRunId, setFocusedChainRootRunId] = useState<string | null>(null);
   const [collapsedChainRootRunIds, setCollapsedChainRootRunIds] = useState<string[]>([]);
+  const [showAllLiveEvents, setShowAllLiveEvents] = useState(false);
+  const [showAllRecentRuns, setShowAllRecentRuns] = useState(false);
   const hasAgentWorkflowOutput = Boolean(agentQueryResult) || agentStreamEvents.length > 0;
   const queryCopy =
     locale === "zh"
@@ -269,6 +271,13 @@ export function QueryView({
           technicalDetails: "技术细节",
           technicalDetailsCopy: "仅在排查或调试时展开，主视图保留任务所需的关键信息。",
           viewTechnicalDetails: "查看执行细节与轨迹",
+          liveExecutionPreview: "默认仅展示最近 3 条事件，避免实时流占满主界面。",
+          showAllEvents: "展开全部事件",
+          showRecentEvents: "收起到最近事件",
+          viewRunDetails: "查看运行详情",
+          recentRunsPreview: "默认仅展示最近 5 条运行记录，避免历史列表占满页面。",
+          showAllRuns: "展开全部运行",
+          showRecentRuns: "收起到最近运行",
           draftReady: "草稿已准备",
           awaitingConfirmation: "等待确认",
           ticketSubmitted: "工单已提交",
@@ -484,6 +493,13 @@ export function QueryView({
           technicalDetails: "Technical Details",
           technicalDetailsCopy: "Expand only when you need execution trace or raw workflow diagnostics.",
           viewTechnicalDetails: "View Execution Details And Trace",
+          liveExecutionPreview: "Only the latest 3 events are shown by default to keep the task view compact.",
+          showAllEvents: "Show All Events",
+          showRecentEvents: "Show Recent Events",
+          viewRunDetails: "View Run Details",
+          recentRunsPreview: "Only the latest 5 workflow runs are shown by default to keep the history panel compact.",
+          showAllRuns: "Show All Runs",
+          showRecentRuns: "Show Recent Runs",
           draftReady: "Draft Ready",
           awaitingConfirmation: "Awaiting Confirmation",
           ticketSubmitted: "Ticket Submitted",
@@ -1555,6 +1571,30 @@ export function QueryView({
     groups.push({ rootRunId, runs: [run] });
     return groups;
   }, []);
+  const visibleLiveEvents = showAllLiveEvents ? agentStreamEvents : agentStreamEvents.slice(-3);
+  const limitedGroupedWorkflowRuns = groupedFilteredWorkflowRuns.reduce<
+    Array<{ rootRunId: string; runs: AgentWorkflowRunSummary[] }>
+  >((groups, group) => {
+    if (showAllRecentRuns) {
+      groups.push(group);
+      return groups;
+    }
+
+    const visibleCount = groups.reduce((count, item) => count + item.runs.length, 0);
+    if (visibleCount >= 5) {
+      return groups;
+    }
+
+    const remainingSlots = 5 - visibleCount;
+    const visibleRuns = group.runs.slice(0, remainingSlots);
+    if (visibleRuns.length > 0) {
+      groups.push({
+        rootRunId: group.rootRunId,
+        runs: visibleRuns,
+      });
+    }
+    return groups;
+  }, []);
 
   function isChainCollapsed(rootRunId: string) {
     return collapsedChainRootRunIds.includes(rootRunId);
@@ -1723,8 +1763,20 @@ export function QueryView({
                 <article className="subsection-card">
                   <span className="section-label">{queryCopy.liveExecution}</span>
                   <p className="subsection-copy">{queryCopy.liveExecutionCopy}</p>
+                  {agentStreamEvents.length > 3 && (
+                    <div className="button-row">
+                      <p className="subsection-copy">{queryCopy.liveExecutionPreview}</p>
+                      <button
+                        type="button"
+                        className="ghost-button"
+                        onClick={() => setShowAllLiveEvents((current) => !current)}
+                      >
+                        {showAllLiveEvents ? queryCopy.showRecentEvents : queryCopy.showAllEvents}
+                      </button>
+                    </div>
+                  )}
                   <div className="trace-event-list">
-                    {agentStreamEvents.map((event) => (
+                    {visibleLiveEvents.map((event) => (
                       <article key={event.event_id} className="trace-event-card">
                         <header>
                           <strong>{event.stage}</strong>
@@ -1880,8 +1932,21 @@ export function QueryView({
                 <p className="subsection-copy">{queryCopy.chainScopeActive}</p>
               )}
               {groupedFilteredWorkflowRuns.length > 0 ? (
+            <>
+              {filteredWorkflowRuns.length > 5 && (
+                <div className="button-row">
+                  <p className="subsection-copy">{queryCopy.recentRunsPreview}</p>
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    onClick={() => setShowAllRecentRuns((current) => !current)}
+                  >
+                    {showAllRecentRuns ? queryCopy.showRecentRuns : queryCopy.showAllRuns}
+                  </button>
+                </div>
+              )}
             <div className="run-list">
-              {groupedFilteredWorkflowRuns.map((group) => {
+              {limitedGroupedWorkflowRuns.map((group) => {
                 const isCurrentChain = Boolean(currentRootRunId) && group.rootRunId === currentRootRunId;
                 const isCollapsed = isChainCollapsed(group.rootRunId);
                 const completedCount = group.runs.filter((run) => run.workflow_status === "completed").length;
@@ -1924,46 +1989,49 @@ export function QueryView({
                               <span>{queryCopy.routeMeta} {run.route_type}</span>
                               <span>{queryCopy.runMeta} {run.run_id}</span>
                             </div>
-                            <div className="meta-row">
-                              <span>{queryCopy.rootRun}: {run.root_run_id ?? queryCopy.notLinked}</span>
-                              <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
-                            </div>
-                            <div className="meta-row">
-                              <span>{queryCopy.retryMeta} {run.retry_state ?? queryCopy.unknown}</span>
-                              <span>{queryCopy.recommendedMeta} {run.recommended_recovery_action ?? queryCopy.none}</span>
-                            </div>
-                            {run.recovered_via_action && (
-                              <p className="subsection-copy">
-                                {queryCopy.recoveredViaMeta}: {formatRecoveryActionLabel(run.recovered_via_action)}
-                              </p>
-                            )}
-                            <div className="pill-strip">
-                              {renderRecoveryActions(run.available_recovery_actions, true)}
-                            </div>
-                            {run.resumed_from_question && (
-                              <p className="subsection-copy">{queryCopy.resumedFromMeta}: {run.resumed_from_question}</p>
-                            )}
-                            {(run.reused_step_indices?.length ?? 0) > 0 && (
-                              <p className="subsection-copy">
-                                {queryCopy.reusedStepsMeta}: {run.reused_step_indices?.join(", ")}
-                              </p>
-                            )}
-                            <div className="button-row">
-                              <button
-                                type="button"
-                                className="ghost-button"
-                                disabled={queryBusy}
-                                onClick={() => onLoadAgentWorkflowRun(run.run_id)}
-                              >
-                                {queryCopy.loadRun}
-                              </button>
-                            </div>
-                            {renderRecoveryButtons(
-                              run.run_id,
-                              run.available_recovery_actions,
-                              run.recommended_recovery_action,
-                              run.recovery_action_details,
-                            )}
+                            <details className="run-card-details">
+                              <summary>{queryCopy.viewRunDetails}</summary>
+                              <div className="meta-row">
+                                <span>{queryCopy.rootRun}: {run.root_run_id ?? queryCopy.notLinked}</span>
+                                <span>{queryCopy.recoveryDepth}: {run.recovery_depth ?? 0}</span>
+                              </div>
+                              <div className="meta-row">
+                                <span>{queryCopy.retryMeta} {run.retry_state ?? queryCopy.unknown}</span>
+                                <span>{queryCopy.recommendedMeta} {run.recommended_recovery_action ?? queryCopy.none}</span>
+                              </div>
+                              {run.recovered_via_action && (
+                                <p className="subsection-copy">
+                                  {queryCopy.recoveredViaMeta}: {formatRecoveryActionLabel(run.recovered_via_action)}
+                                </p>
+                              )}
+                              <div className="pill-strip">
+                                {renderRecoveryActions(run.available_recovery_actions, true)}
+                              </div>
+                              {run.resumed_from_question && (
+                                <p className="subsection-copy">{queryCopy.resumedFromMeta}: {run.resumed_from_question}</p>
+                              )}
+                              {(run.reused_step_indices?.length ?? 0) > 0 && (
+                                <p className="subsection-copy">
+                                  {queryCopy.reusedStepsMeta}: {run.reused_step_indices?.join(", ")}
+                                </p>
+                              )}
+                              <div className="button-row">
+                                <button
+                                  type="button"
+                                  className="ghost-button"
+                                  disabled={queryBusy}
+                                  onClick={() => onLoadAgentWorkflowRun(run.run_id)}
+                                >
+                                  {queryCopy.loadRun}
+                                </button>
+                              </div>
+                              {renderRecoveryButtons(
+                                run.run_id,
+                                run.available_recovery_actions,
+                                run.recommended_recovery_action,
+                                run.recovery_action_details,
+                              )}
+                            </details>
                           </article>
                         ))}
                       </div>
@@ -1972,6 +2040,7 @@ export function QueryView({
                 );
               })}
             </div>
+            </>
               ) : (
                 <div className="empty-state">
                   <strong>{queryCopy.noMatchingRuns}</strong>
