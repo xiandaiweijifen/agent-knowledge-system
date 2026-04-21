@@ -263,6 +263,7 @@ export function QueryView({
           activeAlerts: "活跃告警",
           evidence: "证据",
           runbookEvidence: "Runbook 证据",
+          externalEvidence: "外部工单证据",
           ticketDraft: "工单草稿",
           submissionDecision: "提交决策",
           submitTicket: "提交工单",
@@ -485,6 +486,7 @@ export function QueryView({
           activeAlerts: "Active Alerts",
           evidence: "Evidence",
           runbookEvidence: "Runbook Evidence",
+          externalEvidence: "Imported Ticket Evidence",
           ticketDraft: "Ticket Draft",
           submissionDecision: "Submission Decision",
           submitTicket: "Submit Ticket",
@@ -797,13 +799,20 @@ export function QueryView({
     }
 
     const statusStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "system_status");
-    const evidenceStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "document_search");
+    const evidenceSteps = response.tool_chain.filter((step) => step.tool_plan.tool_name === "document_search");
+    const runbookEvidenceStep =
+      evidenceSteps.find((step) => step.tool_plan.arguments?.search_mode !== "qdrant") ?? evidenceSteps[0];
+    const externalEvidenceStep = evidenceSteps.find((step) => step.tool_plan.arguments?.search_mode === "qdrant");
     const ticketStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "ticketing");
     const statusOutput = (statusStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
-    const evidenceOutput = (evidenceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const evidenceOutput = (runbookEvidenceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const externalEvidenceOutput = (externalEvidenceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
     const ticketOutput = (ticketStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
     const knowledgeAssets = Array.isArray(evidenceOutput.knowledge_assets)
       ? (evidenceOutput.knowledge_assets as Array<Record<string, unknown>>)
+      : [];
+    const externalKnowledgeAssets = Array.isArray(externalEvidenceOutput.knowledge_assets)
+      ? (externalEvidenceOutput.knowledge_assets as Array<Record<string, unknown>>)
       : [];
     const activeAlerts = Array.isArray(statusOutput.active_alerts)
       ? (statusOutput.active_alerts as string[])
@@ -887,6 +896,25 @@ export function QueryView({
                   </p>
                 ))}
               </div>
+            )}
+            {externalEvidenceStep && (
+              <>
+                <div className="trace-grid">
+                  <div>
+                    <span className="trace-label">{queryCopy.externalEvidence}</span>
+                    <strong>{String(externalEvidenceOutput.matched_documents ?? queryCopy.notAvailable)}</strong>
+                  </div>
+                </div>
+                {externalKnowledgeAssets.length > 0 && (
+                  <div className="list-block">
+                    {externalKnowledgeAssets.map((asset, index) => (
+                      <p key={`${String(asset.doc_id ?? "external-asset")}-${index}`}>
+                        {String(asset.snippet ?? asset.title ?? asset.doc_id ?? queryCopy.notAvailable)}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </section>
 

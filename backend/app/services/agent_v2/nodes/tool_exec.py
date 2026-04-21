@@ -164,6 +164,23 @@ def _build_incident_triage_summary(
     )
 
 
+def _build_external_evidence_query(
+    *,
+    service: str,
+    environment: str,
+    symptom: str,
+    status_output: dict,
+) -> str:
+    alerts = status_output.get("active_alerts")
+    alert_text = " ".join(str(item) for item in alerts if str(item).strip()) if isinstance(alerts, list) else ""
+    status_summary = str(status_output.get("summary") or "")
+    return " ".join(
+        part
+        for part in [service, environment, symptom, alert_text, status_summary]
+        if part.strip()
+    ).strip()
+
+
 def _build_ticket_submission_confirmation(
     *,
     service: str,
@@ -267,10 +284,32 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
         tool_chain.append(search_step)
         search_output = search_execution.model_dump().get("output", {})
 
+        external_search_step, external_search_execution = _execute_single_step(
+            state=state,
+            step_index=3,
+            question=question,
+            tool_name="document_search",
+            action="query",
+            target=_build_external_evidence_query(
+                service=service,
+                environment=environment,
+                symptom=symptom,
+                status_output=status_output,
+            ),
+            arguments={
+                "max_results": "3",
+                "search_mode": "qdrant",
+                "source_prefixes": "customer_support_tickets_,it_support_v2_,bugsrepo_structured_",
+            },
+            planning_mode="agent_v2_incident_triage",
+        )
+        tool_chain.append(external_search_step)
+        external_search_output = external_search_execution.model_dump().get("output", {})
+
         status_summary = status_output.get("summary") or f"{service} is degraded in {environment}."
         draft_step, draft_execution = _execute_single_step(
             state=state,
-            step_index=3,
+            step_index=4,
             question=question,
             tool_name="ticketing",
             action="draft",
@@ -278,7 +317,10 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
             arguments={
                 "severity": severity,
                 "environment": environment,
-                "supporting_summary": f"{status_summary} Observed symptom: {symptom}.",
+                "supporting_summary": (
+                    f"{status_summary} Observed symptom: {symptom}. "
+                    f"External evidence: {external_search_output.get('matched_documents', '')}."
+                ).strip(),
             },
             planning_mode="agent_v2_incident_triage",
         )
@@ -292,7 +334,17 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
                 environment=environment,
                 symptom=symptom,
                 status_output=status_output,
-                search_output=search_output,
+                search_output={
+                    **search_output,
+                    "matched_documents": ", ".join(
+                        item
+                        for item in [
+                            str(search_output.get("matched_documents") or "").strip(),
+                            str(external_search_output.get("matched_documents") or "").strip(),
+                        ]
+                        if item
+                    ),
+                },
                 draft_output=draft_output,
             ),
             "answer_source": "local_incident_triage",

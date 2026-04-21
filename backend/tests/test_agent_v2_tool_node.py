@@ -171,7 +171,7 @@ def test_tool_exec_node_runs_incident_triage_workflow(monkeypatch):
                     },
                 },
             )
-        if request.tool_name == "document_search":
+        if request.tool_name == "document_search" and request.arguments.get("search_mode") != "qdrant":
             assert request.arguments["filename"] == "payment_service_runbook.md"
             assert request.target == "timeout"
             return _build_execution(
@@ -181,6 +181,19 @@ def test_tool_exec_node_runs_incident_triage_workflow(monkeypatch):
                 summary="Found 2 supporting documents for payment-service timeout.",
                 output={
                     "matched_documents": "payment_service_runbook.md, incident_playbook.md",
+                },
+            )
+        if request.tool_name == "document_search":
+            assert request.arguments["search_mode"] == "qdrant"
+            assert request.arguments["source_prefixes"] == "customer_support_tickets_,it_support_v2_,bugsrepo_structured_"
+            return _build_execution(
+                tool_name="document_search",
+                action="query",
+                target=request.target,
+                summary="Found 2 external supporting records.",
+                output={
+                    "search_mode": "qdrant",
+                    "matched_documents": "customer_support_tickets_1.md, bugsrepo_structured_1801506.md",
                 },
             )
         return _build_execution(
@@ -208,8 +221,10 @@ def test_tool_exec_node_runs_incident_triage_workflow(monkeypatch):
     assert result["clarification_plan"]["confirmation_kind"] == "ticket_submission"
     assert result["clarification_plan"]["ticket_id"] == "TICKET-0001"
     assert result["answer_source"] == "local_incident_triage"
-    assert len(result["tool_chain"]) == 3
+    assert len(result["tool_chain"]) == 4
     assert result["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
     assert result["tool_chain"][1]["tool_plan"]["tool_name"] == "document_search"
-    assert result["tool_chain"][2]["tool_plan"]["tool_name"] == "ticketing"
-    assert result["tool_chain"][2]["tool_plan"]["action"] == "draft"
+    assert result["tool_chain"][2]["tool_plan"]["tool_name"] == "document_search"
+    assert result["tool_chain"][2]["tool_plan"]["arguments"]["search_mode"] == "qdrant"
+    assert result["tool_chain"][3]["tool_plan"]["tool_name"] == "ticketing"
+    assert result["tool_chain"][3]["tool_plan"]["action"] == "draft"

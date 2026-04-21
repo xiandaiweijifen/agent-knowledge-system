@@ -22,6 +22,7 @@ from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.ingestion import document_service
 from app.services.agent.state_store import JsonListRepository
 from app.services.llm.tool_planner_service import generate_llm_tool_plan
+from app.services.retrieval.qdrant_retrieval_service import retrieve_with_qdrant_corpus
 
 
 SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
@@ -1388,8 +1389,83 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
 def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     query = request.target.strip()
     filename_filter = request.arguments.get("filename", "").strip()
+    search_mode = request.arguments.get("search_mode", "").strip().lower()
     max_results = _parse_max_results_argument(request.arguments)
     trace_id = uuid.uuid4().hex
+
+    if search_mode == "qdrant":
+        source_prefixes = [
+            item.strip()
+            for item in request.arguments.get("source_prefixes", "").split(",")
+            if item.strip()
+        ]
+        documents = document_service.list_documents()
+        filenames = [
+            item["filename"]
+            for item in documents
+            if not source_prefixes
+            or any(item["filename"].startswith(prefix) for prefix in source_prefixes)
+        ]
+        retrieval = retrieve_with_qdrant_corpus(
+            query,
+            top_k=max_results or 3,
+            filenames=filenames or None,
+        )
+        knowledge_assets = [
+            KnowledgeAsset(
+                doc_id=match.source_filename,
+                service="",
+                doc_kind=_infer_doc_kind(match.source_filename),
+                section_path=[],
+                tags=["external-evidence", "qdrant"],
+                source_filename=match.source_filename,
+                title=Path(match.source_filename).stem.replace("_", " ").replace("-", " ").strip(),
+                snippet=match.content,
+            ).model_dump(mode="json")
+            for match in retrieval.matches
+        ]
+        matched_documents = [match.source_filename for match in retrieval.matches]
+        output: dict[str, Any] = {
+            **_build_tool_output_metadata(
+                output_kind="search_results",
+                resource_type="document_match",
+                target=query,
+                item_count=len(retrieval.matches),
+            ),
+            "query": query,
+            "search_mode": "qdrant",
+            "matched_count": str(len(retrieval.matches)),
+            "returned_count": str(len(retrieval.matches)),
+            "matched_documents": ", ".join(matched_documents),
+            "skipped_documents": "0",
+            "knowledge_assets": knowledge_assets,
+            "max_results": str(max_results or 3),
+            "retrieval_scope": retrieval.retrieval_scope,
+            "query_embedding_model": retrieval.query_embedding_model,
+        }
+        if source_prefixes:
+            output["source_prefixes"] = ", ".join(source_prefixes)
+        if retrieval.matches:
+            output["snippets"] = " | ".join(match.content[:240] for match in retrieval.matches[:3])
+            output["top_match_document"] = retrieval.matches[0].source_filename
+            output["top_match_score"] = f"{retrieval.matches[0].score:.3f}"
+            output["top_match_reason"] = "qdrant semantic match"
+
+        return ToolExecutionResponse(
+            tool_name="document_search",
+            action=request.action,
+            target=query,
+            execution_status="completed",
+            execution_mode="local_adapter",
+            result_summary=(
+                f"Found {len(retrieval.matches)} Qdrant document match(es) for '{query}'."
+                if retrieval.matches
+                else f"No Qdrant documents matched '{query}'."
+            ),
+            trace_id=trace_id,
+            executed_at=build_utc_timestamp(),
+            output=output,
+        )
 
     documents = document_service.list_documents()
     if filename_filter:
