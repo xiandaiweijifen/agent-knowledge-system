@@ -71,18 +71,18 @@ def build_qdrant_client() -> Any | None:
 
     QdrantClient, _ = _import_qdrant_client()
 
-    if settings.qdrant_local_path:
-        logger.info("Using local Qdrant path at %s", settings.qdrant_local_path)
-        client = QdrantClient(path=settings.qdrant_local_path)
+    if settings.qdrant_url:
+        logger.info("Using remote Qdrant endpoint at %s", settings.qdrant_url)
+        client = QdrantClient(
+            url=settings.qdrant_url,
+            api_key=settings.qdrant_api_key or None,
+            prefer_grpc=settings.qdrant_prefer_grpc,
+        )
         _QDRANT_CLIENT_CACHE[cache_key] = client
         return client
 
-    logger.info("Using remote Qdrant endpoint at %s", settings.qdrant_url)
-    client = QdrantClient(
-        url=settings.qdrant_url,
-        api_key=settings.qdrant_api_key or None,
-        prefer_grpc=settings.qdrant_prefer_grpc,
-    )
+    logger.info("Using local Qdrant path at %s", settings.qdrant_local_path)
+    client = QdrantClient(path=settings.qdrant_local_path)
     _QDRANT_CLIENT_CACHE[cache_key] = client
     return client
 

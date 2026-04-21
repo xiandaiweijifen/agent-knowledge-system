@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 def _embedding_request_kwargs() -> dict[str, object]:
     """Return shared HTTP client options for outbound embedding requests."""
     return {
-        "timeout": 30.0,
+        "timeout": httpx.Timeout(30.0, connect=5.0),
         "trust_env": settings.embedding_http_trust_env,
     }
 

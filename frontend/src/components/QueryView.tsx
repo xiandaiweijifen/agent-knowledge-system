@@ -810,6 +810,7 @@ export function QueryView({
       : [];
     const ticketId =
       String(ticketOutput.ticket_id ?? response.clarification_plan?.ticket_id ?? queryCopy.notAvailable);
+    const ticketSummary = ticketOutput.summary ? String(ticketOutput.summary) : "";
 
     return (
       <article className="subsection-card incident-triage-card">
@@ -909,8 +910,8 @@ export function QueryView({
                 <strong>{String(ticketOutput.submission_state ?? ticketOutput.status ?? queryCopy.notAvailable)}</strong>
               </div>
             </div>
-            {ticketOutput.summary && (
-              <p className="subsection-copy">{String(ticketOutput.summary)}</p>
+            {ticketSummary && (
+              <p className="subsection-copy">{ticketSummary}</p>
             )}
           </section>
         </div>

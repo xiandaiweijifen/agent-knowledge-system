@@ -78,6 +78,34 @@ def test_build_qdrant_client_uses_remote_url(monkeypatch):
     }
 
 
+def test_build_qdrant_client_prefers_remote_url_over_local_path(monkeypatch):
+    qdrant_client.reset_qdrant_client_cache()
+    captured = {}
+
+    class DummyClient:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+    monkeypatch.setattr(settings, "qdrant_url", "http://localhost:6333")
+    monkeypatch.setattr(settings, "qdrant_local_path", "tmp/qdrant")
+    monkeypatch.setattr(settings, "qdrant_api_key", "")
+    monkeypatch.setattr(settings, "qdrant_prefer_grpc", False)
+    monkeypatch.setattr(
+        qdrant_client,
+        "_import_qdrant_client",
+        lambda: (DummyClient, SimpleNamespace()),
+    )
+
+    client = qdrant_client.build_qdrant_client()
+
+    assert isinstance(client, DummyClient)
+    assert captured == {
+        "url": "http://localhost:6333",
+        "api_key": None,
+        "prefer_grpc": False,
+    }
+
+
 def test_build_qdrant_client_reuses_cached_instance(monkeypatch):
     qdrant_client.reset_qdrant_client_cache()
     created = {"count": 0}

@@ -5,6 +5,12 @@ import { describe, expect, it, vi } from "vitest";
 import { DocumentsView } from "./DocumentsView";
 
 describe("DocumentsView", () => {
+  const missingKnowledgeAssets = {
+    chunks_ready: false,
+    embeddings_ready: false,
+    llamaindex_ready: false,
+  };
+
   it("renders artifact readiness and triggers chunk persistence", async () => {
     const user = userEvent.setup();
     const onPersistChunks = vi.fn();
@@ -95,12 +101,12 @@ describe("DocumentsView", () => {
       <DocumentsView
         locale="en"
         documents={[
-          { filename: "agent_workflow.md", size_bytes: 100, suffix: ".md", knowledge_assets: {} },
-          { filename: "checkout_service_runbook.md", size_bytes: 101, suffix: ".md", knowledge_assets: {} },
-          { filename: "customer_support_tickets_1.md", size_bytes: 102, suffix: ".md", knowledge_assets: {} },
-          { filename: "incident_playbook.md", size_bytes: 103, suffix: ".md", knowledge_assets: {} },
-          { filename: "it_support_v2_1.md", size_bytes: 104, suffix: ".md", knowledge_assets: {} },
-          { filename: "payment_service_runbook.md", size_bytes: 105, suffix: ".md", knowledge_assets: {} },
+          { filename: "agent_workflow.md", size_bytes: 100, suffix: ".md", knowledge_assets: missingKnowledgeAssets },
+          { filename: "checkout_service_runbook.md", size_bytes: 101, suffix: ".md", knowledge_assets: missingKnowledgeAssets },
+          { filename: "customer_support_tickets_1.md", size_bytes: 102, suffix: ".md", knowledge_assets: missingKnowledgeAssets },
+          { filename: "incident_playbook.md", size_bytes: 103, suffix: ".md", knowledge_assets: missingKnowledgeAssets },
+          { filename: "it_support_v2_1.md", size_bytes: 104, suffix: ".md", knowledge_assets: missingKnowledgeAssets },
+          { filename: "payment_service_runbook.md", size_bytes: 105, suffix: ".md", knowledge_assets: missingKnowledgeAssets },
         ]}
         selectedFilename="agent_workflow.md"
         preview={null}

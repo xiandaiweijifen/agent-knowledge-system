@@ -1,5 +1,7 @@
 import json
 
+import httpx
+
 from app.core.config import settings
 from app.services.indexing import embedding_service
 from app.services.ingestion import document_service
@@ -140,7 +142,7 @@ def test_persist_document_embeddings_surfaces_provider_fallback_reason(
     assert "ValueError: bad_response_shape" in result["embedding_warning"]
 
 
-def test_build_gemini_embeddings_ignores_environment_proxies_by_default(monkeypatch):
+def test_build_gemini_embeddings_uses_configured_proxy_and_short_connect_timeout(monkeypatch):
     captured: dict[str, object] = {}
 
     class DummyResponse:
@@ -158,12 +160,14 @@ def test_build_gemini_embeddings_ignores_environment_proxies_by_default(monkeypa
 
     monkeypatch.setattr(settings, "gemini_api_key", "configured")
     monkeypatch.setattr(settings, "gemini_embedding_model", "gemini-embedding-001")
-    monkeypatch.setattr(settings, "embedding_http_trust_env", False)
+    monkeypatch.setattr(settings, "embedding_http_trust_env", True)
     monkeypatch.setattr(embedding_service.httpx, "post", fake_post)
 
     model, vectors = embedding_service.build_gemini_embeddings(["hello"])
 
     assert model == "gemini-embedding-001"
     assert vectors == [[0.1, 0.2, 0.3]]
-    assert captured["trust_env"] is False
-    assert captured["timeout"] == 30.0
+    assert captured["trust_env"] is True
+    assert isinstance(captured["timeout"], httpx.Timeout)
+    assert captured["timeout"].connect == 5.0
+    assert captured["timeout"].read == 30.0
