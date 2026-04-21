@@ -31,3 +31,24 @@ cd backend
 .\.venv\Scripts\python ..\scripts\prepare_external_dataset.py --dataset bugsrepo_structured --input ..\data\external\raw\bugsrepo_structured\sample.json --limit 50
 .\.venv\Scripts\python ..\scripts\import_external_tickets.py --input ..\data\external\processed\bugsrepo_structured.normalized.json --limit 50
 ```
+
+Small-batch knowledge validation:
+
+```powershell
+cd backend
+.\.venv\Scripts\python ..\scripts\import_external_knowledge_assets.py --input ..\data\external\processed\customer_support_tickets.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\import_external_knowledge_assets.py --input ..\data\external\processed\it_support_v2.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\import_external_knowledge_assets.py --input ..\data\external\processed\bugsrepo_structured.normalized.json --limit 10
+
+.\.venv\Scripts\python ..\scripts\persist_external_knowledge_assets.py --input ..\data\external\processed\customer_support_tickets.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\persist_external_knowledge_assets.py --input ..\data\external\processed\it_support_v2.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\persist_external_knowledge_assets.py --input ..\data\external\processed\bugsrepo_structured.normalized.json --limit 10
+
+.\.venv\Scripts\python ..\scripts\validate_external_knowledge_retrieval.py --strict
+```
+
+The validation command verifies that Qdrant can retrieve representative records from:
+
+- `customer_support_tickets`
+- `it_support_v2`
+- `bugsrepo_structured`
