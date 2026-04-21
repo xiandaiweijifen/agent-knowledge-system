@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     qdrant_collection_name: str = "agent_knowledge_chunks"
     qdrant_local_path: str = ""
     qdrant_prefer_grpc: bool = False
+    qdrant_http_trust_env: bool = False
+    qdrant_timeout_seconds: int = 5
     langsmith_tracing_enabled: bool = False
     langsmith_api_key: str = ""
     langsmith_project: str = "agent-knowledge-system"

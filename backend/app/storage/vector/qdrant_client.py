@@ -77,6 +77,9 @@ def build_qdrant_client() -> Any | None:
             url=settings.qdrant_url,
             api_key=settings.qdrant_api_key or None,
             prefer_grpc=settings.qdrant_prefer_grpc,
+            timeout=settings.qdrant_timeout_seconds,
+            check_compatibility=False,
+            trust_env=settings.qdrant_http_trust_env,
         )
         _QDRANT_CLIENT_CACHE[cache_key] = client
         return client

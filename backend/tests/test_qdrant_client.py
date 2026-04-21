@@ -75,6 +75,9 @@ def test_build_qdrant_client_uses_remote_url(monkeypatch):
         "url": "http://localhost:6333",
         "api_key": "secret",
         "prefer_grpc": True,
+        "timeout": settings.qdrant_timeout_seconds,
+        "check_compatibility": False,
+        "trust_env": settings.qdrant_http_trust_env,
     }
 
 
@@ -103,6 +106,9 @@ def test_build_qdrant_client_prefers_remote_url_over_local_path(monkeypatch):
         "url": "http://localhost:6333",
         "api_key": None,
         "prefer_grpc": False,
+        "timeout": settings.qdrant_timeout_seconds,
+        "check_compatibility": False,
+        "trust_env": settings.qdrant_http_trust_env,
     }
 
 

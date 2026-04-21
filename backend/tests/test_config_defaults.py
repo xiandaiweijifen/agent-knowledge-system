@@ -23,3 +23,10 @@ def test_embedding_http_trust_env_defaults_to_false():
     settings = Settings(_env_file=None)
 
     assert settings.embedding_http_trust_env is False
+
+
+def test_qdrant_http_defaults_are_proxy_safe():
+    settings = Settings(_env_file=None)
+
+    assert settings.qdrant_http_trust_env is False
+    assert settings.qdrant_timeout_seconds == 5
