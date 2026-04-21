@@ -995,14 +995,22 @@ textarea {
 .meta-pill {
   display: inline-flex;
   align-items: center;
-  padding: 6px 10px;
+  padding: 5px 9px;
   border: 1px solid rgba(159, 58, 29, 0.16);
   border-radius: 999px;
   background: rgba(255, 248, 240, 0.92);
   color: var(--accent-strong);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.compact-pill {
+  max-width: 100%;
+  border-radius: 12px;
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.72rem;
 }
 
 .muted-pill {
@@ -1024,6 +1032,29 @@ textarea {
   color: var(--muted);
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.compact-evidence-list {
+  gap: 6px;
+}
+
+.compact-evidence-list p {
+  display: -webkit-box;
+  line-height: 1.45;
+  max-height: 4.35em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.compact-evidence-list .evidence-overflow-note {
+  display: block;
+  max-height: none;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.78rem;
+  -webkit-line-clamp: initial;
 }
 
 .trace-grid {
@@ -1373,16 +1404,33 @@ textarea {
 .incident-triage-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: minmax(180px, 0.85fr) minmax(280px, 1.45fr) minmax(220px, 1fr);
 }
 
 .incident-card {
   display: grid;
   gap: 12px;
+  min-width: 0;
   padding: 14px 16px;
   border: 1px solid rgba(159, 58, 29, 0.14);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.82);
+}
+
+.incident-card .trace-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.incident-card .pill-strip {
+  gap: 6px;
+}
+
+.document-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  min-width: 0;
 }
 
 .technical-details summary {
@@ -1482,6 +1530,10 @@ textarea {
   }
 
   .summary-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .incident-triage-grid {
     grid-template-columns: 1fr;
   }
 

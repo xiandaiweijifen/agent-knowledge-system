@@ -793,6 +793,52 @@ export function QueryView({
     return terminalReason || workflowStatus || queryCopy.notAvailable;
   }
 
+  function splitDocumentList(value: unknown) {
+    return String(value ?? "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function renderDocumentPills(value: unknown) {
+    const documents = splitDocumentList(value);
+    if (documents.length === 0) {
+      return <strong>{queryCopy.notAvailable}</strong>;
+    }
+
+    return (
+      <div className="document-pill-list">
+        {documents.map((document) => (
+          <span key={document} className="meta-pill compact-pill">
+            {document}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  function renderEvidenceSnippets(assets: Array<Record<string, unknown>>, keyPrefix: string) {
+    const visibleAssets = assets.slice(0, 2);
+    if (visibleAssets.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="list-block compact-evidence-list">
+        {visibleAssets.map((asset, index) => (
+          <p key={`${String(asset.doc_id ?? keyPrefix)}-${index}`}>
+            {String(asset.snippet ?? asset.title ?? asset.doc_id ?? queryCopy.notAvailable)}
+          </p>
+        ))}
+        {assets.length > visibleAssets.length && (
+          <p className="evidence-overflow-note">
+            +{assets.length - visibleAssets.length} more evidence item(s) in execution details.
+          </p>
+        )}
+      </div>
+    );
+  }
+
   function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
     if (!response || !isIncidentTriageWorkflow(response)) {
       return null;
@@ -881,39 +927,23 @@ export function QueryView({
             <div className="trace-grid">
               <div>
                 <span className="trace-label">{queryCopy.matchedDocuments}</span>
-                <strong>{String(evidenceOutput.matched_documents ?? queryCopy.notAvailable)}</strong>
+                {renderDocumentPills(evidenceOutput.matched_documents)}
               </div>
               <div>
                 <span className="trace-label">{queryCopy.runbookEvidence}</span>
-                <strong>{String(evidenceOutput.filename_filter ?? queryCopy.notAvailable)}</strong>
+                {renderDocumentPills(evidenceOutput.filename_filter)}
               </div>
             </div>
-            {knowledgeAssets.length > 0 && (
-              <div className="list-block">
-                {knowledgeAssets.map((asset, index) => (
-                  <p key={`${String(asset.doc_id ?? "asset")}-${index}`}>
-                    {String(asset.snippet ?? asset.title ?? asset.doc_id ?? queryCopy.notAvailable)}
-                  </p>
-                ))}
-              </div>
-            )}
+            {renderEvidenceSnippets(knowledgeAssets, "runbook-asset")}
             {externalEvidenceStep && (
               <>
                 <div className="trace-grid">
                   <div>
                     <span className="trace-label">{queryCopy.externalEvidence}</span>
-                    <strong>{String(externalEvidenceOutput.matched_documents ?? queryCopy.notAvailable)}</strong>
+                    {renderDocumentPills(externalEvidenceOutput.matched_documents)}
                   </div>
                 </div>
-                {externalKnowledgeAssets.length > 0 && (
-                  <div className="list-block">
-                    {externalKnowledgeAssets.map((asset, index) => (
-                      <p key={`${String(asset.doc_id ?? "external-asset")}-${index}`}>
-                        {String(asset.snippet ?? asset.title ?? asset.doc_id ?? queryCopy.notAvailable)}
-                      </p>
-                    ))}
-                  </div>
-                )}
+                {renderEvidenceSnippets(externalKnowledgeAssets, "external-asset")}
               </>
             )}
           </section>
