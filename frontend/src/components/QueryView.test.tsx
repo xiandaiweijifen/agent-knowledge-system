@@ -1810,5 +1810,214 @@ describe("QueryView", () => {
       { submission_confirmation: "no" },
     );
   });
+
+  it("renders the submitted ticket state from the latest ticketing step", () => {
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft"
+        topK={3}
+        activePresetQuestions={[]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-incident-submitted",
+          question: "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+          workflow_status: "completed",
+          terminal_reason: "ticket_submitted",
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Incident triage should inspect service health and submit a ticket after confirmation.",
+            filename: null,
+          },
+          workflow_trace: [],
+          answer: "Incident triage submitted ticket TICKET-0336 for payment-service after operator confirmation.",
+          answer_source: "local_incident_triage",
+          tool_plan: {
+            question:
+              "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+            planning_mode: "agent_v2_incident_triage_resume",
+            route_hint: "tool_execution",
+            tool_name: "ticketing",
+            action: "submit",
+            target: "payment-service",
+            arguments: {
+              ticket_id: "TICKET-0336",
+            },
+            plan_summary: "Plan ticketing:submit for payment-service.",
+          },
+          tool_execution: {
+            tool_name: "ticketing",
+            action: "submit",
+            target: "payment-service",
+            execution_status: "completed",
+            execution_mode: "local_adapter",
+            result_summary: "Submitted ticket draft TICKET-0336 for payment-service.",
+            trace_id: "trace-submit",
+            executed_at: "2026-04-18T08:37:01.953589+00:00",
+            output: {
+              ticket_id: "TICKET-0336",
+              status: "open",
+              submission_state: "submitted",
+              severity: "high",
+              environment: "production",
+              summary:
+                "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+            },
+          },
+          tool_chain: [
+            {
+              step_id: "step_1",
+              step_index: 1,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-18T08:36:24.168994+00:00",
+              completed_at: "2026-04-18T08:36:24.172473+00:00",
+              question:
+                "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+              tool_plan: {
+                question:
+                  "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+                planning_mode: "agent_v2_incident_triage",
+                route_hint: "tool_execution",
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                arguments: {
+                  environment: "production",
+                },
+                plan_summary: "Plan system_status:query for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary:
+                  "Collected local system status for payment-service with requested environment production.",
+                trace_id: "trace-status",
+                executed_at: "2026-04-18T08:36:24.172473+00:00",
+                output: {
+                  service: "payment-service",
+                  environment: "production",
+                  health: "degraded",
+                  latency_p95_ms: "1320",
+                },
+              },
+            },
+            {
+              step_id: "step_2",
+              step_index: 2,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-18T08:36:25.524006+00:00",
+              completed_at: "2026-04-18T08:36:25.541924+00:00",
+              question:
+                "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+              tool_plan: {
+                question:
+                  "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+                planning_mode: "agent_v2_incident_triage",
+                route_hint: "tool_execution",
+                tool_name: "ticketing",
+                action: "draft",
+                target: "payment-service",
+                arguments: {
+                  severity: "high",
+                  environment: "production",
+                },
+                plan_summary: "Plan ticketing:draft for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "ticketing",
+                action: "draft",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Prepared ticket draft TICKET-0336 for payment-service.",
+                trace_id: "trace-draft",
+                executed_at: "2026-04-18T08:36:25.541924+00:00",
+                output: {
+                  ticket_id: "TICKET-0336",
+                  status: "draft",
+                  submission_state: "awaiting_user_confirmation",
+                  severity: "high",
+                  environment: "production",
+                  summary:
+                    "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+                },
+              },
+            },
+            {
+              step_id: "step_3",
+              step_index: 3,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-18T08:37:01.921859+00:00",
+              completed_at: "2026-04-18T08:37:01.953589+00:00",
+              question:
+                "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+              tool_plan: {
+                question:
+                  "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+                planning_mode: "agent_v2_incident_triage_resume",
+                route_hint: "tool_execution",
+                tool_name: "ticketing",
+                action: "submit",
+                target: "payment-service",
+                arguments: {
+                  ticket_id: "TICKET-0336",
+                },
+                plan_summary: "Plan ticketing:submit for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "ticketing",
+                action: "submit",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Submitted ticket draft TICKET-0336 for payment-service.",
+                trace_id: "trace-submit",
+                executed_at: "2026-04-18T08:37:01.953589+00:00",
+                output: {
+                  ticket_id: "TICKET-0336",
+                  status: "open",
+                  submission_state: "submitted",
+                  severity: "high",
+                  environment: "production",
+                  summary:
+                    "Service is degraded due to elevated timeout rate and downstream DB latency. Observed symptom: timeout.",
+                },
+              },
+            },
+          ],
+        }}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    const ticketLabels = screen.getAllByText("Ticket Draft");
+    const ticketCard = ticketLabels[ticketLabels.length - 1].closest("section");
+
+    expect(ticketCard).not.toBeNull();
+    expect(within(ticketCard as HTMLElement).getByText("submitted")).toBeInTheDocument();
+    expect(within(ticketCard as HTMLElement).queryByText("awaiting_user_confirmation")).not.toBeInTheDocument();
+  });
 });
 

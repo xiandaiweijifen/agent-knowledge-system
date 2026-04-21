@@ -843,7 +843,10 @@ export function QueryView({
     const runbookEvidenceStep =
       evidenceSteps.find((step) => step.tool_plan.arguments?.search_mode !== "qdrant") ?? evidenceSteps[0];
     const externalEvidenceStep = evidenceSteps.find((step) => step.tool_plan.arguments?.search_mode === "qdrant");
-    const ticketStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "ticketing");
+    const ticketSteps = response.tool_chain.filter((step) => step.tool_plan.tool_name === "ticketing");
+    const ticketStep =
+      ticketSteps.find((step) => step.tool_plan.action === "submit") ??
+      ticketSteps[ticketSteps.length - 1];
     const statusOutput = (statusStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
     const evidenceOutput = (runbookEvidenceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
     const externalEvidenceOutput = (externalEvidenceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
