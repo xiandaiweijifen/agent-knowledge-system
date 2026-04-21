@@ -1034,27 +1034,10 @@ textarea {
   word-break: break-word;
 }
 
-.compact-evidence-list {
-  gap: 6px;
-}
-
-.compact-evidence-list p {
-  display: -webkit-box;
-  line-height: 1.45;
-  max-height: 4.35em;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-}
-
-.compact-evidence-list .evidence-overflow-note {
-  display: block;
-  max-height: none;
-  padding: 0;
-  background: transparent;
+.evidence-overflow-note {
+  margin: 0;
   color: var(--accent);
   font-size: 0.78rem;
-  -webkit-line-clamp: initial;
 }
 
 .trace-grid {
@@ -1404,7 +1387,8 @@ textarea {
 .incident-triage-grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: minmax(180px, 0.85fr) minmax(280px, 1.45fr) minmax(220px, 1fr);
+  grid-template-columns: minmax(190px, 0.85fr) minmax(320px, 1.35fr) minmax(260px, 1fr);
+  align-items: start;
 }
 
 .incident-card {
@@ -1418,7 +1402,7 @@ textarea {
 }
 
 .incident-card .trace-grid {
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 }
 
 .incident-card .pill-strip {
@@ -1431,6 +1415,17 @@ textarea {
   gap: 6px;
   margin-top: 6px;
   min-width: 0;
+}
+
+.ticket-summary-block {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 248, 240, 0.55);
+  color: var(--muted);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .technical-details summary {

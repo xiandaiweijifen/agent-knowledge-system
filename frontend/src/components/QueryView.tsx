@@ -818,25 +818,19 @@ export function QueryView({
   }
 
   function renderEvidenceSnippets(assets: Array<Record<string, unknown>>, keyPrefix: string) {
-    const visibleAssets = assets.slice(0, 2);
-    if (visibleAssets.length === 0) {
+    if (assets.length === 0) {
       return null;
     }
 
     return (
-      <div className="list-block compact-evidence-list">
-        {visibleAssets.map((asset, index) => (
-          <p key={`${String(asset.doc_id ?? keyPrefix)}-${index}`}>
-            {String(asset.snippet ?? asset.title ?? asset.doc_id ?? queryCopy.notAvailable)}
-          </p>
-        ))}
-        {assets.length > visibleAssets.length && (
-          <p className="evidence-overflow-note">
-            +{assets.length - visibleAssets.length} more evidence item(s) in execution details.
-          </p>
-        )}
-      </div>
+      <p className="evidence-overflow-note">
+        {assets.length} evidence item(s) available in execution details.
+      </p>
     );
+  }
+
+  function formatTicketSummary(summary: string) {
+    return summary.replace(/\s*External evidence:\s*.+$/i, "").trim();
   }
 
   function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
@@ -969,7 +963,7 @@ export function QueryView({
               </div>
             </div>
             {ticketSummary && (
-              <p className="subsection-copy">{ticketSummary}</p>
+              <p className="ticket-summary-block">{formatTicketSummary(ticketSummary)}</p>
             )}
           </section>
         </div>
