@@ -60,6 +60,9 @@ Implemented and usable today:
 - persisted workflow runs with trace events, lineage metadata, and maintenance endpoints
 - retrieval, route, workflow, and tool-execution evaluation datasets with a frontend evaluation console
 - locally persisted evaluation reports, overview caching, and benchmark history
+- an incident triage workflow that combines service status, runbook evidence,
+  imported external ticket evidence, ticket draft creation, and human-confirmed
+  submission
 
 Still intentionally unfinished:
 
@@ -67,6 +70,7 @@ Still intentionally unfinished:
 - real external system adapters
 - broader multi-step `agent_v2` workflow branching and policy logic
 - deeper cost and latency analytics
+- production adapters for real monitoring and ticketing systems
 
 Knowledge-layer status today:
 
@@ -176,11 +180,17 @@ Local adapter-style tools currently include:
 
 The ticketing tool currently supports:
 
+- `draft`
+- `submit`
 - `create`
 - `update`
 - `close`
 - `query`
 - `list`
+
+`draft` and `submit` are the preferred incident workflow actions. The agent
+prepares ticket drafts first, then waits for explicit user confirmation before
+submitting the ticket.
 
 ### 4. Workflow Runtime
 
@@ -197,7 +207,45 @@ The agent runtime already supports:
 - retry state and recovery action semantics
 - run listing, lookup, stats, pruning, reset, and schema migration
 
-### 5. Evaluation and Observability
+### 5. Incident Triage Workflow
+
+The primary engineering-support scenario is `Incident Triage`.
+
+Example request:
+
+```text
+Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft
+```
+
+The `agent_v2` workflow executes:
+
+1. `system_status:query`
+   Inspect the requested service and environment using structured service status snapshots.
+2. `document_search:query`
+   Search the service runbook, such as `payment_service_runbook.md`, for symptom-specific evidence.
+3. `document_search:query` with `search_mode=qdrant`
+   Retrieve imported external support, incident, or issue records from Qdrant.
+4. `ticketing:draft`
+   Prepare an incident ticket draft with severity, environment, summary, and supporting evidence.
+5. human confirmation
+   Wait for the user to choose submit or cancel.
+6. `ticketing:submit`
+   Submit the prepared ticket only after explicit confirmation.
+
+Current evidence sources:
+
+- service status snapshots from local mock service data
+- curated service runbooks
+- normalized external records from:
+  - `customer_support_tickets`
+  - `it_support_v2`
+  - `bugsrepo_structured`
+
+The frontend Query view renders this as a compact task panel with service
+health, runbook evidence, imported ticket evidence, ticket draft details, and
+submit/cancel controls.
+
+### 6. Evaluation and Observability
 
 - retrieval evaluation datasets and reports
 - retrieval groundedness and citation coverage metrics
@@ -618,6 +666,36 @@ cd backend
 .\.venv\Scripts\activate
 python ..\scripts\backfill_qdrant.py
 ```
+
+## External Knowledge Validation
+
+External datasets are staged under `data/external`.
+
+The current small-batch validation path imports 10 records from each selected
+dataset, persists chunks and Gemini embeddings, syncs them into Qdrant, and
+then runs representative retrieval smoke tests:
+
+```powershell
+cd backend
+.\.venv\Scripts\python ..\scripts\import_external_knowledge_assets.py --input ..\data\external\processed\customer_support_tickets.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\import_external_knowledge_assets.py --input ..\data\external\processed\it_support_v2.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\import_external_knowledge_assets.py --input ..\data\external\processed\bugsrepo_structured.normalized.json --limit 10
+
+.\.venv\Scripts\python ..\scripts\persist_external_knowledge_assets.py --input ..\data\external\processed\customer_support_tickets.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\persist_external_knowledge_assets.py --input ..\data\external\processed\it_support_v2.normalized.json --limit 10
+.\.venv\Scripts\python ..\scripts\persist_external_knowledge_assets.py --input ..\data\external\processed\bugsrepo_structured.normalized.json --limit 10
+
+.\.venv\Scripts\python ..\scripts\validate_external_knowledge_retrieval.py --strict
+```
+
+Expected validation state:
+
+- Qdrant collection `agent_knowledge_chunks`
+- vector size `3072`
+- external retrieval smoke cases pass for:
+  - `customer_support_tickets`
+  - `it_support_v2`
+  - `bugsrepo_structured`
 
 ## Retrieval Eval Matrix
 
