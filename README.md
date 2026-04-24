@@ -192,6 +192,12 @@ The ticketing tool currently supports:
 prepares ticket drafts first, then waits for explicit user confirmation before
 submitting the ticket.
 
+Ticket records are persisted in `data/tool_state/tickets.json`. For local
+inspection and demos, every created, drafted, submitted, updated, or closed
+ticket also writes a readable markdown artifact and a JSON artifact under
+`data/tool_state/tickets/`. These files are runtime artifacts and are ignored by
+Git.
+
 ### 4. Workflow Runtime
 
 The agent runtime already supports:

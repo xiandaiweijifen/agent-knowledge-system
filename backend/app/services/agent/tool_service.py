@@ -71,6 +71,18 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
                 "description": "Structured incident ticket collection for list actions.",
                 "domain_entity": "IncidentTicket",
             },
+            {
+                "name": "ticket_artifact_path",
+                "value_type": "string",
+                "description": "Local markdown artifact path for a created or updated ticket.",
+                "domain_entity": "IncidentTicket",
+            },
+            {
+                "name": "ticket_artifact_json_path",
+                "value_type": "string",
+                "description": "Local JSON artifact path for a created or updated ticket.",
+                "domain_entity": "IncidentTicket",
+            },
         ],
     },
     "system_status": {
@@ -484,6 +496,78 @@ def _save_ticket_store(tickets: list[dict[str, Any]]) -> None:
         TICKET_STORE_PATH,
         normalizer=_normalize_ticket_record,
     ).save(tickets)
+
+
+def _ticket_artifact_dir() -> Path:
+    return TICKET_STORE_PATH.parent / "tickets"
+
+
+def _ticket_artifact_paths(ticket_id: str) -> tuple[Path, Path]:
+    safe_ticket_id = re.sub(r"[^A-Za-z0-9._-]+", "-", ticket_id.strip()) or "ticket"
+    ticket_dir = _ticket_artifact_dir()
+    return ticket_dir / f"{safe_ticket_id}.md", ticket_dir / f"{safe_ticket_id}.json"
+
+
+def _format_optional_ticket_value(ticket: dict[str, Any], key: str, default: str = "unspecified") -> str:
+    value = ticket.get(key)
+    if value is None:
+        return default
+    normalized = str(value).strip()
+    return normalized or default
+
+
+def _render_ticket_markdown(ticket: dict[str, Any]) -> str:
+    ticket_id = _format_optional_ticket_value(ticket, "ticket_id", "TICKET-UNKNOWN")
+    summary = _format_optional_ticket_value(ticket, "summary", "No summary provided.")
+    supporting_summary = _format_optional_ticket_value(ticket, "supporting_summary", "")
+    submitted_at = _format_optional_ticket_value(ticket, "submitted_at", "")
+    closed_at = _format_optional_ticket_value(ticket, "closed_at", "")
+
+    lifecycle_lines = [
+        f"- Created At: {_format_optional_ticket_value(ticket, 'created_at')}",
+        f"- Updated At: {_format_optional_ticket_value(ticket, 'updated_at')}",
+    ]
+    if submitted_at:
+        lifecycle_lines.append(f"- Submitted At: {submitted_at}")
+    if closed_at:
+        lifecycle_lines.append(f"- Closed At: {closed_at}")
+
+    sections = [
+        f"# {ticket_id}",
+        "",
+        f"- Title: {_format_optional_ticket_value(ticket, 'title', 'Untitled incident')}",
+        f"- Service: {_format_optional_ticket_value(ticket, 'service')}",
+        f"- Target: {_format_optional_ticket_value(ticket, 'target')}",
+        f"- Environment: {_format_optional_ticket_value(ticket, 'environment')}",
+        f"- Severity: {_format_optional_ticket_value(ticket, 'severity')}",
+        f"- Status: {_format_optional_ticket_value(ticket, 'status')}",
+        f"- Submission State: {_format_optional_ticket_value(ticket, 'submission_state')}",
+        "",
+        "## Summary",
+        "",
+        summary,
+        "",
+        "## Lifecycle",
+        "",
+        *lifecycle_lines,
+    ]
+    if supporting_summary and supporting_summary != summary:
+        sections.extend(["", "## Supporting Evidence", "", supporting_summary])
+    return "\n".join(sections).rstrip() + "\n"
+
+
+def _persist_ticket_artifacts(ticket: dict[str, Any]) -> dict[str, Any]:
+    ticket_id = str(ticket.get("ticket_id") or "").strip()
+    if not ticket_id:
+        return ticket
+
+    markdown_path, json_path = _ticket_artifact_paths(ticket_id)
+    markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    ticket["ticket_artifact_path"] = str(markdown_path)
+    ticket["ticket_artifact_json_path"] = str(json_path)
+    markdown_path.write_text(_render_ticket_markdown(ticket), encoding="utf-8")
+    json_path.write_text(json.dumps(ticket, ensure_ascii=False, indent=2), encoding="utf-8")
+    return ticket
 
 
 def _load_mock_services() -> list[dict[str, Any]]:
@@ -1044,9 +1128,6 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
                 ticket[context_key] = context_value
         if summary:
             ticket["supporting_summary"] = summary
-        tickets.append(ticket)
-        _save_ticket_store(tickets)
-
         ticket["ticket_record"] = _build_incident_ticket_record(
             ticket_id=ticket_id,
             title=title,
@@ -1061,6 +1142,9 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             if request.arguments.get("supporting_status", "").strip()
             else [],
         )
+        _persist_ticket_artifacts(ticket)
+        tickets.append(ticket)
+        _save_ticket_store(tickets)
 
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -1120,6 +1204,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             updated_at=now,
             summary=summary,
         )
+        _persist_ticket_artifacts(ticket)
         tickets.append(ticket)
         _save_ticket_store(tickets)
 
@@ -1227,6 +1312,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             assignee=ticket.get("assignee"),
             source_run_id=ticket.get("source_run_id"),
         )
+        _persist_ticket_artifacts(ticket)
         _save_ticket_store(tickets)
 
         return ToolExecutionResponse(
@@ -1274,6 +1360,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             assignee=ticket.get("assignee"),
             source_run_id=ticket.get("source_run_id"),
         )
+        _persist_ticket_artifacts(ticket)
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
             tool_name="ticketing",
@@ -1317,6 +1404,7 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
             assignee=ticket.get("assignee"),
             source_run_id=ticket.get("source_run_id"),
         )
+        _persist_ticket_artifacts(ticket)
         _save_ticket_store(tickets)
         return ToolExecutionResponse(
             tool_name="ticketing",
