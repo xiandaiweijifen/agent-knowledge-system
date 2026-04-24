@@ -249,6 +249,12 @@ The `agent_v2` workflow executes:
 6. `ticketing:submit`
    Submit the prepared ticket only after explicit confirmation.
 
+Internally, this workflow is now organized around three reusable skills:
+
+- `review_service_health`
+- `collect_incident_evidence`
+- `prepare_incident_ticket`
+
 Current evidence sources:
 
 - service status snapshots from local mock service data

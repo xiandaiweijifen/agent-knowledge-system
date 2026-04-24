@@ -4,6 +4,12 @@ import re
 
 from app.schemas.tools import ToolExecutionRequest
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
+from app.services.agent_v2.skills.incident_triage import (
+    build_incident_triage_summary,
+    run_collect_incident_evidence_skill,
+    run_prepare_incident_ticket_skill,
+    run_review_service_health_skill,
+)
 from app.services.agent_v2.state import AgentState
 from app.services.ingestion.document_service import build_utc_timestamp
 
@@ -137,94 +143,6 @@ def _execute_single_step(
     )
 
 
-def _build_incident_triage_summary(
-    *,
-    service: str,
-    environment: str,
-    symptom: str,
-    status_output: dict,
-    search_output: dict | None,
-    draft_output: dict | None,
-) -> str:
-    status_summary = status_output.get("summary") or f"{service} status checked in {environment}."
-    if draft_output is None:
-        return (
-            f"Incident triage for {service} in {environment} found no ticket-worthy issue. "
-            f"{status_summary}"
-        )
-
-    matched_documents = ""
-    if isinstance(search_output, dict):
-        matched_documents = str(search_output.get("matched_documents") or "").strip()
-    document_clause = f" Supporting evidence came from {matched_documents}." if matched_documents else ""
-    return (
-        f"Incident triage for {service} in {environment} found a likely {symptom} issue. "
-        f"{status_summary} Prepared ticket draft {draft_output.get('ticket_id', 'unknown')} for operator review."
-        f"{document_clause}"
-    )
-
-
-def _build_external_evidence_query(
-    *,
-    service: str,
-    environment: str,
-    symptom: str,
-    status_output: dict,
-) -> str:
-    alerts = status_output.get("active_alerts")
-    alert_text = " ".join(str(item) for item in alerts if str(item).strip()) if isinstance(alerts, list) else ""
-    status_summary = str(status_output.get("summary") or "")
-    return " ".join(
-        part
-        for part in [service, environment, symptom, alert_text, status_summary]
-        if part.strip()
-    ).strip()
-
-
-def _build_ticket_submission_confirmation(
-    *,
-    service: str,
-    environment: str,
-    draft_output: dict,
-) -> tuple[str, dict]:
-    ticket_id = str(draft_output.get("ticket_id") or "unknown").strip()
-    confirmation_question = (
-        f"Draft {ticket_id} is ready for {service} in {environment}. Do you want me to submit it?"
-    )
-    return confirmation_question, {
-        "question": confirmation_question,
-        "planning_mode": "agent_v2_incident_triage",
-        "confirmation_kind": "ticket_submission",
-        "missing_fields": ["submission_confirmation"],
-        "follow_up_questions": [
-            f"Confirm whether to submit ticket draft {ticket_id}."
-        ],
-        "clarification_summary": confirmation_question,
-        "ticket_id": ticket_id,
-        "service": service,
-        "environment": environment,
-    }
-
-
-def _select_evidence_filename(service_record: dict, symptom: str) -> str | None:
-    runbook_doc_ids = service_record.get("runbook_doc_ids")
-    if not isinstance(runbook_doc_ids, list) or not runbook_doc_ids:
-        return None
-
-    lowered_symptom = symptom.lower()
-    preferred_keywords = [lowered_symptom]
-    if lowered_symptom == "timeout":
-        preferred_keywords.extend(["runbook", "incident", "payment"])
-
-    for keyword in preferred_keywords:
-        for candidate in runbook_doc_ids:
-            if isinstance(candidate, str) and keyword in candidate.lower():
-                return candidate
-
-    first_candidate = runbook_doc_ids[0]
-    return first_candidate if isinstance(first_candidate, str) and first_candidate.strip() else None
-
-
 def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, str]) -> dict:
     question = state["question"]
     service = triage_context["service"]
@@ -234,24 +152,20 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
     tool_chain: list[dict] = []
 
     try:
-        status_step, status_execution = _execute_single_step(
+        status_steps, status_output = run_review_service_health_skill(
             state=state,
-            step_index=1,
             question=question,
-            tool_name="system_status",
-            action="query",
-            target=service,
-            arguments={"environment": environment, "issue_type": symptom},
-            planning_mode="agent_v2_incident_triage",
+            service=service,
+            environment=environment,
+            symptom=symptom,
+            execute_step=_execute_single_step,
         )
-        tool_chain.append(status_step)
-        status_output = status_execution.model_dump().get("output", {})
-        service_record = status_output.get("service_record", {})
+        tool_chain.extend(status_steps)
         health = str(status_output.get("health") or status_output.get("status") or "").lower()
         if health in {"healthy", "ok", "nominal"}:
             return {
                 "tool_chain": tool_chain,
-                "answer": _build_incident_triage_summary(
+                "answer": build_incident_triage_summary(
                     service=service,
                     environment=environment,
                     symptom=symptom,
@@ -267,69 +181,33 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
                 "retry_count": 0,
             }
 
-        evidence_filename = _select_evidence_filename(service_record, symptom)
-        search_step, search_execution = _execute_single_step(
+        evidence_steps, search_output, external_search_output = run_collect_incident_evidence_skill(
             state=state,
-            step_index=2,
             question=question,
-            tool_name="document_search",
-            action="query",
-            target=symptom,
-            arguments={
-                "max_results": "3",
-                **({"filename": evidence_filename} if evidence_filename else {}),
-            },
-            planning_mode="agent_v2_incident_triage",
+            service=service,
+            environment=environment,
+            symptom=symptom,
+            status_output=status_output,
+            execute_step=_execute_single_step,
         )
-        tool_chain.append(search_step)
-        search_output = search_execution.model_dump().get("output", {})
+        tool_chain.extend(evidence_steps)
 
-        external_search_step, external_search_execution = _execute_single_step(
+        ticket_steps, draft_output, clarification_question, clarification_plan = run_prepare_incident_ticket_skill(
             state=state,
-            step_index=3,
             question=question,
-            tool_name="document_search",
-            action="query",
-            target=_build_external_evidence_query(
-                service=service,
-                environment=environment,
-                symptom=symptom,
-                status_output=status_output,
-            ),
-            arguments={
-                "max_results": "3",
-                "search_mode": "qdrant",
-                "source_prefixes": "customer_support_tickets_,it_support_v2_,bugsrepo_structured_",
-            },
-            planning_mode="agent_v2_incident_triage",
+            service=service,
+            environment=environment,
+            severity=severity,
+            symptom=symptom,
+            status_output=status_output,
+            external_search_output=external_search_output,
+            execute_step=_execute_single_step,
         )
-        tool_chain.append(external_search_step)
-        external_search_output = external_search_execution.model_dump().get("output", {})
-
-        status_summary = status_output.get("summary") or f"{service} is degraded in {environment}."
-        draft_step, draft_execution = _execute_single_step(
-            state=state,
-            step_index=4,
-            question=question,
-            tool_name="ticketing",
-            action="draft",
-            target=service,
-            arguments={
-                "severity": severity,
-                "environment": environment,
-                "supporting_summary": (
-                    f"{status_summary} Observed symptom: {symptom}. "
-                    f"External evidence: {external_search_output.get('matched_documents', '')}."
-                ).strip(),
-            },
-            planning_mode="agent_v2_incident_triage",
-        )
-        tool_chain.append(draft_step)
-        draft_output = draft_execution.model_dump().get("output", {})
+        tool_chain.extend(ticket_steps)
 
         return {
             "tool_chain": tool_chain,
-            "answer": _build_incident_triage_summary(
+            "answer": build_incident_triage_summary(
                 service=service,
                 environment=environment,
                 symptom=symptom,
@@ -350,16 +228,8 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
             "answer_source": "local_incident_triage",
             "workflow_status": "clarification_required",
             "terminal_reason_override": None,
-            "clarification_question": _build_ticket_submission_confirmation(
-                service=service,
-                environment=environment,
-                draft_output=draft_output,
-            )[0],
-            "clarification_plan": _build_ticket_submission_confirmation(
-                service=service,
-                environment=environment,
-                draft_output=draft_output,
-            )[1],
+            "clarification_question": clarification_question,
+            "clarification_plan": clarification_plan,
             "failure_stage": None,
             "retry_state": "not_applicable",
             "retry_count": 0,
