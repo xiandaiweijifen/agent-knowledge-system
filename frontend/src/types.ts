@@ -151,6 +151,22 @@ export type WorkflowTraceEvent = {
   detail: string;
 };
 
+export type SkillDefinition = {
+  skill_id: string;
+  skill_label: string;
+  description: string;
+  owned_tools: string[];
+  workflow_families: string[];
+};
+
+export type SkillTraceRecord = {
+  skill_id: string;
+  skill_label: string;
+  status: string;
+  summary: string;
+  tool_names: string[];
+};
+
 export type AgentStreamEvent = {
   event_id: string;
   event_type: string;
@@ -211,6 +227,8 @@ export type ToolChainStep = {
   started_at: string;
   completed_at?: string | null;
   question: string;
+  skill_id?: string | null;
+  skill_label?: string | null;
   tool_plan: ToolPlan;
   tool_execution: ToolExecution | null;
   failure_message?: string | null;
@@ -281,6 +299,9 @@ export type AgentWorkflowResponse = {
   answer_latency_ms?: number | null;
   chat_provider?: string | null;
   chat_model?: string | null;
+  workflow_family?: string | null;
+  available_skills?: SkillDefinition[];
+  skill_trace?: SkillTraceRecord[];
   retrieval?: RetrievalResponse | null;
   clarification_message?: string | null;
   clarification_plan?: ClarificationPlan | null;
@@ -339,6 +360,7 @@ export type AgentWorkflowRunSummary = {
   filename?: string | null;
   answered_at?: string | null;
   answer_source?: string | null;
+  workflow_family?: string | null;
   final_tool_name?: string | null;
   final_tool_action?: string | null;
 };

@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from app.schemas.skills import SkillDefinition, SkillTraceRecord
+
 
 class QueryRequest(BaseModel):
     filename: str | None = None
@@ -53,6 +55,8 @@ class WorkflowStepRecord(BaseModel):
     started_at: str
     completed_at: str | None = None
     question: str
+    skill_id: str | None = None
+    skill_label: str | None = None
     tool_plan: dict
     tool_execution: dict | None = None
     failure_message: str | None = None
@@ -210,6 +214,9 @@ class AgentWorkflowResponse(BaseModel):
     answer_latency_ms: float | None = None
     chat_provider: str | None = None
     chat_model: str | None = None
+    workflow_family: str | None = None
+    available_skills: list[SkillDefinition] = Field(default_factory=list)
+    skill_trace: list[SkillTraceRecord] = Field(default_factory=list)
     retrieval: RetrievalResult | None = None
     clarification_message: str | None = None
     clarification_plan: dict | None = None
@@ -268,6 +275,7 @@ class AgentWorkflowRunSummary(BaseModel):
     filename: str | None = None
     answered_at: str | None = None
     answer_source: str | None = None
+    workflow_family: str | None = None
     final_tool_name: str | None = None
     final_tool_action: str | None = None
 

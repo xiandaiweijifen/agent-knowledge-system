@@ -379,6 +379,20 @@ def test_orchestrate_agent_v2_request_returns_incident_triage_result(monkeypatch
     assert response.answer_source == "local_incident_triage"
     assert response.step_count == 3
     assert response.tool_execution["action"] == "draft"
+    assert response.workflow_family == "incident_triage"
+    assert [skill.skill_id for skill in response.available_skills] == [
+        "review_service_health",
+        "collect_incident_evidence",
+        "prepare_incident_ticket",
+    ]
+    assert [skill.skill_id for skill in response.skill_trace] == [
+        "review_service_health",
+        "collect_incident_evidence",
+        "prepare_incident_ticket",
+    ]
+    assert response.tool_chain[0].skill_id == "review_service_health"
+    assert response.tool_chain[1].skill_id == "collect_incident_evidence"
+    assert response.tool_chain[2].skill_id == "prepare_incident_ticket"
     assert response.recommended_recovery_action == "resume_with_clarification"
     assert response.clarification_plan["confirmation_kind"] == "ticket_submission"
     assert response.workflow_trace[-1].stage == "clarification"

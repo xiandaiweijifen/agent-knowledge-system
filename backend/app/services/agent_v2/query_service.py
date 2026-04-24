@@ -25,6 +25,46 @@ from app.services.agent_v2.run_store import (
 from app.services.agent_v2.tracing import finalize_agent_v2_trace, trace_agent_v2_run
 
 
+SKILL_CATALOG: dict[str, dict[str, Any]] = {
+    "retrieve_grounded_knowledge": {
+        "skill_label": "Retrieve Grounded Knowledge",
+        "description": "Retrieve and ground an answer against indexed knowledge assets.",
+        "owned_tools": ["document_search"],
+        "workflow_families": ["knowledge_retrieval"],
+    },
+    "resolve_missing_context": {
+        "skill_label": "Resolve Missing Context",
+        "description": "Collect clarification data before the workflow can continue safely.",
+        "owned_tools": [],
+        "workflow_families": ["clarification", "incident_triage", "tool_execution"],
+    },
+    "execute_operational_tool": {
+        "skill_label": "Execute Operational Tool",
+        "description": "Execute a single operational tool request with structured tracing.",
+        "owned_tools": ["system_status", "document_search", "ticketing"],
+        "workflow_families": ["tool_execution"],
+    },
+    "review_service_health": {
+        "skill_label": "Review Service Health",
+        "description": "Inspect the target service health and normalize the runtime status snapshot.",
+        "owned_tools": ["system_status"],
+        "workflow_families": ["incident_triage", "service_runtime_review"],
+    },
+    "collect_incident_evidence": {
+        "skill_label": "Collect Incident Evidence",
+        "description": "Gather runbook and external evidence that supports incident diagnosis.",
+        "owned_tools": ["document_search"],
+        "workflow_families": ["incident_triage"],
+    },
+    "prepare_incident_ticket": {
+        "skill_label": "Prepare Incident Ticket",
+        "description": "Prepare, confirm, and submit incident tickets with explicit operator control.",
+        "owned_tools": ["ticketing"],
+        "workflow_families": ["incident_triage"],
+    },
+}
+
+
 def _normalize_question(question: str) -> str:
     normalized_question = question.strip()
     if not normalized_question:
@@ -290,6 +330,141 @@ def _collect_tool_payload(final_state: dict[str, Any]) -> tuple[dict[str, Any] |
     return tool_plan, tool_execution, tool_chain
 
 
+def _build_skill_definition(skill_id: str) -> dict[str, Any]:
+    definition = SKILL_CATALOG[skill_id]
+    return {
+        "skill_id": skill_id,
+        "skill_label": definition["skill_label"],
+        "description": definition["description"],
+        "owned_tools": definition["owned_tools"],
+        "workflow_families": definition["workflow_families"],
+    }
+
+
+def _resolve_workflow_family(final_state: dict[str, Any], interrupt_payload: dict[str, Any] | None) -> str:
+    if interrupt_payload is not None:
+        clarification_plan = final_state.get("clarification_plan")
+        if isinstance(clarification_plan, dict) and clarification_plan.get("confirmation_kind") == "ticket_submission":
+            return "incident_triage"
+        return "clarification"
+
+    if final_state.get("answer_source") == "local_incident_triage":
+        return "incident_triage"
+
+    route = final_state.get("route") or "knowledge_retrieval"
+    if route == "tool_execution":
+        return "tool_execution"
+    if route == "clarification_needed":
+        return "clarification"
+    return "knowledge_retrieval"
+
+
+def _resolve_step_skill_id(step: dict[str, Any], workflow_family: str) -> str:
+    tool_plan = step.get("tool_plan") or {}
+    tool_name = str(tool_plan.get("tool_name") or "").strip().lower()
+    if workflow_family == "incident_triage":
+        if tool_name == "system_status":
+            return "review_service_health"
+        if tool_name == "document_search":
+            return "collect_incident_evidence"
+        if tool_name == "ticketing":
+            return "prepare_incident_ticket"
+    if workflow_family == "knowledge_retrieval":
+        return "retrieve_grounded_knowledge"
+    if workflow_family == "clarification":
+        return "resolve_missing_context"
+    return "execute_operational_tool"
+
+
+def _build_skill_summary(skill_id: str, steps: list[dict[str, Any]], workflow_family: str) -> str:
+    if skill_id == "review_service_health":
+        for step in steps:
+            output = (step.get("tool_execution") or {}).get("output") or {}
+            summary = str(output.get("summary") or "").strip()
+            if summary:
+                return summary
+        return "Reviewed the target service health."
+    if skill_id == "collect_incident_evidence":
+        matched_documents: list[str] = []
+        for step in steps:
+            output = (step.get("tool_execution") or {}).get("output") or {}
+            raw_documents = str(output.get("matched_documents") or "").strip()
+            if raw_documents:
+                matched_documents.extend(item.strip() for item in raw_documents.split(",") if item.strip())
+        if matched_documents:
+            unique_documents = list(dict.fromkeys(matched_documents))
+            return f"Collected supporting evidence from {', '.join(unique_documents[:3])}."
+        return "Collected supporting incident evidence."
+    if skill_id == "prepare_incident_ticket":
+        last_step = steps[-1] if steps else {}
+        output = (last_step.get("tool_execution") or {}).get("output") or {}
+        ticket_id = str(output.get("ticket_id") or "").strip()
+        submission_state = str(output.get("submission_state") or output.get("status") or "").strip()
+        if ticket_id and submission_state:
+            return f"Ticket {ticket_id} is currently in state {submission_state}."
+        if ticket_id:
+            return f"Prepared ticket {ticket_id}."
+        return "Prepared incident ticket workflow state."
+    if skill_id == "retrieve_grounded_knowledge":
+        return "Retrieved grounded knowledge for the requested question."
+    if skill_id == "resolve_missing_context":
+        return "Awaiting clarification before continuing workflow execution."
+    if workflow_family == "tool_execution":
+        return "Executed the planned operational tool sequence."
+    return "Prepared reusable skill metadata for the workflow."
+
+
+def _build_skill_metadata(
+    final_state: dict[str, Any],
+    interrupt_payload: dict[str, Any] | None,
+    tool_chain: list[dict[str, Any]],
+) -> tuple[str, list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    workflow_family = _resolve_workflow_family(final_state, interrupt_payload)
+    enriched_tool_chain: list[dict[str, Any]] = []
+    skill_steps: dict[str, list[dict[str, Any]]] = {}
+
+    for step in tool_chain:
+        if not isinstance(step, dict):
+            continue
+        skill_id = _resolve_step_skill_id(step, workflow_family)
+        enriched_step = copy.deepcopy(step)
+        enriched_step["skill_id"] = skill_id
+        enriched_step["skill_label"] = SKILL_CATALOG[skill_id]["skill_label"]
+        enriched_tool_chain.append(enriched_step)
+        skill_steps.setdefault(skill_id, []).append(enriched_step)
+
+    if not skill_steps:
+        fallback_skill_id = (
+            "resolve_missing_context"
+            if workflow_family == "clarification"
+            else "retrieve_grounded_knowledge"
+            if workflow_family == "knowledge_retrieval"
+            else "execute_operational_tool"
+        )
+        return workflow_family, enriched_tool_chain, [_build_skill_definition(fallback_skill_id)], [
+            {
+                "skill_id": fallback_skill_id,
+                "skill_label": SKILL_CATALOG[fallback_skill_id]["skill_label"],
+                "status": final_state.get("workflow_status") or "completed",
+                "summary": _build_skill_summary(fallback_skill_id, [], workflow_family),
+                "tool_names": SKILL_CATALOG[fallback_skill_id]["owned_tools"],
+            }
+        ]
+
+    available_skills = [_build_skill_definition(skill_id) for skill_id in skill_steps]
+    skill_trace = [
+        {
+            "skill_id": skill_id,
+            "skill_label": SKILL_CATALOG[skill_id]["skill_label"],
+            "status": final_state.get("workflow_status") or "completed",
+            "summary": _build_skill_summary(skill_id, steps, workflow_family),
+            "tool_names": list(dict.fromkeys(str((step.get("tool_plan") or {}).get("tool_name") or "") for step in steps if (step.get("tool_plan") or {}).get("tool_name"))),
+        }
+        for skill_id, steps in skill_steps.items()
+    ]
+    return workflow_family, enriched_tool_chain, available_skills, skill_trace
+
+
 def _is_ticket_submission_confirmation_plan(plan: dict[str, Any] | None) -> bool:
     if not isinstance(plan, dict):
         return False
@@ -485,7 +660,7 @@ def _build_agent_v2_response(
     chat_model = final_state.get("chat_model")
     retrieval_payload = final_state.get("retrieval_result")
     retrieval = RetrievalResult.model_validate(retrieval_payload) if retrieval_payload else None
-    tool_plan, tool_execution, tool_chain = _collect_tool_payload(final_state)
+    tool_plan, tool_execution, raw_tool_chain = _collect_tool_payload(final_state)
     clarification_question = final_state.get("clarification_question")
     clarification_plan = final_state.get("clarification_plan")
     workflow_status = final_state.get("workflow_status") or "completed"
@@ -498,6 +673,12 @@ def _build_agent_v2_response(
         answer = None
         answer_source = None
         retrieval = None
+
+    workflow_family, tool_chain, available_skills, skill_trace = _build_skill_metadata(
+        final_state,
+        interrupt_payload,
+        raw_tool_chain,
+    )
 
     recovery_metadata = _build_recovery_metadata(
         workflow_status=workflow_status,
@@ -547,6 +728,9 @@ def _build_agent_v2_response(
         answer_latency_ms=answer_latency_ms,
         chat_provider=chat_provider,
         chat_model=chat_model,
+        workflow_family=workflow_family,
+        available_skills=available_skills,
+        skill_trace=skill_trace,
         retrieval=retrieval,
         clarification_message=clarification_question,
         clarification_plan=clarification_plan,

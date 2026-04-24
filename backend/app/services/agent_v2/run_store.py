@@ -114,6 +114,7 @@ def list_persisted_agent_v2_runs(limit: int = 20) -> AgentWorkflowRunListRespons
             filename=run.get("filename"),
             answered_at=run.get("answered_at"),
             answer_source=run.get("answer_source"),
+            workflow_family=run.get("workflow_family"),
             final_tool_name=(run.get("tool_plan") or {}).get("tool_name"),
             final_tool_action=(run.get("tool_plan") or {}).get("action"),
         )

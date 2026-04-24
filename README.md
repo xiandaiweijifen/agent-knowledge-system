@@ -213,6 +213,17 @@ The agent runtime already supports:
 - retry state and recovery action semantics
 - run listing, lookup, stats, pruning, reset, and schema migration
 
+The runtime also now exposes an initial `skill` metadata layer. This does not
+yet change execution behavior, but it adds stable response fields for:
+
+- `workflow_family`
+- `available_skills`
+- `skill_trace`
+- per-step `skill_id` / `skill_label`
+
+This scaffolding is the compatibility layer for the next phase, where reusable
+engineering-support skills will sit between tools and full workflows.
+
 ### 5. Incident Triage Workflow
 
 The primary engineering-support scenario is `Incident Triage`.

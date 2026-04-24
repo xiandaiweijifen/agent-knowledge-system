@@ -70,3 +70,29 @@ def test_agent_v2_run_store_lists_runs_in_latest_first_order(monkeypatch):
 
     runs = run_store.list_persisted_agent_v2_runs(limit=10)
     assert [run.run_id for run in runs.runs] == ["run-newer", "run-older"]
+
+
+def test_agent_v2_run_store_lists_workflow_family(monkeypatch):
+    monkeypatch.setattr(
+        run_store,
+        "AGENT_V2_RUN_STORE_PATH",
+        TMP_DIR / "workflow_runs_v2_store_test_workflow_family.json",
+    )
+
+    run_store.persist_agent_v2_run(
+        AgentWorkflowResponse(
+            run_id="run-incident",
+            question="Check payment-service in production for timeout issues",
+            workflow_status="clarification_required",
+            workflow_family="incident_triage",
+            route=RouteDecision(
+                route_type="tool_execution",
+                route_reason="Incident triage workflow.",
+                filename=None,
+            ),
+            last_updated_at="2026-04-07T00:00:02+00:00",
+        )
+    )
+
+    runs = run_store.list_persisted_agent_v2_runs(limit=10)
+    assert runs.runs[0].workflow_family == "incident_triage"
