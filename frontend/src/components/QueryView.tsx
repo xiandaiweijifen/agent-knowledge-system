@@ -270,6 +270,7 @@ export function QueryView({
           ticketDraft: "工单草稿",
           scenario: "场景",
           recommendedChecks: "建议检查项",
+          likelyDependency: "优先依赖",
           skillSummary: "技能摘要",
           evidenceItemsAvailable: (count: number) =>
             `${count} 条支撑项可在执行细节中查看。`,
@@ -501,6 +502,7 @@ export function QueryView({
           ticketDraft: "Ticket Draft",
           scenario: "Scenario",
           recommendedChecks: "Recommended Checks",
+          likelyDependency: "Likely Dependency",
           skillSummary: "Skill Summary",
           evidenceItemsAvailable: (count: number) =>
             `${count} supporting item${count === 1 ? "" : "s"} in execution details.`,
@@ -877,17 +879,28 @@ export function QueryView({
     activeAlerts: string[],
     scenarioId: string,
     guidanceDocument: string,
+    dependencyName: string,
+    dependencyChecks: string[],
   ) {
     if (activeAlerts.length > 0) {
       const alertList = activeAlerts.join(", ");
+      const dependencySuffix = dependencyName
+        ? ` Inspect ${dependencyName} next.`
+        : "";
+      const checkSuffix = dependencyChecks.length > 0
+        ? ` Start with ${dependencyChecks.slice(0, 2).join("; ")}.`
+        : "";
       const guidanceSuffix = guidanceDocument
         ? ` Cross-check ${guidanceDocument}.`
         : "";
-      return `Inspect active alerts ${alertList}.${guidanceSuffix}`;
+      return `Inspect active alerts ${alertList}.${dependencySuffix}${checkSuffix}${guidanceSuffix}`;
     }
 
     if (scenarioId) {
-      return `No active alerts. Keep monitoring the ${scenarioId} baseline.`;
+      const dependencySuffix = dependencyName
+        ? ` Keep ${dependencyName} in watch scope.`
+        : "";
+      return `No active alerts. Keep monitoring the ${scenarioId} baseline.${dependencySuffix}`;
     }
 
     return "No active alerts. Continue monitoring the current service baseline.";
@@ -1040,8 +1053,12 @@ export function QueryView({
     }
 
     const statusStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "system_status");
+    const dependencyStep = response.tool_chain.find(
+      (step) => step.tool_plan.tool_name === "service_dependencies",
+    );
     const guidanceStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "document_search");
     const statusOutput = (statusStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const dependencyOutput = (dependencyStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
     const guidanceOutput = (guidanceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
     const nestedStatusSnapshot =
       typeof statusOutput.status_snapshot === "object" && statusOutput.status_snapshot !== null
@@ -1052,6 +1069,9 @@ export function QueryView({
       : [];
     const guidanceTrace = response.skill_trace?.find(
       (skill) => skill.skill_id === "collect_runtime_guidance",
+    );
+    const dependencyTrace = response.skill_trace?.find(
+      (skill) => skill.skill_id === "inspect_service_dependencies",
     );
     const reviewTrace = response.skill_trace?.find(
       (skill) => skill.skill_id === "review_service_health",
@@ -1065,10 +1085,18 @@ export function QueryView({
     const guidanceDocument = String(
       guidanceOutput.filename_filter ?? guidanceOutput.matched_documents ?? "",
     ).trim();
+    const dependencyName = String(
+      dependencyOutput.suspected_primary_dependency ?? "",
+    ).trim();
+    const dependencyChecks = Array.isArray(dependencyOutput.recommended_checks)
+      ? (dependencyOutput.recommended_checks as string[])
+      : [];
     const recommendationCopy = buildRuntimeReviewRecommendation(
       activeAlerts,
       scenarioId,
       guidanceDocument,
+      dependencyName,
+      dependencyChecks,
     );
 
     return (
@@ -1152,6 +1180,22 @@ export function QueryView({
             ) : (
               <strong>{queryCopy.notAvailable}</strong>
             )}
+            {dependencyName && (
+              <div className="trace-grid">
+                <div>
+                  <span className="trace-label">{queryCopy.likelyDependency}</span>
+                  <strong>{dependencyName}</strong>
+                </div>
+              </div>
+            )}
+            {dependencyChecks.length > 0 && (
+              <div className="pill-strip">
+                {dependencyChecks.slice(0, 3).map((check) => (
+                  <span key={check} className="meta-pill compact-pill">{check}</span>
+                ))}
+              </div>
+            )}
+            {renderSkillSummary(dependencyTrace?.summary)}
             <p className="ticket-summary-block">{recommendationCopy}</p>
           </section>
         </div>

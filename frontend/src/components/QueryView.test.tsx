@@ -2053,6 +2053,13 @@ describe("QueryView", () => {
               workflow_families: ["incident_triage", "service_runtime_review"],
             },
             {
+              skill_id: "inspect_service_dependencies",
+              skill_label: "Inspect Service Dependencies",
+              description: "Inspect structured dependency data to identify the most likely downstream dependency to check next.",
+              owned_tools: ["service_dependencies"],
+              workflow_families: ["service_runtime_review"],
+            },
+            {
               skill_id: "collect_runtime_guidance",
               skill_label: "Collect Runtime Guidance",
               description: "Retrieve runbook guidance to recommend the next runtime checks for a service.",
@@ -2067,6 +2074,13 @@ describe("QueryView", () => {
               status: "completed",
               summary: "Payment service is healthy in production with latency and error rate within normal range.",
               tool_names: ["system_status"],
+            },
+            {
+              skill_id: "inspect_service_dependencies",
+              skill_label: "Inspect Service Dependencies",
+              status: "completed",
+              summary: "Identified payment-db as the most likely downstream dependency to inspect.",
+              tool_names: ["service_dependencies"],
             },
             {
               skill_id: "collect_runtime_guidance",
@@ -2160,6 +2174,49 @@ describe("QueryView", () => {
               attempt_count: 1,
               retried: false,
               started_at: "2026-04-25T08:20:13.179517+00:00",
+              completed_at: "2026-04-25T08:20:13.502613+00:00",
+              question: "Check payment-service in production status and tell me what to look at for timeout issues",
+              skill_id: "inspect_service_dependencies",
+              skill_label: "Inspect Service Dependencies",
+              tool_plan: {
+                question: "Check payment-service in production status and tell me what to look at for timeout issues",
+                planning_mode: "agent_v2_service_runtime_review",
+                route_hint: "tool_execution",
+                tool_name: "service_dependencies",
+                action: "query",
+                target: "payment-service",
+                arguments: {
+                  environment: "production",
+                  failure_signal: "timeout_rate_high",
+                },
+                plan_summary: "Plan service_dependencies:query for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "service_dependencies",
+                action: "query",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary:
+                  "Loaded 2 downstream dependencies for payment-service. Environment production selected. Primary dependency: payment-db.",
+                trace_id: "trace-runtime-dependencies",
+                executed_at: "2026-04-25T08:20:13.502613+00:00",
+                output: {
+                  suspected_primary_dependency: "payment-db",
+                  recommended_checks: [
+                    "inspect write latency and slow query log",
+                    "confirm connection pool saturation",
+                  ] as unknown as string,
+                } as unknown as Record<string, string>,
+              },
+            },
+            {
+              step_id: "step_3",
+              step_index: 3,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-25T08:20:13.502613+00:00",
               completed_at: "2026-04-25T08:20:13.802613+00:00",
               question: "Check payment-service in production status and tell me what to look at for timeout issues",
               skill_id: "collect_runtime_guidance",
@@ -2224,6 +2281,11 @@ describe("QueryView", () => {
     expect(screen.getAllByText("healthy_baseline").length).toBeGreaterThan(0);
     expect(screen.getAllByText("healthy").length).toBeGreaterThan(0);
     expect(screen.getAllByText("payment_service_runbook.md").length).toBeGreaterThan(0);
+    expect(within(runtimePanel as HTMLElement).getByText("Likely Dependency")).toBeInTheDocument();
+    expect(within(runtimePanel as HTMLElement).getAllByText("payment-db").length).toBeGreaterThan(0);
+    expect(
+      within(runtimePanel as HTMLElement).getByText("inspect write latency and slow query log"),
+    ).toBeInTheDocument();
     expect(within(runtimePanel as HTMLElement).queryByText("Ticket Draft")).not.toBeInTheDocument();
     expect(screen.getAllByText("View Execution Details And Trace").length).toBeGreaterThan(0);
   });
