@@ -271,6 +271,8 @@ export function QueryView({
           scenario: "场景",
           recommendedChecks: "建议检查项",
           skillSummary: "技能摘要",
+          evidenceItemsAvailable: (count: number) =>
+            `${count} 条支撑项可在执行细节中查看。`,
           submissionDecision: "提交决策",
           submitTicket: "提交工单",
           cancelTicket: "取消提交",
@@ -500,6 +502,8 @@ export function QueryView({
           scenario: "Scenario",
           recommendedChecks: "Recommended Checks",
           skillSummary: "Skill Summary",
+          evidenceItemsAvailable: (count: number) =>
+            `${count} supporting item${count === 1 ? "" : "s"} in execution details.`,
           submissionDecision: "Submission Decision",
           submitTicket: "Submit Ticket",
           cancelTicket: "Cancel Submission",
@@ -852,7 +856,7 @@ export function QueryView({
 
     return (
       <p className="evidence-overflow-note">
-        {assets.length} evidence item(s) available in execution details.
+        {queryCopy.evidenceItemsAvailable(assets.length)}
       </p>
     );
   }
@@ -867,6 +871,26 @@ export function QueryView({
     }
 
     return <p className="ticket-summary-block">{summary}</p>;
+  }
+
+  function buildRuntimeReviewRecommendation(
+    activeAlerts: string[],
+    scenarioId: string,
+    guidanceDocument: string,
+  ) {
+    if (activeAlerts.length > 0) {
+      const alertList = activeAlerts.join(", ");
+      const guidanceSuffix = guidanceDocument
+        ? ` Cross-check ${guidanceDocument}.`
+        : "";
+      return `Inspect active alerts ${alertList}.${guidanceSuffix}`;
+    }
+
+    if (scenarioId) {
+      return `No active alerts. Keep monitoring the ${scenarioId} baseline.`;
+    }
+
+    return "No active alerts. Continue monitoring the current service baseline.";
   }
 
   function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
@@ -1038,6 +1062,14 @@ export function QueryView({
         nestedStatusSnapshot.scenario_id ??
         "",
     ).trim();
+    const guidanceDocument = String(
+      guidanceOutput.filename_filter ?? guidanceOutput.matched_documents ?? "",
+    ).trim();
+    const recommendationCopy = buildRuntimeReviewRecommendation(
+      activeAlerts,
+      scenarioId,
+      guidanceDocument,
+    );
 
     return (
       <article className="subsection-card incident-triage-card">
@@ -1120,7 +1152,7 @@ export function QueryView({
             ) : (
               <strong>{queryCopy.notAvailable}</strong>
             )}
-            {response.answer && <p className="ticket-summary-block">{response.answer}</p>}
+            <p className="ticket-summary-block">{recommendationCopy}</p>
           </section>
         </div>
       </article>
