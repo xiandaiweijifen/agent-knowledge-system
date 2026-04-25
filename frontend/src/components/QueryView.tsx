@@ -887,6 +887,8 @@ export function QueryView({
         return "Inspect Service Health";
       case "review_ticket_artifact":
         return "Review Ticket Artifact";
+      case "prepare_incident_triage":
+        return "Prepare Incident Triage";
       default:
         return value.replace(/_/g, " ");
     }

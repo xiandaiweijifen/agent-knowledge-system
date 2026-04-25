@@ -330,7 +330,17 @@ def test_orchestrate_agent_v2_request_returns_incident_triage_result(monkeypatch
                             "completed_at": "2026-04-07T00:00:01+00:00",
                             "question": state["question"],
                             "tool_plan": {"tool_name": "system_status", "action": "query", "target": "payment-service", "arguments": {"environment": "production"}},
-                            "tool_execution": {"tool_name": "system_status", "action": "query", "execution_status": "completed", "result_summary": "status checked"},
+                            "tool_execution": {
+                                "tool_name": "system_status",
+                                "action": "query",
+                                "execution_status": "completed",
+                                "result_summary": "status checked",
+                                "output": {
+                                    "health": "degraded",
+                                    "scenario_id": "timeout_spike",
+                                    "active_alerts": ["timeout_rate_high", "dependency_db_latency_spike"],
+                                },
+                            },
                         },
                         {
                             "step_id": "step_2",
@@ -430,7 +440,17 @@ def test_orchestrate_agent_v2_request_returns_service_runtime_review_result(monk
                             "completed_at": "2026-04-07T00:00:01+00:00",
                             "question": state["question"],
                             "tool_plan": {"tool_name": "system_status", "action": "query", "target": "payment-service", "arguments": {"environment": "production"}},
-                            "tool_execution": {"tool_name": "system_status", "action": "query", "execution_status": "completed", "result_summary": "status checked"},
+                            "tool_execution": {
+                                "tool_name": "system_status",
+                                "action": "query",
+                                "execution_status": "completed",
+                                "result_summary": "status checked",
+                                "output": {
+                                    "health": "degraded",
+                                    "scenario_id": "timeout_spike",
+                                    "active_alerts": ["timeout_rate_high", "dependency_db_latency_spike"],
+                                },
+                            },
                         },
                         {
                             "step_id": "step_2",
@@ -471,7 +491,11 @@ def test_orchestrate_agent_v2_request_returns_service_runtime_review_result(monk
     assert response.answer_source == "local_service_runtime_review"
     assert response.workflow_family == "service_runtime_review"
     assert response.workflow_outcome == "inspect_dependencies"
-    assert response.recommended_next_actions == ["inspect_primary_dependency", "open_runbook"]
+    assert response.recommended_next_actions == [
+        "inspect_primary_dependency",
+        "open_runbook",
+        "prepare_incident_triage",
+    ]
     assert [skill.skill_id for skill in response.available_skills] == [
         "review_service_health",
         "inspect_service_dependencies",

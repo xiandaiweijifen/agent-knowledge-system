@@ -562,9 +562,19 @@ def _build_workflow_policy(
         if scenario_id == "recovery_in_progress":
             return "monitor_closely", ["monitor_service", "compare_against_healthy_baseline"]
         if primary_dependency:
+            if scenario_id in {"timeout_spike", "db_latency_spike"} or has_alerts:
+                return "inspect_dependencies", [
+                    "inspect_primary_dependency",
+                    "open_runbook",
+                    "prepare_incident_triage",
+                ]
             return "inspect_dependencies", ["inspect_primary_dependency", "open_runbook"]
         if has_alerts:
-            return "inspect_active_alerts", ["inspect_active_alerts", "open_runbook"]
+            return "inspect_active_alerts", [
+                "inspect_active_alerts",
+                "open_runbook",
+                "prepare_incident_triage",
+            ]
         return "review_runbook", ["open_runbook"]
 
     if workflow_family == "knowledge_retrieval" and workflow_status == "completed":
