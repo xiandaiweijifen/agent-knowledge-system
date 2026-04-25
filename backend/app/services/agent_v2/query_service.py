@@ -50,6 +50,12 @@ SKILL_CATALOG: dict[str, dict[str, Any]] = {
         "owned_tools": ["system_status"],
         "workflow_families": ["incident_triage", "service_runtime_review"],
     },
+    "collect_runtime_guidance": {
+        "skill_label": "Collect Runtime Guidance",
+        "description": "Retrieve runbook guidance to recommend the next runtime checks for a service.",
+        "owned_tools": ["document_search"],
+        "workflow_families": ["service_runtime_review"],
+    },
     "collect_incident_evidence": {
         "skill_label": "Collect Incident Evidence",
         "description": "Gather runbook and external evidence that supports incident diagnosis.",
@@ -226,6 +232,8 @@ def _build_workflow_trace(
                 detail = answer_detail or "Incident triage workflow completed in agent_v2."
             else:
                 detail = answer_detail or "Incident triage status check completed in agent_v2."
+        elif final_state.get("answer_source") == "local_service_runtime_review":
+            detail = answer_detail or "Service runtime review workflow completed in agent_v2."
         else:
             detail = "Tool execution node completed in agent_v2."
         events.append(
@@ -350,6 +358,8 @@ def _resolve_workflow_family(final_state: dict[str, Any], interrupt_payload: dic
 
     if final_state.get("answer_source") == "local_incident_triage":
         return "incident_triage"
+    if final_state.get("answer_source") == "local_service_runtime_review":
+        return "service_runtime_review"
 
     route = final_state.get("route") or "knowledge_retrieval"
     if route == "tool_execution":
@@ -369,6 +379,11 @@ def _resolve_step_skill_id(step: dict[str, Any], workflow_family: str) -> str:
             return "collect_incident_evidence"
         if tool_name == "ticketing":
             return "prepare_incident_ticket"
+    if workflow_family == "service_runtime_review":
+        if tool_name == "system_status":
+            return "review_service_health"
+        if tool_name == "document_search":
+            return "collect_runtime_guidance"
     if workflow_family == "knowledge_retrieval":
         return "retrieve_grounded_knowledge"
     if workflow_family == "clarification":
@@ -395,6 +410,13 @@ def _build_skill_summary(skill_id: str, steps: list[dict[str, Any]], workflow_fa
             unique_documents = list(dict.fromkeys(matched_documents))
             return f"Collected supporting evidence from {', '.join(unique_documents[:3])}."
         return "Collected supporting incident evidence."
+    if skill_id == "collect_runtime_guidance":
+        for step in steps:
+            output = (step.get("tool_execution") or {}).get("output") or {}
+            matched_documents = str(output.get("matched_documents") or "").strip()
+            if matched_documents:
+                return f"Collected runtime guidance from {matched_documents}."
+        return "Collected runtime guidance for the requested service."
     if skill_id == "prepare_incident_ticket":
         last_step = steps[-1] if steps else {}
         output = (last_step.get("tool_execution") or {}).get("output") or {}

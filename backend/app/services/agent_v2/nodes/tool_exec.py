@@ -10,6 +10,10 @@ from app.services.agent_v2.skills.incident_triage import (
     run_prepare_incident_ticket_skill,
     run_review_service_health_skill,
 )
+from app.services.agent_v2.skills.service_runtime_review import (
+    build_runtime_review_summary,
+    run_collect_runtime_guidance_skill,
+)
 from app.services.agent_v2.state import AgentState
 from app.services.ingestion.document_service import build_utc_timestamp
 
@@ -23,6 +27,10 @@ ENVIRONMENT_PATTERN = re.compile(r"\b(production|staging|development|dev)\b", re
 SEVERITY_PATTERN = re.compile(r"\b(high|medium|low)\s+severity\b", re.IGNORECASE)
 SYMPTOM_PATTERN = re.compile(
     r"\b(timeout|latency|5xx|502|error rate|errors|outage|incident)\b",
+    re.IGNORECASE,
+)
+SERVICE_RUNTIME_REVIEW_PATTERN = re.compile(
+    r"\b(check|inspect|review|look at|tell me)\b.*\b(status|health|healthy|runtime|running|degraded)\b",
     re.IGNORECASE,
 )
 
@@ -52,6 +60,25 @@ def _extract_incident_triage_context(question: str) -> dict[str, str] | None:
         "environment": _normalize_environment(environment_match.group(1) if environment_match else None),
         "severity": (severity_match.group(1).lower() if severity_match else "high"),
         "symptom": (symptom_match.group(1).lower() if symptom_match else "incident"),
+    }
+
+
+def _extract_service_runtime_review_context(question: str) -> dict[str, str] | None:
+    if INCIDENT_TRIAGE_PATTERN.search(question):
+        return None
+    if not SERVICE_RUNTIME_REVIEW_PATTERN.search(question):
+        return None
+
+    service_match = SERVICE_PATTERN.search(question)
+    if service_match is None:
+        return None
+
+    environment_match = ENVIRONMENT_PATTERN.search(question)
+    symptom_match = SYMPTOM_PATTERN.search(question)
+    return {
+        "service": service_match.group(1),
+        "environment": _normalize_environment(environment_match.group(1) if environment_match else None),
+        "symptom": (symptom_match.group(1).lower() if symptom_match else "health"),
     }
 
 
@@ -246,12 +273,71 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
         }
 
 
+def _run_service_runtime_review_workflow(state: AgentState, review_context: dict[str, str]) -> dict:
+    question = state["question"]
+    service = review_context["service"]
+    environment = review_context["environment"]
+    symptom = review_context["symptom"]
+    tool_chain: list[dict] = []
+
+    try:
+        status_steps, status_output = run_review_service_health_skill(
+            state=state,
+            question=question,
+            service=service,
+            environment=environment,
+            symptom=symptom,
+            execute_step=_execute_single_step,
+        )
+        tool_chain.extend(status_steps)
+
+        guidance_steps, guidance_output = run_collect_runtime_guidance_skill(
+            state=state,
+            question=question,
+            service=service,
+            symptom=symptom,
+            status_output=status_output,
+            execute_step=_execute_single_step,
+        )
+        tool_chain.extend(guidance_steps)
+
+        return {
+            "tool_chain": tool_chain,
+            "answer": build_runtime_review_summary(
+                service=service,
+                environment=environment,
+                symptom=symptom,
+                status_output=status_output,
+                guidance_output=guidance_output,
+            ),
+            "answer_source": "local_service_runtime_review",
+            "workflow_status": "completed",
+            "terminal_reason_override": "service_runtime_review_completed",
+            "failure_stage": None,
+            "retry_state": "not_applicable",
+            "retry_count": 0,
+        }
+    except Exception as exc:
+        return {
+            "tool_chain": tool_chain,
+            "workflow_status": "failed",
+            "terminal_reason_override": None,
+            "failure_stage": "tool_execution",
+            "retry_state": "retry_exhausted",
+            "retry_count": 1,
+            "error": str(exc),
+        }
+
+
 def tool_exec_node(state: AgentState) -> dict:
     """Plan and execute a tool request using the existing tool service."""
     question = state["question"]
     incident_triage_context = _extract_incident_triage_context(question)
     if incident_triage_context is not None:
         return _run_incident_triage_workflow(state, incident_triage_context)
+    service_runtime_review_context = _extract_service_runtime_review_context(question)
+    if service_runtime_review_context is not None:
+        return _run_service_runtime_review_workflow(state, service_runtime_review_context)
 
     started_at = build_utc_timestamp()
     tool_plan = plan_tool_request(question)

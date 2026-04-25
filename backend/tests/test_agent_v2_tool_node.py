@@ -228,3 +228,73 @@ def test_tool_exec_node_runs_incident_triage_workflow(monkeypatch):
     assert result["tool_chain"][2]["tool_plan"]["arguments"]["search_mode"] == "qdrant"
     assert result["tool_chain"][3]["tool_plan"]["tool_name"] == "ticketing"
     assert result["tool_chain"][3]["tool_plan"]["action"] == "draft"
+
+
+def test_tool_exec_node_runs_service_runtime_review_workflow(monkeypatch):
+    def _build_execution(*, tool_name, action, target, output, summary):
+        return type(
+            "ToolExecution",
+            (),
+            {
+                "tool_name": tool_name,
+                "action": action,
+                "target": target,
+                "execution_status": "completed",
+                "executed_at": "2026-04-07T00:00:01+00:00",
+                "result_summary": summary,
+                "model_dump": lambda self=None: {
+                    "tool_name": tool_name,
+                    "action": action,
+                    "target": target,
+                    "execution_status": "completed",
+                    "execution_mode": "local_adapter",
+                    "result_summary": summary,
+                    "trace_id": f"{tool_name}-{action}",
+                    "executed_at": "2026-04-07T00:00:01+00:00",
+                    "output": output,
+                },
+            },
+        )()
+
+    def _execute(request):
+        if request.tool_name == "system_status":
+            return _build_execution(
+                tool_name="system_status",
+                action="query",
+                target=request.target,
+                summary="Collected local system status for payment-service with requested environment production.",
+                output={
+                    "health": "degraded",
+                    "summary": "Service is degraded due to elevated timeout rate and downstream DB latency.",
+                    "active_alerts": ["timeout_rate_high", "dependency_db_latency_spike"],
+                    "service_record": {
+                        "runbook_doc_ids": ["payment_service_runbook.md"],
+                    },
+                },
+            )
+        return _build_execution(
+            tool_name="document_search",
+            action="query",
+            target=request.target,
+            summary="Found 1 matching document(s) for 'timeout'.",
+            output={
+                "matched_documents": "payment_service_runbook.md",
+            },
+        )
+
+    monkeypatch.setattr("app.services.agent_v2.nodes.tool_exec.execute_tool_request", _execute)
+
+    result = tool_exec_node(
+        {
+            **BASE_STATE,
+            "question": "Check payment-service in production status and tell me what to look at for timeout issues",
+        }
+    )
+
+    assert result["workflow_status"] == "completed"
+    assert result["answer_source"] == "local_service_runtime_review"
+    assert result["terminal_reason_override"] == "service_runtime_review_completed"
+    assert len(result["tool_chain"]) == 2
+    assert result["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
+    assert result["tool_chain"][1]["tool_plan"]["tool_name"] == "document_search"
+    assert "Recommended checks:" in result["answer"]

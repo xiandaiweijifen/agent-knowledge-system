@@ -268,7 +268,36 @@ The frontend Query view renders this as a compact task panel with service
 health, runbook evidence, imported ticket evidence, ticket draft details, and
 submit/cancel controls.
 
-### 6. Evaluation and Observability
+### 6. Service Runtime Review Workflow
+
+The second engineering-support scenario is `Service Runtime Review`.
+
+Example request:
+
+```text
+Check payment-service in production status and tell me what to look at for timeout issues
+```
+
+The workflow currently executes:
+
+1. `system_status:query`
+   Inspect the service health, metrics, and active alerts for the requested environment.
+2. `document_search:query`
+   Pull runbook guidance tied to the relevant symptom or service runbook.
+
+The workflow returns a runtime review summary rather than creating a ticket. Its
+goal is to answer:
+
+- is the service healthy or degraded
+- what evidence supports that conclusion
+- what the operator should inspect next
+
+Internally, this workflow reuses:
+
+- `review_service_health`
+- `collect_runtime_guidance`
+
+### 7. Evaluation and Observability
 
 - retrieval evaluation datasets and reports
 - retrieval groundedness and citation coverage metrics
