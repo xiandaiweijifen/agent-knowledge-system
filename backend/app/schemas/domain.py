@@ -48,3 +48,11 @@ class KnowledgeAsset(BaseModel):
     source_filename: str
     title: str = ""
     snippet: str = ""
+
+
+class ServiceDependency(BaseModel):
+    name: str
+    type: str
+    criticality: str = "unspecified"
+    failure_signals: list[str] = Field(default_factory=list)
+    recommended_checks: list[str] = Field(default_factory=list)

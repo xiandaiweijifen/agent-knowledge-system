@@ -1020,6 +1020,54 @@ def test_execute_system_status_tool_supports_requested_scenario(monkeypatch):
     assert "Scenario healthy_baseline selected." in response.result_summary
 
 
+def test_execute_service_dependencies_tool_returns_structured_dependency_map(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "development")
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="service_dependencies",
+            action="query",
+            target="payment-service",
+            arguments={"environment": "production"},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.execution_mode == "local_adapter"
+    assert response.output["schema_version"] == "tool-output-v1"
+    assert response.output["output_kind"] == "dependency_snapshot"
+    assert response.output["resource_type"] == "service_dependency"
+    assert response.output["target"] == "payment-service"
+    assert response.output["requested_environment"] == "production"
+    assert response.output["source_filename"] == "engineering_dependency_map.json"
+    assert response.output["dependency_count"] == "2"
+    assert response.output["suspected_primary_dependency"] == "payment-db"
+    assert response.output["dependencies"][0]["name"] == "payment-db"
+    assert "inspect write latency and slow query log" in response.output["recommended_checks"]
+
+
+def test_execute_service_dependencies_tool_prioritizes_matching_failure_signal(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "development")
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="service_dependencies",
+            action="query",
+            target="payment-service",
+            arguments={
+                "environment": "production",
+                "failure_signal": "partner_timeout_rate_high",
+            },
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.output["requested_failure_signal"] == "partner_timeout_rate_high"
+    assert response.output["matched_failure_signal"] == "true"
+    assert response.output["suspected_primary_dependency"] == "gateway-adapter"
+    assert response.output["dependencies"][0]["name"] == "gateway-adapter"
+
+
 def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, monkeypatch):
     raw_dir = workspace_tmp_path / "raw"
     raw_dir.mkdir()
@@ -1226,15 +1274,37 @@ def test_query_tool_execute_endpoint_returns_live_system_status():
     assert "embedding_provider" in payload["output"]
 
 
+def test_query_tool_execute_endpoint_returns_service_dependencies():
+    client = TestClient(app)
+    response = client.post(
+        "/api/query/tools/execute",
+        json={
+            "tool_name": "service_dependencies",
+            "action": "query",
+            "target": "payment-service",
+            "arguments": {"environment": "production"},
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["execution_status"] == "completed"
+    assert payload["output"]["source_filename"] == "engineering_dependency_map.json"
+    assert payload["output"]["dependency_count"] == "2"
+
+
 def test_list_registered_tools_returns_catalog():
     catalog = list_registered_tools()
 
-    assert catalog.count >= 3
+    assert catalog.count >= 4
     ticketing_tool = next(tool for tool in catalog.tools if tool.tool_name == "ticketing")
     assert ticketing_tool.primary_resource == "incident_ticket"
     assert "IncidentTicket" in ticketing_tool.domain_entities
     assert "submit" in ticketing_tool.confirmation_required_actions
     assert any(arg.name == "severity" for arg in ticketing_tool.argument_schema)
+    dependency_tool = next(tool for tool in catalog.tools if tool.tool_name == "service_dependencies")
+    assert dependency_tool.primary_resource == "service_dependency"
+    assert "ServiceDependency" in dependency_tool.domain_entities
 
 
 def test_query_tools_endpoint_returns_catalog():
@@ -1243,11 +1313,15 @@ def test_query_tools_endpoint_returns_catalog():
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["count"] >= 3
+    assert payload["count"] >= 4
     ticketing_tool = next(tool for tool in payload["tools"] if tool["tool_name"] == "ticketing")
     assert ticketing_tool["primary_resource"] == "incident_ticket"
     assert "IncidentTicket" in ticketing_tool["domain_entities"]
     assert any(arg["name"] == "severity" for arg in ticketing_tool["argument_schema"])
+    dependency_tool = next(
+        tool for tool in payload["tools"] if tool["tool_name"] == "service_dependencies"
+    )
+    assert dependency_tool["primary_resource"] == "service_dependency"
 
 
 def test_plan_tool_request_returns_structured_plan():
@@ -1323,6 +1397,15 @@ def test_plan_tool_request_extracts_environment_for_system_status():
     response = plan_tool_request("Check system status for payment-service in production")
 
     assert response.tool_name == "system_status"
+    assert response.action == "query"
+    assert response.target == "payment-service"
+    assert response.arguments["environment"] == "production"
+
+
+def test_plan_tool_request_maps_dependency_queries_to_service_dependencies():
+    response = plan_tool_request("Check dependencies for payment-service in production")
+
+    assert response.tool_name == "service_dependencies"
     assert response.action == "query"
     assert response.target == "payment-service"
     assert response.arguments["environment"] == "production"

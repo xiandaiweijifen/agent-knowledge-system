@@ -38,7 +38,7 @@ Implemented and usable today:
 - retrieval with diagnostics and lightweight reranking
 - knowledge query and fallback answer paths
 - request routing for retrieval, tool execution, and clarification
-- local tool adapters for `document_search`, `system_status`, and `ticketing`
+- local tool adapters for `document_search`, `system_status`, `service_dependencies`, and `ticketing`
 - LLM-backed `tool planner`, `clarification planner`, and `workflow planner`
 - fallback behavior when planner calls fail or are unavailable
 - `agent_v2` runtime with:
@@ -194,6 +194,7 @@ Local adapter-style tools currently include:
 
 - `document_search`
 - `system_status`
+- `service_dependencies`
 - `ticketing`
 
 The ticketing tool currently supports:
@@ -220,6 +221,11 @@ The `system_status` tool also supports scenario-based mock snapshots through an
 optional `scenario` argument. This allows local runs to select different
 predefined runtime states such as `healthy_baseline`, `timeout_spike`,
 `db_latency_spike`, or `recovery_in_progress` without changing workflow logic.
+
+The `service_dependencies` tool reads the structured engineering dependency
+corpus from `engineering_dependency_map.json` and returns downstream dependency
+records, likely failure signals, and recommended checks for a target service in
+an environment such as `production`.
 
 ### 4. Workflow Runtime
 

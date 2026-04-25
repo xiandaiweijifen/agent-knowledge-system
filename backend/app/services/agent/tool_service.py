@@ -17,7 +17,13 @@ from app.schemas.tools import (
     ToolPlanResponse,
     ToolResultFieldSpec,
 )
-from app.schemas.domain import IncidentTicket, KnowledgeAsset, ServiceRecord, StatusSnapshot
+from app.schemas.domain import (
+    IncidentTicket,
+    KnowledgeAsset,
+    ServiceDependency,
+    ServiceRecord,
+    StatusSnapshot,
+)
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.ingestion import document_service
 from app.services.agent.state_store import JsonListRepository
@@ -174,6 +180,59 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
             },
         ],
     },
+    "service_dependencies": {
+        "supported_actions": ["query"],
+        "description": "Inspect downstream dependencies for a service using structured engineering dependency data.",
+        "execution_mode": "local_adapter",
+        "primary_resource": "service_dependency",
+        "domain_entities": ["ServiceRecord", "ServiceDependency"],
+        "confirmation_required_actions": [],
+        "argument_schema": [
+            {
+                "name": "target",
+                "value_type": "string",
+                "required": True,
+                "description": "Service name whose dependency map should be inspected.",
+                "domain_entity": "ServiceRecord",
+            },
+            {
+                "name": "environment",
+                "value_type": "string",
+                "required": False,
+                "description": "Requested environment for dependency lookup.",
+                "enum_values": ["production", "staging", "development"],
+                "domain_entity": "ServiceRecord",
+            },
+            {
+                "name": "failure_signal",
+                "value_type": "string",
+                "required": False,
+                "description": "Optional failure signal used to prioritize the most relevant dependency.",
+                "domain_entity": "ServiceDependency",
+            },
+            {
+                "name": "dependency_name",
+                "value_type": "string",
+                "required": False,
+                "description": "Optional downstream dependency name filter.",
+                "domain_entity": "ServiceDependency",
+            },
+        ],
+        "result_schema": [
+            {
+                "name": "service_record",
+                "value_type": "object",
+                "description": "Structured service metadata for the requested target.",
+                "domain_entity": "ServiceRecord",
+            },
+            {
+                "name": "dependencies",
+                "value_type": "array",
+                "description": "Structured downstream dependencies for the requested service.",
+                "domain_entity": "ServiceDependency",
+            },
+        ],
+    },
 }
 ACTION_PATTERN = re.compile(
     r"\b(create|open|close|draft|submit|prepare|deploy|restart|rollback|run|execute|trigger|query|update|delete|search|find|check|show|inspect|lookup|list|set|move)\b",
@@ -211,8 +270,12 @@ SYSTEM_STATUS_FOR_PATTERN = re.compile(
     r"^(system\s+status|status|health|configuration|config)\s+for\s+",
     re.IGNORECASE,
 )
+SERVICE_DEPENDENCIES_FOR_PATTERN = re.compile(
+    r"^(service\s+dependencies|dependencies|dependency\s+map|dependency\s+health)\s+for\s+",
+    re.IGNORECASE,
+)
 FILENAME_PATTERN = re.compile(
-    r"\b([A-Za-z0-9._-]+\.(?:txt|md|pdf|docx))\b",
+    r"\b([A-Za-z0-9._-]+\.(?:txt|md|json|pdf|docx))\b",
     re.IGNORECASE,
 )
 TICKET_ID_PATTERN = re.compile(r"\b(TICKET-\d{4})\b", re.IGNORECASE)
@@ -234,6 +297,7 @@ TICKET_DATA_DIR.mkdir(parents=True, exist_ok=True)
 TICKET_STORE_PATH = TICKET_DATA_DIR / "tickets.json"
 MOCK_SERVICE_PATH = DATA_ROOT / "mock_services.json"
 MOCK_STATUS_SNAPSHOTS_PATH = DATA_ROOT / "mock_status_snapshots.json"
+ENGINEERING_DEPENDENCY_MAP_PATH = DATA_ROOT / "raw" / "engineering_dependency_map.json"
 TOOL_OUTPUT_SCHEMA_VERSION = "tool-output-v1"
 
 
@@ -632,6 +696,28 @@ def _load_mock_services() -> list[dict[str, Any]]:
 def _load_mock_status_snapshots() -> list[dict[str, Any]]:
     payload = _load_json_payload(MOCK_STATUS_SNAPSHOTS_PATH, default=[])
     return payload if isinstance(payload, list) else []
+
+
+def _load_engineering_dependency_map() -> list[dict[str, Any]]:
+    payload = _load_json_payload(ENGINEERING_DEPENDENCY_MAP_PATH, default={})
+    if not isinstance(payload, dict):
+        return []
+    dependencies = payload.get("dependencies", [])
+    return dependencies if isinstance(dependencies, list) else []
+
+
+def _normalize_dependency_name(value: str) -> str:
+    normalized = unicodedata.normalize("NFKC", value).strip().lower()
+    normalized = re.sub(r"[^a-z0-9._-]+", "-", normalized)
+    normalized = re.sub(r"-{2,}", "-", normalized)
+    return normalized.strip("-")
+
+
+def _normalize_failure_signal(value: str) -> str:
+    normalized = unicodedata.normalize("NFKC", value).strip().lower()
+    normalized = re.sub(r"[^a-z0-9._-]+", "_", normalized)
+    normalized = re.sub(r"_{2,}", "_", normalized)
+    return normalized.strip("_")
 
 
 def _normalize_ticket_record(ticket: dict[str, Any]) -> dict[str, Any]:
@@ -1535,6 +1621,131 @@ def _build_system_status_output(
     return output
 
 
+def _build_service_dependencies_output(
+    target: str,
+    requested_environment: str = "",
+    requested_failure_signal: str = "",
+    requested_dependency_name: str = "",
+) -> dict[str, Any]:
+    service_record = _build_service_record(target)
+    normalized_environment = _normalize_environment_value(
+        requested_environment or settings.app_env or "development"
+    )
+    normalized_failure_signal = _normalize_failure_signal(requested_failure_signal)
+    normalized_dependency_name = _normalize_dependency_name(requested_dependency_name)
+
+    selected_entry: dict[str, Any] | None = None
+    for item in _load_engineering_dependency_map():
+        if not isinstance(item, dict):
+            continue
+        service_id = _canonicalize_service_id(str(item.get("service") or ""))
+        environment = _normalize_environment_value(str(item.get("environment") or ""))
+        if service_id == service_record.service_id and environment == normalized_environment:
+            selected_entry = item
+            break
+
+    raw_dependencies = []
+    if isinstance(selected_entry, dict):
+        raw_dependencies = selected_entry.get("downstream_dependencies", [])
+        raw_dependencies = raw_dependencies if isinstance(raw_dependencies, list) else []
+
+    indexed_dependency_records: list[tuple[int, ServiceDependency]] = []
+    for index, item in enumerate(raw_dependencies):
+        if not isinstance(item, dict):
+            continue
+        record = ServiceDependency(
+            name=str(item.get("name") or "").strip(),
+            type=str(item.get("type") or "unknown").strip() or "unknown",
+            criticality=str(item.get("criticality") or "unspecified").strip() or "unspecified",
+            failure_signals=[
+                str(signal).strip()
+                for signal in item.get("failure_signals", [])
+                if str(signal).strip()
+            ],
+            recommended_checks=[
+                str(check).strip()
+                for check in item.get("recommended_checks", [])
+                if str(check).strip()
+            ],
+        )
+        if record.name:
+            indexed_dependency_records.append((index, record))
+
+    def _dependency_priority(item: tuple[int, ServiceDependency]) -> tuple[int, int, int]:
+        index, record = item
+        matches_name = (
+            1
+            if normalized_dependency_name
+            and _normalize_dependency_name(record.name) == normalized_dependency_name
+            else 0
+        )
+        matches_signal = (
+            1
+            if normalized_failure_signal
+            and any(
+                _normalize_failure_signal(signal) == normalized_failure_signal
+                for signal in record.failure_signals
+            )
+            else 0
+        )
+        return (-matches_name, -matches_signal, index)
+
+    indexed_dependency_records.sort(key=_dependency_priority)
+    dependency_records = [record for _, record in indexed_dependency_records]
+
+    primary_dependency = dependency_records[0].name if dependency_records else ""
+    aggregated_checks: list[str] = []
+    for record in dependency_records[:2]:
+        for check in record.recommended_checks:
+            if check not in aggregated_checks:
+                aggregated_checks.append(check)
+
+    signal_matched = any(
+        _normalize_failure_signal(signal) == normalized_failure_signal
+        for record in dependency_records
+        for signal in record.failure_signals
+    )
+    summary = (
+        f"Dependency review for {service_record.service_name} in {normalized_environment} "
+        f"found {len(dependency_records)} downstream dependenc"
+        f"{'y' if len(dependency_records) == 1 else 'ies'}."
+    )
+    if primary_dependency:
+        summary += f" Primary dependency to inspect: {primary_dependency}."
+    if normalized_failure_signal:
+        if signal_matched:
+            summary += f" Requested failure signal {normalized_failure_signal} matched the returned dependencies."
+        else:
+            summary += f" Requested failure signal {normalized_failure_signal} was not found in the selected dependency map."
+
+    output: dict[str, Any] = {
+        **_build_tool_output_metadata(
+            output_kind="dependency_snapshot",
+            resource_type="service_dependency",
+            target=target,
+            item_count=len(dependency_records),
+        ),
+        "service": service_record.service_id,
+        "environment": normalized_environment,
+        "service_record": service_record.model_dump(mode="json"),
+        "dependencies": [record.model_dump(mode="json") for record in dependency_records],
+        "dependency_count": str(len(dependency_records)),
+        "source_filename": ENGINEERING_DEPENDENCY_MAP_PATH.name,
+        "summary": summary,
+        "recommended_checks": aggregated_checks,
+    }
+    if primary_dependency:
+        output["suspected_primary_dependency"] = primary_dependency
+    if requested_environment:
+        output["requested_environment"] = normalized_environment
+    if normalized_failure_signal:
+        output["requested_failure_signal"] = normalized_failure_signal
+        output["matched_failure_signal"] = str(signal_matched).lower()
+    if normalized_dependency_name:
+        output["requested_dependency_name"] = normalized_dependency_name
+    return output
+
+
 def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     query = request.target.strip()
     filename_filter = request.arguments.get("filename", "").strip()
@@ -1713,6 +1924,46 @@ def _run_document_search_tool(request: ToolExecutionRequest) -> ToolExecutionRes
     )
 
 
+def _run_service_dependencies_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
+    target = request.target.strip()
+    requested_environment = _normalize_environment_value(
+        request.arguments.get("environment", "").strip()
+    )
+    requested_failure_signal = _normalize_failure_signal(
+        request.arguments.get("failure_signal", "").strip()
+    )
+    requested_dependency_name = _normalize_dependency_name(
+        request.arguments.get("dependency_name", "").strip()
+    )
+    output = _build_service_dependencies_output(
+        target,
+        requested_environment=requested_environment,
+        requested_failure_signal=requested_failure_signal,
+        requested_dependency_name=requested_dependency_name,
+    )
+    dependency_count = int(output.get("dependency_count") or 0)
+    result_summary = (
+        f"Loaded {dependency_count} downstream dependenc"
+        f"{'y' if dependency_count == 1 else 'ies'} for {target}."
+    )
+    if requested_environment:
+        result_summary += f" Environment {requested_environment} selected."
+    if output.get("suspected_primary_dependency"):
+        result_summary += f" Primary dependency: {output['suspected_primary_dependency']}."
+
+    return ToolExecutionResponse(
+        tool_name="service_dependencies",
+        action=request.action,
+        target=target,
+        execution_status="completed",
+        execution_mode="local_adapter",
+        result_summary=result_summary,
+        trace_id=uuid.uuid4().hex,
+        executed_at=build_utc_timestamp(),
+        output=output,
+    )
+
+
 def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse:
     """Execute a minimal local tool stub for workflow integration."""
     tool_name = request.tool_name.strip().lower()
@@ -1763,6 +2014,9 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
 
     if tool_name == "document_search":
         return _run_document_search_tool(request)
+
+    if tool_name == "service_dependencies":
+        return _run_service_dependencies_tool(request)
 
     if tool_name == "ticketing":
         return _run_ticketing_tool(request)
@@ -1832,6 +2086,9 @@ def infer_tool_request(question: str) -> InferredToolRequest:
 
     if "ticket" in lowered or "incident" in lowered:
         tool_name = "ticketing"
+    elif any(token in lowered for token in ["dependency", "dependencies", "downstream dependency", "dependency map"]):
+        tool_name = "service_dependencies"
+        action = "query"
     elif any(token in lowered for token in ["status", "health", "config", "configuration"]):
         tool_name = "system_status"
         action = "query"
@@ -1854,6 +2111,18 @@ def infer_tool_request(question: str) -> InferredToolRequest:
         target = ENVIRONMENT_SEGMENT_PATTERN.sub("", target).strip(" ?.!")
         if not target:
             target = "agent-knowledge-system"
+    elif tool_name == "service_dependencies":
+        target = STATUS_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
+        target = SERVICE_DEPENDENCIES_FOR_PATTERN.sub("", target).strip(" ?.!")
+        target = re.sub(
+            r"\b(?:dependency|dependencies|dependency\s+map|dependency\s+health)\b",
+            "",
+            target,
+            flags=re.IGNORECASE,
+        ).strip(" ?.!")
+        target = ENVIRONMENT_SEGMENT_PATTERN.sub("", target).strip(" ?.!")
+        if not target:
+            target = "service"
     else:
         target = SEARCH_PREFIX_PATTERN.sub("", normalized_question).strip(" ?.!")
         target = GENERIC_SEARCH_PREFIX_PATTERN.sub("", target).strip(" ?.!")
@@ -1971,6 +2240,15 @@ def _normalize_planned_request(
         )
 
     if inferred_request.tool_name == "system_status":
+        requested_environment = normalized_arguments.get("environment", "").strip()
+        if not requested_environment:
+            extracted_environment = _extract_environment_argument(question)
+            if extracted_environment:
+                normalized_arguments["environment"] = extracted_environment
+        elif requested_environment:
+            normalized_arguments["environment"] = _normalize_environment_value(requested_environment)
+
+    if inferred_request.tool_name == "service_dependencies":
         requested_environment = normalized_arguments.get("environment", "").strip()
         if not requested_environment:
             extracted_environment = _extract_environment_argument(question)
