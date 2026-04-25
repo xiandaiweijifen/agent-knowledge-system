@@ -278,6 +278,7 @@ export function QueryView({
           submissionDecision: "提交决策",
           submitTicket: "提交工单",
           cancelTicket: "取消提交",
+          prepareIncidentTriage: "转为故障分诊",
           currentOutcome: "当前结果",
           technicalDetails: "技术细节",
           technicalDetailsCopy: "仅在排查或调试时展开，主视图保留任务所需的关键信息。",
@@ -511,6 +512,7 @@ export function QueryView({
           submissionDecision: "Submission Decision",
           submitTicket: "Submit Ticket",
           cancelTicket: "Cancel Submission",
+          prepareIncidentTriage: "Prepare Incident Triage",
           currentOutcome: "Current Outcome",
           technicalDetails: "Technical Details",
           technicalDetailsCopy: "Expand only when you need execution trace or raw workflow diagnostics.",
@@ -973,6 +975,33 @@ export function QueryView({
     return "No active alerts. Continue monitoring the current service baseline.";
   }
 
+  function inferRuntimeReviewSymptom(activeAlerts: string[], fallbackQuestion: string) {
+    if (activeAlerts.some((alert) => alert.toLowerCase().includes("timeout"))) {
+      return "timeout";
+    }
+    if (activeAlerts.some((alert) => alert.toLowerCase().includes("latency"))) {
+      return "latency";
+    }
+    const loweredQuestion = fallbackQuestion.toLowerCase();
+    if (loweredQuestion.includes("timeout")) {
+      return "timeout";
+    }
+    if (loweredQuestion.includes("latency")) {
+      return "latency";
+    }
+    return "incident";
+  }
+
+  function buildIncidentTriageQuestionFromRuntimeReview(
+    service: string,
+    environment: string,
+    activeAlerts: string[],
+    fallbackQuestion: string,
+  ) {
+    const symptom = inferRuntimeReviewSymptom(activeAlerts, fallbackQuestion);
+    return `Check ${service} in ${environment} for ${symptom} issues and if it is abnormal prepare a high severity ticket draft`;
+  }
+
   function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
     if (!response || !isIncidentTriageWorkflow(response)) {
       return null;
@@ -1179,6 +1208,10 @@ export function QueryView({
       dependencyChecks,
     );
     const nextActions = response.recommended_next_actions ?? [];
+    const serviceName = String(statusOutput.service ?? "").trim();
+    const environmentName = String(statusOutput.environment ?? "").trim();
+    const canPrepareIncidentTriage =
+      nextActions.includes("prepare_incident_triage") && serviceName && environmentName;
 
     return (
       <article className="subsection-card incident-triage-card">
@@ -1218,6 +1251,28 @@ export function QueryView({
                 </span>
               ))}
             </div>
+            {canPrepareIncidentTriage && (
+              <div className="button-row">
+                <button
+                  type="button"
+                  className="ghost-button"
+                  disabled={queryBusy}
+                  onClick={() => {
+                    onChangeQuestion(
+                      buildIncidentTriageQuestionFromRuntimeReview(
+                        serviceName,
+                        environmentName,
+                        activeAlerts,
+                        response.question,
+                      ),
+                    );
+                    onRunAgent();
+                  }}
+                >
+                  {queryCopy.prepareIncidentTriage}
+                </button>
+              </div>
+            )}
           </>
         )}
         <div className="incident-triage-grid">

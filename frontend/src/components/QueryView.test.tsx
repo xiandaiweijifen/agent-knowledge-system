@@ -2299,5 +2299,200 @@ describe("QueryView", () => {
     expect(within(runtimePanel as HTMLElement).queryByText("Ticket Draft")).not.toBeInTheDocument();
     expect(screen.getAllByText("View Execution Details And Trace").length).toBeGreaterThan(0);
   });
+
+  it("promotes severe runtime review results into an incident triage question", async () => {
+    const user = userEvent.setup();
+    const onChangeQuestion = vi.fn();
+    const onRunAgent = vi.fn();
+
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Check payment-service in production status and tell me what to look at for timeout issues"
+        topK={3}
+        activePresetQuestions={[]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-runtime-review-severe",
+          question: "Check payment-service in production status and tell me what to look at for timeout issues",
+          workflow_status: "completed",
+          terminal_reason: "service_runtime_review_completed",
+          workflow_outcome: "inspect_dependencies",
+          recommended_next_actions: [
+            "inspect_primary_dependency",
+            "open_runbook",
+            "prepare_incident_triage",
+          ],
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Status inspection should use service runtime review.",
+            filename: null,
+          },
+          workflow_trace: [],
+          answer:
+            "Service runtime review for payment-service in production found the service degraded. Service is degraded due to elevated timeout rate and downstream DB latency. Recommended checks: inspect active alerts timeout_rate_high, dependency_db_latency_spike. Likely dependency to inspect next: payment-db. Relevant guidance came from payment_service_runbook.md.",
+          answer_source: "local_service_runtime_review",
+          workflow_family: "service_runtime_review",
+          available_skills: [],
+          skill_trace: [],
+          tool_plan: null,
+          tool_execution: null,
+          tool_chain: [
+            {
+              step_id: "step_1",
+              step_index: 1,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-25T08:20:13.156225+00:00",
+              completed_at: "2026-04-25T08:20:13.179380+00:00",
+              question: "Check payment-service in production status and tell me what to look at for timeout issues",
+              skill_id: "review_service_health",
+              skill_label: "Review Service Health",
+              tool_plan: {
+                question: "Check payment-service in production status and tell me what to look at for timeout issues",
+                planning_mode: "agent_v2_service_runtime_review",
+                route_hint: "tool_execution",
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                arguments: {
+                  environment: "production",
+                  scenario: "timeout_spike",
+                },
+                plan_summary: "Plan system_status:query for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Collected local system status for payment-service with requested environment production. Scenario timeout_spike selected.",
+                trace_id: "trace-runtime-status-severe",
+                executed_at: "2026-04-25T08:20:13.179380+00:00",
+                output: {
+                  service: "payment-service",
+                  environment: "production",
+                  status: "degraded",
+                  health: "degraded",
+                  scenario_id: "timeout_spike",
+                  requested_scenario: "timeout_spike",
+                  latency_p95_ms: "1320",
+                  active_alerts: [
+                    "timeout_rate_high",
+                    "dependency_db_latency_spike",
+                  ] as unknown as string,
+                } as unknown as Record<string, string>,
+              },
+            },
+            {
+              step_id: "step_2",
+              step_index: 2,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-25T08:20:13.179517+00:00",
+              completed_at: "2026-04-25T08:20:13.502613+00:00",
+              question: "Check payment-service in production status and tell me what to look at for timeout issues",
+              skill_id: "inspect_service_dependencies",
+              skill_label: "Inspect Service Dependencies",
+              tool_plan: {
+                question: "Check payment-service in production status and tell me what to look at for timeout issues",
+                planning_mode: "agent_v2_service_runtime_review",
+                route_hint: "tool_execution",
+                tool_name: "service_dependencies",
+                action: "query",
+                target: "payment-service",
+                arguments: {
+                  environment: "production",
+                  failure_signal: "timeout_rate_high",
+                },
+                plan_summary: "Plan service_dependencies:query for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "service_dependencies",
+                action: "query",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary:
+                  "Loaded 2 downstream dependencies for payment-service. Environment production selected. Primary dependency: payment-db.",
+                trace_id: "trace-runtime-dependencies-severe",
+                executed_at: "2026-04-25T08:20:13.502613+00:00",
+                output: {
+                  suspected_primary_dependency: "payment-db",
+                  recommended_checks: [
+                    "inspect write latency and slow query log",
+                    "confirm connection pool saturation",
+                  ] as unknown as string,
+                } as unknown as Record<string, string>,
+              },
+            },
+            {
+              step_id: "step_3",
+              step_index: 3,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-25T08:20:13.502613+00:00",
+              completed_at: "2026-04-25T08:20:13.802613+00:00",
+              question: "Check payment-service in production status and tell me what to look at for timeout issues",
+              skill_id: "collect_runtime_guidance",
+              skill_label: "Collect Runtime Guidance",
+              tool_plan: {
+                question: "Check payment-service in production status and tell me what to look at for timeout issues",
+                planning_mode: "agent_v2_service_runtime_review",
+                route_hint: "tool_execution",
+                tool_name: "document_search",
+                action: "query",
+                target: "timeout",
+                arguments: {
+                  max_results: "3",
+                  filename: "payment_service_runbook.md",
+                },
+                plan_summary: "Plan document_search:query for timeout.",
+              },
+              tool_execution: {
+                tool_name: "document_search",
+                action: "query",
+                target: "timeout",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Found 1 matching document(s) for 'timeout'.",
+                trace_id: "trace-runtime-guidance-severe",
+                executed_at: "2026-04-25T08:20:13.802613+00:00",
+                output: {
+                  matched_documents: "payment_service_runbook.md",
+                  filename_filter: "payment_service_runbook.md",
+                },
+              },
+            },
+          ],
+        }}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={onChangeQuestion}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={onRunAgent}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Prepare Incident Triage" }));
+
+    expect(onChangeQuestion).toHaveBeenCalledWith(
+      "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+    );
+    expect(onRunAgent).toHaveBeenCalledTimes(1);
+  });
 });
 
