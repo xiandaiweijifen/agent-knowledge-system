@@ -996,10 +996,16 @@ export function QueryView({
     service: string,
     environment: string,
     activeAlerts: string[],
+    dependencyName: string,
     fallbackQuestion: string,
   ) {
     const symptom = inferRuntimeReviewSymptom(activeAlerts, fallbackQuestion);
-    return `Check ${service} in ${environment} for ${symptom} issues and if it is abnormal prepare a high severity ticket draft`;
+    const contextFragments = [
+      dependencyName ? `Focus on dependency ${dependencyName}` : "",
+      activeAlerts.length > 0 ? `active alerts ${activeAlerts.join(", ")}` : "",
+    ].filter(Boolean);
+    const contextSuffix = contextFragments.length > 0 ? `. ${contextFragments.join("; ")}.` : "";
+    return `Check ${service} in ${environment} for ${symptom} issues and if it is abnormal prepare a high severity ticket draft${contextSuffix}`;
   }
 
   function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
@@ -1263,6 +1269,7 @@ export function QueryView({
                         serviceName,
                         environmentName,
                         activeAlerts,
+                        dependencyName,
                         response.question,
                       ),
                     );

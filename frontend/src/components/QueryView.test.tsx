@@ -2490,7 +2490,7 @@ describe("QueryView", () => {
     await user.click(screen.getByRole("button", { name: "Prepare Incident Triage" }));
 
     expect(onChangeQuestion).toHaveBeenCalledWith(
-      "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
+      "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft. Focus on dependency payment-db; active alerts timeout_rate_high, dependency_db_latency_spike.",
     );
     expect(onRunAgent).toHaveBeenCalledTimes(1);
   });
