@@ -12,6 +12,7 @@ from app.services.agent_v2.skills.incident_triage import (
 )
 from app.services.agent_v2.skills.service_runtime_review import (
     build_runtime_review_summary,
+    run_collect_dependency_context_skill,
     run_collect_runtime_guidance_skill,
 )
 from app.services.agent_v2.state import AgentState
@@ -293,6 +294,16 @@ def _run_service_runtime_review_workflow(state: AgentState, review_context: dict
         )
         tool_chain.extend(status_steps)
 
+        dependency_steps, dependency_output = run_collect_dependency_context_skill(
+            state=state,
+            question=question,
+            service=service,
+            environment=environment,
+            status_output=status_output,
+            execute_step=_execute_single_step,
+        )
+        tool_chain.extend(dependency_steps)
+
         guidance_steps, guidance_output = run_collect_runtime_guidance_skill(
             state=state,
             question=question,
@@ -310,6 +321,7 @@ def _run_service_runtime_review_workflow(state: AgentState, review_context: dict
                 environment=environment,
                 symptom=symptom,
                 status_output=status_output,
+                dependency_output=dependency_output,
                 guidance_output=guidance_output,
             ),
             "answer_source": "local_service_runtime_review",

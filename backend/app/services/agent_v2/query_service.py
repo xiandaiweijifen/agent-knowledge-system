@@ -56,6 +56,12 @@ SKILL_CATALOG: dict[str, dict[str, Any]] = {
         "owned_tools": ["document_search"],
         "workflow_families": ["service_runtime_review"],
     },
+    "inspect_service_dependencies": {
+        "skill_label": "Inspect Service Dependencies",
+        "description": "Inspect structured dependency data to identify the most likely downstream dependency to check next.",
+        "owned_tools": ["service_dependencies"],
+        "workflow_families": ["service_runtime_review"],
+    },
     "collect_incident_evidence": {
         "skill_label": "Collect Incident Evidence",
         "description": "Gather runbook and external evidence that supports incident diagnosis.",
@@ -382,6 +388,8 @@ def _resolve_step_skill_id(step: dict[str, Any], workflow_family: str) -> str:
     if workflow_family == "service_runtime_review":
         if tool_name == "system_status":
             return "review_service_health"
+        if tool_name == "service_dependencies":
+            return "inspect_service_dependencies"
         if tool_name == "document_search":
             return "collect_runtime_guidance"
     if workflow_family == "knowledge_retrieval":
@@ -417,6 +425,13 @@ def _build_skill_summary(skill_id: str, steps: list[dict[str, Any]], workflow_fa
             if matched_documents:
                 return f"Collected runtime guidance from {matched_documents}."
         return "Collected runtime guidance for the requested service."
+    if skill_id == "inspect_service_dependencies":
+        for step in steps:
+            output = (step.get("tool_execution") or {}).get("output") or {}
+            primary_dependency = str(output.get("suspected_primary_dependency") or "").strip()
+            if primary_dependency:
+                return f"Identified {primary_dependency} as the most likely downstream dependency to inspect."
+        return "Inspected the service dependency map."
     if skill_id == "prepare_incident_ticket":
         last_step = steps[-1] if steps else {}
         output = (last_step.get("tool_execution") or {}).get("output") or {}

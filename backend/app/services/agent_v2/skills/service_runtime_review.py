@@ -18,12 +18,23 @@ def build_runtime_review_summary(
     environment: str,
     symptom: str,
     status_output: dict[str, Any],
+    dependency_output: dict[str, Any] | None,
     guidance_output: dict[str, Any] | None,
 ) -> str:
     health = str(status_output.get("health") or status_output.get("status") or "unknown").lower()
     status_summary = str(status_output.get("summary") or f"{service} status checked in {environment}.").strip()
     alerts = status_output.get("active_alerts")
     active_alerts = [str(item).strip() for item in alerts if str(item).strip()] if isinstance(alerts, list) else []
+    primary_dependency = (
+        str(dependency_output.get("suspected_primary_dependency") or "").strip()
+        if isinstance(dependency_output, dict)
+        else ""
+    )
+    dependency_clause = (
+        f" Likely dependency to inspect next: {primary_dependency}."
+        if primary_dependency
+        else ""
+    )
     matched_documents = (
         str(guidance_output.get("matched_documents") or "").strip()
         if isinstance(guidance_output, dict)
@@ -34,7 +45,7 @@ def build_runtime_review_summary(
     if health in {"healthy", "ok", "nominal"}:
         return (
             f"Service runtime review for {service} in {environment} found the service healthy. "
-            f"{status_summary} No incident action is recommended right now.{guidance_clause}"
+            f"{status_summary} No incident action is recommended right now.{dependency_clause}{guidance_clause}"
         )
 
     recommendation = (
@@ -44,8 +55,42 @@ def build_runtime_review_summary(
     )
     return (
         f"Service runtime review for {service} in {environment} found the service {health}. "
-        f"{status_summary}{recommendation}{guidance_clause}"
+        f"{status_summary}{recommendation}{dependency_clause}{guidance_clause}"
     )
+
+
+def run_collect_dependency_context_skill(
+    *,
+    state: AgentState,
+    question: str,
+    service: str,
+    environment: str,
+    status_output: dict[str, Any],
+    execute_step: ExecuteStep,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    alerts = status_output.get("active_alerts")
+    failure_signal = ""
+    if isinstance(alerts, list):
+        for item in alerts:
+            candidate = str(item).strip()
+            if candidate:
+                failure_signal = candidate
+                break
+
+    dependency_step, dependency_execution = execute_step(
+        state=state,
+        step_index=2,
+        question=question,
+        tool_name="service_dependencies",
+        action="query",
+        target=service,
+        arguments={
+            "environment": environment,
+            **({"failure_signal": failure_signal} if failure_signal else {}),
+        },
+        planning_mode=SERVICE_RUNTIME_REVIEW_PLANNING_MODE,
+    )
+    return [dependency_step], dependency_execution.model_dump().get("output", {})
 
 
 def run_collect_runtime_guidance_skill(
@@ -63,7 +108,7 @@ def run_collect_runtime_guidance_skill(
     )
     search_step, search_execution = execute_step(
         state=state,
-        step_index=2,
+        step_index=3,
         question=question,
         tool_name="document_search",
         action="query",

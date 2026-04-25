@@ -311,7 +311,9 @@ The workflow currently executes:
 
 1. `system_status:query`
    Inspect the service health, metrics, and active alerts for the requested environment.
-2. `document_search:query`
+2. `service_dependencies:query`
+   Inspect the structured dependency map to identify the most likely downstream dependency to check next.
+3. `document_search:query`
    Pull runbook guidance tied to the relevant symptom or service runbook.
 
 The workflow returns a runtime review summary rather than creating a ticket. Its
@@ -324,6 +326,7 @@ goal is to answer:
 Internally, this workflow reuses:
 
 - `review_service_health`
+- `inspect_service_dependencies`
 - `collect_runtime_guidance`
 
 ### 7. Evaluation and Observability

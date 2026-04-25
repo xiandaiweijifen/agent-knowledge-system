@@ -272,6 +272,21 @@ def test_tool_exec_node_runs_service_runtime_review_workflow(monkeypatch):
                     },
                 },
             )
+        if request.tool_name == "service_dependencies":
+            return _build_execution(
+                tool_name="service_dependencies",
+                action="query",
+                target=request.target,
+                summary="Loaded 2 downstream dependencies for payment-service. Environment production selected. Primary dependency: payment-db.",
+                output={
+                    "suspected_primary_dependency": "payment-db",
+                    "dependency_count": "2",
+                    "recommended_checks": [
+                        "inspect write latency and slow query log",
+                        "confirm connection pool saturation",
+                    ],
+                },
+            )
         return _build_execution(
             tool_name="document_search",
             action="query",
@@ -294,8 +309,9 @@ def test_tool_exec_node_runs_service_runtime_review_workflow(monkeypatch):
     assert result["workflow_status"] == "completed"
     assert result["answer_source"] == "local_service_runtime_review"
     assert result["terminal_reason_override"] == "service_runtime_review_completed"
-    assert len(result["tool_chain"]) == 2
+    assert len(result["tool_chain"]) == 3
     assert result["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
     assert result["tool_chain"][0]["tool_plan"]["planning_mode"] == "agent_v2_service_runtime_review"
-    assert result["tool_chain"][1]["tool_plan"]["tool_name"] == "document_search"
-    assert "Recommended checks:" in result["answer"]
+    assert result["tool_chain"][1]["tool_plan"]["tool_name"] == "service_dependencies"
+    assert result["tool_chain"][2]["tool_plan"]["tool_name"] == "document_search"
+    assert "Likely dependency to inspect next: payment-db." in result["answer"]

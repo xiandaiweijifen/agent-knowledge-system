@@ -415,7 +415,7 @@ def test_orchestrate_agent_v2_request_returns_service_runtime_review_result(monk
                     "route_reason": "Service runtime review should inspect current health and gather runbook guidance.",
                     "route_planning_mode": "llm_gemini",
                     "workflow_status": "completed",
-                    "answer": "Service runtime review for payment-service in production found the service degraded. Service is degraded due to elevated timeout rate and downstream DB latency. Recommended checks: inspect active alerts timeout_rate_high, dependency_db_latency_spike. Relevant guidance came from payment_service_runbook.md.",
+                    "answer": "Service runtime review for payment-service in production found the service degraded. Service is degraded due to elevated timeout rate and downstream DB latency. Recommended checks: inspect active alerts timeout_rate_high, dependency_db_latency_spike. Likely dependency to inspect next: payment-db. Relevant guidance came from payment_service_runbook.md.",
                     "answer_source": "local_service_runtime_review",
                     "tool_chain": [
                         {
@@ -439,6 +439,18 @@ def test_orchestrate_agent_v2_request_returns_service_runtime_review_result(monk
                             "started_at": "2026-04-07T00:00:01+00:00",
                             "completed_at": "2026-04-07T00:00:02+00:00",
                             "question": state["question"],
+                            "tool_plan": {"tool_name": "service_dependencies", "action": "query", "target": "payment-service", "arguments": {"environment": "production", "failure_signal": "timeout_rate_high"}},
+                            "tool_execution": {"tool_name": "service_dependencies", "action": "query", "execution_status": "completed", "result_summary": "dependency map loaded", "output": {"suspected_primary_dependency": "payment-db"}},
+                        },
+                        {
+                            "step_id": "step_3",
+                            "step_index": 3,
+                            "step_status": "completed",
+                            "attempt_count": 1,
+                            "retried": False,
+                            "started_at": "2026-04-07T00:00:02+00:00",
+                            "completed_at": "2026-04-07T00:00:03+00:00",
+                            "question": state["question"],
                             "tool_plan": {"tool_name": "document_search", "action": "query", "target": "timeout", "arguments": {"max_results": "3", "filename": "payment_service_runbook.md"}},
                             "tool_execution": {"tool_name": "document_search", "action": "query", "execution_status": "completed", "result_summary": "guidance searched"},
                         },
@@ -458,14 +470,17 @@ def test_orchestrate_agent_v2_request_returns_service_runtime_review_result(monk
     assert response.workflow_family == "service_runtime_review"
     assert [skill.skill_id for skill in response.available_skills] == [
         "review_service_health",
+        "inspect_service_dependencies",
         "collect_runtime_guidance",
     ]
     assert [skill.skill_id for skill in response.skill_trace] == [
         "review_service_health",
+        "inspect_service_dependencies",
         "collect_runtime_guidance",
     ]
     assert response.tool_chain[0].skill_id == "review_service_health"
-    assert response.tool_chain[1].skill_id == "collect_runtime_guidance"
+    assert response.tool_chain[1].skill_id == "inspect_service_dependencies"
+    assert response.tool_chain[2].skill_id == "collect_runtime_guidance"
     assert response.workflow_trace[-1].stage == "tool_execution"
     assert "Service runtime review" in response.workflow_trace[-1].detail
 
