@@ -164,6 +164,23 @@ Current knobs:
 - generate grounded answers with citations and verification signals
 - run fallback answering when no live model answer path is configured
 
+The repository now also includes a small structured JSON corpus under
+`data/raw/` for engineering-support testing. These JSON documents are intended
+to exercise:
+
+- JSON preview and flattening behavior
+- chunking and embedding of structured records
+- future workflow tests for service runtime review, dependency inspection, and
+  ticket drafting
+
+Included JSON corpus files:
+
+- `engineering_service_catalog.json`
+- `engineering_dependency_map.json`
+- `engineering_incident_patterns.json`
+- `engineering_runtime_review_cases.json`
+- `engineering_ticket_templates.json`
+
 ### 2. Agent Layer
 
 - route incoming requests into retrieval, tool execution, or clarification
