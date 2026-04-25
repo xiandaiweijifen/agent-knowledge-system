@@ -2019,5 +2019,213 @@ describe("QueryView", () => {
     expect(within(ticketCard as HTMLElement).getByText("submitted")).toBeInTheDocument();
     expect(within(ticketCard as HTMLElement).queryByText("awaiting_user_confirmation")).not.toBeInTheDocument();
   });
+
+  it("renders a compact service runtime review panel with scenario context", () => {
+    render(
+      <QueryView
+        documents={[]}
+        queryFilename=""
+        question="Check payment-service in production status and tell me what to look at for timeout issues"
+        topK={3}
+        activePresetQuestions={[]}
+        queryResult={null}
+        agentQueryResult={{
+          run_id: "run-runtime-review",
+          question: "Check payment-service in production status and tell me what to look at for timeout issues",
+          workflow_status: "completed",
+          terminal_reason: "service_runtime_review_completed",
+          route: {
+            route_type: "tool_execution",
+            route_reason: "Status inspection should use service runtime review.",
+            filename: null,
+          },
+          workflow_trace: [],
+          answer:
+            "Service runtime review for payment-service in production found the service healthy. Payment service is healthy in production with latency and error rate within normal range. Recommended checks: continue monitoring the service baseline and review runbook guidance if conditions change.",
+          answer_source: "local_service_runtime_review",
+          workflow_family: "service_runtime_review",
+          available_skills: [
+            {
+              skill_id: "review_service_health",
+              skill_label: "Review Service Health",
+              description: "Inspect the target service health and normalize the runtime status snapshot.",
+              owned_tools: ["system_status"],
+              workflow_families: ["incident_triage", "service_runtime_review"],
+            },
+            {
+              skill_id: "collect_runtime_guidance",
+              skill_label: "Collect Runtime Guidance",
+              description: "Retrieve runbook guidance to recommend the next runtime checks for a service.",
+              owned_tools: ["document_search"],
+              workflow_families: ["service_runtime_review"],
+            },
+          ],
+          skill_trace: [
+            {
+              skill_id: "review_service_health",
+              skill_label: "Review Service Health",
+              status: "completed",
+              summary: "Payment service is healthy in production with latency and error rate within normal range.",
+              tool_names: ["system_status"],
+            },
+            {
+              skill_id: "collect_runtime_guidance",
+              skill_label: "Collect Runtime Guidance",
+              status: "completed",
+              summary: "Collected runtime guidance from payment_service_runbook.md.",
+              tool_names: ["document_search"],
+            },
+          ],
+          tool_plan: {
+            question: "Check payment-service in production status and tell me what to look at for timeout issues",
+            planning_mode: "agent_v2_service_runtime_review",
+            route_hint: "tool_execution",
+            tool_name: "document_search",
+            action: "query",
+            target: "timeout",
+            arguments: {
+              max_results: "3",
+              filename: "payment_service_runbook.md",
+            },
+            plan_summary: "Plan document_search:query for timeout.",
+          },
+          tool_execution: {
+            tool_name: "document_search",
+            action: "query",
+            target: "timeout",
+            execution_status: "completed",
+            execution_mode: "local_adapter",
+            result_summary: "Found 1 matching document(s) for 'timeout'.",
+            trace_id: "trace-runtime-guidance",
+            executed_at: "2026-04-25T08:20:13.802613+00:00",
+            output: {
+              matched_documents: "payment_service_runbook.md",
+              filename_filter: "payment_service_runbook.md",
+            },
+          },
+          tool_chain: [
+            {
+              step_id: "step_1",
+              step_index: 1,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-25T08:20:13.156225+00:00",
+              completed_at: "2026-04-25T08:20:13.179380+00:00",
+              question: "Check payment-service in production status and tell me what to look at for timeout issues",
+              skill_id: "review_service_health",
+              skill_label: "Review Service Health",
+              tool_plan: {
+                question: "Check payment-service in production status and tell me what to look at for timeout issues",
+                planning_mode: "agent_v2_service_runtime_review",
+                route_hint: "tool_execution",
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                arguments: {
+                  environment: "production",
+                  scenario: "healthy_baseline",
+                },
+                plan_summary: "Plan system_status:query for payment-service.",
+              },
+              tool_execution: {
+                tool_name: "system_status",
+                action: "query",
+                target: "payment-service",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary:
+                  "Collected local system status for payment-service with requested environment production. Scenario healthy_baseline selected.",
+                trace_id: "trace-runtime-status",
+                executed_at: "2026-04-25T08:20:13.179380+00:00",
+                output: {
+                  service: "payment-service",
+                  environment: "production",
+                  status: "ok",
+                  health: "healthy",
+                  scenario_id: "healthy_baseline",
+                  requested_scenario: "healthy_baseline",
+                  latency_p95_ms: "210",
+                  active_alerts: [] as unknown as string,
+                  status_snapshot: {
+                    scenario_id: "healthy_baseline",
+                  } as unknown as string,
+                } as unknown as Record<string, string>,
+              },
+            },
+            {
+              step_id: "step_2",
+              step_index: 2,
+              step_status: "completed",
+              attempt_count: 1,
+              retried: false,
+              started_at: "2026-04-25T08:20:13.179517+00:00",
+              completed_at: "2026-04-25T08:20:13.802613+00:00",
+              question: "Check payment-service in production status and tell me what to look at for timeout issues",
+              skill_id: "collect_runtime_guidance",
+              skill_label: "Collect Runtime Guidance",
+              tool_plan: {
+                question: "Check payment-service in production status and tell me what to look at for timeout issues",
+                planning_mode: "agent_v2_service_runtime_review",
+                route_hint: "tool_execution",
+                tool_name: "document_search",
+                action: "query",
+                target: "timeout",
+                arguments: {
+                  max_results: "3",
+                  filename: "payment_service_runbook.md",
+                },
+                plan_summary: "Plan document_search:query for timeout.",
+              },
+              tool_execution: {
+                tool_name: "document_search",
+                action: "query",
+                target: "timeout",
+                execution_status: "completed",
+                execution_mode: "local_adapter",
+                result_summary: "Found 1 matching document(s) for 'timeout'.",
+                trace_id: "trace-runtime-guidance",
+                executed_at: "2026-04-25T08:20:13.802613+00:00",
+                output: {
+                  matched_documents: "payment_service_runbook.md",
+                  filename_filter: "payment_service_runbook.md",
+                  knowledge_assets: [
+                    {
+                      doc_id: "payment_service_runbook.md",
+                      snippet:
+                        "payment_service_runbook.md: Typical payment-service problems include authorization timeout, settlement job delay, webhook backlog, and elevated retry count from downstream gateways.",
+                    },
+                  ] as unknown as string,
+                } as unknown as Record<string, string>,
+              },
+            },
+          ],
+        }}
+        agentWorkflowRuns={[]}
+        diagnosticsResult={null}
+        queryError=""
+        queryBusy={false}
+        onChangeDocument={vi.fn()}
+        onChangeQuestion={vi.fn()}
+        onChangeTopK={vi.fn()}
+        onClearDiagnostics={vi.fn()}
+        onSubmitQuery={(event) => event.preventDefault()}
+        onRunAgent={vi.fn()}
+        onLoadAgentWorkflowRun={vi.fn()}
+        onRecoverAgentWorkflowRun={vi.fn()}
+        onRunDiagnostics={vi.fn()}
+      />,
+    );
+
+    const runtimePanel = screen.getByText("Service Runtime Review").closest("article");
+
+    expect(runtimePanel).not.toBeNull();
+    expect(screen.getByText("Runtime Guidance")).toBeInTheDocument();
+    expect(screen.getAllByText("healthy_baseline").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("healthy").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("payment_service_runbook.md").length).toBeGreaterThan(0);
+    expect(within(runtimePanel as HTMLElement).queryByText("Ticket Draft")).not.toBeInTheDocument();
+    expect(screen.getAllByText("View Execution Details And Trace").length).toBeGreaterThan(0);
+  });
 });
 

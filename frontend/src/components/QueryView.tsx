@@ -259,12 +259,18 @@ export function QueryView({
           recoveryAction: "恢复动作",
           incidentTriage: "故障分诊",
           incidentTriageCopy: "把状态、证据和工单草稿汇总成一个可执行的排障视图。",
+          serviceRuntimeReview: "运行时巡检",
+          serviceRuntimeReviewCopy: "把服务状态、场景和运行指引压缩成一个简洁的排查视图。",
           serviceHealth: "服务健康",
+          runtimeGuidance: "运行指引",
           activeAlerts: "活跃告警",
           evidence: "证据",
           runbookEvidence: "Runbook 证据",
           externalEvidence: "外部工单证据",
           ticketDraft: "工单草稿",
+          scenario: "场景",
+          recommendedChecks: "建议检查项",
+          skillSummary: "技能摘要",
           submissionDecision: "提交决策",
           submitTicket: "提交工单",
           cancelTicket: "取消提交",
@@ -482,12 +488,18 @@ export function QueryView({
           recoveryAction: "Recovery Action",
           incidentTriage: "Incident Triage",
           incidentTriageCopy: "Roll up status, evidence, and the ticket draft into an actionable triage view.",
+          serviceRuntimeReview: "Service Runtime Review",
+          serviceRuntimeReviewCopy: "Condense service status, scenario selection, and runtime guidance into a lightweight review.",
           serviceHealth: "Service Health",
+          runtimeGuidance: "Runtime Guidance",
           activeAlerts: "Active Alerts",
           evidence: "Evidence",
           runbookEvidence: "Runbook Evidence",
           externalEvidence: "Imported Ticket Evidence",
           ticketDraft: "Ticket Draft",
+          scenario: "Scenario",
+          recommendedChecks: "Recommended Checks",
+          skillSummary: "Skill Summary",
           submissionDecision: "Submission Decision",
           submitTicket: "Submit Ticket",
           cancelTicket: "Cancel Submission",
@@ -764,11 +776,27 @@ export function QueryView({
   }
 
   function isIncidentTriageWorkflow(response: AgentWorkflowResponse | null) {
-    if (!response || response.answer_source !== "local_incident_triage") {
+    if (
+      !response ||
+      (response.workflow_family !== "incident_triage" &&
+        response.answer_source !== "local_incident_triage")
+    ) {
       return false;
     }
     const toolNames = response.tool_chain.map((step) => step.tool_plan.tool_name);
     return toolNames.includes("system_status") && toolNames.includes("ticketing");
+  }
+
+  function isServiceRuntimeReviewWorkflow(response: AgentWorkflowResponse | null) {
+    if (
+      !response ||
+      (response.workflow_family !== "service_runtime_review" &&
+        response.answer_source !== "local_service_runtime_review")
+    ) {
+      return false;
+    }
+    const toolNames = response.tool_chain.map((step) => step.tool_plan.tool_name);
+    return toolNames.includes("system_status") && toolNames.includes("document_search");
   }
 
   function formatIncidentOutcome(response: AgentWorkflowResponse) {
@@ -831,6 +859,14 @@ export function QueryView({
 
   function formatTicketSummary(summary: string) {
     return summary.replace(/\s*External evidence:\s*.+$/i, "").trim();
+  }
+
+  function renderSkillSummary(summary: string | undefined) {
+    if (!summary) {
+      return null;
+    }
+
+    return <p className="ticket-summary-block">{summary}</p>;
   }
 
   function renderIncidentTriagePanel(response: AgentWorkflowResponse | null) {
@@ -968,6 +1004,123 @@ export function QueryView({
             {ticketSummary && (
               <p className="ticket-summary-block">{formatTicketSummary(ticketSummary)}</p>
             )}
+          </section>
+        </div>
+      </article>
+    );
+  }
+
+  function renderServiceRuntimeReviewPanel(response: AgentWorkflowResponse | null) {
+    if (!response || !isServiceRuntimeReviewWorkflow(response)) {
+      return null;
+    }
+
+    const statusStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "system_status");
+    const guidanceStep = response.tool_chain.find((step) => step.tool_plan.tool_name === "document_search");
+    const statusOutput = (statusStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const guidanceOutput = (guidanceStep?.tool_execution?.output ?? {}) as Record<string, unknown>;
+    const nestedStatusSnapshot =
+      typeof statusOutput.status_snapshot === "object" && statusOutput.status_snapshot !== null
+        ? (statusOutput.status_snapshot as Record<string, unknown>)
+        : {};
+    const activeAlerts = Array.isArray(statusOutput.active_alerts)
+      ? (statusOutput.active_alerts as string[])
+      : [];
+    const guidanceTrace = response.skill_trace?.find(
+      (skill) => skill.skill_id === "collect_runtime_guidance",
+    );
+    const reviewTrace = response.skill_trace?.find(
+      (skill) => skill.skill_id === "review_service_health",
+    );
+    const scenarioId = String(
+      statusOutput.requested_scenario ??
+        statusOutput.scenario_id ??
+        nestedStatusSnapshot.scenario_id ??
+        "",
+    ).trim();
+
+    return (
+      <article className="subsection-card incident-triage-card">
+        <span className="section-label">{queryCopy.serviceRuntimeReview}</span>
+        <p className="subsection-copy">{queryCopy.serviceRuntimeReviewCopy}</p>
+        <div className="trace-grid">
+          <div>
+            <span className="trace-label">{queryCopy.workflowStatus}</span>
+            <strong>{response.workflow_status}</strong>
+          </div>
+          <div>
+            <span className="trace-label">{queryCopy.currentOutcome}</span>
+            <strong>{String(statusOutput.health ?? statusOutput.status ?? queryCopy.notAvailable)}</strong>
+          </div>
+          <div>
+            <span className="trace-label">{queryCopy.route}</span>
+            <strong>{response.route.route_type}</strong>
+          </div>
+          {scenarioId && (
+            <div>
+              <span className="trace-label">{queryCopy.scenario}</span>
+              <strong>{scenarioId}</strong>
+            </div>
+          )}
+        </div>
+        <div className="incident-triage-grid">
+          <section className="incident-card">
+            <span className="trace-label">{queryCopy.serviceHealth}</span>
+            <div className="trace-grid">
+              <div>
+                <span className="trace-label">{queryCopy.target}</span>
+                <strong>{String(statusOutput.service ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.environment}</span>
+                <strong>{String(statusOutput.environment ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">{queryCopy.status}</span>
+                <strong>{String(statusOutput.health ?? statusOutput.status ?? queryCopy.notAvailable)}</strong>
+              </div>
+              <div>
+                <span className="trace-label">p95</span>
+                <strong>{String(statusOutput.latency_p95_ms ?? queryCopy.notAvailable)} ms</strong>
+              </div>
+            </div>
+            {scenarioId && (
+              <div className="pill-strip">
+                <span className="meta-pill">{queryCopy.scenario}: {scenarioId}</span>
+              </div>
+            )}
+            {renderSkillSummary(reviewTrace?.summary)}
+          </section>
+
+          <section className="incident-card">
+            <span className="trace-label">{queryCopy.runtimeGuidance}</span>
+            <div>
+              <span className="trace-label">{queryCopy.runbookEvidence}</span>
+              {renderDocumentPills(
+                guidanceOutput.filename_filter ?? guidanceOutput.matched_documents,
+              )}
+            </div>
+            {renderEvidenceSnippets(
+              Array.isArray(guidanceOutput.knowledge_assets)
+                ? (guidanceOutput.knowledge_assets as Array<Record<string, unknown>>)
+                : [],
+              "runtime-guidance",
+            )}
+            {renderSkillSummary(guidanceTrace?.summary)}
+          </section>
+
+          <section className="incident-card">
+            <span className="trace-label">{queryCopy.recommendedChecks}</span>
+            {activeAlerts.length > 0 ? (
+              <div className="pill-strip">
+                {activeAlerts.map((alert) => (
+                  <span key={alert} className="meta-pill">{alert}</span>
+                ))}
+              </div>
+            ) : (
+              <strong>{queryCopy.notAvailable}</strong>
+            )}
+            {response.answer && <p className="ticket-summary-block">{response.answer}</p>}
           </section>
         </div>
       </article>
@@ -1899,8 +2052,10 @@ export function QueryView({
               )}
 
               {renderIncidentTriagePanel(agentQueryResult)}
+              {renderServiceRuntimeReviewPanel(agentQueryResult)}
 
-              {isIncidentTriageWorkflow(agentQueryResult) ? (
+              {isIncidentTriageWorkflow(agentQueryResult) ||
+              isServiceRuntimeReviewWorkflow(agentQueryResult) ? (
                 <details className="subsection-card technical-details">
                   <summary>{queryCopy.viewTechnicalDetails}</summary>
                   <p className="subsection-copy">{queryCopy.technicalDetailsCopy}</p>
