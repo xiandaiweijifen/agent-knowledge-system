@@ -108,6 +108,7 @@ def run_review_service_health_skill(
     service: str,
     environment: str,
     symptom: str,
+    planning_mode: str = INCIDENT_TRIAGE_PLANNING_MODE,
     execute_step: ExecuteStep,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     status_step, status_execution = execute_step(
@@ -118,7 +119,7 @@ def run_review_service_health_skill(
         action="query",
         target=service,
         arguments={"environment": environment, "issue_type": symptom},
-        planning_mode=INCIDENT_TRIAGE_PLANNING_MODE,
+        planning_mode=planning_mode,
     )
     return [status_step], status_execution.model_dump().get("output", {})
 

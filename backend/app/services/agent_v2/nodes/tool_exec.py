@@ -185,6 +185,7 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
             service=service,
             environment=environment,
             symptom=symptom,
+            planning_mode="agent_v2_incident_triage",
             execute_step=_execute_single_step,
         )
         tool_chain.extend(status_steps)
@@ -287,6 +288,7 @@ def _run_service_runtime_review_workflow(state: AgentState, review_context: dict
             service=service,
             environment=environment,
             symptom=symptom,
+            planning_mode="agent_v2_service_runtime_review",
             execute_step=_execute_single_step,
         )
         tool_chain.extend(status_steps)

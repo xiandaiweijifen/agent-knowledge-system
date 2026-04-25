@@ -296,5 +296,6 @@ def test_tool_exec_node_runs_service_runtime_review_workflow(monkeypatch):
     assert result["terminal_reason_override"] == "service_runtime_review_completed"
     assert len(result["tool_chain"]) == 2
     assert result["tool_chain"][0]["tool_plan"]["tool_name"] == "system_status"
+    assert result["tool_chain"][0]["tool_plan"]["planning_mode"] == "agent_v2_service_runtime_review"
     assert result["tool_chain"][1]["tool_plan"]["tool_name"] == "document_search"
     assert "Recommended checks:" in result["answer"]

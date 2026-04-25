@@ -65,6 +65,7 @@ def test_incident_triage_skills_execute_reusable_phases():
                     "action": kwargs["action"],
                     "target": kwargs["target"],
                     "arguments": kwargs["arguments"],
+                    "planning_mode": kwargs["planning_mode"],
                 },
                 "tool_execution": {"output": output_by_step[step_index]},
             },
@@ -81,6 +82,7 @@ def test_incident_triage_skills_execute_reusable_phases():
         service="payment-service",
         environment="production",
         symptom="timeout",
+        planning_mode="agent_v2_incident_triage",
         execute_step=execute_step,
     )
     evidence_steps, search_output, external_output = run_collect_incident_evidence_skill(
@@ -111,6 +113,7 @@ def test_incident_triage_skills_execute_reusable_phases():
         (4, "ticketing", "payment-service"),
     ]
     assert len(status_steps) == 1
+    assert status_steps[0]["tool_plan"]["planning_mode"] == "agent_v2_incident_triage"
     assert len(evidence_steps) == 2
     assert len(ticket_steps) == 1
     assert search_output["matched_documents"] == "payment_service_runbook.md"
