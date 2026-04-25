@@ -198,6 +198,11 @@ ticket also writes a readable markdown artifact and a JSON artifact under
 `data/tool_state/tickets/`. These files are runtime artifacts and are ignored by
 Git.
 
+The `system_status` tool also supports scenario-based mock snapshots through an
+optional `scenario` argument. This allows local runs to select different
+predefined runtime states such as `healthy_baseline`, `timeout_spike`,
+`db_latency_spike`, or `recovery_in_progress` without changing workflow logic.
+
 ### 4. Workflow Runtime
 
 The agent runtime already supports:

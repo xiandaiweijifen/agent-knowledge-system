@@ -997,6 +997,29 @@ def test_execute_system_status_tool_preserves_requested_environment(monkeypatch)
     assert "requested environment production" in response.result_summary
 
 
+def test_execute_system_status_tool_supports_requested_scenario(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "development")
+
+    response = execute_tool_request(
+        ToolExecutionRequest(
+            tool_name="system_status",
+            action="query",
+            target="payment-service",
+            arguments={"environment": "production", "scenario": "healthy_baseline"},
+        )
+    )
+
+    assert response.execution_status == "completed"
+    assert response.output["requested_environment"] == "production"
+    assert response.output["requested_scenario"] == "healthy_baseline"
+    assert response.output["scenario_id"] == "healthy_baseline"
+    assert response.output["status"] == "ok"
+    assert response.output["status_snapshot"]["health"] == "healthy"
+    assert response.output["status_snapshot"]["scenario_id"] == "healthy_baseline"
+    assert response.output["active_alerts"] == []
+    assert "Scenario healthy_baseline selected." in response.result_summary
+
+
 def test_execute_document_search_tool_returns_local_matches(workspace_tmp_path, monkeypatch):
     raw_dir = workspace_tmp_path / "raw"
     raw_dir.mkdir()

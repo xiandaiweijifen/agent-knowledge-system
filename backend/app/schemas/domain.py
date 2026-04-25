@@ -14,6 +14,7 @@ class StatusSnapshot(BaseModel):
     service: str
     environment: str
     health: str
+    scenario_id: str | None = None
     latency_p95_ms: int | None = None
     error_rate: float | None = None
     cpu_percent: float | None = None
@@ -47,4 +48,3 @@ class KnowledgeAsset(BaseModel):
     source_filename: str
     title: str = ""
     snippet: str = ""
-

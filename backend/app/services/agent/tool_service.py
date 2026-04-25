@@ -108,6 +108,13 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
                 "enum_values": ["production", "staging", "development"],
                 "domain_entity": "StatusSnapshot",
             },
+            {
+                "name": "scenario",
+                "value_type": "string",
+                "required": False,
+                "description": "Optional mock scenario id used to select a specific status snapshot variant.",
+                "domain_entity": "StatusSnapshot",
+            },
         ],
         "result_schema": [
             {
@@ -120,6 +127,12 @@ SUPPORTED_TOOLS: dict[str, dict[str, object]] = {
                 "name": "status_snapshot",
                 "value_type": "object",
                 "description": "Structured status snapshot for the service and environment.",
+                "domain_entity": "StatusSnapshot",
+            },
+            {
+                "name": "scenario_id",
+                "value_type": "string",
+                "description": "Resolved status scenario id used for the returned snapshot.",
                 "domain_entity": "StatusSnapshot",
             },
         ],
@@ -325,6 +338,13 @@ def _normalize_environment_value(value: str) -> str:
     return normalized
 
 
+def _normalize_status_scenario_value(value: str) -> str:
+    normalized = unicodedata.normalize("NFKC", value).strip().lower()
+    normalized = re.sub(r"[^a-z0-9._-]+", "-", normalized)
+    normalized = re.sub(r"-{2,}", "-", normalized)
+    return normalized.strip("-")
+
+
 def _canonicalize_service_id(target: str) -> str:
     normalized = unicodedata.normalize("NFKC", target).strip().lower()
     normalized = re.sub(r"[^a-z0-9._-]+", "-", normalized)
@@ -385,8 +405,14 @@ def _infer_doc_kind(filename: str) -> str:
     return "reference"
 
 
-def _build_status_snapshot(service_record: ServiceRecord, environment: str) -> StatusSnapshot:
+def _build_status_snapshot(
+    service_record: ServiceRecord,
+    environment: str,
+    scenario: str = "",
+) -> StatusSnapshot:
     normalized_environment = _normalize_environment_value(environment or settings.app_env or "development")
+    normalized_scenario = _normalize_status_scenario_value(scenario)
+    matching_snapshots: list[dict[str, Any]] = []
     for snapshot in _load_mock_status_snapshots():
         snapshot_service = _canonicalize_service_id(
             str(snapshot.get("service") or snapshot.get("service_id") or "")
@@ -394,17 +420,44 @@ def _build_status_snapshot(service_record: ServiceRecord, environment: str) -> S
         snapshot_environment = _normalize_environment_value(str(snapshot.get("environment") or ""))
         if snapshot_service != service_record.service_id or snapshot_environment != normalized_environment:
             continue
+        matching_snapshots.append(snapshot)
+
+    selected_snapshot: dict[str, Any] | None = None
+    if normalized_scenario:
+        for snapshot in matching_snapshots:
+            snapshot_scenario = _normalize_status_scenario_value(str(snapshot.get("scenario_id") or ""))
+            if snapshot_scenario == normalized_scenario:
+                selected_snapshot = snapshot
+                break
+
+    if selected_snapshot is None and matching_snapshots:
+        for snapshot in matching_snapshots:
+            if bool(snapshot.get("is_default")):
+                selected_snapshot = snapshot
+                break
+        if selected_snapshot is None:
+            selected_snapshot = matching_snapshots[0]
+
+    if selected_snapshot is not None:
         return StatusSnapshot(
             service=service_record.service_id,
             environment=normalized_environment,
-            health=str(snapshot.get("health") or "unknown"),
-            latency_p95_ms=int(snapshot["latency_p95_ms"]) if snapshot.get("latency_p95_ms") is not None else None,
-            error_rate=float(snapshot["error_rate"]) if snapshot.get("error_rate") is not None else None,
-            cpu_percent=float(snapshot["cpu_percent"]) if snapshot.get("cpu_percent") is not None else None,
-            memory_percent=float(snapshot["memory_percent"]) if snapshot.get("memory_percent") is not None else None,
-            active_alerts=[str(item) for item in snapshot.get("active_alerts", []) if str(item).strip()],
-            updated_at=str(snapshot.get("updated_at") or build_utc_timestamp()),
-            summary=str(snapshot.get("summary") or ""),
+            health=str(selected_snapshot.get("health") or "unknown"),
+            scenario_id=(
+                _normalize_status_scenario_value(str(selected_snapshot.get("scenario_id") or ""))
+                or None
+            ),
+            latency_p95_ms=(
+                int(selected_snapshot["latency_p95_ms"])
+                if selected_snapshot.get("latency_p95_ms") is not None
+                else None
+            ),
+            error_rate=float(selected_snapshot["error_rate"]) if selected_snapshot.get("error_rate") is not None else None,
+            cpu_percent=float(selected_snapshot["cpu_percent"]) if selected_snapshot.get("cpu_percent") is not None else None,
+            memory_percent=float(selected_snapshot["memory_percent"]) if selected_snapshot.get("memory_percent") is not None else None,
+            active_alerts=[str(item) for item in selected_snapshot.get("active_alerts", []) if str(item).strip()],
+            updated_at=str(selected_snapshot.get("updated_at") or build_utc_timestamp()),
+            summary=str(selected_snapshot.get("summary") or ""),
         )
 
     healthy = normalized_environment != "production"
@@ -412,6 +465,7 @@ def _build_status_snapshot(service_record: ServiceRecord, environment: str) -> S
         service=service_record.service_id,
         environment=normalized_environment,
         health="healthy" if healthy else "degraded",
+        scenario_id="fallback_healthy" if healthy else "fallback_degraded",
         latency_p95_ms=145 if healthy else 220,
         error_rate=0.002 if healthy else 0.008,
         cpu_percent=41.0 if healthy else 56.0,
@@ -1421,7 +1475,11 @@ def _run_ticketing_tool(request: ToolExecutionRequest) -> ToolExecutionResponse:
     raise ValueError("unsupported_ticket_action")
 
 
-def _build_system_status_output(target: str, requested_environment: str = "") -> dict[str, str]:
+def _build_system_status_output(
+    target: str,
+    requested_environment: str = "",
+    requested_scenario: str = "",
+) -> dict[str, str]:
     embedding_model = (
         settings.gemini_embedding_model
         if settings.embedding_provider == "gemini"
@@ -1439,7 +1497,7 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
 
     service_record = _build_service_record(target)
     environment = requested_environment or settings.app_env or "development"
-    status_snapshot = _build_status_snapshot(service_record, environment)
+    status_snapshot = _build_status_snapshot(service_record, environment, requested_scenario)
 
     output = {
         **_build_tool_output_metadata(
@@ -1452,6 +1510,7 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
         "service": service_record.service_id,
         "environment": status_snapshot.environment,
         "health": status_snapshot.health,
+        "scenario_id": status_snapshot.scenario_id,
         "latency_p95_ms": status_snapshot.latency_p95_ms,
         "error_rate": status_snapshot.error_rate,
         "cpu_percent": status_snapshot.cpu_percent,
@@ -1471,6 +1530,8 @@ def _build_system_status_output(target: str, requested_environment: str = "") ->
     }
     if requested_environment:
         output["requested_environment"] = requested_environment
+    if requested_scenario:
+        output["requested_scenario"] = _normalize_status_scenario_value(requested_scenario)
     return output
 
 
@@ -1668,7 +1729,14 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
         requested_environment = _normalize_environment_value(
             request.arguments.get("environment", "").strip()
         )
-        output = _build_system_status_output(target, requested_environment=requested_environment)
+        requested_scenario = _normalize_status_scenario_value(
+            request.arguments.get("scenario", "").strip()
+        )
+        output = _build_system_status_output(
+            target,
+            requested_environment=requested_environment,
+            requested_scenario=requested_scenario,
+        )
         return ToolExecutionResponse(
             tool_name=tool_name,
             action=action,
@@ -1681,6 +1749,11 @@ def execute_tool_request(request: ToolExecutionRequest) -> ToolExecutionResponse
                     f" with requested environment {requested_environment}."
                     if requested_environment
                     else "."
+                )
+                + (
+                    f" Scenario {requested_scenario} selected."
+                    if requested_scenario
+                    else ""
                 )
             ),
             trace_id=uuid.uuid4().hex,
