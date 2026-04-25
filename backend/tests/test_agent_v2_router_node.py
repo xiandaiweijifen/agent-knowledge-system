@@ -87,3 +87,33 @@ def test_router_node_preserves_precomputed_route(monkeypatch):
         "route_planning_mode": "precomputed",
         "workflow_status": "in_progress",
     }
+
+
+def test_router_node_prefers_deterministic_service_runtime_review_route(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.nodes.router.generate_llm_route_decision",
+        lambda question, filename=None: (
+            "llm_openai",
+            {
+                "route": "knowledge_retrieval",
+                "route_reason": "The request should retrieve knowledge about monitoring and debugging.",
+            },
+        ),
+    )
+
+    result = router_node(
+        {
+            **BASE_STATE,
+            "question": "Check payment-service in production status and tell me what to look at for timeout issues",
+        }
+    )
+
+    assert result == {
+        "route": "tool_execution",
+        "route_reason": (
+            "The request matches the service runtime review workflow pattern, so it should be "
+            "routed toward tool execution."
+        ),
+        "route_planning_mode": "deterministic_workflow_router",
+        "workflow_status": "in_progress",
+    }
