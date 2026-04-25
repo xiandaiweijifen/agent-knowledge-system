@@ -11,7 +11,7 @@ RAW_DATA_DIR = DATA_ROOT / "raw"
 RAW_DATA_DIR.mkdir(parents=True, exist_ok=True)
 CHUNK_DATA_DIR = DATA_ROOT / "chunks"
 CHUNK_DATA_DIR.mkdir(parents=True, exist_ok=True)
-LISTABLE_DOCUMENT_SUFFIXES = {".txt", ".md", ".pdf", ".docx"}
+LISTABLE_DOCUMENT_SUFFIXES = {".txt", ".md", ".json", ".pdf", ".docx"}
 CHUNK_PIPELINE_VERSION = "ingestion-v1"
 
 DOCUMENT_KIND_HINTS: list[tuple[str, tuple[str, ...]]] = [

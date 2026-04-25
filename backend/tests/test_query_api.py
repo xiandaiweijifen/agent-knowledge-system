@@ -5255,3 +5255,47 @@ def test_clarification_planner_uses_dedicated_openai_model_when_configured(monke
     assert response.planning_mode == "llm_openai"
     assert captured["payload"]["model"] == "gpt-clarification-planner"
 
+
+def test_documents_endpoint_supports_json_preview(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    (raw_dir / "service.json").write_text(
+        '{"service":"payment-service","environment":"production","alerts":["timeout_rate_high"]}',
+        encoding="utf-8",
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/documents/service.json")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["suffix"] == ".json"
+    assert "service: payment-service" in payload["content"]
+    assert "environment: production" in payload["content"]
+    assert "alerts[0]: timeout_rate_high" in payload["content"]
+
+
+def test_documents_endpoint_rejects_invalid_json_preview(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    raw_dir.mkdir()
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+
+    (raw_dir / "broken.json").write_text('{"service": }', encoding="utf-8")
+
+    client = TestClient(app)
+    response = client.get("/api/documents/broken.json")
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "JSON document must contain valid UTF-8 encoded JSON for preview right now"
+    )
+

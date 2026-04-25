@@ -14,6 +14,7 @@ def test_list_documents_filters_hidden_and_non_document_files(
     (workspace_tmp_path / ".gitkeep").write_text("", encoding="utf-8")
     (workspace_tmp_path / "notes.txt").write_text("hello", encoding="utf-8")
     (workspace_tmp_path / "design.md").write_text("# title", encoding="utf-8")
+    (workspace_tmp_path / "service.json").write_text('{"service":"payment-service"}', encoding="utf-8")
     (workspace_tmp_path / "image.png").write_bytes(b"binary")
 
     documents = document_service.list_documents()
@@ -43,6 +44,18 @@ def test_list_documents_filters_hidden_and_non_document_files(
                 "qdrant_ready": False,
             },
         },
+        {
+            "filename": "service.json",
+            "size_bytes": len('{"service":"payment-service"}'.encode("utf-8")),
+            "suffix": ".json",
+            "document_kind": "reference",
+            "knowledge_assets": {
+                "chunks_ready": False,
+                "embeddings_ready": False,
+                "llamaindex_ready": False,
+                "qdrant_ready": False,
+            },
+        },
     ]
 
 
@@ -57,6 +70,38 @@ def test_read_text_document_raises_decode_error_for_non_utf8_file(
 
     with pytest.raises(ValueError, match="text_decode_error"):
         document_service.read_text_document("latin1.txt")
+
+
+def test_read_text_document_normalizes_json_for_preview(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", workspace_tmp_path)
+
+    (workspace_tmp_path / "service.json").write_text(
+        '{"service":"payment-service","alerts":["timeout_rate_high","dependency_db_latency_spike"],"healthy":false}',
+        encoding="utf-8",
+    )
+
+    payload = document_service.read_text_document("service.json")
+
+    assert payload["suffix"] == ".json"
+    assert "service: payment-service" in payload["content"]
+    assert "alerts[0]: timeout_rate_high" in payload["content"]
+    assert "alerts[1]: dependency_db_latency_spike" in payload["content"]
+    assert "healthy: false" in payload["content"]
+
+
+def test_read_text_document_raises_decode_error_for_invalid_json(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", workspace_tmp_path)
+
+    (workspace_tmp_path / "broken.json").write_text('{"service": }', encoding="utf-8")
+
+    with pytest.raises(ValueError, match="json_decode_error"):
+        document_service.read_text_document("broken.json")
 
 
 def test_delete_document_with_artifacts_removes_related_files(

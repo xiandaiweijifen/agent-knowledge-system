@@ -32,7 +32,8 @@ The default engineering direction is now `agent_v2`, which is built on:
 
 Implemented and usable today:
 
-- document ingestion for local text-style documents
+- document ingestion for local text-style documents, including `.txt`, `.md`,
+  and `.json`
 - persisted chunks and embeddings
 - retrieval with diagnostics and lightweight reranking
 - knowledge query and fallback answer paths
@@ -152,7 +153,7 @@ Current knobs:
 
 ### 1. Knowledge Layer
 
-- upload and preview local documents
+- upload and preview local `.txt`, `.md`, and `.json` documents
 - persist chunk artifacts
 - persist embedding artifacts
 - expose knowledge asset readiness for chunks, embeddings, LlamaIndex stores, and Qdrant sync

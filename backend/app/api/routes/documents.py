@@ -31,13 +31,19 @@ def raise_document_value_error(exc: ValueError) -> None:
     if error_code == "unsupported_file_type":
         raise HTTPException(
             status_code=400,
-            detail="Only .txt and .md files are supported for preview right now",
+            detail="Only .txt, .md, and .json files are supported for preview right now",
         )
 
     if error_code == "text_decode_error":
         raise HTTPException(
             status_code=400,
             detail="Document must be UTF-8 encoded for text preview right now",
+        )
+
+    if error_code == "json_decode_error":
+        raise HTTPException(
+            status_code=400,
+            detail="JSON document must contain valid UTF-8 encoded JSON for preview right now",
         )
 
     raise HTTPException(status_code=400, detail=error_code)

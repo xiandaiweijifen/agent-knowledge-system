@@ -33,3 +33,39 @@ def test_persist_document_chunks_stores_chunk_strategy(
     assert result["chunk_strategy"] == "paragraph"
     assert persisted_payload["chunk_strategy"] == "paragraph"
     assert persisted_payload["chunk_count"] >= 2
+
+
+def test_persist_document_chunks_supports_json_documents(
+    workspace_tmp_path,
+    monkeypatch,
+):
+    raw_dir = workspace_tmp_path / "raw"
+    chunk_dir = workspace_tmp_path / "chunks"
+    raw_dir.mkdir()
+    chunk_dir.mkdir()
+
+    monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
+    monkeypatch.setattr(document_service, "CHUNK_DATA_DIR", chunk_dir)
+
+    (raw_dir / "service.json").write_text(
+        '{"service":"payment-service","environment":"production","alerts":["timeout_rate_high"]}',
+        encoding="utf-8",
+    )
+
+    result = document_service.persist_document_chunks(
+        filename="service.json",
+        chunk_size=120,
+        chunk_overlap=20,
+        chunk_strategy="character",
+    )
+    persisted_payload = json.loads(
+        (chunk_dir / "service.chunks.json").read_text(encoding="utf-8")
+    )
+
+    assert result["filename"] == "service.json"
+    assert persisted_payload["suffix"] == ".json"
+    assert persisted_payload["chunk_count"] >= 1
+    assert any(
+        "service: payment-service" in chunk["content"]
+        for chunk in persisted_payload["chunks"]
+    )
