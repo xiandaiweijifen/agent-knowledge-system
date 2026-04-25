@@ -82,12 +82,12 @@ export function DocumentsView({
           showRecentDocuments: "收起到前 5 个",
           refresh: "刷新",
           upload: "上传文档",
-          uploadHint: "添加一个 .txt 或 .md 文件",
+          uploadHint: "添加一个 .txt、.md 或 .json 文件",
           uploadCopy: "后端会将它保存到原始文档存储中。",
           uploading: "正在上传文档...",
           loading: "正在加载文档...",
           noDocuments: "暂无文档",
-          noDocumentsCopy: "上传 markdown 或文本文件以启动摄取流水线。",
+          noDocumentsCopy: "上传 markdown、文本或 JSON 文件以启动摄取流水线。",
           pipeline: "文档流水线",
           pipelineCopy: "检查持久化产物，并将选中文档推进到可检索状态。",
           refreshStatus: "刷新状态",
@@ -139,12 +139,12 @@ export function DocumentsView({
           showRecentDocuments: "Show First 5",
           refresh: "Refresh",
           upload: "Upload Document",
-          uploadHint: "Add a .txt or .md file",
+          uploadHint: "Add a .txt, .md, or .json file",
           uploadCopy: "The backend will persist it under the raw document store.",
           uploading: "Uploading document...",
           loading: "Loading documents...",
           noDocuments: "No documents yet",
-          noDocumentsCopy: "Upload a markdown or text file to start the ingestion pipeline.",
+          noDocumentsCopy: "Upload a markdown, text, or JSON file to start the ingestion pipeline.",
           pipeline: "Document Pipeline",
           pipelineCopy:
             "Inspect persisted artifacts and move the selected document into a retrievable state.",
@@ -218,7 +218,7 @@ export function DocumentsView({
           <small>{copy.uploadCopy}</small>
           <input
             type="file"
-            accept=".txt,.md,text/plain,text/markdown"
+            accept=".txt,.md,.json,text/plain,text/markdown,application/json"
             aria-label="Upload Document"
             onChange={onUploadFile}
             disabled={uploadBusy}

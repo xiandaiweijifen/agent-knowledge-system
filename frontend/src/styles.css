@@ -700,6 +700,7 @@ textarea {
   display: grid;
   gap: 4px;
   width: 100%;
+  min-width: 0;
   padding: 16px;
   text-align: left;
   cursor: pointer;
@@ -721,6 +722,14 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
+}
+
+.card-title-row strong {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .file-pill,
@@ -736,6 +745,7 @@ textarea {
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .status-chip.success {
