@@ -380,6 +380,8 @@ def test_orchestrate_agent_v2_request_returns_incident_triage_result(monkeypatch
     assert response.step_count == 3
     assert response.tool_execution["action"] == "draft"
     assert response.workflow_family == "incident_triage"
+    assert response.workflow_outcome == "ticket_draft_ready"
+    assert response.recommended_next_actions == ["submit_ticket", "cancel_ticket"]
     assert [skill.skill_id for skill in response.available_skills] == [
         "review_service_health",
         "collect_incident_evidence",
@@ -468,6 +470,8 @@ def test_orchestrate_agent_v2_request_returns_service_runtime_review_result(monk
     assert response.workflow_status == "completed"
     assert response.answer_source == "local_service_runtime_review"
     assert response.workflow_family == "service_runtime_review"
+    assert response.workflow_outcome == "inspect_dependencies"
+    assert response.recommended_next_actions == ["inspect_primary_dependency", "open_runbook"]
     assert [skill.skill_id for skill in response.available_skills] == [
         "review_service_health",
         "inspect_service_dependencies",
@@ -829,6 +833,8 @@ def test_resume_agent_v2_request_submits_ticket_after_confirmation(monkeypatch):
 
     assert response.workflow_status == "completed"
     assert response.terminal_reason == "ticket_submitted"
+    assert response.workflow_outcome == "ticket_submitted"
+    assert response.recommended_next_actions == []
     assert response.tool_execution["action"] == "submit"
     assert response.step_count == 2
     assert response.applied_clarification_fields == ["submission_confirmation"]
@@ -883,6 +889,8 @@ def test_resume_agent_v2_request_cancels_ticket_when_confirmation_declined(monke
 
     assert response.workflow_status == "completed"
     assert response.terminal_reason == "ticket_submission_cancelled"
+    assert response.workflow_outcome == "ticket_submission_cancelled"
+    assert response.recommended_next_actions == ["review_ticket_artifact"]
     assert response.answer == "Left ticket draft TICKET-0002 unsubmitted at operator request."
 
 

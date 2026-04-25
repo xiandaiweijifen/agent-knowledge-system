@@ -502,6 +502,80 @@ def _build_skill_metadata(
     return workflow_family, enriched_tool_chain, available_skills, skill_trace
 
 
+def _extract_step_output(tool_chain: list[dict[str, Any]], tool_name: str) -> dict[str, Any]:
+    for step in tool_chain:
+        if not isinstance(step, dict):
+            continue
+        tool_plan = step.get("tool_plan") or {}
+        if str(tool_plan.get("tool_name") or "").strip().lower() != tool_name:
+            continue
+        output = (step.get("tool_execution") or {}).get("output") or {}
+        if isinstance(output, dict):
+            return output
+    return {}
+
+
+def _build_workflow_policy(
+    *,
+    workflow_family: str,
+    workflow_status: str,
+    terminal_reason: str | None,
+    tool_chain: list[dict[str, Any]],
+) -> tuple[str | None, list[str]]:
+    normalized_terminal_reason = str(terminal_reason or "").strip().lower()
+
+    if workflow_family == "incident_triage":
+        status_output = _extract_step_output(tool_chain, "system_status")
+        health = str(status_output.get("health") or status_output.get("status") or "").strip().lower()
+
+        if normalized_terminal_reason == "ticket_submitted":
+            return "ticket_submitted", []
+        if normalized_terminal_reason == "ticket_submission_cancelled":
+            return "ticket_submission_cancelled", ["review_ticket_artifact"]
+        if workflow_status == "clarification_required":
+            return "ticket_draft_ready", ["submit_ticket", "cancel_ticket"]
+        if normalized_terminal_reason == "no_incident_detected" or health in {"healthy", "ok", "nominal"}:
+            return "no_incident_detected", ["monitor_service"]
+        return "investigate_further", ["review_evidence", "inspect_service_health"]
+
+    if workflow_family == "service_runtime_review":
+        status_output = _extract_step_output(tool_chain, "system_status")
+        dependency_output = _extract_step_output(tool_chain, "service_dependencies")
+        health = str(status_output.get("health") or status_output.get("status") or "").strip().lower()
+        nested_snapshot = (
+            status_output.get("status_snapshot")
+            if isinstance(status_output.get("status_snapshot"), dict)
+            else {}
+        )
+        scenario_id = str(
+            status_output.get("requested_scenario")
+            or status_output.get("scenario_id")
+            or (nested_snapshot.get("scenario_id") if isinstance(nested_snapshot, dict) else "")
+            or ""
+        ).strip().lower()
+        primary_dependency = str(dependency_output.get("suspected_primary_dependency") or "").strip()
+        active_alerts = status_output.get("active_alerts")
+        has_alerts = isinstance(active_alerts, list) and any(str(item).strip() for item in active_alerts)
+
+        if health in {"healthy", "ok", "nominal"}:
+            return "no_action_needed", ["monitor_service"]
+        if scenario_id == "recovery_in_progress":
+            return "monitor_closely", ["monitor_service", "compare_against_healthy_baseline"]
+        if primary_dependency:
+            return "inspect_dependencies", ["inspect_primary_dependency", "open_runbook"]
+        if has_alerts:
+            return "inspect_active_alerts", ["inspect_active_alerts", "open_runbook"]
+        return "review_runbook", ["open_runbook"]
+
+    if workflow_family == "knowledge_retrieval" and workflow_status == "completed":
+        return "answer_generated", []
+    if workflow_status == "clarification_required":
+        return "clarification_required", []
+    if workflow_status == "failed":
+        return "workflow_failed", []
+    return None, []
+
+
 def _is_ticket_submission_confirmation_plan(plan: dict[str, Any] | None) -> bool:
     if not isinstance(plan, dict):
         return False
@@ -571,6 +645,8 @@ def _resume_ticket_submission_confirmation(
                 "workflow_status": "completed",
                 "terminal_reason": "ticket_submission_cancelled",
                 "outcome_category": "completed",
+                "workflow_outcome": "ticket_submission_cancelled",
+                "recommended_next_actions": ["review_ticket_artifact"],
                 "is_recoverable": None,
                 "recommended_recovery_action": "none",
                 "available_recovery_actions": [],
@@ -640,6 +716,8 @@ def _resume_ticket_submission_confirmation(
             "workflow_status": "completed",
             "terminal_reason": "ticket_submitted",
             "outcome_category": "completed",
+            "workflow_outcome": "ticket_submitted",
+            "recommended_next_actions": [],
             "is_recoverable": None,
             "recommended_recovery_action": "none",
             "available_recovery_actions": [],
@@ -716,6 +794,16 @@ def _build_agent_v2_response(
         interrupt_payload,
         raw_tool_chain,
     )
+    terminal_reason = _resolve_terminal_reason(
+        final_state=final_state,
+        interrupt_payload=interrupt_payload,
+    )
+    workflow_outcome, recommended_next_actions = _build_workflow_policy(
+        workflow_family=workflow_family,
+        workflow_status=workflow_status,
+        terminal_reason=terminal_reason,
+        tool_chain=tool_chain,
+    )
 
     recovery_metadata = _build_recovery_metadata(
         workflow_status=workflow_status,
@@ -730,11 +818,10 @@ def _build_agent_v2_response(
         recovery_depth=0,
         question=question,
         workflow_status=workflow_status,
-        terminal_reason=_resolve_terminal_reason(
-            final_state=final_state,
-            interrupt_payload=interrupt_payload,
-        ),
+        terminal_reason=terminal_reason,
         outcome_category=workflow_status,
+        workflow_outcome=workflow_outcome,
+        recommended_next_actions=recommended_next_actions,
         is_recoverable=recovery_metadata["is_recoverable"],
         retry_state=final_state.get("retry_state"),
         recommended_recovery_action=recovery_metadata["recommended_recovery_action"],
@@ -1213,6 +1300,21 @@ def resume_agent_v2_request(
                 route_type=route_type,
                 tool_chain=tool_chain,
             )
+            workflow_family, enriched_tool_chain, available_skills, skill_trace = _build_skill_metadata(
+                resumed_state,
+                interrupt_payload,
+                tool_chain,
+            )
+            terminal_reason = _resolve_terminal_reason(
+                final_state=resumed_state,
+                interrupt_payload=interrupt_payload,
+            )
+            workflow_outcome, recommended_next_actions = _build_workflow_policy(
+                workflow_family=workflow_family,
+                workflow_status=workflow_status,
+                terminal_reason=terminal_reason,
+                tool_chain=enriched_tool_chain,
+            )
 
             response = AgentWorkflowResponse(
                 run_id=persisted_run.run_id,
@@ -1228,11 +1330,10 @@ def resume_agent_v2_request(
                 reused_step_indices=persisted_run.reused_step_indices,
                 overridden_plan_arguments=persisted_run.overridden_plan_arguments,
                 workflow_status=workflow_status,
-                terminal_reason=_resolve_terminal_reason(
-                    final_state=resumed_state,
-                    interrupt_payload=interrupt_payload,
-                ),
+                terminal_reason=terminal_reason,
                 outcome_category=resumed_state.get("workflow_status") or persisted_run.outcome_category,
+                workflow_outcome=workflow_outcome,
+                recommended_next_actions=recommended_next_actions,
                 is_recoverable=recovery_metadata["is_recoverable"],
                 retry_state=resumed_state.get("retry_state") or persisted_run.retry_state,
                 recommended_recovery_action=recovery_metadata["recommended_recovery_action"],
@@ -1263,7 +1364,7 @@ def resume_agent_v2_request(
                 fallback_tool_planner_steps=persisted_run.fallback_tool_planner_steps,
                 retry_count=int(resumed_state.get("retry_count") or persisted_run.retry_count),
                 retried_step_indices=persisted_run.retried_step_indices,
-                step_count=len(tool_chain),
+                step_count=len(enriched_tool_chain),
                 route=RouteDecision(
                     route_type=route_type,
                     route_reason=route_reason,
@@ -1283,12 +1384,15 @@ def resume_agent_v2_request(
                 answer_latency_ms=resumed_state.get("answer_latency_ms") or persisted_run.answer_latency_ms,
                 chat_provider=resumed_state.get("chat_provider") or persisted_run.chat_provider,
                 chat_model=resumed_state.get("chat_model") or persisted_run.chat_model,
+                workflow_family=workflow_family,
+                available_skills=available_skills,
+                skill_trace=skill_trace,
                 retrieval=retrieval,
                 clarification_message=clarification_question,
                 clarification_plan=clarification_plan,
                 tool_plan=tool_plan,
                 tool_execution=tool_execution,
-                tool_chain=tool_chain,
+                tool_chain=enriched_tool_chain,
                 applied_clarification_fields=resumed_state.get("applied_clarification_fields") or persisted_run.applied_clarification_fields,
                 question_rewritten=bool(resumed_state.get("question_rewritten") or persisted_run.question_rewritten),
             )

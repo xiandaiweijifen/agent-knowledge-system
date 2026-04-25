@@ -177,6 +177,8 @@ class AgentWorkflowResponse(BaseModel):
     workflow_status: str
     terminal_reason: str | None = None
     outcome_category: str | None = None
+    workflow_outcome: str | None = None
+    recommended_next_actions: list[str] = Field(default_factory=list)
     is_recoverable: bool | None = None
     retry_state: str | None = None
     recommended_recovery_action: str | None = None
@@ -243,6 +245,8 @@ class AgentWorkflowRunSummary(BaseModel):
     workflow_status: str
     terminal_reason: str | None = None
     outcome_category: str | None = None
+    workflow_outcome: str | None = None
+    recommended_next_actions: list[str] = Field(default_factory=list)
     is_recoverable: bool | None = None
     retry_state: str | None = None
     recommended_recovery_action: str | None = None

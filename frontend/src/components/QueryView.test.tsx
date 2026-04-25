@@ -1572,6 +1572,8 @@ describe("QueryView", () => {
           question: "Check payment-service in production for timeout issues and if it is abnormal prepare a high severity ticket draft",
           workflow_status: "clarification_required",
           terminal_reason: "clarification_requested",
+          workflow_outcome: "ticket_draft_ready",
+          recommended_next_actions: ["submit_ticket", "cancel_ticket"],
           recommended_recovery_action: "resume_with_clarification",
           available_recovery_actions: ["resume_with_clarification"],
           recovery_action_details: {
@@ -1788,10 +1790,15 @@ describe("QueryView", () => {
       />,
     );
 
+    const incidentPanel = screen.getByText("Incident Triage").closest("article");
+
+    expect(incidentPanel).not.toBeNull();
     expect(screen.getByText("Incident Triage")).toBeInTheDocument();
     expect(screen.getByText("Service Health")).toBeInTheDocument();
     expect(screen.getByText("Runbook Evidence")).toBeInTheDocument();
     expect(screen.getByText("Ticket Draft")).toBeInTheDocument();
+    expect(within(incidentPanel as HTMLElement).getAllByText("Draft Ready").length).toBeGreaterThan(0);
+    expect(within(incidentPanel as HTMLElement).getByText("Next Actions")).toBeInTheDocument();
     expect(screen.getAllByText("payment_service_runbook.md").length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole("button", { name: "Submit Ticket" }));
@@ -2034,6 +2041,8 @@ describe("QueryView", () => {
           question: "Check payment-service in production status and tell me what to look at for timeout issues",
           workflow_status: "completed",
           terminal_reason: "service_runtime_review_completed",
+          workflow_outcome: "no_action_needed",
+          recommended_next_actions: ["monitor_service"],
           route: {
             route_type: "tool_execution",
             route_reason: "Status inspection should use service runtime review.",
@@ -2279,7 +2288,8 @@ describe("QueryView", () => {
     expect(runtimePanel).not.toBeNull();
     expect(screen.getByText("Runtime Guidance")).toBeInTheDocument();
     expect(screen.getAllByText("healthy_baseline").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("healthy").length).toBeGreaterThan(0);
+    expect(screen.getByText("No Action Needed")).toBeInTheDocument();
+    expect(screen.getByText("Monitor Service")).toBeInTheDocument();
     expect(screen.getAllByText("payment_service_runbook.md").length).toBeGreaterThan(0);
     expect(within(runtimePanel as HTMLElement).getByText("Likely Dependency")).toBeInTheDocument();
     expect(within(runtimePanel as HTMLElement).getAllByText("payment-db").length).toBeGreaterThan(0);

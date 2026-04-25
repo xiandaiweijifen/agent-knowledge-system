@@ -262,6 +262,8 @@ export type AgentWorkflowResponse = {
   workflow_status: string;
   terminal_reason?: string | null;
   outcome_category?: string | null;
+  workflow_outcome?: string | null;
+  recommended_next_actions?: string[];
   is_recoverable?: boolean | null;
   retry_state?: string | null;
   recommended_recovery_action?: string | null;
@@ -328,6 +330,8 @@ export type AgentWorkflowRunSummary = {
   workflow_status: string;
   terminal_reason?: string | null;
   outcome_category?: string | null;
+  workflow_outcome?: string | null;
+  recommended_next_actions?: string[];
   is_recoverable?: boolean | null;
   retry_state?: string | null;
   recommended_recovery_action?: string | null;

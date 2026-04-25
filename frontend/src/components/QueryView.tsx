@@ -271,6 +271,7 @@ export function QueryView({
           scenario: "场景",
           recommendedChecks: "建议检查项",
           likelyDependency: "优先依赖",
+          nextActions: "后续动作",
           skillSummary: "技能摘要",
           evidenceItemsAvailable: (count: number) =>
             `${count} 条支撑项可在执行细节中查看。`,
@@ -503,6 +504,7 @@ export function QueryView({
           scenario: "Scenario",
           recommendedChecks: "Recommended Checks",
           likelyDependency: "Likely Dependency",
+          nextActions: "Next Actions",
           skillSummary: "Skill Summary",
           evidenceItemsAvailable: (count: number) =>
             `${count} supporting item${count === 1 ? "" : "s"} in execution details.`,
@@ -806,6 +808,9 @@ export function QueryView({
   }
 
   function formatIncidentOutcome(response: AgentWorkflowResponse) {
+    if (response.workflow_outcome) {
+      return formatWorkflowOutcomeLabel(response.workflow_outcome);
+    }
     const terminalReason = response.terminal_reason ?? "";
     const workflowStatus = response.workflow_status;
 
@@ -825,6 +830,66 @@ export function QueryView({
       return queryCopy.draftReady;
     }
     return terminalReason || workflowStatus || queryCopy.notAvailable;
+  }
+
+  function formatWorkflowOutcomeLabel(value: string) {
+    const normalized = value.trim().toLowerCase();
+    switch (normalized) {
+      case "ticket_submitted":
+        return queryCopy.ticketSubmitted;
+      case "ticket_submission_cancelled":
+        return queryCopy.submissionCancelled;
+      case "ticket_draft_ready":
+        return queryCopy.draftReady;
+      case "no_incident_detected":
+        return "No Incident Detected";
+      case "no_action_needed":
+        return "No Action Needed";
+      case "monitor_closely":
+        return "Monitor Closely";
+      case "inspect_dependencies":
+        return "Inspect Dependencies";
+      case "inspect_active_alerts":
+        return "Inspect Active Alerts";
+      case "review_runbook":
+        return "Review Runbook";
+      case "investigate_further":
+        return "Investigate Further";
+      case "answer_generated":
+        return "Answer Generated";
+      case "workflow_failed":
+        return "Workflow Failed";
+      default:
+        return value.replace(/_/g, " ");
+    }
+  }
+
+  function formatNextActionLabel(value: string) {
+    const normalized = value.trim().toLowerCase();
+    switch (normalized) {
+      case "submit_ticket":
+        return queryCopy.submitTicket;
+      case "cancel_ticket":
+        return queryCopy.cancelTicket;
+      case "monitor_service":
+        return "Monitor Service";
+      case "compare_against_healthy_baseline":
+        return "Compare Against Healthy Baseline";
+      case "inspect_primary_dependency":
+        return "Inspect Primary Dependency";
+      case "open_runbook":
+        return "Open Runbook";
+      case "inspect_active_alerts":
+        return "Inspect Active Alerts";
+      case "review_evidence":
+        return "Review Evidence";
+      case "inspect_service_health":
+        return "Inspect Service Health";
+      case "review_ticket_artifact":
+        return "Review Ticket Artifact";
+      default:
+        return value.replace(/_/g, " ");
+    }
   }
 
   function splitDocumentList(value: unknown) {
@@ -936,6 +1001,7 @@ export function QueryView({
     const ticketId =
       String(ticketOutput.ticket_id ?? response.clarification_plan?.ticket_id ?? queryCopy.notAvailable);
     const ticketSummary = ticketOutput.summary ? String(ticketOutput.summary) : "";
+    const nextActions = response.recommended_next_actions ?? [];
 
     return (
       <article className="subsection-card incident-triage-card">
@@ -959,6 +1025,18 @@ export function QueryView({
             <strong>{response.route.route_type}</strong>
           </div>
         </div>
+        {nextActions.length > 0 && (
+          <>
+            <span className="trace-label">{queryCopy.nextActions}</span>
+            <div className="pill-strip">
+              {nextActions.map((action) => (
+                <span key={action} className="meta-pill">
+                  {formatNextActionLabel(action)}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
         <div className="incident-triage-grid">
           <section className="incident-card">
             <span className="trace-label">{queryCopy.serviceHealth}</span>
@@ -1098,6 +1176,7 @@ export function QueryView({
       dependencyName,
       dependencyChecks,
     );
+    const nextActions = response.recommended_next_actions ?? [];
 
     return (
       <article className="subsection-card incident-triage-card">
@@ -1110,7 +1189,11 @@ export function QueryView({
           </div>
           <div>
             <span className="trace-label">{queryCopy.currentOutcome}</span>
-            <strong>{String(statusOutput.health ?? statusOutput.status ?? queryCopy.notAvailable)}</strong>
+            <strong>
+              {response.workflow_outcome
+                ? formatWorkflowOutcomeLabel(response.workflow_outcome)
+                : String(statusOutput.health ?? statusOutput.status ?? queryCopy.notAvailable)}
+            </strong>
           </div>
           <div>
             <span className="trace-label">{queryCopy.route}</span>
@@ -1123,6 +1206,18 @@ export function QueryView({
             </div>
           )}
         </div>
+        {nextActions.length > 0 && (
+          <>
+            <span className="trace-label">{queryCopy.nextActions}</span>
+            <div className="pill-strip">
+              {nextActions.map((action) => (
+                <span key={action} className="meta-pill">
+                  {formatNextActionLabel(action)}
+                </span>
+              ))}
+            </div>
+          </>
+        )}
         <div className="incident-triage-grid">
           <section className="incident-card">
             <span className="trace-label">{queryCopy.serviceHealth}</span>
