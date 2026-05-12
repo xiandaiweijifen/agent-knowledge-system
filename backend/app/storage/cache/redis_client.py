@@ -11,10 +11,29 @@ no-op so that the existing functionality is completely unaffected.
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+from urllib.parse import urlsplit, urlunsplit
 
 import redis.asyncio as aioredis
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_redis_url(redis_url: str) -> str:
+    """Avoid slow localhost resolution on Windows Docker Desktop setups."""
+    parsed = urlsplit(redis_url)
+    if parsed.hostname != "localhost":
+        return redis_url
+
+    netloc = "127.0.0.1"
+    if parsed.port is not None:
+        netloc = f"{netloc}:{parsed.port}"
+    if parsed.username:
+        auth = parsed.username
+        if parsed.password:
+            auth = f"{auth}:{parsed.password}"
+        netloc = f"{auth}@{netloc}"
+
+    return urlunsplit((parsed.scheme, netloc, parsed.path, parsed.query, parsed.fragment))
 
 
 async def build_redis_client(redis_url: str) -> aioredis.Redis | None:
@@ -27,7 +46,12 @@ async def build_redis_client(redis_url: str) -> aioredis.Redis | None:
         return None
 
     try:
-        client = aioredis.from_url(redis_url, decode_responses=True)
+        client = aioredis.from_url(
+            _normalize_redis_url(redis_url),
+            decode_responses=True,
+            socket_connect_timeout=2,
+            socket_timeout=2,
+        )
         await client.ping()
         logger.info("Redis client ready")
         return client
@@ -49,5 +73,5 @@ async def redis_lifespan(
         yield client
     finally:
         if client is not None:
-            await client.aclose()
+            await client.aclose(close_connection_pool=True)
             logger.info("Redis client closed")

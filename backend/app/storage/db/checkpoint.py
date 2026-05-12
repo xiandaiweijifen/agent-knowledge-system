@@ -15,10 +15,11 @@ import logging
 import sys
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+from urllib.parse import urlsplit, urlunsplit
 
 import psycopg
 from psycopg.rows import dict_row
-from psycopg_pool import AsyncConnectionPool, ConnectionPool
+from psycopg_pool import AsyncConnectionPool
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
@@ -32,7 +33,21 @@ logger = logging.getLogger(__name__)
 
 def _normalize_url(database_url: str) -> str:
     """Convert SQLAlchemy-style URL to plain psycopg3 connstring."""
-    return database_url.replace("postgresql+psycopg2", "postgresql")
+    normalized = database_url.replace("postgresql+psycopg2", "postgresql")
+    parsed = urlsplit(normalized)
+    if parsed.hostname != "localhost":
+        return normalized
+
+    netloc = "127.0.0.1"
+    if parsed.port is not None:
+        netloc = f"{netloc}:{parsed.port}"
+    if parsed.username:
+        auth = parsed.username
+        if parsed.password:
+            auth = f"{auth}:{parsed.password}"
+        netloc = f"{auth}@{netloc}"
+
+    return urlunsplit((parsed.scheme, netloc, parsed.path, parsed.query, parsed.fragment))
 
 
 async def _run_setup(conn_str: str) -> None:
@@ -49,7 +64,7 @@ async def _run_setup(conn_str: str) -> None:
 
 def _build_sync_checkpointer(
     conn_str: str,
-) -> tuple[PostgresSaver, ConnectionPool] | tuple[None, None]:
+) -> tuple[PostgresSaver, psycopg.Connection] | tuple[None, None]:
     """
     Windows-friendly sync fallback for psycopg/LangGraph checkpointing.
     This avoids psycopg async's ProactorEventLoop incompatibility.
@@ -60,10 +75,12 @@ def _build_sync_checkpointer(
         PostgresSaver(conn).setup()
     logger.info("LangGraph checkpoint tables ready")
 
-    pool = ConnectionPool(conninfo=conn_str, max_size=10, open=True)
-    checkpointer = PostgresSaver(pool)
+    conn = psycopg.Connection.connect(
+        conn_str, autocommit=True, prepare_threshold=0, row_factory=dict_row
+    )
+    checkpointer = PostgresSaver(conn)
     logger.info("Postgres checkpointer ready (sync fallback)")
-    return checkpointer, pool
+    return checkpointer, conn
 
 
 async def build_checkpointer(
@@ -72,7 +89,7 @@ async def build_checkpointer(
     """
     1. Run setup() via an autocommit connection (idempotent DDL).
     2. Open a connection pool for runtime use.
-    3. Return (AsyncPostgresSaver, pool) so the caller can close the pool on shutdown.
+    3. Return (checkpointer, closeable resource) so the caller can close it on shutdown.
 
     Returns (None, None) when database_url is empty or on any error.
     """
@@ -109,12 +126,12 @@ async def checkpointer_lifespan(
     Async context manager for use inside FastAPI lifespan.
     Yields the checkpointer (or None if Postgres is unavailable).
     """
-    checkpointer, pool = await build_checkpointer(database_url)
+    checkpointer, closeable = await build_checkpointer(database_url)
     try:
         yield checkpointer
     finally:
-        if pool is not None:
-            close_result = pool.close()
+        if closeable is not None:
+            close_result = closeable.close()
             if inspect.isawaitable(close_result):
                 await close_result
-            logger.info("Postgres connection pool closed")
+            logger.info("Postgres checkpointer resource closed")

@@ -519,21 +519,35 @@ Notes:
 
 ### Standard Runtime Mode
 
-For normal project usage, start Docker first and treat PostgreSQL plus Redis as part of the standard runtime.
+For normal project usage, start Docker first and treat `Qdrant + PostgreSQL + Redis`
+as part of the standard runtime.
 
 1. Start Docker Desktop.
-2. From the repo root, start the infra services:
+2. From the repo root, start the full local infra set:
 
 ```powershell
-docker compose up -d
+docker compose up -d qdrant postgres redis
 ```
 
 This starts:
 
+- Qdrant on `localhost:6333`
 - PostgreSQL on `localhost:5432`
 - Redis on `localhost:6379`
 
-3. Start the backend:
+3. Verify that all three containers are healthy before starting the app:
+
+```powershell
+docker compose ps
+```
+
+Expected containers:
+
+- `aks_qdrant`
+- `aks_postgres`
+- `aks_redis`
+
+4. Start the backend:
 
 ```powershell
 cd backend
@@ -544,7 +558,7 @@ $env:PYTHONPATH='.'
 uvicorn app.main:app
 ```
 
-4. Start the frontend:
+5. Start the frontend:
 
 ```powershell
 cd frontend
@@ -575,7 +589,22 @@ Startup notes:
 - The backend is successfully started when you see:
   - `Application startup complete.`
   - `Uvicorn running on http://127.0.0.1:8000`
-- In standard runtime mode, Docker is expected to be running so that Postgres-backed checkpoint persistence and Redis-backed runtime support are both available.
+- In standard runtime mode, all three local services are expected to be reachable:
+  - Qdrant for retrieval and corpus search
+  - PostgreSQL for LangGraph checkpoint persistence
+  - Redis for runtime cache/session infrastructure
+- A healthy standard-runtime backend startup on Windows should also show:
+  - `LangGraph checkpoint tables ready`
+  - `Postgres checkpointer ready (sync fallback)`
+  - `Redis client ready`
+- If PostgreSQL or Redis are configured in `.env` but their containers are not
+  running, startup may stall on `Waiting for application startup.`
+
+To stop the standard local stack:
+
+```powershell
+docker compose stop qdrant postgres redis
+```
 
 ### Minimal Development Mode
 
@@ -625,6 +654,8 @@ CLARIFICATION_PLANNER_PROVIDER=gemini
 WORKFLOW_PLANNER_PROVIDER=gemini
 DATABASE_URL=postgresql://postgres:password@localhost:5432/agent_knowledge_system
 REDIS_URL=redis://localhost:6379/0
+QDRANT_URL=http://localhost:6333
+QDRANT_LOCAL_PATH=
 ```
 
 Minimal development setup:
@@ -669,7 +700,7 @@ OPENAI_WORKFLOW_PLANNER_MODEL=
 
 Only set `DATABASE_URL` and `REDIS_URL` when:
 
-- Docker containers are already running, or
+- the Docker `postgres` and `redis` containers are already running, or
 - you already have reachable local Postgres/Redis instances
 
 Current local startup behavior:
