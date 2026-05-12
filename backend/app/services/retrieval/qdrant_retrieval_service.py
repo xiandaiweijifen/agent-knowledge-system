@@ -53,11 +53,37 @@ def _query_qdrant_points(
     source_filename: str,
     limit: int,
 ) -> list[dict[str, Any]]:
+    return _query_qdrant_points_for_filenames(
+        query_vector,
+        source_filenames=[source_filename],
+        limit=limit,
+    )
+
+
+def _query_qdrant_points_for_filenames(
+    query_vector: list[float],
+    *,
+    source_filenames: list[str],
+    limit: int,
+) -> list[dict[str, Any]]:
     client = build_qdrant_client()
     if client is None:
         raise FileNotFoundError("qdrant")
 
     _, rest = _import_qdrant_client()
+    normalized_filenames = [
+        filename.strip()
+        for filename in dict.fromkeys(source_filenames)
+        if isinstance(filename, str) and filename.strip()
+    ]
+    if not normalized_filenames:
+        return []
+
+    if len(normalized_filenames) == 1:
+        source_match = rest.MatchValue(value=normalized_filenames[0])
+    else:
+        source_match = rest.MatchAny(any=normalized_filenames)
+
     response = client.query_points(
         collection_name=get_qdrant_collection_name(),
         query=query_vector,
@@ -65,7 +91,7 @@ def _query_qdrant_points(
             must=[
                 rest.FieldCondition(
                     key="source_filename",
-                    match=rest.MatchValue(value=source_filename),
+                    match=source_match,
                 )
             ]
         ),
@@ -78,6 +104,7 @@ def _query_qdrant_points(
     raw_results: list[dict[str, Any]] = []
     for point in results:
         payload = point.payload or {}
+        source_filename = payload.get("source_filename") or normalized_filenames[0]
         raw_results.append(
             {
                 "chunk_id": payload.get("chunk_id", str(point.id)),
@@ -85,7 +112,7 @@ def _query_qdrant_points(
                 "score": round(float(point.score or 0.0), 6),
                 "metadata": {
                     "chunk_index": payload.get("chunk_index", 0),
-                    "source_filename": payload.get("source_filename", source_filename),
+                    "source_filename": source_filename,
                     "source_suffix": payload.get("source_suffix", ""),
                     "document_kind": payload.get(
                         "document_kind",
@@ -240,21 +267,31 @@ def retrieve_with_qdrant_corpus(
         vector_dim=sample_payload.vector_dim,
     )
 
+    candidate_limit = max(top_k, top_k * min(len(scoped_filenames), 8))
+    raw_results = _query_qdrant_points_for_filenames(
+        query_vector,
+        source_filenames=scoped_filenames,
+        limit=candidate_limit,
+    )
+
+    raw_results_by_filename: dict[str, list[dict[str, Any]]] = {
+        filename: [] for filename in scoped_filenames
+    }
+    for result in raw_results:
+        source_filename = result.get("metadata", {}).get("source_filename")
+        if isinstance(source_filename, str):
+            raw_results_by_filename.setdefault(source_filename, []).append(result)
+
     all_matches: list[RetrievedChunkMatch] = []
-    for filename in scoped_filenames:
-        raw_results = _query_qdrant_points(
-            query_vector,
-            source_filename=filename,
-            limit=top_k,
-        )
+    for filename, filename_results in raw_results_by_filename.items():
         corpus_bonus = _compute_corpus_document_bonus(
             filename=filename,
             normalized_query=normalized_query,
-            raw_results=raw_results,
+            raw_results=filename_results,
         )
         all_matches.extend(
             _build_matches_from_raw_results(
-                raw_results=raw_results,
+                raw_results=filename_results,
                 normalized_query=normalized_query,
                 fallback_filename=filename,
                 corpus_bonus=corpus_bonus,

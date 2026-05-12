@@ -12,6 +12,7 @@ import logging
 import re
 import uuid
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 from app.core.config import settings
 
@@ -24,6 +25,24 @@ _QDRANT_CLIENT_CACHE: dict[tuple[str, str, str, bool], Any] = {}
 def qdrant_enabled() -> bool:
     """Return whether Qdrant has enough configuration to be usable."""
     return bool(settings.qdrant_url or settings.qdrant_local_path)
+
+
+def _normalize_qdrant_url(qdrant_url: str) -> str:
+    """Avoid slow localhost resolution on Windows Docker Desktop setups."""
+    parsed = urlsplit(qdrant_url)
+    if parsed.hostname != "localhost":
+        return qdrant_url
+
+    netloc = "127.0.0.1"
+    if parsed.port is not None:
+        netloc = f"{netloc}:{parsed.port}"
+    if parsed.username:
+        auth = parsed.username
+        if parsed.password:
+            auth = f"{auth}:{parsed.password}"
+        netloc = f"{auth}@{netloc}"
+
+    return urlunsplit((parsed.scheme, netloc, parsed.path, parsed.query, parsed.fragment))
 
 
 def get_qdrant_collection_name() -> str:
@@ -46,7 +65,7 @@ def _import_qdrant_client():
 
 def _current_qdrant_client_key() -> tuple[str, str, str, bool]:
     return (
-        settings.qdrant_url.strip(),
+        _normalize_qdrant_url(settings.qdrant_url.strip()),
         settings.qdrant_local_path.strip(),
         settings.qdrant_api_key.strip(),
         bool(settings.qdrant_prefer_grpc),
@@ -72,9 +91,10 @@ def build_qdrant_client() -> Any | None:
     QdrantClient, _ = _import_qdrant_client()
 
     if settings.qdrant_url:
-        logger.info("Using remote Qdrant endpoint at %s", settings.qdrant_url)
+        qdrant_url = _normalize_qdrant_url(settings.qdrant_url)
+        logger.info("Using remote Qdrant endpoint at %s", qdrant_url)
         client = QdrantClient(
-            url=settings.qdrant_url,
+            url=qdrant_url,
             api_key=settings.qdrant_api_key or None,
             prefer_grpc=settings.qdrant_prefer_grpc,
             timeout=settings.qdrant_timeout_seconds,

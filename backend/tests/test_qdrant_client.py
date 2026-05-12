@@ -72,7 +72,7 @@ def test_build_qdrant_client_uses_remote_url(monkeypatch):
 
     assert isinstance(client, DummyClient)
     assert captured == {
-        "url": "http://localhost:6333",
+        "url": "http://127.0.0.1:6333",
         "api_key": "secret",
         "prefer_grpc": True,
         "timeout": settings.qdrant_timeout_seconds,
@@ -103,7 +103,7 @@ def test_build_qdrant_client_prefers_remote_url_over_local_path(monkeypatch):
 
     assert isinstance(client, DummyClient)
     assert captured == {
-        "url": "http://localhost:6333",
+        "url": "http://127.0.0.1:6333",
         "api_key": None,
         "prefer_grpc": False,
         "timeout": settings.qdrant_timeout_seconds,
@@ -187,3 +187,10 @@ def test_close_qdrant_clients_closes_cached_instances(monkeypatch):
     qdrant_client.close_qdrant_clients()
 
     assert closed["count"] == 1
+
+
+def test_normalize_qdrant_url_rewrites_localhost_to_loopback():
+    assert (
+        qdrant_client._normalize_qdrant_url("http://localhost:6333")
+        == "http://127.0.0.1:6333"
+    )
