@@ -29,7 +29,6 @@ def test_list_documents_filters_hidden_and_non_document_files(
                 "chunks_ready": False,
                 "embeddings_ready": False,
                 "llamaindex_ready": False,
-                "qdrant_ready": False,
             },
         },
         {
@@ -41,7 +40,6 @@ def test_list_documents_filters_hidden_and_non_document_files(
                 "chunks_ready": False,
                 "embeddings_ready": False,
                 "llamaindex_ready": False,
-                "qdrant_ready": False,
             },
         },
         {
@@ -53,7 +51,6 @@ def test_list_documents_filters_hidden_and_non_document_files(
                 "chunks_ready": False,
                 "embeddings_ready": False,
                 "llamaindex_ready": False,
-                "qdrant_ready": False,
             },
         },
     ]

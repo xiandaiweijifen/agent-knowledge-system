@@ -51,7 +51,13 @@ def list_documents() -> list[dict]:
                 "size_bytes": file_path.stat().st_size,
                 "suffix": file_path.suffix,
                 "document_kind": infer_document_kind(file_path.name),
-                "knowledge_assets": build_document_asset_status(file_path.name),
+                # Keep the document list endpoint lightweight. Qdrant readiness
+                # requires a remote count() call per document, which turns a
+                # simple directory listing into an O(N) network fan-out.
+                "knowledge_assets": build_document_asset_status(
+                    file_path.name,
+                    include_qdrant=False,
+                ),
             }
         )
 
@@ -106,23 +112,26 @@ def get_document_path(filename: str) -> Path:
     return RAW_DATA_DIR / filename
 
 
-def build_document_asset_status(filename: str) -> dict:
+def build_document_asset_status(filename: str, *, include_qdrant: bool = True) -> dict:
     """Return persisted asset readiness for a document."""
     chunk_path = get_chunk_output_path(filename)
 
     # Avoid top-level import cycles with the indexing and llamaindex services.
     from app.services.indexing.embedding_service import get_embedding_output_path
     from app.services.ingestion.llamaindex_ingestion_service import has_llamaindex_index
-    from app.storage.vector.qdrant_client import has_qdrant_points_for_document
 
     embedding_path = get_embedding_output_path(filename)
 
-    return {
+    knowledge_assets = {
         "chunks_ready": chunk_path.exists() and chunk_path.is_file(),
         "embeddings_ready": embedding_path.exists() and embedding_path.is_file(),
         "llamaindex_ready": has_llamaindex_index(filename),
-        "qdrant_ready": has_qdrant_points_for_document(filename),
     }
+    if include_qdrant:
+        from app.storage.vector.qdrant_client import has_qdrant_points_for_document
+
+        knowledge_assets["qdrant_ready"] = has_qdrant_points_for_document(filename)
+    return knowledge_assets
 
 
 def get_document_asset_status(filename: str) -> dict:
@@ -137,7 +146,10 @@ def get_document_asset_status(filename: str) -> dict:
         "size_bytes": document_path.stat().st_size,
         "suffix": document_path.suffix,
         "document_kind": infer_document_kind(document_path.name),
-        "knowledge_assets": build_document_asset_status(document_path.name),
+        "knowledge_assets": build_document_asset_status(
+            document_path.name,
+            include_qdrant=True,
+        ),
     }
 
 
