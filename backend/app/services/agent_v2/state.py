@@ -22,6 +22,9 @@ class AgentState(TypedDict):
     filename: str
     top_k: int
     debug_fault_injection: dict[str, Any]
+    # Populated by recover_agent_v2_request when action=resume_from_failed_step.
+    # Keys: "reuse_tool_chain" (list of pre-completed step dicts), "skip_to_step" (int).
+    resume_hints: dict[str, Any]
 
     # ------------------------------------------------------------------ #
     # Routing                                                             #

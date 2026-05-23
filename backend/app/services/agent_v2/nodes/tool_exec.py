@@ -171,25 +171,47 @@ def _execute_single_step(
     )
 
 
-def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, str]) -> dict:
+def _get_reused_step_output(reuse_chain: list[dict], step_index: int) -> dict:
+    """Extract tool execution output from a pre-completed step by 1-based step_index."""
+    for step in reuse_chain:
+        if not isinstance(step, dict):
+            continue
+        if step.get("step_index") == step_index:
+            return (step.get("tool_execution") or {}).get("output") or {}
+    return {}
+
+
+def _run_incident_triage_workflow(
+    state: AgentState,
+    triage_context: dict[str, str],
+    *,
+    reuse_chain: list[dict] | None = None,
+    skip_to_step: int = 0,
+) -> dict:
     question = state["question"]
     service = triage_context["service"]
     environment = triage_context["environment"]
     severity = triage_context["severity"]
     symptom = triage_context["symptom"]
-    tool_chain: list[dict] = []
+    reuse_chain = reuse_chain or []
+    # Start tool_chain with any pre-completed steps from a prior run.
+    tool_chain: list[dict] = list(reuse_chain)
 
     try:
-        status_steps, status_output = run_review_service_health_skill(
-            state=state,
-            question=question,
-            service=service,
-            environment=environment,
-            symptom=symptom,
-            planning_mode="agent_v2_incident_triage",
-            execute_step=_execute_single_step,
-        )
-        tool_chain.extend(status_steps)
+        if skip_to_step <= 0:
+            status_steps, status_output = run_review_service_health_skill(
+                state=state,
+                question=question,
+                service=service,
+                environment=environment,
+                symptom=symptom,
+                planning_mode="agent_v2_incident_triage",
+                execute_step=_execute_single_step,
+            )
+            tool_chain.extend(status_steps)
+        else:
+            status_output = _get_reused_step_output(reuse_chain, step_index=1)
+
         health = str(status_output.get("health") or status_output.get("status") or "").lower()
         if health in {"healthy", "ok", "nominal"}:
             return {
@@ -210,16 +232,20 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
                 "retry_count": 0,
             }
 
-        evidence_steps, search_output, external_search_output = run_collect_incident_evidence_skill(
-            state=state,
-            question=question,
-            service=service,
-            environment=environment,
-            symptom=symptom,
-            status_output=status_output,
-            execute_step=_execute_single_step,
-        )
-        tool_chain.extend(evidence_steps)
+        if skip_to_step <= 1:
+            evidence_steps, search_output, external_search_output = run_collect_incident_evidence_skill(
+                state=state,
+                question=question,
+                service=service,
+                environment=environment,
+                symptom=symptom,
+                status_output=status_output,
+                execute_step=_execute_single_step,
+            )
+            tool_chain.extend(evidence_steps)
+        else:
+            search_output = _get_reused_step_output(reuse_chain, step_index=2)
+            external_search_output = _get_reused_step_output(reuse_chain, step_index=3)
 
         ticket_steps, draft_output, clarification_question, clarification_plan = run_prepare_incident_ticket_skill(
             state=state,
@@ -275,44 +301,60 @@ def _run_incident_triage_workflow(state: AgentState, triage_context: dict[str, s
         }
 
 
-def _run_service_runtime_review_workflow(state: AgentState, review_context: dict[str, str]) -> dict:
+def _run_service_runtime_review_workflow(
+    state: AgentState,
+    review_context: dict[str, str],
+    *,
+    reuse_chain: list[dict] | None = None,
+    skip_to_step: int = 0,
+) -> dict:
     question = state["question"]
     service = review_context["service"]
     environment = review_context["environment"]
     symptom = review_context["symptom"]
-    tool_chain: list[dict] = []
+    reuse_chain = reuse_chain or []
+    tool_chain: list[dict] = list(reuse_chain)
 
     try:
-        status_steps, status_output = run_review_service_health_skill(
-            state=state,
-            question=question,
-            service=service,
-            environment=environment,
-            symptom=symptom,
-            planning_mode="agent_v2_service_runtime_review",
-            execute_step=_execute_single_step,
-        )
-        tool_chain.extend(status_steps)
+        if skip_to_step <= 0:
+            status_steps, status_output = run_review_service_health_skill(
+                state=state,
+                question=question,
+                service=service,
+                environment=environment,
+                symptom=symptom,
+                planning_mode="agent_v2_service_runtime_review",
+                execute_step=_execute_single_step,
+            )
+            tool_chain.extend(status_steps)
+        else:
+            status_output = _get_reused_step_output(reuse_chain, step_index=1)
 
-        dependency_steps, dependency_output = run_collect_dependency_context_skill(
-            state=state,
-            question=question,
-            service=service,
-            environment=environment,
-            status_output=status_output,
-            execute_step=_execute_single_step,
-        )
-        tool_chain.extend(dependency_steps)
+        if skip_to_step <= 1:
+            dependency_steps, dependency_output = run_collect_dependency_context_skill(
+                state=state,
+                question=question,
+                service=service,
+                environment=environment,
+                status_output=status_output,
+                execute_step=_execute_single_step,
+            )
+            tool_chain.extend(dependency_steps)
+        else:
+            dependency_output = _get_reused_step_output(reuse_chain, step_index=2)
 
-        guidance_steps, guidance_output = run_collect_runtime_guidance_skill(
-            state=state,
-            question=question,
-            service=service,
-            symptom=symptom,
-            status_output=status_output,
-            execute_step=_execute_single_step,
-        )
-        tool_chain.extend(guidance_steps)
+        if skip_to_step <= 2:
+            guidance_steps, guidance_output = run_collect_runtime_guidance_skill(
+                state=state,
+                question=question,
+                service=service,
+                symptom=symptom,
+                status_output=status_output,
+                execute_step=_execute_single_step,
+            )
+            tool_chain.extend(guidance_steps)
+        else:
+            guidance_output = _get_reused_step_output(reuse_chain, step_index=3)
 
         return {
             "tool_chain": tool_chain,
@@ -345,13 +387,21 @@ def _run_service_runtime_review_workflow(state: AgentState, review_context: dict
 
 def tool_exec_node(state: AgentState) -> dict:
     """Plan and execute a tool request using the existing tool service."""
+    resume_hints = state.get("resume_hints") or {}
+    reuse_chain: list[dict] = resume_hints.get("reuse_tool_chain") or []
+    skip_to_step: int = int(resume_hints.get("skip_to_step") or 0)
+
     question = state["question"]
     incident_triage_context = _extract_incident_triage_context(question)
     if incident_triage_context is not None:
-        return _run_incident_triage_workflow(state, incident_triage_context)
+        return _run_incident_triage_workflow(
+            state, incident_triage_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
+        )
     service_runtime_review_context = _extract_service_runtime_review_context(question)
     if service_runtime_review_context is not None:
-        return _run_service_runtime_review_workflow(state, service_runtime_review_context)
+        return _run_service_runtime_review_workflow(
+            state, service_runtime_review_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
+        )
 
     started_at = build_utc_timestamp()
     tool_plan = plan_tool_request(question)

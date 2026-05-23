@@ -45,7 +45,6 @@ def test_delete_document_endpoint_returns_404_for_missing_file():
 def test_persist_embeddings_endpoint_includes_qdrant_sync_summary(monkeypatch):
     client = TestClient(app)
     monkeypatch.setattr(settings, "knowledge_write_qdrant", True)
-    monkeypatch.setattr(settings, "knowledge_write_llamaindex", True)
 
     monkeypatch.setattr(
         "app.api.routes.documents.persist_document_embeddings",
@@ -68,14 +67,6 @@ def test_persist_embeddings_endpoint_includes_qdrant_sync_summary(monkeypatch):
             "point_count": 2,
         },
     )
-    monkeypatch.setattr(
-        "app.api.routes.documents.build_vector_index",
-        lambda filename: {
-            "filename": filename,
-            "node_count": 2,
-            "store_path": "data/llamaindex_store/sample",
-        },
-    )
 
     response = client.post("/api/documents/sample.txt/embeddings/persist")
 
@@ -83,13 +74,11 @@ def test_persist_embeddings_endpoint_includes_qdrant_sync_summary(monkeypatch):
     payload = response.json()
     assert payload["qdrant_point_count"] == 2
     assert payload["qdrant_collection_name"] == "agent_knowledge_chunks"
-    assert payload["llamaindex_node_count"] == 2
 
 
 def test_persist_embeddings_endpoint_respects_disabled_secondary_writes(monkeypatch):
     client = TestClient(app)
     monkeypatch.setattr(settings, "knowledge_write_qdrant", False)
-    monkeypatch.setattr(settings, "knowledge_write_llamaindex", False)
     monkeypatch.setattr(
         "app.api.routes.documents.persist_document_embeddings",
         lambda filename: {
@@ -108,4 +97,3 @@ def test_persist_embeddings_endpoint_respects_disabled_secondary_writes(monkeypa
     assert response.status_code == 200
     payload = response.json()
     assert payload["qdrant_sync_skipped"] == "knowledge_write_qdrant_disabled"
-    assert payload["llamaindex_sync_skipped"] == "knowledge_write_llamaindex_disabled"

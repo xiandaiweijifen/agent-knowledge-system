@@ -19,7 +19,6 @@ from app.services.indexing.embedding_service import (
 from app.services.vectorstore.qdrant_index_service import (
     sync_document_embeddings_to_qdrant,
 )
-from app.services.vectorstore.index_service import build_vector_index
 
 router = APIRouter(tags=["documents"])
 
@@ -165,15 +164,6 @@ def persist_embeddings(filename: str):
         else:
             result["qdrant_sync_skipped"] = "knowledge_write_qdrant_disabled"
 
-        if settings.knowledge_write_llamaindex:
-            try:
-                llamaindex_result = build_vector_index(filename)
-                result["llamaindex_node_count"] = llamaindex_result["node_count"]
-                result["llamaindex_store_path"] = llamaindex_result["store_path"]
-            except Exception as exc:
-                result["llamaindex_warning"] = str(exc)
-        else:
-            result["llamaindex_sync_skipped"] = "knowledge_write_llamaindex_disabled"
         return result
     except FileNotFoundError:
         raise HTTPException(

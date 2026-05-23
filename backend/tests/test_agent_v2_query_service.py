@@ -822,7 +822,7 @@ def test_resume_agent_v2_request_submits_ticket_after_confirmation(monkeypatch):
         lambda run_id: persisted_run,
     )
     monkeypatch.setattr(
-        "app.services.agent_v2.query_service.persist_agent_v2_run",
+        "app.services.agent_v2.ticket_recovery.persist_agent_v2_run",
         lambda response: persisted.setdefault("response", response),
     )
     monkeypatch.setattr(
@@ -830,7 +830,7 @@ def test_resume_agent_v2_request_submits_ticket_after_confirmation(monkeypatch):
         lambda: "2026-04-07T00:00:02+00:00",
     )
     monkeypatch.setattr(
-        "app.services.agent_v2.query_service.execute_tool_request",
+        "app.services.agent_v2.ticket_recovery.execute_tool_request",
         lambda request: type(
             "ToolExecution",
             (),

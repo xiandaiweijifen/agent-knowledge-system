@@ -8,7 +8,13 @@
       "Bash(python -m pytest tests/test_llamaindex_ingestion.py tests/ -x -q)",
       "Bash(python -m pytest tests/ -q)",
       "Bash(python -m pytest tests/test_llamaindex_retrieval.py tests/test_llamaindex_ingestion.py -v)",
-      "Bash(python -m pytest tests/test_agent_v2_graph.py -v)"
+      "Bash(python -m pytest tests/test_agent_v2_graph.py -v)",
+      "Bash(Get-ChildItem -Path \"d:\\\\project\\\\agent-knowledge-system\\\\backend\" -Recurse -Name \"test*.py\" -Exclude \".venv\")",
+      "Bash(Get-ChildItem -Path \"d:\\\\project\\\\agent-knowledge-system\\\\backend\" -Recurse -Name \"*_test.py\" -Exclude \".venv\")",
+      "PowerShell(cd d:\\\\project\\\\agent-knowledge-system\\\\backend; $env:PYTHONPATH='.'; .\\\\.venv\\\\Scripts\\\\python.exe -m pytest --tb=short -q 2>&1 | Select-Object -Last 60)",
+      "Bash(.\\\\.venv\\\\Scripts\\\\python.exe -m pytest tests/test_agent_v2_query_service.py::test_resume_agent_v2_request_submits_ticket_after_confirmation tests/test_documents_api.py::test_persist_embeddings_endpoint_includes_qdrant_sync_summary tests/test_documents_api.py::test_persist_embeddings_endpoint_respects_disabled_secondary_writes -v)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/test_agent_v2_query_service.py::test_resume_agent_v2_request_submits_ticket_after_confirmation tests/test_documents_api.py::test_persist_embeddings_endpoint_includes_qdrant_sync_summary tests/test_documents_api.py::test_persist_embeddings_endpoint_respects_disabled_secondary_writes -v)",
+      "Bash(.venv/Scripts/python.exe -m pytest --tb=short -q)"
     ]
   }
 }

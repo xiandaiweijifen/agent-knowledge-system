@@ -517,6 +517,45 @@ Notes:
 
 ## Local Setup
 
+### Recommended Quick Start
+
+Use this path for normal local development and workflow testing.
+
+From the repo root, start the infrastructure:
+
+```powershell
+docker compose up -d qdrant postgres redis
+docker compose ps
+```
+
+Start the backend in a second terminal:
+
+```powershell
+cd backend
+.\.venv\Scripts\activate
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Start the frontend in a third terminal:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+Expected URLs:
+
+- Backend API root: `http://127.0.0.1:8000/`
+- OpenAPI docs: `http://127.0.0.1:8000/docs`
+- Frontend console: `http://127.0.0.1:5173`
+
+Equivalent helper scripts are also available from the repo root:
+
+```powershell
+bash scripts/run_backend.sh
+bash scripts/run_frontend.sh
+```
+
 ### Standard Runtime Mode
 
 For normal project usage, start Docker first and treat `Qdrant + PostgreSQL + Redis`
@@ -555,7 +594,7 @@ python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
 $env:PYTHONPATH='.'
-uvicorn app.main:app
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 5. Start the frontend:
@@ -575,7 +614,7 @@ $env:AGENT_DEFAULT_RUNTIME='v2'
 Use hot reload only when you are actively editing backend code:
 
 ```powershell
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 URLs:
@@ -652,9 +691,9 @@ ROUTE_PLANNER_PROVIDER=gemini
 TOOL_PLANNER_PROVIDER=gemini
 CLARIFICATION_PLANNER_PROVIDER=gemini
 WORKFLOW_PLANNER_PROVIDER=gemini
-DATABASE_URL=postgresql://postgres:password@localhost:5432/agent_knowledge_system
-REDIS_URL=redis://localhost:6379/0
-QDRANT_URL=http://localhost:6333
+DATABASE_URL=postgresql://postgres:password@127.0.0.1:5432/agent_knowledge_system
+REDIS_URL=redis://127.0.0.1:6379/0
+QDRANT_URL=http://127.0.0.1:6333
 QDRANT_LOCAL_PATH=
 ```
 
