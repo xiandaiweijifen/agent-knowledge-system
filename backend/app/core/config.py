@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     tool_planner_provider: str = "fallback"
     clarification_planner_provider: str = "fallback"
     workflow_planner_provider: str = "fallback"
+    skill_planner_provider: str = "fallback"
     knowledge_retrieval_mode: str = "llamaindex"
     workflow_planner_debug_capture: bool = False
     planner_cache_ttl_seconds: int = 120
@@ -32,6 +33,7 @@ class Settings(BaseSettings):
     openai_tool_planner_model: str = ""
     openai_clarification_planner_model: str = ""
     openai_workflow_planner_model: str = ""
+    openai_skill_planner_model: str = ""
     openai_embedding_model: str = "text-embedding-3-small"
     gemini_api_key: str = ""
     gemini_embedding_model: str = "gemini-embedding-001"
@@ -40,6 +42,7 @@ class Settings(BaseSettings):
     gemini_tool_planner_model: str = ""
     gemini_clarification_planner_model: str = ""
     gemini_workflow_planner_model: str = ""
+    gemini_skill_planner_model: str = ""
     database_url: str = ""
     redis_url: str = ""
     qdrant_url: str = ""

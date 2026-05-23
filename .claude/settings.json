@@ -16,7 +16,8 @@
       "Bash(.venv/Scripts/python.exe -m pytest tests/test_agent_v2_query_service.py::test_resume_agent_v2_request_submits_ticket_after_confirmation tests/test_documents_api.py::test_persist_embeddings_endpoint_includes_qdrant_sync_summary tests/test_documents_api.py::test_persist_embeddings_endpoint_respects_disabled_secondary_writes -v)",
       "Bash(.venv/Scripts/python.exe -m pytest --tb=short -q)",
       "Bash(Get-ChildItem -Path \"d:\\\\project\\\\agent-knowledge-system\" -Recurse -Directory)",
-      "Bash(Select-Object -First 30)"
+      "Bash(Select-Object -First 30)",
+      "PowerShell(cd d:\\\\project\\\\agent-knowledge-system\\\\backend; .\\\\.venv\\\\Scripts\\\\activate; $env:PYTHONPATH = '.'; python -m pytest --tb=short -q 2>&1 | Select-Object -Last 30)"
     ]
   }
 }

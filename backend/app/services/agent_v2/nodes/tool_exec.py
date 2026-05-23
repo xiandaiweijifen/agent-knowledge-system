@@ -17,21 +17,14 @@ from app.services.agent_v2.skills.service_runtime_review import (
 )
 from app.services.agent_v2.state import AgentState
 from app.services.ingestion.document_service import build_utc_timestamp
+from app.services.llm.skill_planner_service import generate_llm_skill_decision
 
 
-INCIDENT_TRIAGE_PATTERN = re.compile(
-    r"\b(check|inspect|investigate|look at)\b.*\b(if|when)\b.*\b(abnormal|degraded|issue|incident)\b.*\b(ticket|draft|prepare)\b",
-    re.IGNORECASE,
-)
 SERVICE_PATTERN = re.compile(r"\b([a-z0-9][a-z0-9-]*(?:service|api))\b", re.IGNORECASE)
 ENVIRONMENT_PATTERN = re.compile(r"\b(production|staging|development|dev)\b", re.IGNORECASE)
 SEVERITY_PATTERN = re.compile(r"\b(high|medium|low)\s+severity\b", re.IGNORECASE)
 SYMPTOM_PATTERN = re.compile(
     r"\b(timeout|latency|5xx|502|error rate|errors|outage|incident)\b",
-    re.IGNORECASE,
-)
-SERVICE_RUNTIME_REVIEW_PATTERN = re.compile(
-    r"\b(check|inspect|review|look at|tell me)\b.*\b(status|health|healthy|runtime|running|degraded)\b",
     re.IGNORECASE,
 )
 
@@ -45,10 +38,7 @@ def _normalize_environment(environment: str | None) -> str:
     return lowered
 
 
-def _extract_incident_triage_context(question: str) -> dict[str, str] | None:
-    if not INCIDENT_TRIAGE_PATTERN.search(question):
-        return None
-
+def _build_incident_triage_context(question: str) -> dict[str, str] | None:
     service_match = SERVICE_PATTERN.search(question)
     if service_match is None:
         return None
@@ -64,12 +54,7 @@ def _extract_incident_triage_context(question: str) -> dict[str, str] | None:
     }
 
 
-def _extract_service_runtime_review_context(question: str) -> dict[str, str] | None:
-    if INCIDENT_TRIAGE_PATTERN.search(question):
-        return None
-    if not SERVICE_RUNTIME_REVIEW_PATTERN.search(question):
-        return None
-
+def _build_service_runtime_review_context(question: str) -> dict[str, str] | None:
     service_match = SERVICE_PATTERN.search(question)
     if service_match is None:
         return None
@@ -392,16 +377,22 @@ def tool_exec_node(state: AgentState) -> dict:
     skip_to_step: int = int(resume_hints.get("skip_to_step") or 0)
 
     question = state["question"]
-    incident_triage_context = _extract_incident_triage_context(question)
-    if incident_triage_context is not None:
-        return _run_incident_triage_workflow(
-            state, incident_triage_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
-        )
-    service_runtime_review_context = _extract_service_runtime_review_context(question)
-    if service_runtime_review_context is not None:
-        return _run_service_runtime_review_workflow(
-            state, service_runtime_review_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
-        )
+    _skill_planning_mode, skill_payload = generate_llm_skill_decision(question)
+    skill_id = (skill_payload or {}).get("skill_id")
+
+    if skill_id == "incident_triage":
+        triage_context = _build_incident_triage_context(question)
+        if triage_context is not None:
+            return _run_incident_triage_workflow(
+                state, triage_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
+            )
+
+    if skill_id == "service_runtime_review":
+        review_context = _build_service_runtime_review_context(question)
+        if review_context is not None:
+            return _run_service_runtime_review_workflow(
+                state, review_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
+            )
 
     started_at = build_utc_timestamp()
     tool_plan = plan_tool_request(question)

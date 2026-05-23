@@ -28,6 +28,10 @@ BASE_STATE = {
 
 def test_tool_exec_node_uses_existing_tool_services(monkeypatch):
     monkeypatch.setattr(
+        "app.services.agent_v2.nodes.tool_exec.generate_llm_skill_decision",
+        lambda question: ("heuristic_fallback", {"skill_id": "single_tool", "reasoning": "mock"}),
+    )
+    monkeypatch.setattr(
         "app.services.agent_v2.nodes.tool_exec.build_utc_timestamp",
         lambda: "2026-04-07T00:00:00+00:00",
     )
@@ -84,6 +88,10 @@ def test_tool_exec_node_uses_existing_tool_services(monkeypatch):
 
 
 def test_tool_exec_node_returns_failed_state_for_injected_failure(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.agent_v2.nodes.tool_exec.generate_llm_skill_decision",
+        lambda question: ("heuristic_fallback", {"skill_id": "single_tool", "reasoning": "mock"}),
+    )
     monkeypatch.setattr(
         "app.services.agent_v2.nodes.tool_exec.build_utc_timestamp",
         lambda: "2026-04-07T00:00:00+00:00",
@@ -209,6 +217,10 @@ def test_tool_exec_node_runs_incident_triage_workflow(monkeypatch):
         )
 
     monkeypatch.setattr("app.services.agent_v2.nodes.tool_exec.execute_tool_request", _execute)
+    monkeypatch.setattr(
+        "app.services.agent_v2.nodes.tool_exec.generate_llm_skill_decision",
+        lambda question: ("llm_gemini", {"skill_id": "incident_triage", "reasoning": "mock"}),
+    )
 
     result = tool_exec_node(
         {
@@ -298,6 +310,10 @@ def test_tool_exec_node_runs_service_runtime_review_workflow(monkeypatch):
         )
 
     monkeypatch.setattr("app.services.agent_v2.nodes.tool_exec.execute_tool_request", _execute)
+    monkeypatch.setattr(
+        "app.services.agent_v2.nodes.tool_exec.generate_llm_skill_decision",
+        lambda question: ("llm_gemini", {"skill_id": "service_runtime_review", "reasoning": "mock"}),
+    )
 
     result = tool_exec_node(
         {
