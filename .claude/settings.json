@@ -17,7 +17,12 @@
       "Bash(.venv/Scripts/python.exe -m pytest --tb=short -q)",
       "Bash(Get-ChildItem -Path \"d:\\\\project\\\\agent-knowledge-system\" -Recurse -Directory)",
       "Bash(Select-Object -First 30)",
-      "PowerShell(cd d:\\\\project\\\\agent-knowledge-system\\\\backend; .\\\\.venv\\\\Scripts\\\\activate; $env:PYTHONPATH = '.'; python -m pytest --tb=short -q 2>&1 | Select-Object -Last 30)"
+      "PowerShell(cd d:\\\\project\\\\agent-knowledge-system\\\\backend; .\\\\.venv\\\\Scripts\\\\activate; $env:PYTHONPATH = '.'; python -m pytest --tb=short -q 2>&1 | Select-Object -Last 30)",
+      "Bash(Get-ChildItem -Path \"d:\\\\project\\\\agent-knowledge-system\\\\backend\" -Recurse -Include \"*tool*\" -File)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(dir \"d:\\\\project\\\\agent-knowledge-system\\\\backend\")",
+      "Bash(Get-ChildItem -Path \"d:\\\\project\\\\agent-knowledge-system\\\\backend\" -Recurse -Filter \"*skill*\")",
+      "Bash(Select-Object FullName)"
     ]
   }
 }
