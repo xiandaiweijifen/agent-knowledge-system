@@ -15,7 +15,7 @@ def test_evaluate_tool_execution_dataset_computes_tool_accuracy(
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     dataset_path.write_text(
         json.dumps(

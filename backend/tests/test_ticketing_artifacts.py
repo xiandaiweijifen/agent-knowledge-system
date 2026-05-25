@@ -5,6 +5,7 @@ from pathlib import Path
 
 from app.schemas.tools import ToolExecutionRequest
 from app.services.agent import tool_service
+from app.services.agent.adapters import ticketing as ticketing_adapter
 
 
 TMP_ROOT = Path(__file__).resolve().parent / "_tmp"
@@ -21,7 +22,7 @@ def test_ticketing_draft_and_submit_persist_local_ticket_files(monkeypatch):
     tmp_path = _make_tmp_dir()
     ticket_store_path = tmp_path / "tickets.json"
     try:
-        monkeypatch.setattr(tool_service, "TICKET_STORE_PATH", ticket_store_path)
+        monkeypatch.setattr(ticketing_adapter, "TICKET_STORE_PATH", ticket_store_path)
 
         draft_response = tool_service.execute_tool_request(
             ToolExecutionRequest(

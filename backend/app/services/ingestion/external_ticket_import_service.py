@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from app.services.agent import tool_service
+from app.services.agent.adapters import ticketing as ticketing_adapter
 from app.services.agent.state_store import JsonListRepository
 from app.services.ingestion.document_service import build_utc_timestamp
 
@@ -26,9 +26,10 @@ def load_normalized_external_bundle(input_path: str | Path) -> dict[str, Any]:
 
 
 def _ticket_store_repository() -> JsonListRepository:
+    from app.services.agent.adapters._shared import _normalize_ticket_record
     return JsonListRepository(
-        tool_service.TICKET_STORE_PATH,
-        normalizer=tool_service._normalize_ticket_record,
+        ticketing_adapter.TICKET_STORE_PATH,
+        normalizer=_normalize_ticket_record,
     )
 
 
@@ -113,7 +114,7 @@ def import_normalized_tickets_to_store(
         "imported_count": imported_count,
         "updated_count": updated_count,
         "skipped_count": skipped_count,
-        "ticket_store_path": str(tool_service.TICKET_STORE_PATH),
+        "ticket_store_path": str(ticketing_adapter.TICKET_STORE_PATH),
         "ticket_store_count": len(merged_records),
         "overwrite_existing": overwrite_existing,
     }

@@ -3,11 +3,32 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from app.services.agent_v2.skills.incident_triage import select_evidence_filename
+from app.services.agent_v2.skills.incident_triage import (
+    _ENVIRONMENT_PATTERN,
+    _SERVICE_PATTERN,
+    _SYMPTOM_PATTERN,
+    _normalize_skill_environment,
+    select_evidence_filename,
+)
 from app.services.agent_v2.state import AgentState
 
 
 SERVICE_RUNTIME_REVIEW_PLANNING_MODE = "agent_v2_service_runtime_review"
+
+
+def extract_context(question: str) -> dict[str, str] | None:
+    """Extract service runtime review context (service, environment, symptom) from a question."""
+    service_match = _SERVICE_PATTERN.search(question)
+    if service_match is None:
+        return None
+
+    environment_match = _ENVIRONMENT_PATTERN.search(question)
+    symptom_match = _SYMPTOM_PATTERN.search(question)
+    return {
+        "service": service_match.group(1),
+        "environment": _normalize_skill_environment(environment_match.group(1) if environment_match else None),
+        "symptom": (symptom_match.group(1).lower() if symptom_match else "health"),
+    }
 
 ExecuteStep = Callable[..., tuple[dict[str, Any], Any]]
 

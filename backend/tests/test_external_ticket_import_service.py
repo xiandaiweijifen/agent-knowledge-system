@@ -19,7 +19,6 @@ def _make_tmp_dir() -> Path:
 
 
 def test_import_normalized_tickets_to_store_merges_without_overwriting(monkeypatch):
-    import app.services.agent.tool_service as tool_service_module
     import app.services.ingestion.external_ticket_import_service as import_module
 
     tmp_dir = _make_tmp_dir()
@@ -79,8 +78,7 @@ def test_import_normalized_tickets_to_store_merges_without_overwriting(monkeypat
             encoding="utf-8",
         )
 
-        monkeypatch.setattr(tool_service_module, "TICKET_STORE_PATH", ticket_store_path)
-        monkeypatch.setattr(import_module.tool_service, "TICKET_STORE_PATH", ticket_store_path)
+        monkeypatch.setattr(import_module.ticketing_adapter, "TICKET_STORE_PATH", ticket_store_path)
 
         result = import_normalized_tickets_to_store(bundle_path)
 
@@ -94,7 +92,6 @@ def test_import_normalized_tickets_to_store_merges_without_overwriting(monkeypat
 
 
 def test_import_normalized_tickets_to_store_can_overwrite_existing(monkeypatch):
-    import app.services.agent.tool_service as tool_service_module
     import app.services.ingestion.external_ticket_import_service as import_module
 
     tmp_dir = _make_tmp_dir()
@@ -144,8 +141,7 @@ def test_import_normalized_tickets_to_store_can_overwrite_existing(monkeypatch):
             encoding="utf-8",
         )
 
-        monkeypatch.setattr(tool_service_module, "TICKET_STORE_PATH", ticket_store_path)
-        monkeypatch.setattr(import_module.tool_service, "TICKET_STORE_PATH", ticket_store_path)
+        monkeypatch.setattr(import_module.ticketing_adapter, "TICKET_STORE_PATH", ticket_store_path)
 
         result = import_normalized_tickets_to_store(bundle_path, overwrite_existing=True)
 

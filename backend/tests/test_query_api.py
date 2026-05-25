@@ -420,7 +420,7 @@ def test_query_route_endpoint_returns_route_decision():
 
 def test_execute_tool_request_returns_stubbed_result(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     response = execute_tool_request(
         ToolExecutionRequest(
@@ -439,7 +439,7 @@ def test_execute_tool_request_returns_stubbed_result(workspace_tmp_path, monkeyp
 
 def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     created = execute_tool_request(
         ToolExecutionRequest(
@@ -493,7 +493,7 @@ def test_execute_ticketing_tool_supports_create_update_close(workspace_tmp_path,
 
 def test_execute_ticketing_tool_supports_draft_and_submit(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     drafted = execute_tool_request(
         ToolExecutionRequest(
@@ -531,7 +531,7 @@ def test_execute_ticketing_tool_builds_supporting_summary_from_search_context(
     monkeypatch,
 ):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     created = execute_tool_request(
         ToolExecutionRequest(
@@ -556,7 +556,7 @@ def test_execute_ticketing_tool_builds_supporting_summary_from_search_context(
 
 def test_execute_ticketing_tool_supports_query(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     created = execute_tool_request(
         ToolExecutionRequest(
@@ -590,7 +590,7 @@ def test_execute_ticketing_tool_create_recovers_from_invalid_ticket_store(
 ):
     ticket_store_path = workspace_tmp_path / "tickets.json"
     ticket_store_path.write_text("{invalid json", encoding="utf-8")
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     created = execute_tool_request(
         ToolExecutionRequest(
@@ -629,7 +629,7 @@ def test_execute_ticketing_tool_normalizes_legacy_ticket_record_on_query(
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     queried = execute_tool_request(
         ToolExecutionRequest(
@@ -648,7 +648,7 @@ def test_execute_ticketing_tool_normalizes_legacy_ticket_record_on_query(
 
 def test_execute_ticketing_tool_supports_list(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     execute_tool_request(
         ToolExecutionRequest(
@@ -726,7 +726,7 @@ def test_execute_ticketing_tool_filters_list_by_canonical_target(
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     listed = execute_tool_request(
         ToolExecutionRequest(
@@ -774,7 +774,7 @@ def test_execute_ticketing_tool_route_preserves_target_filter(
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -837,7 +837,7 @@ def test_execute_ticketing_tool_filters_list_by_combined_fields(
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     listed = execute_tool_request(
         ToolExecutionRequest(
@@ -901,7 +901,7 @@ def test_execute_ticketing_tool_list_honors_max_results_and_latest_order(
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     listed = execute_tool_request(
         ToolExecutionRequest(
@@ -1230,7 +1230,7 @@ def test_execute_document_search_tool_honors_max_results(
 
 def test_query_tool_execute_endpoint_returns_structured_stub(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -1728,7 +1728,7 @@ def test_query_agent_endpoint_uses_llm_workflow_planner_for_non_regex_multistep_
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
     monkeypatch.setattr(settings, "workflow_planner_provider", "gemini")
     monkeypatch.setattr(settings, "tool_planner_provider", "gemini")
     monkeypatch.setattr(
@@ -2286,7 +2286,7 @@ def test_query_agent_endpoint_returns_knowledge_workflow_result(
 
 def test_query_agent_endpoint_returns_tool_workflow_result(workspace_tmp_path, monkeypatch):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -2371,7 +2371,7 @@ def test_query_agent_endpoint_allows_explicit_ticket_creation_for_operational_is
     monkeypatch,
 ):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -2434,7 +2434,7 @@ def test_query_agent_endpoint_supports_search_then_ticket_multistep_workflow(
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -2503,7 +2503,7 @@ def test_query_agent_endpoint_supports_search_then_ticket_update_workflow(
     )
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -2544,7 +2544,7 @@ def test_query_agent_endpoint_supports_status_then_ticket_multistep_workflow(
     monkeypatch,
 ):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -2599,7 +2599,7 @@ def test_query_agent_endpoint_supports_incident_triage_workflow(workspace_tmp_pa
 
     ticket_store_path = workspace_tmp_path / "tickets.json"
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -2697,7 +2697,7 @@ def test_query_agent_endpoint_supports_status_then_ticket_close_workflow(
         ),
         encoding="utf-8",
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -2745,7 +2745,7 @@ def test_query_agent_endpoint_stops_multistep_ticket_creation_when_search_misses
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -3178,7 +3178,7 @@ def test_query_agent_endpoint_preserves_completed_steps_before_multistep_failure
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     real_execute_tool_request = execute_tool_request
 
@@ -3254,7 +3254,7 @@ def test_query_agent_endpoint_retries_single_tool_execution_once_and_recovers(
     monkeypatch,
 ):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     real_execute_tool_request = execute_tool_request
     attempt_counter = {"count": 0}
@@ -3299,7 +3299,7 @@ def test_query_agent_endpoint_supports_debug_fault_injection_for_retry_recovery(
     monkeypatch,
 ):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -3424,7 +3424,7 @@ def test_resume_agent_endpoint_continues_search_then_ticket_workflow(
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -3471,7 +3471,7 @@ def test_resume_agent_endpoint_applies_structured_ticket_overrides(
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -3534,7 +3534,7 @@ def test_resume_agent_endpoint_applies_structured_ticket_overrides_for_ticket_up
     )
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -3591,7 +3591,7 @@ def test_resume_agent_endpoint_can_continue_ticket_workflow_after_search_miss_wh
     ticket_store_path = workspace_tmp_path / "tickets.json"
 
     monkeypatch.setattr(document_service, "RAW_DATA_DIR", raw_dir)
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -3631,7 +3631,7 @@ def test_resume_agent_endpoint_continues_status_then_ticket_workflow(
     monkeypatch,
 ):
     ticket_store_path = workspace_tmp_path / "tickets.json"
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(
@@ -3888,7 +3888,7 @@ def test_resume_agent_endpoint_can_resume_failed_search_then_ticket_from_step_tw
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     initial_response = client.post(
@@ -3953,7 +3953,7 @@ def test_resume_agent_endpoint_can_resume_failed_status_then_ticket_from_step_tw
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     initial_response = client.post(
@@ -4270,7 +4270,7 @@ def test_recover_agent_endpoint_uses_recommended_failed_step_resume(
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     initial_response = client.post(
@@ -4328,7 +4328,7 @@ def test_recover_agent_endpoint_manual_retriggers_single_step_failures(
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     initial_response = client.post(
@@ -4384,7 +4384,7 @@ def test_recover_agent_endpoint_rejects_unavailable_recovery_action(
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     initial_response = client.post(
@@ -4445,7 +4445,7 @@ def test_list_agent_workflow_runs_endpoint_returns_latest_runs_with_limit(
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     first_response = client.post(
@@ -4529,7 +4529,7 @@ def test_list_agent_workflow_runs_endpoint_marks_failed_step_resume_eligible_run
         "app.services.agent.orchestrator_service.WORKFLOW_RUN_STORE_PATH",
         workflow_run_store_path,
     )
-    monkeypatch.setattr("app.services.agent.tool_service.TICKET_STORE_PATH", ticket_store_path)
+    monkeypatch.setattr("app.services.agent.adapters.ticketing.TICKET_STORE_PATH", ticket_store_path)
 
     client = TestClient(app)
     response = client.post(

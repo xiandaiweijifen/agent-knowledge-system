@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from typing import Any
 
@@ -8,6 +9,40 @@ from app.services.agent_v2.state import AgentState
 
 INCIDENT_TRIAGE_PLANNING_MODE = "agent_v2_incident_triage"
 EXTERNAL_EVIDENCE_PREFIXES = "customer_support_tickets_,it_support_v2_,bugsrepo_structured_"
+
+_SERVICE_PATTERN = re.compile(r"\b([a-z0-9][a-z0-9-]*(?:service|api))\b", re.IGNORECASE)
+_ENVIRONMENT_PATTERN = re.compile(r"\b(production|staging|development|dev)\b", re.IGNORECASE)
+_SEVERITY_PATTERN = re.compile(r"\b(high|medium|low)\s+severity\b", re.IGNORECASE)
+_SYMPTOM_PATTERN = re.compile(
+    r"\b(timeout|latency|5xx|502|error rate|errors|outage|incident)\b",
+    re.IGNORECASE,
+)
+
+
+def _normalize_skill_environment(environment: str | None) -> str:
+    if not environment:
+        return "production"
+    lowered = environment.lower()
+    if lowered == "dev":
+        return "development"
+    return lowered
+
+
+def extract_context(question: str) -> dict[str, str] | None:
+    """Extract incident triage context (service, environment, severity, symptom) from a question."""
+    service_match = _SERVICE_PATTERN.search(question)
+    if service_match is None:
+        return None
+
+    environment_match = _ENVIRONMENT_PATTERN.search(question)
+    severity_match = _SEVERITY_PATTERN.search(question)
+    symptom_match = _SYMPTOM_PATTERN.search(question)
+    return {
+        "service": service_match.group(1),
+        "environment": _normalize_skill_environment(environment_match.group(1) if environment_match else None),
+        "severity": (severity_match.group(1).lower() if severity_match else "high"),
+        "symptom": (symptom_match.group(1).lower() if symptom_match else "incident"),
+    }
 
 
 ExecuteStep = Callable[..., tuple[dict[str, Any], Any]]

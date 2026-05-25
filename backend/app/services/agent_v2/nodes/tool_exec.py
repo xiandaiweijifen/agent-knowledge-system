@@ -1,71 +1,23 @@
 """Tool execution node — runs tool actions requested by the router."""
 
-import re
-
 from app.schemas.tools import ToolExecutionRequest
 from app.services.agent.tool_service import execute_tool_request, plan_tool_request
 from app.services.agent_v2.skills.incident_triage import (
     build_incident_triage_summary,
+    extract_context as extract_triage_context,
     run_collect_incident_evidence_skill,
     run_prepare_incident_ticket_skill,
     run_review_service_health_skill,
 )
 from app.services.agent_v2.skills.service_runtime_review import (
     build_runtime_review_summary,
+    extract_context as extract_review_context,
     run_collect_dependency_context_skill,
     run_collect_runtime_guidance_skill,
 )
 from app.services.agent_v2.state import AgentState
 from app.services.ingestion.document_service import build_utc_timestamp
 from app.services.llm.skill_planner_service import generate_llm_skill_decision
-
-
-SERVICE_PATTERN = re.compile(r"\b([a-z0-9][a-z0-9-]*(?:service|api))\b", re.IGNORECASE)
-ENVIRONMENT_PATTERN = re.compile(r"\b(production|staging|development|dev)\b", re.IGNORECASE)
-SEVERITY_PATTERN = re.compile(r"\b(high|medium|low)\s+severity\b", re.IGNORECASE)
-SYMPTOM_PATTERN = re.compile(
-    r"\b(timeout|latency|5xx|502|error rate|errors|outage|incident)\b",
-    re.IGNORECASE,
-)
-
-
-def _normalize_environment(environment: str | None) -> str:
-    if not environment:
-        return "production"
-    lowered = environment.lower()
-    if lowered == "dev":
-        return "development"
-    return lowered
-
-
-def _build_incident_triage_context(question: str) -> dict[str, str] | None:
-    service_match = SERVICE_PATTERN.search(question)
-    if service_match is None:
-        return None
-
-    environment_match = ENVIRONMENT_PATTERN.search(question)
-    severity_match = SEVERITY_PATTERN.search(question)
-    symptom_match = SYMPTOM_PATTERN.search(question)
-    return {
-        "service": service_match.group(1),
-        "environment": _normalize_environment(environment_match.group(1) if environment_match else None),
-        "severity": (severity_match.group(1).lower() if severity_match else "high"),
-        "symptom": (symptom_match.group(1).lower() if symptom_match else "incident"),
-    }
-
-
-def _build_service_runtime_review_context(question: str) -> dict[str, str] | None:
-    service_match = SERVICE_PATTERN.search(question)
-    if service_match is None:
-        return None
-
-    environment_match = ENVIRONMENT_PATTERN.search(question)
-    symptom_match = SYMPTOM_PATTERN.search(question)
-    return {
-        "service": service_match.group(1),
-        "environment": _normalize_environment(environment_match.group(1) if environment_match else None),
-        "symptom": (symptom_match.group(1).lower() if symptom_match else "health"),
-    }
 
 
 def _build_step_record(
@@ -377,18 +329,18 @@ def tool_exec_node(state: AgentState) -> dict:
     skip_to_step: int = int(resume_hints.get("skip_to_step") or 0)
 
     question = state["question"]
-    _skill_planning_mode, skill_payload = generate_llm_skill_decision(question)
+    _, skill_payload = generate_llm_skill_decision(question)
     skill_id = (skill_payload or {}).get("skill_id")
 
     if skill_id == "incident_triage":
-        triage_context = _build_incident_triage_context(question)
+        triage_context = extract_triage_context(question)
         if triage_context is not None:
             return _run_incident_triage_workflow(
                 state, triage_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
             )
 
     if skill_id == "service_runtime_review":
-        review_context = _build_service_runtime_review_context(question)
+        review_context = extract_review_context(question)
         if review_context is not None:
             return _run_service_runtime_review_workflow(
                 state, review_context, reuse_chain=reuse_chain, skip_to_step=skip_to_step
